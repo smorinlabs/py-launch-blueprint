@@ -69,7 +69,6 @@ repos:
     language: system
     types: [python]
     pass_filenames: false  # Run full test suite
-    stages: [pre-commit]  # Only run on pre-commit
     # Global Exclusion
     # If you want to exclude py_launch_blueprint/_version.py from all pre-commit hooks,
     # you can use a global exclusion at the top level of your configuration:
