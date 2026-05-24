@@ -1,0 +1,14 @@
+# ITM-003 — lefthook scaffolding. Hook manager per ADR-01.
+# Stage blocks are intentionally absent — per-tool ITMs add them:
+#   commit-msg:  ITM-040 (commitlint)
+#   pre-commit:  ITM-001 (gitleaks), ITM-010 (editorconfig-checker),
+#                ITM-013 (yamllint), ITM-016 (codespell), ITM-066 (ruff/ty/uv-export)
+#   pre-push:    ITM-002 (gitleaks range scan), ITM-032 (bandit)
+# See lefthook docs: https://lefthook.dev/configuration/
+
+min_version: 1.13.0  # ITM-021 installer floor
+
+# Per lefthook v2 schema, skip_output keys are booleans, not list items.
+skip_output:
+  meta: true
+  skips: true
