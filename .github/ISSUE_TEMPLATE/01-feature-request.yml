@@ -135,6 +135,17 @@ body:
   validations:
     required: true
 
+- type: textarea
+  id: alternatives
+  attributes:
+    label: Alternatives considered (ITM-076, round 21)
+    description: What other approaches have you considered? Why is the proposed solution preferable?
+    placeholder: |
+      Alternative A: …
+      Why not chosen: …
+  validations:
+    required: false
+
 - type: markdown
   attributes:
     value: |
