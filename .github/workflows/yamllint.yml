@@ -1,0 +1,35 @@
+# ITM-014 - yamllint CI job. Standalone, YAML-path triggered (decided round 3).
+
+name: yamllint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.yml"
+      - "**/*.yaml"
+      - ".yamllint"
+  pull_request:
+    paths:
+      - "**/*.yml"
+      - "**/*.yaml"
+      - ".yamllint"
+
+permissions: {}
+
+concurrency:
+  group: yamllint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  yamllint:
+    name: yamllint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Run yamllint
+        run: uvx yamllint -c .yamllint .
