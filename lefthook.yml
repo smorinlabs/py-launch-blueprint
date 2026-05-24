@@ -21,3 +21,11 @@ pre-commit:
     # ITM-001 — gitleaks staged-diff scan (decided round 2).
     gitleaks:
       run: scripts/check-gitleaks.sh --staged
+
+# Pre-push stage — per-tool steps land via downstream ITMs.
+pre-push:
+  parallel: true
+  commands:
+    # ITM-002 — gitleaks range scan (catches bypassed/imported commits).
+    gitleaks-range:
+      run: scripts/check-gitleaks.sh --range
