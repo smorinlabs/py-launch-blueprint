@@ -19,7 +19,8 @@
 
 [project]
 name = "py_launch_blueprint"
-version = "0.0.1"
+# ITM-070 — static version (ADR-06 cutover). release-please bumps this.
+version = "1.0.0"
 description = "CLI tools for interacting with Py, including project search functionality"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -85,17 +86,14 @@ Documentation = "https://py-launch-blueprint.readthedocs.io/en/latest/"
 Changelog = "https://github.com/smorinlabs/py-launch-blueprint/blob/main/CHANGELOG.md"
 Issues = "https://github.com/smorinlabs/py-launch-blueprint/issues"
 
+# ITM-073 — uv_build (ADR-06 cutover; replaces Hatchling + hatch-vcs).
 [build-system]
-requires = ["hatchling", "hatch-vcs", "setuptools>=64", "setuptools-scm>=8"]
-build-backend = "hatchling.build"
-
-[build-system]
-requires = ["uv_build>=0.11.14,<0.12"]
+requires = ["uv_build>=0.5,<1.0"]
 build-backend = "uv_build"
 
+# ITM-074 — uv_build module configuration.
 [tool.uv.build-backend]
 module-name = "py_launch_blueprint"
-module-root = ""
 
 [tool.ruff]
 # ITM-018 reconciled config (round-2). Merge: template's stricter rule
