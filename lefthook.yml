@@ -7,3 +7,9 @@
 # See lefthook docs: https://lefthook.dev/configuration/
 
 min_version: 1.13.0  # ITM-021 installer floor
+
+# ITM-040 — commitlint commit-msg step. Decided round 7.
+commit-msg:
+  commands:
+    commitlint:
+      run: bunx --bun commitlint --edit {1}
