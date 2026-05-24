@@ -7,8 +7,3 @@
 # See lefthook docs: https://lefthook.dev/configuration/
 
 min_version: 1.13.0  # ITM-021 installer floor
-
-# Per lefthook v2 schema, skip_output keys are booleans, not list items.
-skip_output:
-  meta: true
-  skips: true
