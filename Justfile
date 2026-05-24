@@ -84,7 +84,7 @@ check-deps:
     if ! command -v uv >/dev/null 2>&1; then echo "{{YELLOW}}uv is not installed{{NC}}\n RUN {{BLUE}}make install-uv{{NC}}"; exit 1; fi
     if ! command -v python3 >/dev/null 2>&1; then echo "{{YELLOW}}python3 is not installed{{NC}}"; exit 1; fi
     if ! command -v just >/dev/null 2>&1; then echo "{{YELLOW}}just is not installed{{NC}}\n RUN {{BLUE}}make install-just{{NC}}"; exit 1; fi
-    if ! command -v pre-commit >/dev/null 2>&1; then echo "{{YELLOW}}WARNING: pre-commit is not installed{{NC}}\n RUN {{BLUE}}just install-pre-commit{{NC}}"; fi
+    if ! command -v lefthook >/dev/null 2>&1; then echo "{{YELLOW}}WARNING: lefthook is not installed{{NC}}\n RUN {{BLUE}}scripts/install-lefthook.sh{{NC}}"; fi
     if ! command -v taplo >/dev/null 2>&1; then echo "{{YELLOW}}Taplo is not installed{{NC}}\n RUN {{BLUE}}just install-taplo{{NC}}"; exit 1; fi
     if ! command -v go >/dev/null 2>&1; then echo "{{YELLOW}}go is not installed{{NC}}\n RUN {{BLUE}}make install-go{{NC}}"; exit 1; fi
     if ! command -v yamlfmt >/dev/null 2>&1; then echo "{{YELLOW}}yamlfmt is not installed{{NC}}\n RUN {{BLUE}}make install-yamlfmt{{NC}}"; exit 1; fi
@@ -176,22 +176,17 @@ alias ca := check
 
 alias b := build
 
-# Set up pre-commit hooks
-[group('setup'), group('pre-commit')]
-@pre-commit-setup:
-    uvx --with-editable . pre-commit install
+# Wire lefthook into .git/hooks (idempotent)
+[group('setup'), group('hooks')]
+@hooks-install:
+    lefthook install
 
-# Set up pre-commit hooks
-[group('setup'), group('pre-commit')]
-@pre-commit-uninstall:
-    uvx --with-editable . pre-commit uninstall
+# Run all lefthook pre-commit checks against the whole tree
+[group('hooks')]
+@hooks-run:
+    lefthook run pre-commit --all-files
 
-# Run all pre-commit Hooks
-[group('pre-commit')]
-@pre-commit-run:
-    uvx --with-editable . pre-commit run --all
-
-alias pc := pre-commit-run
+alias hooks := hooks-run
 
 # Check installed package version
 [group('releases'), group('utilities')]
