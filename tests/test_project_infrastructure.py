@@ -114,14 +114,29 @@ def test_onboarding_and_secret_files_are_template_safe() -> None:
 
 def test_pypirc_template_is_not_whole_file_secret_scan_allowlisted() -> None:
     gitleaks = read(".gitleaks.toml")
-    pypirc_allowlists = [
-        block
-        for block in gitleaks.split("[[allowlists]]")
-        if "pypirc" in block and "template" in block
-    ]
+    allowlist_blocks = gitleaks.split("[[allowlists]]")[1:]
 
-    assert pypirc_allowlists
-    for block in pypirc_allowlists:
-        assert 'condition = "AND"' in block
-        assert "REPLACE_WITH_PYPI_TOKEN" in block
-        assert "REPLACE_WITH_TESTPYPI_TOKEN" in block
+    pypirc_path_needle = r"\.pypirc\.template$"
+    blocks_with_pypirc_path = [
+        block for block in allowlist_blocks if pypirc_path_needle in block
+    ]
+    assert len(blocks_with_pypirc_path) == 1, (
+        "`.pypirc.template` must appear in exactly one allowlist `paths` entry; "
+        f"found {len(blocks_with_pypirc_path)}"
+    )
+
+    dedicated = blocks_with_pypirc_path[0]
+    assert 'condition = "AND"' in dedicated
+    assert "REPLACE_WITH_PYPI_TOKEN" in dedicated
+    assert "REPLACE_WITH_TESTPYPI_TOKEN" in dedicated
+
+    forbidden_broad_regexes = [
+        "REPLACE_WITH_[A-Z0-9_]+",
+        "YOUR_[A-Z0-9_]+",
+        "xxxxxxxx+",
+    ]
+    for pattern in forbidden_broad_regexes:
+        assert pattern not in dedicated, (
+            f"dedicated `.pypirc.template` allowlist must not contain broad "
+            f"pattern {pattern!r}"
+        )
