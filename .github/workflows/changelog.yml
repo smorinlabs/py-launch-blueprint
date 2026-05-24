@@ -37,26 +37,12 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
     - name: Install Cocogitto
       uses: cocogitto/cocogitto-action@v3
+      with:
+        check: false
 
-    - name: Generate CHANGELOG.md
-      run: cog changelog > CHANGELOG.md
-
-    - name: Verify changelog is current
-      if: github.event_name == 'pull_request'
-      run: git diff --exit-code -- CHANGELOG.md
-
-    - name: Commit changelog changes
-      if: github.event_name != 'pull_request'
-      run: |-
-        if git diff --quiet -- CHANGELOG.md; then
-          echo "CHANGELOG.md is already current."
-          exit 0
-        fi
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add CHANGELOG.md
-        git commit -m "chore: update changelog"
-        git push
+    - name: Validate changelog generation
+      run: cog changelog HEAD~1..HEAD > /tmp/CHANGELOG.md

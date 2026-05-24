@@ -1,15 +1,15 @@
 name: py-launch-blueprint-codeql
 
 queries:
-  - uses: security-and-quality
+- uses: security-and-quality
 
 paths:
-  - py_launch_blueprint
+- py_launch_blueprint
 
 paths-ignore:
-  - tests
-  - docs
-  - analysis
-  - build
-  - dist
-  - "**/*.egg-info"
+- tests
+- docs
+- analysis
+- build
+- dist
+- "**/*.egg-info"

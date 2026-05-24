@@ -163,10 +163,10 @@ Template for pull requests to ensure consistency and completeness.
 Configuration file for the project, including dependencies and build settings.
 
 ### cog.toml
-Configuration file for COG (Cocogitto), a tool for generating and updating files based on templates. used for to update contributors list.
+Configuration file for COG (Cocogitto), used for changelog generation.
 
 ### CONTRIBUTORS.md
-Auto-generated file using COG (Cocogitto) that lists the project contributors.
+Auto-generated file that lists the project contributors.
 
 ### pyrightconfig.json
 
