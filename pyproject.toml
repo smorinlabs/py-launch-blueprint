@@ -50,7 +50,9 @@ dependencies = [
   "rich>=13.0.0",
 ]
 
-[project.optional-dependencies]
+# ITM-063 — PEP 735 dependency-groups (round-13 decision). Replaces
+# [project.optional-dependencies] dev+docs. Install via `uv sync --group <name>`.
+[dependency-groups]
 dev = [
   "pytest>=7.0.0",
   "pytest-cov>=4.1.0",
