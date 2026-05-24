@@ -31,6 +31,19 @@ body:
 
       Please provide as much detail as possible so volunteers can reproduce and fix the issue efficiently.
 
+- type: checkboxes
+  id: pre-filing-verification
+  attributes:
+    label: Pre-filing verification (ITM-075, round 21)
+    description: Please confirm before filing.
+    options:
+      - label: I'm running the latest version (or `main`) and can reproduce there.
+        required: true
+      - label: I searched existing issues and didn't find a duplicate.
+        required: true
+      - label: I ran `make hook-check` and the relevant `just` command, and pasted output below if applicable.
+        required: true
+
 - type: dropdown
   id: severity
   attributes:
