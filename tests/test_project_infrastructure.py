@@ -4,7 +4,6 @@ import json
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -78,6 +77,22 @@ def test_release_workflow_builds_with_uv_and_uses_trusted_publishing() -> None:
     assert "id-token: write" in release
 
 
+def test_changelog_workflow_uses_cog_without_commit_check() -> None:
+    changelog_workflow = read(".github/workflows/changelog.yml")
+    cog_config = read("cog.toml")
+
+    assert "cocogitto/cocogitto-action@v3" in changelog_workflow
+    assert "check: false" in changelog_workflow
+    assert "github.event.pull_request.head.sha" in changelog_workflow
+    assert "cog changelog HEAD~1..HEAD > /tmp/CHANGELOG.md" in changelog_workflow
+    assert "git diff --exit-code -- CHANGELOG.md" not in changelog_workflow
+    assert 'git commit -m "chore: update changelog"' not in changelog_workflow
+    assert "[changelog]" in cog_config
+    assert "[changelog.sections]" not in cog_config
+    assert "[changelog.git]" not in cog_config
+    assert "[contributors]" not in cog_config
+
+
 def test_onboarding_and_secret_files_are_template_safe() -> None:
     devcontainer = json.loads(read(".devcontainer/devcontainer.json"))
     pypirc = read(".pypirc.template")
@@ -86,8 +101,7 @@ def test_onboarding_and_secret_files_are_template_safe() -> None:
     gitleaks = read(".gitleaks.toml")
 
     assert (
-        devcontainer["image"]
-        == "mcr.microsoft.com/devcontainers/python:3.10-bookworm"
+        devcontainer["image"] == "mcr.microsoft.com/devcontainers/python:3.10-bookworm"
     )
     assert ".pypirc" in gitignore
     assert "REPLACE_WITH_PYPI_TOKEN" in pypirc

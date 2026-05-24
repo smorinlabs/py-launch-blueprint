@@ -18,41 +18,12 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 [changelog]
-# The remote repository to use for generating links
-repository = "https://github.com/smorin/py-launch-blueprint"
-# The style of the changelog entries (possible values: "angular", "conventional")
-template = "conventional"
-remote = "origin"
+# The generated changelog path and remote link settings.
 path = "CHANGELOG.md"
+template = "remote"
+remote = "github.com"
+owner = "smorinlabs"
+repository = "py-launch-blueprint"
 
-[changelog.sections]
-features = ["feat"]
-fixes = ["fix"]
-performance = ["perf"]
-documentation = ["docs"]
-testing = ["test"]
-maintenance = ["chore", "refactor"]
-
-[changelog.git]
-conventional_commits = true
-filter_unconventional = true
-commit_parsers = [
-  { message = "^feat", group = "Features" },
-  { message = "^fix", group = "Bug Fixes" },
-  { message = "^docs", group = "Documentation" },
-  { message = "^perf", group = "Performance" },
-  { message = "^refactor", group = "Refactor" },
-  { message = "^test", group = "Testing" },
-  { message = "^chore\\(release\\): prepare for", skip = true },
-  { message = "^chore", group = "Miscellaneous Tasks" },
-]
-
-[contributors]
-# Format for the contributor list
-format = "markdown"
-# Sort contributors by number of commits
-sort_by = "commits"
-# Show statistics like number of commits and files changed
-show_stats = true
-# Exclude certain email domains (e.g., noreply.github.com)
-excluded_domains = ["noreply.github.com"]
+# Optional contributor mapping for changelog author links.
+authors = [{ signature = "Steve Morin", username = "smorin" }]

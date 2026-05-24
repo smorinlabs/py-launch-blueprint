@@ -16,11 +16,10 @@ The `pyrightconfig.json` file configures the Pyright static type checker. It spe
 
 ## cog.toml
 
-The `cog.toml` file configures the `cog` tool, which is used to automate changelog generation and contributor tracking. It defines settings such as:
+The `cog.toml` file configures the `cog` tool, which is used to generate changelog content locally and validate changelog generation in CI. It defines settings such as:
 
-- **Repository URL**: Links the changelog to the repository.
-- **Changelog Style**: Specifies the format for changelog entries.
-- **Commit Parsing**: Determines how commit messages are categorized (e.g., features, fixes).
-- **Contributor Formatting**: Configures how contributors are listed and sorted in the `CONTRIBUTORS.md` file.
+- **Changelog Path**: Defines the generated changelog file.
+- **Remote Links**: Links changelog entries to the GitHub repository.
+- **Author Mapping**: Maps local git signatures to GitHub usernames for changelog links.
 
-This file ensures consistency in changelog updates and contributor tracking. See [cog.toml](https://github.com/smorin/py-launch-blueprint/blob/main/cog.toml) for more details.
+Contributor list updates are handled by `scripts/update_contributors.py` and the update-contributors workflow. See [cog.toml](https://github.com/smorin/py-launch-blueprint/blob/main/cog.toml) for more details.
