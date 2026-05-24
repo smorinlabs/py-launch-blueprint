@@ -112,7 +112,7 @@ just lint
 
 ## Developer Environment
 
-- **Python**: 3.10+ required
+- **Python**: 3.12+ required
 - **Package manager**: `uv` recommended, pip supported
 - **IDE**: VS Code with Ruff, MyPy, and Pylance extensions
 
