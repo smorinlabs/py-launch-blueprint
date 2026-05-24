@@ -1,0 +1,29 @@
+title = "py-launch-blueprint gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Repository placeholders and generated documentation examples"
+
+paths = [
+  '''(^|/)analysis/''',
+  '''(^|/)docs/''',
+  '''\.gitleaks\.toml$''',
+  '''\.pypirc\.template$''',
+]
+
+regexes = [
+  '''REPLACE_WITH_[A-Z0-9_]+''',
+  '''YOUR_[A-Z0-9_]+''',
+  '''xxxxxxxx+''',
+]
+
+[[allowlists]]
+description = "Test-file placeholder/mock/example tokens"
+
+paths = ['''(^|/)tests/''']
+
+regexes = [
+  '''(?i)(mock|example|placeholder|test)[-_]?(api[-_]?)?(key|token|secret)''',
+]

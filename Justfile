@@ -159,7 +159,7 @@ alias t := test
 
 # Run all checks
 [group('test'), group('dev'), group('quick start')]
-@check: test lint typecheck
+@check: test lint typecheck check-yaml check-spelling check-editorconfig
     echo "All checks passed!"
 
 alias ca := check
@@ -172,7 +172,7 @@ alias ca := check
 # Build package
 [group('build'), group('dev')]
 @build: check
-    uvx --with-editable . build #TODO: fix this does not work
+    uv build
 
 alias b := build
 
@@ -369,9 +369,22 @@ setup-cog-hooks:
     cog install-hook commit-msg
     echo "{{GREEN}}✓{{NC}} Commit message hook installed"
 
-# changelog:
-#     # Command to generate the changelog locally
-#     cog generate --config cog.toml
+# Generate the changelog locally
+[group('releases')]
+changelog:
+    command -v cog >/dev/null 2>&1 || { echo "{{RED}}Error: Cocogitto (cog) is not installed{{NC}}"; exit 1; }
+    cog changelog > CHANGELOG.md
+    echo "{{GREEN}}✓{{NC}} CHANGELOG.md updated"
+
+# Install gitleaks for local secret scanning
+[group('setup'), group('install'), group('pre-commit')]
+install-gitleaks:
+    bash scripts/install-gitleaks.sh
+
+# Run gitleaks. Use `just check-gitleaks staged` for pre-commit-style checks.
+[group('dev'), group('pre-commit')]
+check-gitleaks mode="full":
+    bash scripts/check-gitleaks.sh {{mode}}
 
 # Alternative commands when virtual environment is activated:
 # These commands can be used after running 'source .venv/bin/activate'
@@ -683,11 +696,21 @@ alias cycle := dev
 
 [group('dev')]
 @lint-yaml:
-    echo "🔍 Linting YAML files with yamlfmt..."
-    yamlfmt -lint .
+    echo "🔍 Linting YAML files with yamllint..."
+    uvx yamllint -c .yamllint .
 
 [group('dev')]
 @check-yaml:
     echo "✅ Checking YAML formatting..."
-    yamlfmt -lint .
-    echo "YAML files are properly formatted!"
+    uvx yamllint -c .yamllint .
+    echo "YAML files are properly linted!"
+
+[group('dev')]
+@check-spelling:
+    echo "🔍 Checking spelling..."
+    uvx codespell .
+
+[group('dev')]
+@check-editorconfig:
+    echo "🔍 Checking EditorConfig rules..."
+    uvx --from editorconfig-checker ec

@@ -1,0 +1,3 @@
+# gitleaks finding fingerprints to ignore.
+# Format: <commit-sha>:<path>:<rule-id>:<line>
+# Keep this file empty until a documented historical false positive needs it.
