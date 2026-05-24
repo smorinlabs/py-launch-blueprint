@@ -1,0 +1,32 @@
+# Commitlint CI (ITM-037 workflow + ITM-038 job). Decided round 7.
+# Validates PR commits against conventional-commits format using
+# wagoid/commitlint-github-action (round-7 choice over manual bunx run).
+
+name: commitlint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: commitlint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  commitlint:
+    name: commitlint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # range scan needs full history
+
+      - name: commitlint
+        uses: wagoid/commitlint-github-action@v6.2.1
+        with:
+          configFile: commitlint.config.mjs
