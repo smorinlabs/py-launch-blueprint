@@ -38,3 +38,5 @@ ignore: |
 
   .github/ISSUE_TEMPLATE/
   .readthedocs.yaml
+
+  .github/workflows/update-contributors.yml

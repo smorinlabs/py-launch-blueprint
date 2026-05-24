@@ -35,22 +35,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        ref: main
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-    - name: Update CONTRIBUTORS.md
-      run: |
-        python scripts/update_contributors.py
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Update CONTRIBUTORS.md
+        run: |
+          python scripts/update_contributors.py
     # Checkout and sync the update-contributors branch first
-    - name: Checkout & sync update-contributors branch
-      run: |
-        git fetch origin || true
+      - name: Checkout & sync update-contributors branch
+        run: |
+          git fetch origin || true
 
         # Check if the 'update-contributors' branch exists on the remote.
         # This avoids errors when trying to check out a branch that doesn't exist.
