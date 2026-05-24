@@ -1,21 +1,5 @@
-# Copyright (c) 2025, Steve Morin
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy of
-# this software and associated documentation files (the "Software"), to deal in
-# the Software without restriction, including without limitation the rights to
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-# the Software, and to permit persons to whom the Software is furnished to do so,
-# subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# CI/CD - per-job split (ITM-024 hardening + ITM-025 lint + ITM-026 ty +
+# ITM-030 matrix). Hygiene tools live in their own workflows (ITM-011/014/017).
 
 name: CI/CD
 
@@ -25,58 +9,76 @@ on:
   pull_request:
     branches: [main]
 
-# ITM-024 - deny-all default; per-job grants its minimum (round 1).
 permissions: {}
 
-# ITM-024 - cancel superseded runs on new push to same ref (round 1).
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: continuous-integration
+  # ITM-025 - lint job (ruff check + format --check). Decided round 3 (option B).
+  lint:
+    name: lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.11"]
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Install uv
         uses: astral-sh/setup-uv@v5
+      - name: Ruff check
+        run: uvx ruff check .
+      - name: Ruff format check
+        run: uvx ruff format --check .
 
-      - uses: actions/setup-python@v5
+  # ITM-026 - typecheck job (ty, per ADR-03). Decided round 3 direct switch.
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: ty check
+        run: uvx ty check py_launch_blueprint/
+
+  # ITM-030 - test matrix: ubuntu + macOS x py3.12/3.13 (decided round 3).
+  test:
+    name: test (${{ matrix.os }} / py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false  # see all failures, not just the first (round-3)
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Sync dev env
+        run: uv sync --group dev  # PEP 735 (ITM-063)
+      - name: Run tests
+        # Default skips slow/live markers (ITM-046 addopts); CI runs everything.
+        run: uv run pytest -m ""
 
-      # Install just
-      - name: Install Just
+  # Taplo (TOML formatter check) kept here for now; ITM-066 will fold into
+  # justfile + add a dedicated workflow if needed.
+  toml-format:
+    name: toml-format-check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Just + Taplo
         uses: extractions/setup-just@v2
-
-      - name: Install development dependencies
-        run: |
-          uv venv .venv
-          uv sync --all-extras --dev
-          echo "$PWD/.venv/bin" >> $GITHUB_PATH
-
-      # Format code
       - name: Install Taplo
         run: just install-taplo
-
-      # Run type checker
-      - name: Run type checker
-        run: uvx mypy py_launch_blueprint/
-
-      # Check linters using ruff
-      - name: Check linters (ruff)
-        run: uvx ruff check py_launch_blueprint/
-
       - name: Check TOML formatting
         run: taplo check '**/*.toml'
-
-      # Lefthook covers pre-commit framework retirement (ITM-020).
-      # Per-job split lands via ITM-025..031.
