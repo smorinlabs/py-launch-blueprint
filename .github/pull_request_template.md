@@ -90,13 +90,15 @@ just test
 ## Checklist
 <!-- Please verify each item by checking the box -->
 - [ ] Branch name follows convention (`feature/description` or `feature/issue-number-description`)
-- [ ] Testing added to pre-commit hook (`pre-commit run --all-files` passes)
+- [ ] Ran `just check` (full quality pipeline; ITM-066) and it passed locally
+- [ ] Commit messages follow Conventional Commits (lowercase subject; commitlint enforces — ITM-039)
+- [ ] CHANGELOG.md entry: **none needed** — release-please will add one on PR merge based on conventional-commit messages (ADR-05; ITM-053)
+- [ ] Lefthook pre-commit + pre-push hooks ran clean (gitleaks / editorconfig-checker / yamllint / codespell / bandit at push)
 - [ ] Testing added to CI/CD pipeline in GitHub Actions
 - [ ] Documentation added/updated in Sphinx
 - [ ] Appropriate unit test coverage added (run `pytest --cov` to verify)
 - [ ] New commands added to CLI (if applicable)
-- [ ] Code follows project style guidelines (`flake8` or equivalent passes)
-- [ ] All tests pass locally and in CI
+- [ ] All tests pass locally (`pytest` for default; `pytest -m ""` for full incl. slow/live) and in CI
 - [ ] Self-review of code performed
 - [ ] No debug print statements or commented-out code left in the codebase
 
