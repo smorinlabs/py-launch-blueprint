@@ -153,6 +153,14 @@ markers = [
 addopts = "-m 'not live and not slow'"
 strict_markers = true
 
+# ITM-015 — codespell. US English baseline (default builtin="clear,rare"); empty
+# ignore list — add terms only when intentional. Decided round 9.
+[tool.codespell]
+skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache"
+ignore-words-list = ""
+check-filenames = true
+check-hidden = false
+
 [tool.mypy]
 # Python version
 python_version = "3.10"
