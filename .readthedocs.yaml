@@ -28,25 +28,29 @@ version: 2
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.10"
+    python: "3.12"
   jobs:
     post_create_environment:
     # Install uv
     - pip install uv
     # Display the uv version
     - uv --version
+    # Sync docs group (PEP 735) — replaces the [project.optional-dependencies]
+    # `extra_requirements: [docs]` path that no longer exists post-ITM-063.
+    - uv sync --group docs
 
 # Build documentation in the docs/source directory with Sphinx
 sphinx:
   configuration: docs/source/conf.py
 
-# Optionally declare the Python requirements required to build your docs
+# Optionally declare the Python requirements required to build your docs.
+# Note: `extra_requirements` reads `[project.optional-dependencies]`; this
+# project migrated to PEP 735 `[dependency-groups]` (ITM-063), so RTD must
+# install docs deps via uv groups rather than pip extras.
 python:
   install:
   - method: pip
     path: .
-    extra_requirements:
-    - docs
 
 formats:
 - pdf

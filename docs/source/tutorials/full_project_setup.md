@@ -6,7 +6,7 @@ This tutorial will guide you through the end-to-end setup of a new project using
 
 Before you begin, ensure you have the following installed on your system:
 
-- Python 3.10 or higher
+- Python 3.12 or higher
 - `uv` package manager
 - `just` task runner
 
