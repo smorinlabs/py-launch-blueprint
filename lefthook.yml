@@ -13,3 +13,11 @@ commit-msg:
   commands:
     commitlint:
       run: bunx --bun commitlint --edit {1}
+
+# Pre-commit stage — per-tool steps land via downstream ITMs.
+pre-commit:
+  parallel: true
+  commands:
+    # ITM-001 — gitleaks staged-diff scan (decided round 2).
+    gitleaks:
+      run: scripts/check-gitleaks.sh --staged
