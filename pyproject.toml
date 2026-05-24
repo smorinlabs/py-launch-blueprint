@@ -157,7 +157,8 @@ strict_markers = true
 # ignore list — add terms only when intentional. Decided round 9.
 [tool.codespell]
 skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache"
-ignore-words-list = ""
+# ignore-words-list intentionally omitted: codespell 2.4.x rejects empty string;
+# round-9 decided empty baseline — add terms only when intentional.
 check-filenames = true
 check-hidden = false
 

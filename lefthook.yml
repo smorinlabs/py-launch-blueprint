@@ -21,6 +21,19 @@ pre-commit:
     # ITM-001 — gitleaks staged-diff scan (decided round 2).
     gitleaks:
       run: scripts/check-gitleaks.sh --staged
+    # ITM-010 — editorconfig-checker staged-only (decided round 9).
+    editorconfig-checker:
+      run: >-
+        bunx --bun editorconfig-checker
+        --config .editorconfig-checker.json
+        {staged_files}
+    # ITM-013 — yamllint staged YAML only (decided round 2).
+    yamllint:
+      glob: "*.{yml,yaml}"
+      run: uvx yamllint -c .yamllint {staged_files}
+    # ITM-016 — codespell staged files (decided round 9).
+    codespell:
+      run: uvx codespell --toml pyproject.toml {staged_files}
 
 # Pre-push stage — per-tool steps land via downstream ITMs.
 pre-push:
