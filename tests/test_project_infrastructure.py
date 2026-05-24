@@ -110,3 +110,18 @@ def test_onboarding_and_secret_files_are_template_safe() -> None:
     assert "just check" in agents
     assert "doxa" not in agents.lower()
     assert re.search(r"\[extend\]\s+useDefault = true", gitleaks)
+
+
+def test_pypirc_template_is_not_whole_file_secret_scan_allowlisted() -> None:
+    gitleaks = read(".gitleaks.toml")
+    pypirc_allowlists = [
+        block
+        for block in gitleaks.split("[[allowlists]]")
+        if "pypirc" in block and "template" in block
+    ]
+
+    assert pypirc_allowlists
+    for block in pypirc_allowlists:
+        assert 'condition = "AND"' in block
+        assert "REPLACE_WITH_PYPI_TOKEN" in block
+        assert "REPLACE_WITH_TESTPYPI_TOKEN" in block

@@ -6,18 +6,21 @@ useDefault = true
 [[allowlists]]
 description = "Repository placeholders and generated documentation examples"
 
-paths = [
-  '''(^|/)analysis/''',
-  '''(^|/)docs/''',
-  '''\.gitleaks\.toml$''',
-  '''\.pypirc\.template$''',
-]
+paths = ['''(^|/)analysis/''', '''(^|/)docs/''', '''\.gitleaks\.toml$''']
 
 regexes = [
   '''REPLACE_WITH_[A-Z0-9_]+''',
   '''YOUR_[A-Z0-9_]+''',
   '''xxxxxxxx+''',
 ]
+
+[[allowlists]]
+description = "Expected PyPI token placeholders in .pypirc.template"
+condition = "AND"
+
+paths = ['''(^|/)\.pypirc\.template$''']
+
+regexes = ['''REPLACE_WITH_PYPI_TOKEN''', '''REPLACE_WITH_TESTPYPI_TOKEN''']
 
 [[allowlists]]
 description = "Test-file placeholder/mock/example tokens"
