@@ -1,31 +1,23 @@
 #!/usr/bin/env bash
 # ITM-021 — lefthook installer.
-# Pins a lefthook release; verifies SHA256 against upstream checksums.txt;
-# installs to ~/.local/bin; runs `lefthook install` to wire .git/hooks/.
-# Idempotent. Decided round 2.
-#
+# Installs via Bun (cross-platform; works on macOS where lefthook v2.x
+# doesn't ship a GitHub-release Darwin tarball). Requires Bun on PATH
+# first — install via scripts/install-bun.sh (ITM-042).
+# Idempotent. Wires git hooks if lefthook.yml is present.
+# Decided round 2; bun-install path resolved during ITM-021 install (lefthook
+# 2.x deprecated GitHub-release Darwin binaries in favor of brew + npm).
 # Review pin every 6 months (round-7 cadence).
 
 set -euo pipefail
 
-LEFTHOOK_VERSION="${LEFTHOOK_VERSION:-1.13.6}"
-INSTALL_DIR="${HOME}/.local/bin"
-BIN="${INSTALL_DIR}/lefthook"
+LEFTHOOK_VERSION="${LEFTHOOK_VERSION:-2.1.8}"
 
-detect_platform() {
-    local os arch
-    os=$(uname -s | tr '[:upper:]' '[:lower:]')
-    arch=$(uname -m)
-    case "${arch}" in
-        x86_64|amd64) arch="amd64" ;;
-        aarch64|arm64) arch="arm64" ;;
-        *) echo "FAIL: unsupported arch ${arch}" >&2; exit 1 ;;
-    esac
-    case "${os}" in
-        darwin|linux) ;;
-        *) echo "FAIL: unsupported OS ${os}" >&2; exit 1 ;;
-    esac
-    echo "${os}_${arch}"
+ensure_bun() {
+    if ! command -v bun >/dev/null 2>&1; then
+        echo "FAIL: bun not on PATH. Install via scripts/install-bun.sh first (ITM-042)." >&2
+        echo "      (lefthook 2.x is distributed via npm/brew; this template installs via bun.)" >&2
+        exit 127
+    fi
 }
 
 install_lefthook() {
@@ -38,42 +30,10 @@ install_lefthook() {
         fi
         echo "INFO: existing lefthook ${existing}; reinstalling pinned ${LEFTHOOK_VERSION}"
     fi
-
-    local platform tar checksums url tmpdir
-    platform=$(detect_platform)
-    tar="lefthook_${LEFTHOOK_VERSION}_${platform/_/_}.tar.gz"
-    # lefthook release filenames use Darwin/Linux capitalised + arch suffix
-    # e.g. lefthook_1.13.6_Darwin_arm64.tar.gz
-    local cap_os cap_arch
-    cap_os=$(uname -s)
-    cap_arch=$(uname -m)
-    case "${cap_arch}" in x86_64|amd64) cap_arch="x86_64" ;; aarch64) cap_arch="arm64" ;; esac
-    tar="lefthook_${LEFTHOOK_VERSION}_${cap_os}_${cap_arch}.tar.gz"
-    checksums="lefthook_${LEFTHOOK_VERSION}_checksums.txt"
-    url="https://github.com/evilmartians/lefthook/releases/download/v${LEFTHOOK_VERSION}"
-
-    tmpdir=$(mktemp -d)
-    trap 'rm -rf "${tmpdir}"' EXIT
-
-    echo "INFO: downloading ${tar}"
-    curl -sSfL "${url}/${tar}" -o "${tmpdir}/${tar}"
-    curl -sSfL "${url}/${checksums}" -o "${tmpdir}/${checksums}"
-
-    echo "INFO: verifying SHA256"
-    (cd "${tmpdir}" && grep " ${tar}\$" "${checksums}" | shasum -a 256 -c -)
-
-    echo "INFO: installing to ${INSTALL_DIR}"
-    mkdir -p "${INSTALL_DIR}"
-    tar -xzf "${tmpdir}/${tar}" -C "${tmpdir}"
-    mv "${tmpdir}/lefthook" "${BIN}"
-    chmod +x "${BIN}"
-
-    if ! echo "${PATH}" | tr ':' '\n' | grep -qx "${INSTALL_DIR}"; then
-        echo "WARN: ${INSTALL_DIR} is not on PATH; add to your shell rc:"
-        echo "      export PATH=\"\${HOME}/.local/bin:\${PATH}\""
-    fi
-
-    echo "PASS: lefthook ${LEFTHOOK_VERSION} installed at ${BIN}"
+    ensure_bun
+    echo "INFO: installing lefthook@${LEFTHOOK_VERSION} via bun"
+    bun install -g "lefthook@${LEFTHOOK_VERSION}"
+    echo "PASS: lefthook installed (verify: lefthook version)"
 }
 
 wire_hooks() {
