@@ -65,11 +65,17 @@ docs = [
 [project.scripts]
 py-projects = "py_launch_blueprint.projects:main"
 
+# ITM-072 — package metadata URLs (round 19).
 [project.urls]
-Homepage = "https://github.com/smorin/py-launch-blueprint"
-Repository = "https://github.com/smorin/py-launch-blueprint"
-Changelog = "https://github.com/smorin/py-launch-blueprint/blob/main/CHANGELOG.md"
-"Bug Tracker" = "https://github.com/smorin/py-launch-blueprint/issues"
+Homepage = "https://github.com/smorinlabs/py-launch-blueprint"
+Repository = "https://github.com/smorinlabs/py-launch-blueprint"
+Documentation = "https://py-launch-blueprint.readthedocs.io/en/latest/"
+Changelog = "https://github.com/smorinlabs/py-launch-blueprint/blob/main/CHANGELOG.md"
+Issues = "https://github.com/smorinlabs/py-launch-blueprint/issues"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs", "setuptools>=64", "setuptools-scm>=8"]
+build-backend = "hatchling.build"
 
 [build-system]
 requires = ["uv_build>=0.11.14,<0.12"]
