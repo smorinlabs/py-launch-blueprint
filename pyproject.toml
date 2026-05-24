@@ -86,11 +86,10 @@ module-name = "py_launch_blueprint"
 module-root = ""
 
 [tool.ruff]
-# Target Python Version
-target-version = "py310"
-
-
-# Line length
+# ITM-018 reconciled config (round-2). Merge: template's stricter rule
+# selection + source's ignore rationale. target-version reflects ITM-033
+# Python-floor bump.
+target-version = "py312"
 line-length = 88
 
 lint.select = [
@@ -107,9 +106,12 @@ lint.select = [
   "S",   # flake8-bandit
 ]
 
-# Ignore specific rules
+# Source's ignore rationale (round-2): line-length handled by formatter;
+# template-applicable subset adopted (B904/B007 omitted — source-specific
+# patterns that don't apply here).
 lint.ignore = [
-  # "E501",  # line length violations
+  "E501",  # line too long (formatter owns this)
+  "W293",  # whitespace on blank line (formatter owns trim_trailing)
 ]
 
 # Allow autofix behavior for specific rules
@@ -132,9 +134,15 @@ max-line-length = 88
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]             # Ignore unused imports in __init__.py files
 "tests/*" = ["S101", "S105", "S106"] # Ignore assert statements in tests
-# S101: This check flags the use of assert statements. The reason is that assert statements are removed when Python code is optimized (run with the -O flag), which can lead to security vulnerabilities if assert is used for security checks.
-# S105: This generally flags hardcoded password strings in code.
-# S106: This generally flags hardcoded password variables in code.
+# S101: assert statements removed under -O — security risk if assert is the only gate.
+# S105/S106: hardcoded password strings/variables in code.
+
+# ITM-018 — explicit format config (round-2; mirrors source). Values match Ruff
+# defaults but being explicit prevents silent drift if defaults change.
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
 
 [tool.codespell]
 skip = ".git,.venv,.mypy_cache,.pytest_cache,.ruff_cache,analysis,build,dist,docs/build,htmlcov,uv.lock,*.egg-info"
