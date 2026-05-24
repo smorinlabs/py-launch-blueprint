@@ -158,9 +158,11 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
 
-[tool.codespell]
-skip = ".git,.venv,.mypy_cache,.pytest_cache,.ruff_cache,analysis,build,dist,docs/build,htmlcov,uv.lock,*.egg-info"
-ignore-words-list = "pyproject,pyright,pyrightconfig,pyperclip,thefuzz,cogapp,smorin,pylance"
+# ITM-027 — bandit config (round 3). Tests legitimately use `assert`
+# (pytest convention) — exclude_dirs covers tests/.
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "build", "dist"]
+skips = []  # No global skips; add with rationale only.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
