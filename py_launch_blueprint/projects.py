@@ -43,7 +43,7 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
 
-from py_launch_blueprint._version import __version__
+from py_launch_blueprint import __version__
 
 # Initialize Rich console for pretty output
 console = Console()

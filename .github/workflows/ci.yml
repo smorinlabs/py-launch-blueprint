@@ -41,8 +41,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
+      - name: Sync dev env (ty needs project deps on the python path)
+        run: uv sync --group dev
       - name: ty check
-        run: uvx ty check py_launch_blueprint/
+        run: uv run ty check py_launch_blueprint/
 
   # ITM-030 - test matrix: ubuntu + macOS x py3.12/3.13 (decided round 3).
   test:
