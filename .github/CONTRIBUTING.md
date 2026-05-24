@@ -2,6 +2,48 @@
 
 Thank you for your interest in contributing to Py Launch Blueprint! We welcome contributions from the community and are excited to see what you can bring to the project.
 
+## Setup
+
+Requires **Python 3.12+** (per ITM-033). Install the toolchain once:
+
+```bash
+# Install tools (idempotent; each script verifies before installing):
+scripts/install-bun.sh          # Bun (commitlint runtime; per ADR-04)
+scripts/install-lefthook.sh     # Lefthook (hook manager; per ADR-01)
+scripts/install-gitleaks.sh     # Gitleaks (secret scanner; per ADR-02)
+
+# Verify everything is on PATH (will land via ITM-022 make hook-check):
+make env-check
+
+# Sync the dev environment:
+uv sync --group dev             # PEP 735 dependency-groups (per ITM-063)
+bun install                     # commitlint deps from package.json
+```
+
+`scripts/install-lefthook.sh` runs `lefthook install` at the end, wiring `.git/hooks/` for this clone.
+
+## Daily workflow
+
+```bash
+just check        # full quality pipeline (ruff, ty, pytest, etc.)
+just test         # tests only (default skips `slow`/`live` markers per ITM-046)
+just lint         # ruff check + format --check
+```
+
+Hooks fire automatically:
+
+- **commit-msg**: commitlint validates conventional-commit format (ITM-040).
+- **pre-commit**: gitleaks staged scan + editorconfig-checker + yamllint + codespell (ITM-001/010/013/016).
+- **pre-push**: gitleaks range scan (ITM-002).
+
+To run a manual secret scan: `scripts/check-gitleaks.sh --staged` or `--range`.
+
+## Releases
+
+This project uses [release-please](https://github.com/googleapis/release-please) for version bumps and `CHANGELOG.md` generation (per ADR-05). Merging a `feat:` or `fix:` commit to `main` opens (or updates) a release PR; merging that PR cuts a `v*` tag, which the `publish.yml` workflow then uploads to TestPyPI then PyPI via OIDC Trusted Publishing (ADR-07).
+
+To disable release-please in a downstream project, rename `.github/workflows/release-please.yml` to `.disabled` and edit `[project] version` manually before tagging.
+
 ## Contributor License Agreement (CLA)
 
 Before we can accept your contributions, you will need to sign a Contributor License Agreement (CLA). This is a legal document in which you state that you are entitled to contribute the code you are submitting and that you grant us the rights to use that contribution.
@@ -76,8 +118,27 @@ This project follows the [Conventional Commits](https://www.conventionalcommits.
 
 ### Commit Message Format
 
-Each commit message should be structured as follows:
+Each commit message follows the [Conventional Commits](https://www.conventionalcommits.org/) format:
 
+```
+<type>(<optional scope>): <subject in lowercase>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`, `docs`, `style`, `test`, `ci`, `build`.
+
+**Examples**:
+
+```
+feat: add csv export to py-projects
+fix(cli): handle empty --fields list gracefully
+chore: bump ruff to 0.7.4
+```
+
+Subject must be lowercase (`subject-case` rule). commitlint will reject other casing at commit time.
 
 ## Getting Help
 
