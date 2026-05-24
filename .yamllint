@@ -35,3 +35,6 @@ ignore: |
   .pytest_cache/
   .mypy_cache/
   .ty_cache/
+
+  .github/ISSUE_TEMPLATE/
+  .readthedocs.yaml
