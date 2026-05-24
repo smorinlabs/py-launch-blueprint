@@ -1,0 +1,75 @@
+# Release-please workflow (ITM-052 + ITM-053 + ITM-054).
+# Opens release PR on push to main; sync-uv-lock keeps uv.lock current.
+# Per ADR-05; default GitHub App token, GITHUB_TOKEN fallback documented.
+
+name: release-please
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false  # never cancel an in-flight release PR
+
+jobs:
+  release-please:
+    name: release-please
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.rp.outputs.release_created }}
+      pr: ${{ steps.rp.outputs.pr }}
+    steps:
+      - name: release-please
+        id: rp
+        uses: googleapis/release-please-action@v4.1.5
+        with:
+          # Prefer App token for downstream-workflow triggering; fall back to
+          # GITHUB_TOKEN if RELEASE_PLEASE_APP_TOKEN secret is not configured.
+          # See CONTRIBUTING.md for App setup.
+          token: ${{ secrets.RELEASE_PLEASE_APP_TOKEN || secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # ITM-054 - sync-uv-lock job. Regenerates uv.lock after release-please bumps
+  # [project] version on the release PR. Contingent on ADR-08 (uv.lock tracked).
+  sync-uv-lock:
+    name: sync-uv-lock
+    needs: release-please
+    if: ${{ needs.release-please.outputs.pr != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout release PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ fromJson(needs.release-please.outputs.pr).headBranchName }}
+          token: ${{ secrets.RELEASE_PLEASE_APP_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Regenerate uv.lock
+        run: uv lock
+
+      - name: Commit if changed
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          if ! git diff --quiet uv.lock; then
+            git add uv.lock
+            git commit -m "chore: sync uv.lock"
+            git push
+          else
+            echo "uv.lock already in sync"
+          fi
