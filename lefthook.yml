@@ -42,3 +42,7 @@ pre-push:
     # ITM-002 — gitleaks range scan (catches bypassed/imported commits).
     gitleaks-range:
       run: scripts/check-gitleaks.sh --range
+    # ITM-032 — bandit (security linting) at pre-push (round-3 decision:
+    # pre-push, not pre-commit, since full-tree scan is too slow per commit).
+    bandit:
+      run: uvx bandit -r py_launch_blueprint/ -c pyproject.toml
