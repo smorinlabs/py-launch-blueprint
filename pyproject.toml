@@ -92,8 +92,11 @@ requires = ["uv_build>=0.5,<1.0"]
 build-backend = "uv_build"
 
 # ITM-074 — uv_build module configuration.
+# Template uses a flat layout (package at repo root, not src/) — must set
+# module-root = "" so uv_build doesn't expect src/py_launch_blueprint/.
 [tool.uv.build-backend]
 module-name = "py_launch_blueprint"
+module-root = ""
 
 [tool.ruff]
 # ITM-018 reconciled config (round-2). Merge: template's stricter rule
