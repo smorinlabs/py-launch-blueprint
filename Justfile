@@ -145,8 +145,8 @@ alias l := lint
 [group('dev')]
 @typecheck:
     echo "Running type checker..."
-    echo "  mypy"
-    uvx --with-editable . mypy {{py_package_name}}/
+    echo "  ty (ITM-026, per ADR-03)"
+    uvx ty check {{py_package_name}}/
 
 alias tc := typecheck
 
@@ -305,27 +305,15 @@ update-contributors:
     git shortlog -sne >> CONTRIBUTORS.md
     echo "✓ Contributors list updated"
 
-# Verify commit messages follow conventional commit format
-[group('pre-commit')]
+# Verify commit messages follow conventional commit format (commitlint per ADR-04).
+[group('hooks')]
 verify-commits start="HEAD~10" end="HEAD":
-    echo "Verifying commit messages..."
-    command -v cog >/dev/null 2>&1 || { echo "{{RED}}Error: Cocogitto (cog) is not installed{{NC}}"; exit 1; }
-    cog verify --from={{start}} --to={{end}} && echo "{{GREEN}}✓{{NC}} All commits follow conventional format" || { echo "{{RED}}✗{{NC}} Some commits do not follow conventional format"; exit 1; }
+    echo "Verifying commit messages with commitlint..."
+    bunx --bun commitlint --from={{start}} --to={{end}}
 
-# Bump version based on conventional commits
-[group('releases')]
-bump type="auto":
-    echo "Bumping version..."
-    command -v cog >/dev/null 2>&1 || { echo "{{RED}}Error: Cocogitto (cog) is not installed{{NC}}"; exit 1; }
-    cog bump {{type}}
-    echo "{{GREEN}}✓{{NC}} Version bumped"
-
-# Create a conventional commit (interactive)
-[group('pre-commit')]
-commit:
-    echo "Creating conventional commit..."
-    command -v cog >/dev/null 2>&1 || { echo "{{RED}}Error: Cocogitto (cog) is not installed{{NC}}"; exit 1; }
-    cog commit
+# Version-bump and create-commit recipes (cog) retired in ITM-044:
+# - release-please opens version-bump PRs automatically (ADR-05).
+# - Use `git commit -m "feat: ..."` directly; commitlint enforces format.
 
 # Install COG (Cocogitto) for changelog and commit management
 [group('install'), group('releases')]
