@@ -108,7 +108,8 @@ hook-check: ## ITM-022 — verify lefthook + downstream hook tools on PATH
 		echo "  scripts/install-lefthook.sh   (lefthook)"; \
 		echo "  scripts/install-gitleaks.sh   (gitleaks)"; \
 		echo "  scripts/install-bun.sh        (bun; required for commitlint)"; \
-		echo "  uvx editorconfig-checker yamllint codespell  (Python tools — try uvx)"; \
+		echo "  uvx yamllint codespell  (Python tools via uv)"; \
+		echo "  bunx --bun editorconfig-checker  (matches lefthook invocation)"; \
 		exit 1; \
 	fi
 

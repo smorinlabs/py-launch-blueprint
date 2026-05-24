@@ -37,12 +37,14 @@ jobs:
           echo "PASS: tag on main"
 
       - name: Verify [project] version matches tag
+        # Uses runner's system python3 (tomllib is stdlib in py3.11+); no uv
+        # dependency needed since uv setup happens in the next step.
         env:
           GIT_TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           TAG_VERSION="${GIT_TAG#v}"
-          PROJECT_VERSION=$(uvx --quiet python -c \
+          PROJECT_VERSION=$(python3 -c \
             "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
           if [ "${TAG_VERSION}" != "${PROJECT_VERSION}" ]; then
             echo "FAIL: tag ${TAG_VERSION} != pyproject ${PROJECT_VERSION}" >&2

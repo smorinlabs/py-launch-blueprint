@@ -12,8 +12,8 @@ scripts/install-bun.sh          # Bun (commitlint runtime; per ADR-04)
 scripts/install-lefthook.sh     # Lefthook (hook manager; per ADR-01)
 scripts/install-gitleaks.sh     # Gitleaks (secret scanner; per ADR-02)
 
-# Verify everything is on PATH (will land via ITM-022 make hook-check):
-make env-check
+# Verify everything is on PATH (ITM-022):
+make hook-check
 
 # Sync the dev environment:
 uv sync --group dev             # PEP 735 dependency-groups (per ITM-063)
