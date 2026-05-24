@@ -1,0 +1,30 @@
+# ITM-027 - bandit security linting CI. Standalone job (decided round 3).
+# Pairs with [tool.bandit] in pyproject.toml.
+
+name: bandit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: bandit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bandit:
+    name: bandit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run bandit
+        run: uvx bandit -r py_launch_blueprint/ -c pyproject.toml
