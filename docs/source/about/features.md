@@ -8,7 +8,7 @@
   - 📝 Type checking with MyPy and Pylance
 
 ### 💪 Production Ready
-- **Python 3.10+ Support**: Leverages modern Python features
+- **Python 3.12+ Support**: Leverages modern Python features
 - **Dependency Management**: Uses `uv` for fast, reliable package management
 - **CI/CD Ready**: Includes GitHub Actions workflows
 - **Comprehensive Testing**: Pre-configured test setup with best practices
