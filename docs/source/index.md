@@ -100,9 +100,9 @@ just run
 
 - **Dependency management with [`uv`](https://docs.astral.sh/uv/)**: Install and manage packages at blazing speed (100x faster than pip/poetry), dramatically reducing environment setup time.
 
-- **Build system with `hatchling`**: Streamline package building with modern Python packaging standards, ensuring compatibility and distribution consistency.
+- **Build system with `uv_build`**: Build wheel and source distributions with uv's build backend and `uv build`.
 
-- **Versioning with `setuptools-scm`**: Automatically derive version numbers from git tags, eliminating manual version tracking and ensuring consistency.
+- **Versioning with explicit project metadata**: Keep release tags aligned with the static version in `pyproject.toml` for predictable package metadata.
 
 - **Copyright license automation**: Automatically add license headers to all files, ensuring legal compliance without manual effort.
 

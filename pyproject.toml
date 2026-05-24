@@ -19,11 +19,12 @@
 
 [project]
 name = "py_launch_blueprint"
-dynamic = ["version"] #make version dynamic
+version = "0.0.1"
 description = "CLI tools for interacting with Py, including project search functionality"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Steve Morin", email = "steve.morin@gmail.com" }]
 dependencies = [
   "click>=8.1.0",
@@ -64,13 +65,19 @@ docs = [
 [project.scripts]
 py-projects = "py_launch_blueprint.projects:main"
 
-[build-system]
-requires = ["hatchling", "hatch-vcs", "setuptools>=64", "setuptools-scm>=8"]
-build-backend = "hatchling.build"
+[project.urls]
+Homepage = "https://github.com/smorin/py-launch-blueprint"
+Repository = "https://github.com/smorin/py-launch-blueprint"
+Changelog = "https://github.com/smorin/py-launch-blueprint/blob/main/CHANGELOG.md"
+"Bug Tracker" = "https://github.com/smorin/py-launch-blueprint/issues"
 
-[tool.setuptools_scm]
-write_to = "py_launch_blueprint/_version.py"
-fallback_version = "0.0.1"
+[build-system]
+requires = ["uv_build>=0.11.14,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "py_launch_blueprint"
+module-root = ""
 
 [tool.ruff]
 # Target Python Version
@@ -123,6 +130,10 @@ max-line-length = 88
 # S105: This generally flags hardcoded password strings in code.
 # S106: This generally flags hardcoded password variables in code.
 
+[tool.codespell]
+skip = ".git,.venv,.mypy_cache,.pytest_cache,.ruff_cache,analysis,build,dist,docs/build,htmlcov,uv.lock,*.egg-info"
+ignore-words-list = "pyproject,pyright,pyrightconfig,pyperclip,thefuzz,cogapp,smorin,pylance"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
@@ -168,16 +179,3 @@ show_column_numbers = true
 [[tool.mypy.overrides]]
 module = ["tests.*"]
 disallow_untyped_defs = false
-
-[tool.hatch]
-version.source = "vcs"
-build.hooks.vcs.version-file = "py_launch_blueprint/_version.py"
-
-[tool.hatch.version.raw-options]
-local_scheme = "no-local-version" # No commit ID or dirty flag
-
-[tool.hatch.build.targets.wheel]
-packages = ["py_launch_blueprint"]
-
-[tool.hatch.build.targets.sdist]
-include = ["py_launch_blueprint", "docs", "pyproject.toml", "README.md"]

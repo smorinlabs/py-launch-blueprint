@@ -80,7 +80,10 @@ body:
   attributes:
     label: Proposed Solution
     description: How should this feature/enhancement work?
-    placeholder: Describe your proposed implementation, if needs research enter TBD (To Be Determined) If long solution, break into sub-tasks after submitting this issue.
+    placeholder: |-
+      Describe your proposed implementation.
+      If it needs research, enter TBD (To Be Determined).
+      If the solution is long, break it into sub-tasks after submitting this issue.
   validations:
     required: true
 

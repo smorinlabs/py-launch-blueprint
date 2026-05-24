@@ -25,11 +25,19 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
-    name: continuous-integration
+    name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11"]
 
@@ -43,7 +51,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    #install just
     - name: Install Just
       uses: extractions/setup-just@v2
 
@@ -51,60 +58,76 @@ jobs:
       run: |
         uv venv .venv
         uv sync --all-extras --dev
-        echo "$PWD/.venv/bin" >> $GITHUB_PATH
+        echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
-    # Format code
-    - name: Install Taplo
-      run: just install-taplo
-
-    # Run type checker
     - name: Run type checker
       run: uvx mypy py_launch_blueprint/
 
-    # Check linters using ruff
-    - name: Check linters (ruff)
+    - name: Check linters with Ruff
       run: uvx ruff check py_launch_blueprint/
 
     - name: Check TOML formatting
+      run: uvx taplo check '**/*.toml'
+
+    - name: Run tests
+      run: uvx --with-editable . pytest
+
+  hygiene:
+    name: Hygiene
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+
+    - name: yamllint
+      run: uvx yamllint -c .yamllint .
+
+    - name: codespell
+      run: uvx codespell .
+
+    - name: editorconfig-checker
+      run: uvx --from editorconfig-checker ec
+
+    - name: Check for large files
       run: |
-        taplo check '**/*.toml'
+        max_kb=500
+        failed=0
+        while IFS= read -r -d '' f; do
+          if [ -f "$f" ]; then
+            size=$(wc -c < "$f" | tr -d ' ')
+            if [ "$size" -gt $((max_kb * 1024)) ]; then
+              echo "::error file=$f::File is too large ($((size / 1024)) KB > ${max_kb} KB)"
+              failed=1
+            fi
+          fi
+        done < <(git ls-files -z)
+        exit "$failed"
 
-    # Run pre-commit checks
-    - name: Run pre-commit checks
-      run: |
-        just pre-commit-setup
-        just pre-commit-run
+  actionlint:
+    name: Actionlint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
 
-      # Upload coverage (if tests are being run)
-      # - name: Upload coverage
-      #   uses: codecov/codecov-action@v4
+    - name: Lint GitHub Actions workflows
+      uses: reviewdog/action-actionlint@v1
+      with:
+        reporter: github-check
+        fail_level: error
 
-      # Only run security checks on pull requests from the main repository
-      # TODO: Waiting on response from support@pyup.io disabled until then
-      # security:
-      #  if: github.event.pull_request.head.repo.full_name == github.repository
-      #  runs-on: ubuntu-latest
-      #  steps:
-      #  - uses: actions/checkout@v4
-      #
-      #  - name: Run Safety CLI to check for vulnerabilities
-      #    uses: pyupio/safety-action@v1
-      #    with:
-      #      api-key: ${{ secrets.SAFETY_API_KEY }}
-      #      args: --detailed-output # To always see detailed output from this action
+  trufflehog:
+    name: TruffleHog Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
 
-      # The publish job is commented out, but here's a reference if you want to re-enable it
-      # publish:
-      #   needs: [test, security]
-      #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      #   runs-on: ubuntu-latest
-      #   steps:
-      #   - uses: actions/checkout@v4
-      #   - name: Build and publish to PyPI
-      #     env:
-      #       TWINE_USERNAME: __token__
-      #       TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-      #     run: |
-      #       uv pip install build twine
-      #       python -m build
-      #       twine upload dist/*
+    - name: Scan for verified or unknown secrets
+      uses: trufflesecurity/trufflehog@v3.95.3
+      with:
+        base: ${{ github.event.pull_request.base.sha || '' }}
+        head: ${{ github.event.pull_request.head.sha || github.sha }}
+        extra_args: --results=verified,unknown

@@ -22,3 +22,4 @@ uv.lock # remove if you want to pin versions.
 
 #secrets
 .env
+.pypirc

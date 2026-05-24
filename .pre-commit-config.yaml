@@ -23,8 +23,12 @@ repos:
   rev: v1.15.0
   hooks:
   - id: mypy
-    additional_dependencies: ["types-requests", "types-PyYAML", "types-python-dateutil", "click>=8.1.3",  # Add click
-      "types-click>=1.1.0"]
+    additional_dependencies:
+    - "types-requests"
+    - "types-PyYAML"
+    - "types-python-dateutil"
+    - "click>=8.1.3"
+    - "types-click>=1.1.0"
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v5.0.0
   hooks:
@@ -55,9 +59,37 @@ repos:
     args: ["-conf", ".yamlfmt"]
 - repo: local
   hooks:
+  - id: yamllint
+    name: Lint YAML files
+    entry: uvx yamllint -c .yamllint .
+    language: system
+    files: "\\.ya?ml$"
+    pass_filenames: false
+  - id: codespell
+    name: Check spelling
+    entry: uvx codespell .
+    language: system
+    pass_filenames: false
+  - id: editorconfig-checker
+    name: Check EditorConfig rules
+    entry: uvx --from editorconfig-checker ec
+    language: system
+    pass_filenames: false
+  - id: gitleaks-staged
+    name: Scan staged changes for secrets
+    entry: bash scripts/check-gitleaks.sh staged
+    language: system
+    pass_filenames: false
+    stages: [pre-commit]
+  - id: gitleaks-full
+    name: Scan pushed commits for secrets
+    entry: bash scripts/check-gitleaks.sh full
+    language: system
+    pass_filenames: false
+    stages: [pre-push]
   - id: taplo-format
     name: Format TOML files
-    entry: taplo format
+    entry: uvx taplo format
     language: system
     files: "\\.toml$"
     args: ["--config", ".taplo.toml"]
@@ -65,7 +97,7 @@ repos:
   hooks:
   - id: pytest
     name: Run pytest
-    entry: pytest
+    entry: uvx --with-editable . pytest
     language: system
     types: [python]
     pass_filenames: false  # Run full test suite

@@ -1,0 +1,25 @@
+extends: default
+
+ignore: |
+  .git/
+  .venv/
+  .mypy_cache/
+  .pytest_cache/
+  .ruff_cache/
+  build/
+  dist/
+  docs/build/
+  node_modules/
+  analysis/
+
+rules:
+  line-length:
+    max: 160
+  indentation:
+    spaces: consistent
+    indent-sequences: whatever
+  truthy:
+    check-keys: false
+  document-start: disable
+  comments:
+    min-spaces-from-content: 1

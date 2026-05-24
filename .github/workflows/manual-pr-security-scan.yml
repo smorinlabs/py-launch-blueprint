@@ -42,6 +42,7 @@ jobs:
         ref: refs/pull/${{ github.event.inputs.pr_number }}/head
 
     - name: Run Safety CLI to check for vulnerabilities
+      id: safety
       uses: pyupio/safety-action@v1
       with:
         api-key: ${{ secrets.SAFETY_API_KEY }}

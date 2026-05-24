@@ -1,0 +1,95 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    cooldown:
+      default-days: 3
+    groups:
+      runtime-stack:
+        applies-to: version-updates
+        patterns:
+          - "click"
+          - "questionary"
+          - "python-dotenv"
+          - "thefuzz"
+          - "python-Levenshtein"
+          - "pyperclip"
+          - "requests"
+          - "rich"
+        update-types:
+          - "minor"
+          - "patch"
+      test-stack:
+        applies-to: version-updates
+        dependency-type: "development"
+        patterns:
+          - "pytest"
+          - "pytest-*"
+        update-types:
+          - "minor"
+          - "patch"
+      dev-tools:
+        applies-to: version-updates
+        dependency-type: "development"
+        patterns:
+          - "mypy"
+          - "ruff"
+          - "pre-commit"
+          - "types-*"
+          - "cogapp"
+        update-types:
+          - "minor"
+          - "patch"
+      docs-stack:
+        applies-to: version-updates
+        dependency-type: "development"
+        patterns:
+          - "sphinx"
+          - "sphinx-*"
+          - "furo"
+          - "myst-parser"
+        update-types:
+          - "minor"
+          - "patch"
+      patch-misc:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    cooldown:
+      default-days: 3
+    groups:
+      actions-core:
+        applies-to: version-updates
+        patterns:
+          - "actions/*"
+          - "github/codeql-action/*"
+        update-types:
+          - "minor"
+          - "patch"
+      vendor-actions:
+        applies-to: version-updates
+        patterns:
+          - "astral-sh/*"
+          - "extractions/*"
+          - "googleapis/*"
+          - "reviewdog/*"
+          - "trufflesecurity/*"
+        update-types:
+          - "minor"
+          - "patch"

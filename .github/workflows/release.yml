@@ -23,9 +23,20 @@ on:
   push:
     tags:
     - 'v*'
+
+permissions: {}
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  publish:
+  build:
+    name: Build distribution
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
     steps:
     - uses: actions/checkout@v4
       with:
@@ -39,20 +50,78 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: Create virtual environment
-      run: uv venv
-
-    - name: Install build tools
-      run: uv pip install hatch build
-
-    - name: Build package
-      run: uv run hatch build
-
-    - name: Verify version matches tag
-      run: |-
-        TAG_VERSION=${GITHUB_REF#refs/tags/v}
-        PY_VERSION=$(uv run python -c "import py_launch_blueprint; print(py_launch_blueprint.__version__)")
-        if [ "$TAG_VERSION" != "$PY_VERSION" ]; then
-          echo "Version mismatch: Tag $TAG_VERSION vs Package $PY_VERSION"
+    - name: Verify tag is on main
+      run: |
+        git fetch origin main
+        if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+          echo "::error::Tag $GITHUB_REF_NAME (commit $GITHUB_SHA) is not reachable from origin/main."
+          echo "Releases must be tagged on commits that have been merged to main."
           exit 1
         fi
+
+    - name: Verify version matches tag
+      run: |
+        TAG_VERSION="${GITHUB_REF_NAME#v}"
+        PY_VERSION="$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")"
+        if [ "$TAG_VERSION" != "$PY_VERSION" ]; then
+          echo "::error::Version mismatch: tag $TAG_VERSION vs package $PY_VERSION"
+          exit 1
+        fi
+
+    - name: Build package
+      run: uv build
+
+    - name: Upload distribution artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: false
+        ignore-empty-workdir: true
+
+    - name: Download distribution artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+    - name: Publish to TestPyPI
+      run: >-
+        uv publish --trusted-publishing always --publish-url https://test.pypi.org/legacy/ --check-url https://test.pypi.org/simple/
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: publish-testpypi
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: false
+        ignore-empty-workdir: true
+
+    - name: Download distribution artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+    - name: Publish to PyPI
+      run: uv publish --trusted-publishing always --check-url https://pypi.org/simple/
