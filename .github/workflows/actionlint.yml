@@ -25,11 +25,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run actionlint
         # ITM-029 round-3 decision: enable shellcheck (GitHub-hosted runners
         # ship shellcheck; no install needed).
-        uses: rhysd/actionlint@v1.7.7
+        uses: rhysd/actionlint@v1.7.12
         with:
           version: "1.7.7"

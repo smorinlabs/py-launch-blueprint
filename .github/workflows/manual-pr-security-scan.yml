@@ -37,7 +37,7 @@ jobs:
     environment: security-review
     steps:
       - name: Checkout PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: refs/pull/${{ github.event.inputs.pr_number }}/head
 
@@ -49,7 +49,7 @@ jobs:
           args: --detailed-output
 
       - name: Update PR Comment with Security Scan Results
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |-
             const safetyOutput = `${{ steps.safety.outputs.cli-output }}`;
