@@ -1,0 +1,107 @@
+# init-integration — L1 + L2 integration tests for all 5 §4.7 modes.
+#
+# L1 (contract): guard skip + init exit codes + marker presence.
+# L2 (outcome): after init runs, the rebranded project actually `uv sync`s,
+#               its own pytest passes, `uv build` produces a wheel, the CLI
+#               command runs, and init-doctor reports clean.
+#
+# Mode 5 (ZIP) has no L2 — init refuses without .git, so there's nothing to
+# verify downstream. The other 4 modes go through the full pipeline.
+#
+# Why this is a separate workflow from blueprint-guard.yml:
+#   * blueprint-guard runs on every push/PR (cheap, ~30-60s); this runs
+#     selectively (~2-3min per mode, ~10-15min total)
+#   * Failures here are about rewrite-engine correctness, not about CI hygiene
+#   * Cron schedule below catches *external* drift (uv/just/bun upgrades)
+#     that wouldn't surface in any PR
+#
+# Cron cadence review trigger:
+#   * If the weekly run is green for 3 months → relax to monthly
+#   * If catching real regressions → keep weekly or tighten
+#   * If flaky (false failures > 1/quarter) → fix the flake, don't relax
+#   * Calendar reminder: review this comment in 2026-08 (3 mo from creation).
+
+name: init-integration
+
+on:
+  pull_request:
+    paths:
+      - 'init/**'
+      - 'Justfile'
+      - 'pyproject.toml'
+      - 'package.json'
+      - 'bun.lock'
+      - 'uv.lock'
+      - '.github/workflows/init-integration.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'init/**'
+      - 'Justfile'
+      - 'pyproject.toml'
+      - 'package.json'
+  schedule:
+    # Mon 09:00 UTC — catches drift in uv/just/bun/PyPI releases over the weekend.
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false  # show all 5 mode failures, not just the first
+      matrix:
+        mode:
+          - template_button
+          - gh_template
+          - clone_reinit
+          - fork
+          - zip
+    name: ${{ matrix.mode }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true  # caches ~/.cache/uv across jobs
+
+      - name: Install just
+        uses: extractions/setup-just@v2
+        with:
+          just-version: '1.51.0'  # pinned — Tier-1 depends on eager :=
+
+      - name: Install bun
+        # Needed by init.py's regenerate_lockfiles() — package.json + bun.lock
+        # both exist in the rebranded project so bun install is invoked.
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run L1 + L2 for mode
+        # MODE passed via env (not interpolated into the run script) to keep
+        # workflow injection-safe even though matrix values are author-trusted.
+        env:
+          MODE: ${{ matrix.mode }}
+        run: bash init/tests/integration/run-mode.sh
+
+  # Aggregator job so branch protection can require a single check
+  # ("integration-ok") instead of all 5 matrix jobs by name.
+  integration-ok:
+    needs: matrix
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All 5 modes passed
+        env:
+          MATRIX_RESULT: ${{ needs.matrix.result }}
+        run: |
+          if [ "$MATRIX_RESULT" != "success" ]; then
+            echo "matrix result: $MATRIX_RESULT"
+            exit 1
+          fi
+          echo "ok"

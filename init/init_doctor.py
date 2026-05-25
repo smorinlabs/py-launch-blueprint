@@ -90,7 +90,18 @@ def check_marker_present() -> Finding:
 
 
 def check_no_identity_leftover() -> Finding:
-    """No blueprint identity value should remain anywhere outside init/."""
+    """No blueprint identity value should remain anywhere outside init/.
+
+    Excludes files declared in the manifest's `[[regenerate]]` list — those
+    are generated artifacts (lockfiles) whose identity content is the
+    responsibility of the generator (uv/bun), not the rewrite engine.
+    """
+    try:
+        manifest = load_manifest()
+        regenerate_paths = {(REPO_ROOT / r.path).resolve() for r in manifest.regenerates}
+    except (FileNotFoundError, OSError):
+        regenerate_paths = set()
+
     leftover: dict[str, list[Path]] = {}
     for value in BLUEPRINT_IDENTITY.values():
         for path in iter_repo_files():
@@ -99,6 +110,8 @@ def check_no_identity_leftover() -> Finding:
                 continue
             except ValueError:
                 pass
+            if path.resolve() in regenerate_paths:
+                continue
             try:
                 if value in path.read_text(encoding="utf-8"):
                     leftover.setdefault(value, []).append(path)
