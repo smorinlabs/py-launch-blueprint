@@ -59,6 +59,20 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 cuts a `v*` tag; `publish.yml` uploads to TestPyPI then PyPI via OIDC
 Trusted Publishing. See [ITM-053..060] for the full chain.
 
+## Creating a new project from this template
+
+When the user wants to bootstrap a new Python project from this template
+(phrases like *"create a new project from py-launch-blueprint"*, *"start a
+new Python project from this template"*, *"scaffold a project from the
+blueprint"*), follow the runbook at [`init/skill/SKILL.md`](init/skill/SKILL.md).
+
+It encodes the full sequence: precondition checks (`gh`/`uv`), identity
+collection, `gh repo create --template` instantiation, `just init` rebrand
+with a dry-run preview, initial commit + push, and an optional handoff to
+`just post-init` for publishing/Codecov/RTD setup. Claude Code auto-triggers
+this skill via the YAML frontmatter in `SKILL.md`; for other agents the
+file is a direct runbook — every step is a copy-pasteable shell block.
+
 ## For generated projects
 
 If you scaffold from this template and your project's command surface
