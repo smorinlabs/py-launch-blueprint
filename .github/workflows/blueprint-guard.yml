@@ -66,6 +66,12 @@ jobs:
       - name: Check 4 — manifest drift
         run: uv run python init/ci/check_manifest_drift.py
 
+      - name: Check 5 — init-integration path filter completeness
+        # If init-integration.yml ever re-introduces a `paths:` filter, this
+        # check ensures it covers every manifest-referenced file. In strict
+        # mode (no paths filter), the check passes trivially.
+        run: uv run init/ci/check_path_filter.py
+
   unit-tests:
     # Runs in parallel with `guard`. Pytest suite under init/tests/ exercises
     # the 5 §4.7 instantiation modes (subprocess against tmp fixtures) plus

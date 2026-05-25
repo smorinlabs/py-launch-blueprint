@@ -8,12 +8,20 @@
 # Mode 5 (ZIP) has no L2 — init refuses without .git, so there's nothing to
 # verify downstream. The other 4 modes go through the full pipeline.
 #
+# STRICT-MODE policy: runs on every PR and every push to main — no `paths:`
+# filter. The integration matrix is the regression gate for the entire init
+# system, and the manifest references 60+ files scattered across the repo
+# (docs/, .github/, configs at root). A path filter would silently exempt
+# PRs that modify those files. See init/ci/check_path_filter.py — it enforces
+# this contract: any future re-introduction of `paths:` must cover every
+# manifest file or CI fails.
+#
 # Why this is a separate workflow from blueprint-guard.yml:
-#   * blueprint-guard runs on every push/PR (cheap, ~30-60s); this runs
-#     selectively (~2-3min per mode, ~10-15min total)
-#   * Failures here are about rewrite-engine correctness, not about CI hygiene
-#   * Cron schedule below catches *external* drift (uv/just/bun upgrades)
-#     that wouldn't surface in any PR
+#   * blueprint-guard runs on every push/PR with sub-minute jobs; this is
+#     the heavyweight (~10-15min) end-to-end runner
+#   * Failures here are about rewrite-engine correctness, not CI hygiene
+#   * Cron schedule also catches *external* drift (uv/just/bun upgrades)
+#     even when no PRs touch init/
 #
 # Cron cadence review trigger:
 #   * If the weekly run is green for 3 months → relax to monthly
@@ -25,21 +33,8 @@ name: init-integration
 
 on:
   pull_request:
-    paths:
-      - 'init/**'
-      - 'Justfile'
-      - 'pyproject.toml'
-      - 'package.json'
-      - 'bun.lock'
-      - 'uv.lock'
-      - '.github/workflows/init-integration.yml'
   push:
     branches: [main]
-    paths:
-      - 'init/**'
-      - 'Justfile'
-      - 'pyproject.toml'
-      - 'package.json'
   schedule:
     # Mon 09:00 UTC — catches drift in uv/just/bun/PyPI releases over the weekend.
     - cron: '0 9 * * 1'
