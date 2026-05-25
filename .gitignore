@@ -29,3 +29,7 @@ node_modules/
 
 # .pypirc.template is tracked (ITM-059); populated .pypirc must never be committed.
 .pypirc
+
+# Blueprint init system — local opt-out sentinel (silences the setup guard for
+# blueprint maintainers/contributors). NEVER committed; per-developer.
+init/.blueprint-contributor

@@ -1,0 +1,67 @@
+# Blueprint guard CI — pins the contract between init/ and downstream projects.
+#
+# This workflow is *blueprint-only*: `check_no_marker.sh` is scoped to the
+# `*/py-launch-blueprint` repo via $GITHUB_REPOSITORY (auto-set by GitHub
+# Actions), and `init --prune` deletes this whole file during migration.
+# Layered defense against either path being missed.
+
+name: blueprint-guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install just
+        uses: extractions/setup-just@v2
+        with:
+          just-version: '1.51.0'  # pin — Tier-1 depends on eager :=
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Check 1 — marker absence (no `init` was run on the blueprint)
+        # $GITHUB_REPOSITORY is auto-set by Actions; check_no_marker.sh reads it.
+        run: bash init/ci/check_no_marker.sh
+
+      - name: Check 2 — guard wiring lint
+        run: uv run python init/ci/check_guard_wiring.py
+
+      - name: Check 3 — Tier-1 regression (banner fires on every recipe)
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp=$(mktemp -d)
+          cp -R Justfile init "$tmp/"
+          cd "$tmp"
+          git init -q
+          git remote add origin git@github.com:fixture/un-migrated.git
+          # --list / --summary must NOT evaluate variables — banner stays silent.
+          just --list >/tmp/stdout 2>/tmp/stderr || true
+          if grep -q "blueprint un-initialized" /tmp/stderr; then
+            echo "FAIL: Tier-1 banner fired on --list (should be silent on introspection)"
+            exit 1
+          fi
+          # A real recipe run MUST trigger the banner (pins eager-evaluation behavior).
+          just debug-info >/tmp/stdout 2>/tmp/stderr || true
+          if ! grep -q "blueprint un-initialized" /tmp/stderr; then
+            echo "FAIL: Tier-1 banner did NOT fire on recipe run"
+            echo "--- stderr ---"
+            cat /tmp/stderr
+            exit 1
+          fi
+          echo "ok: Tier-1 silent on --list; fires on recipe."
+
+      - name: Check 4 — manifest drift
+        run: uv run python init/ci/check_manifest_drift.py
