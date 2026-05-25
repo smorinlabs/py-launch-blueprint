@@ -206,6 +206,13 @@ init *args=args:
 init-doctor *args=args:
     uv run init/init_doctor.py {{args}}
 
+# Post-init walkthrough: configure publishing (PyPI/release-please),
+# Codecov uploads, and ReadTheDocs. Run AFTER `just init` and after the
+# first push to GitHub (or with --skip-remote for local-only changes).
+[group('setup'), group('init')]
+post-init *args=args:
+    uv run init/post_init.py {{args}}
+
 # Build package
 [group('build'), group('dev')]
 @build: _guard check
