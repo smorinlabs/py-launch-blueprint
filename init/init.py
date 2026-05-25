@@ -337,6 +337,22 @@ def main(argv: list[str] | None = None) -> int:
             return 2
 
     print("\n✓ done. Review with `git diff HEAD~1` (or `git status` if not --commit).")
+
+    # ── Auto-chain to post-init (only in interactive mode; CI uses --config and
+    # should drive post-init separately). post_init.py detects remote availability
+    # itself and runs partial-flow when GitHub isn't reachable yet.
+    if not args.config and sys.stdin.isatty():
+        try:
+            do_post = input("\nRun post-init now? (publishing, Codecov, RTD) [y/N] ").strip().lower()
+        except EOFError:
+            do_post = ""
+        if do_post in {"y", "yes"}:
+            post_init_path = Path(__file__).resolve().parent / "post_init.py"
+            subprocess.run(
+                ["uv", "run", "--script", str(post_init_path)],
+                cwd=REPO_ROOT, check=False,
+            )
+
     return 0
 
 
