@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: release-please
         id: rp
-        uses: googleapis/release-please-action@v4.1.5
+        uses: googleapis/release-please-action@v5.0.0
         with:
           # Prefer App token for downstream-workflow triggering; fall back to
           # GITHUB_TOKEN if RELEASE_PLEASE_APP_TOKEN secret is not configured.
@@ -48,13 +48,13 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout release PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ fromJson(needs.release-please.outputs.pr).headBranchName }}
           token: ${{ secrets.RELEASE_PLEASE_APP_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
 
       - name: Regenerate uv.lock
         run: uv lock
