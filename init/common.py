@@ -35,6 +35,18 @@ BLUEPRINT_ORIGIN_OWNER_REPO: tuple[tuple[str, str], ...] = (
     ("smorin", "py-launch-blueprint"),
 )
 
+# The §4.7 instantiation modes. SSOT for Python consumers (conftest.py imports
+# this). The shell runner (init/tests/integration/run-mode.sh) and the CI
+# matrix in .github/workflows/init-integration.yml restate the list for
+# cross-language reasons; a future init/modes.json could collapse those too.
+MODES: tuple[str, ...] = (
+    "template_button",
+    "gh_template",
+    "clone_reinit",
+    "fork",
+    "zip",
+)
+
 _ORIGIN_RE = re.compile(
     r"^(?:https?://github\.com/|git@github\.com:)"
     r"(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$"

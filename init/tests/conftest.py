@@ -35,13 +35,9 @@ _CURATED_DIRS = (
     "init",
 )
 
-MODES = (
-    "template_button",
-    "gh_template",
-    "clone_reinit",
-    "fork",
-    "zip",
-)
+import sys as _sys
+_sys.path.insert(0, str(LIVE_BLUEPRINT / "init"))
+from common import MODES  # noqa: E402 — SSOT; re-exported for legacy imports
 
 
 def _git(*args: str, cwd: Path) -> subprocess.CompletedProcess:
