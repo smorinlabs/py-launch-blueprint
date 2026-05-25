@@ -1,0 +1,48 @@
+# ITM-003 — lefthook scaffolding. Hook manager per ADR-01.
+# Stage blocks are intentionally absent — per-tool ITMs add them:
+#   commit-msg:  ITM-040 (commitlint)
+#   pre-commit:  ITM-001 (gitleaks), ITM-010 (editorconfig-checker),
+#                ITM-013 (yamllint), ITM-016 (codespell), ITM-066 (ruff/ty/uv-export)
+#   pre-push:    ITM-002 (gitleaks range scan), ITM-032 (bandit)
+# See lefthook docs: https://lefthook.dev/configuration/
+
+min_version: 1.13.0  # ITM-021 installer floor
+
+# ITM-040 — commitlint commit-msg step. Decided round 7.
+commit-msg:
+  commands:
+    commitlint:
+      run: bunx --bun commitlint --edit {1}
+
+# Pre-commit stage — per-tool steps land via downstream ITMs.
+pre-commit:
+  parallel: true
+  commands:
+    # ITM-001 — gitleaks staged-diff scan (decided round 2).
+    gitleaks:
+      run: scripts/check-gitleaks.sh --staged
+    # ITM-010 — editorconfig-checker staged-only (decided round 9).
+    editorconfig-checker:
+      run: >-
+        bunx --bun editorconfig-checker
+        --config .editorconfig-checker.json
+        {staged_files}
+    # ITM-013 — yamllint staged YAML only (decided round 2).
+    yamllint:
+      glob: "*.{yml,yaml}"
+      run: uvx yamllint -c .yamllint {staged_files}
+    # ITM-016 — codespell staged files (decided round 9).
+    codespell:
+      run: uvx codespell --toml pyproject.toml {staged_files}
+
+# Pre-push stage — per-tool steps land via downstream ITMs.
+pre-push:
+  parallel: true
+  commands:
+    # ITM-002 — gitleaks range scan (catches bypassed/imported commits).
+    gitleaks-range:
+      run: scripts/check-gitleaks.sh --range
+    # ITM-032 — bandit (security linting) at pre-push (round-3 decision:
+    # pre-push, not pre-commit, since full-tree scan is too slow per commit).
+    bandit:
+      run: uvx bandit -r py_launch_blueprint/ -c pyproject.toml

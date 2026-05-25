@@ -1,4 +1,11 @@
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+<!-- ITM-081 — badges. Single horizontal row (decided round 23). -->
+[![PyPI version](https://img.shields.io/pypi/v/py-launch-blueprint.svg)](https://pypi.org/project/py-launch-blueprint/)
+[![Python versions](https://img.shields.io/pypi/pyversions/py-launch-blueprint.svg)](https://pypi.org/project/py-launch-blueprint/)
+[![CI](https://github.com/smorinlabs/py-launch-blueprint/actions/workflows/ci.yml/badge.svg)](https://github.com/smorinlabs/py-launch-blueprint/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://www.conventionalcommits.org/)
 
 # Py Launch Blueprint: A Production-Ready 🐍 Python Project Template with Integrated Best Practices
  Py Launch Blueprint is a comprehensive Python project template that eliminates setup friction by providing a pre-configured development environment with carefully selected tools for linting, formatting, and type checking. It includes an annotated CLI example and detailed documentation explaining each tool choice and configuration decision, making it an ideal starting point for professional Python projects.
@@ -17,11 +24,30 @@ Py Launch Blueprint eliminates the setup friction in Python projects by providin
 **Zero-config** development environment with **type safety** built in.
 
 ## ✨ Features TLDR
-- 🛠️ **Dev Tools**: Ruff (linting/formatting), MyPy (type checking), Pre-commit hooks
-- 🧠 **AI Ready**: Default configs for Cursor, Windsurf, Claude Code
-- 💪 **Production**: Python 3.10+, uv package manager, testing setup
-- 🚀 **DX - Developer Experience**: VS Code integration, sensible defaults, quality documentation
-- 🔄 **CI/CD**: GitHub Actions workflows, automatic testing, version management
+- 🛠️ **Dev Tools**: Ruff (linting/formatting), `ty` (type checking, Astral), lefthook (hooks), commitlint
+- 🔒 **Security**: gitleaks (commit/push), TruffleHog (CI), bandit (pre-push + CI), CodeQL
+- 🧠 **AI Ready**: AGENTS.md + CLAUDE.md, default configs for Cursor, Windsurf, Claude Code
+- 💪 **Production**: Python 3.12+, uv + uv_build, PEP 735 dependency-groups, static version
+- 🚀 **DX - Developer Experience**: VS Code DevContainer, sensible defaults, quality documentation
+- 🔄 **CI/CD**: GitHub Actions workflows, release-please version bumps, OIDC trusted publishing
+
+## Quick start
+
+```bash
+git clone https://github.com/smorinlabs/py-launch-blueprint.git
+cd py-launch-blueprint
+make hook-check          # verify toolchain (lefthook/gitleaks/bun/uv/...)
+scripts/install-bun.sh
+scripts/install-lefthook.sh
+scripts/install-gitleaks.sh
+uv sync --group dev      # PEP 735 dev tools
+bun install              # commitlint deps
+just check               # full quality pipeline
+```
+
+Install as a tool: `uvx --from py-launch-blueprint py-projects` (uvx needs `--from` because the distribution name differs from the console-script name) or `pip install py-launch-blueprint && py-projects`.
+
+See [AGENTS.md](AGENTS.md) for the canonical command set, [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the daily workflow, and [RELEASE.md](RELEASE.md) for the release flow.
 
 ### 🎯 Perfect For
 Teams and professionals needing maintainable, type-safe Python projects following best practices.

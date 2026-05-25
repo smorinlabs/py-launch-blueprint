@@ -14,7 +14,7 @@ globs:
 
 ### Package Management
 - **UV**: This project uses UV for package management and virtual environment creation
-- Python version: Requires Python 3.10 or higher
+- Python version: Requires Python 3.12 or higher
 
 ### Build System
 - **Hatch**: Used as the build backend with hatchling and hatch-vcs plugins

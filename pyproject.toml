@@ -19,13 +19,26 @@
 
 [project]
 name = "py_launch_blueprint"
-version = "0.0.1"
+# ITM-070 — static version (ADR-06 cutover). release-please bumps this.
+version = "1.0.0"
 description = "CLI tools for interacting with Py, including project search functionality"
 readme = "README.md"
-requires-python = ">=3.10"
-license = "MIT"
-license-files = ["LICENSE"]
+requires-python = ">=3.12"
+license = "MIT"  # PEP 639 license expression (ITM-070, round-19).
 authors = [{ name = "Steve Morin", email = "steve.morin@gmail.com" }]
+classifiers = [
+  # ITM-070 — round-19. py3.12+ only (per ITM-033 floor); MIT classifier
+  # intentionally omitted (PEP 639 license expression above is the single
+  # source of truth — duplication would drift).
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
   "click>=8.1.0",
   "questionary>=2.0.0",
@@ -37,13 +50,15 @@ dependencies = [
   "rich>=13.0.0",
 ]
 
-[project.optional-dependencies]
+# ITM-063 — PEP 735 dependency-groups (round-13 decision). Replaces
+# [project.optional-dependencies] dev+docs. Install via `uv sync --group <name>`.
+[dependency-groups]
 dev = [
   "pytest>=7.0.0",
   "pytest-cov>=4.1.0",
   "mypy>=1.0.0",
+  "ty>=0.0.1a16",  # per ADR-03 (pre-1.0; bump as needed)
   "ruff>=0.1.0",
-  "pre-commit>=4.1.0",
   "types-requests",
   "types-Pygments",
   "cogapp",
@@ -65,26 +80,31 @@ docs = [
 [project.scripts]
 py-projects = "py_launch_blueprint.projects:main"
 
+# ITM-072 — package metadata URLs (round 19).
 [project.urls]
-Homepage = "https://github.com/smorin/py-launch-blueprint"
-Repository = "https://github.com/smorin/py-launch-blueprint"
-Changelog = "https://github.com/smorin/py-launch-blueprint/blob/main/CHANGELOG.md"
-"Bug Tracker" = "https://github.com/smorin/py-launch-blueprint/issues"
+Homepage = "https://github.com/smorinlabs/py-launch-blueprint"
+Repository = "https://github.com/smorinlabs/py-launch-blueprint"
+Documentation = "https://py-launch-blueprint.readthedocs.io/en/latest/"
+Changelog = "https://github.com/smorinlabs/py-launch-blueprint/blob/main/CHANGELOG.md"
+Issues = "https://github.com/smorinlabs/py-launch-blueprint/issues"
 
+# ITM-073 — uv_build (ADR-06 cutover; replaces Hatchling + hatch-vcs).
 [build-system]
-requires = ["uv_build>=0.11.14,<0.12"]
+requires = ["uv_build>=0.5,<1.0"]
 build-backend = "uv_build"
 
+# ITM-074 — uv_build module configuration.
+# Template uses a flat layout (package at repo root, not src/) — must set
+# module-root = "" so uv_build doesn't expect src/py_launch_blueprint/.
 [tool.uv.build-backend]
 module-name = "py_launch_blueprint"
 module-root = ""
 
 [tool.ruff]
-# Target Python Version
-target-version = "py310"
-
-
-# Line length
+# ITM-018 reconciled config (round-2). Merge: template's stricter rule
+# selection + source's ignore rationale. target-version reflects ITM-033
+# Python-floor bump.
+target-version = "py312"
 line-length = 88
 
 lint.select = [
@@ -101,9 +121,12 @@ lint.select = [
   "S",   # flake8-bandit
 ]
 
-# Ignore specific rules
+# Source's ignore rationale (round-2): line-length handled by formatter;
+# template-applicable subset adopted (B904/B007 omitted — source-specific
+# patterns that don't apply here).
 lint.ignore = [
-  # "E501",  # line length violations
+  "E501",  # line too long (formatter owns this)
+  "W293",  # whitespace on blank line (formatter owns trim_trailing)
 ]
 
 # Allow autofix behavior for specific rules
@@ -126,22 +149,48 @@ max-line-length = 88
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]             # Ignore unused imports in __init__.py files
 "tests/*" = ["S101", "S105", "S106"] # Ignore assert statements in tests
-# S101: This check flags the use of assert statements. The reason is that assert statements are removed when Python code is optimized (run with the -O flag), which can lead to security vulnerabilities if assert is used for security checks.
-# S105: This generally flags hardcoded password strings in code.
-# S106: This generally flags hardcoded password variables in code.
+# S101: assert statements removed under -O — security risk if assert is the only gate.
+# S105/S106: hardcoded password strings/variables in code.
 
-[tool.codespell]
-skip = ".git,.venv,.mypy_cache,.pytest_cache,.ruff_cache,analysis,build,dist,docs/build,htmlcov,uv.lock,*.egg-info"
-ignore-words-list = "pyproject,pyright,pyrightconfig,pyperclip,thefuzz,cogapp,smorin,pylance"
+# ITM-018 — explicit format config (round-2; mirrors source). Values match Ruff
+# defaults but being explicit prevents silent drift if defaults change.
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+# ITM-027 — bandit config (round 3). Tests legitimately use `assert`
+# (pytest convention) — exclude_dirs covers tests/.
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "build", "dist"]
+skips = []  # No global skips; add with rationale only.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-# addopts = "-v"
+# Marker taxonomy (ITM-046, round-9 decision).
+# `live` = requires external services; `slow` = takes >1s.
+# Default `addopts` excludes both — run full suite with `pytest -m ""`.
+markers = [
+    "live: requires external services",
+    "slow: takes >1s",
+]
+addopts = "-m 'not live and not slow'"
+strict_markers = true
+
+# ITM-015 — codespell. US English baseline (default builtin="clear,rare"); empty
+# ignore list — add terms only when intentional. Decided round 9.
+[tool.codespell]
+skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache"
+# ignore-words-list intentionally omitted: codespell 2.4.x rejects empty string;
+# round-9 decided empty baseline — add terms only when intentional.
+check-filenames = true
+check-hidden = false
 
 [tool.mypy]
-# Python version
-python_version = "3.10"
+# Python version (ITM-033 — moves to 3.12; mypy block removed entirely
+# once ITM-026 ty switch lands).
+python_version = "3.12"
 
 # Strict mode
 strict = true

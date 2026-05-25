@@ -9,7 +9,7 @@ The CI/CD workflow (`.github/workflows/ci.yaml`) runs on:
 - Pull requests targeting `main`
 
 ### **Jobs**
-- **Test**: Runs tests on Python 3.10 and 3.11
+- **Test**: Runs tests on Python 3.12 and 3.13 (ubuntu + macOS matrix)
   - Sets up environment using `uv` and `actions/setup-python`
   - Installs dependencies: `uv sync --all-extras --dev`
   - Runs MyPy (`uvx mypy`), Ruff (`uvx ruff check`), and pytest (`uvx pytest`)
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
   ```yaml
   strategy:
     matrix:
-      python-version: ["3.10", "3.11", "3.12"]
+      python-version: ["3.12", "3.13"]
   ```
 - **Add security scanning**:
   ```yaml

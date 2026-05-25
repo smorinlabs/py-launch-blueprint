@@ -7,7 +7,7 @@ make check
 
 # Setup Development Environment
 
-Project requires Python 3.10+ (which is also specified inside [.python-version](https://github.com/smorin/py-launch-blueprint/blob/main/.python-version) file)
+Project requires Python 3.12+ (which is also specified inside [.python-version](https://github.com/smorin/py-launch-blueprint/blob/main/.python-version) file)
 There are two options for setting up the development environment:
 
 - Using [uv](https://docs.astral.sh/uv/getting-started/installation/):
@@ -97,5 +97,5 @@ When using this workflow as a template for a new project, update the following:
    Update the Python version to match your project's requirements:
    ```yaml
    with:
-     python-version: "3.11" # Change to your required version
+     python-version: "3.12" # Change to your required version
    ```

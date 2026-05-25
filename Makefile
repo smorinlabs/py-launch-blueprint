@@ -34,7 +34,7 @@ CHECK := $(GREEN)✓$(NC)
 CROSS := $(RED)✗$(NC)
 DASH := $(GRAY)-$(NC)
 
-.PHONY: all check install-uv install-just set-path help install-just-force install-uv-force
+.PHONY: all check hook-check install-uv install-just set-path help install-just-force install-uv-force
 
 all: help
 
@@ -83,6 +83,33 @@ check: ## Check system requirements
 	else \
 		echo ""; \
 		echo -e "$(RED)Found $$ERROR_COUNT missing deps: $${MISSING_DEPS}$(NC)"; \
+		exit 1; \
+	fi
+
+hook-check: ## ITM-022 — verify lefthook + downstream hook tools on PATH
+	@echo "Checking hook toolchain..."
+	@echo "=== Hook Toolchain Status ==="
+	@ERROR_COUNT=0; MISSING=""; \
+	for TOOL in lefthook gitleaks bun uv editorconfig-checker yamllint codespell; do \
+		if command -v $${TOOL} >/dev/null 2>&1; then \
+			printf "[$(CHECK)] %s\n" "$${TOOL}"; \
+		else \
+			printf "[$(CROSS)] %s\n" "$${TOOL}"; \
+			ERROR_COUNT=$$((ERROR_COUNT + 1)); \
+			MISSING="$${MISSING:+$${MISSING} }$${TOOL}"; \
+		fi; \
+	done; \
+	if [ "$${ERROR_COUNT}" = "0" ]; then \
+		echo "$(GREEN)All hook tools are installed!$(NC)"; \
+	else \
+		echo ""; \
+		echo "$(RED)Missing: $${MISSING}$(NC)"; \
+		echo "Install via:"; \
+		echo "  scripts/install-lefthook.sh   (lefthook)"; \
+		echo "  scripts/install-gitleaks.sh   (gitleaks)"; \
+		echo "  scripts/install-bun.sh        (bun; required for commitlint)"; \
+		echo "  uvx yamllint codespell  (Python tools via uv)"; \
+		echo "  bunx --bun editorconfig-checker  (matches lefthook invocation)"; \
 		exit 1; \
 	fi
 

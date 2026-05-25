@@ -1,15 +1,13 @@
-name: py-launch-blueprint-codeql
+# ITM-036 - CodeQL config (minimal baseline; round-5 decision).
+# Establishes the convention; no query-suite or path overrides yet.
+# Expand carefully if/when noise tuning is needed.
 
-queries:
-- uses: security-and-quality
+name: "py-launch-blueprint codeql"
 
-paths:
-- py_launch_blueprint
+# Uncomment to broaden ruleset (round-5 explicitly rejected this for now):
+# queries:
+#   - uses: security-extended
 
-paths-ignore:
-- tests
-- docs
-- analysis
-- build
-- dist
-- "**/*.egg-info"
+# Uncomment to exclude paths (round-5 explicitly rejected this for now):
+# paths-ignore:
+#   - tests/**

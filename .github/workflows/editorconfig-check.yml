@@ -1,0 +1,26 @@
+# ITM-011 - editorconfig-checker CI job. Standalone (decided round 3).
+# Reads .editorconfig-checker.json (ITM-009).
+
+name: editorconfig-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: editorconfig-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  editorconfig-check:
+    name: editorconfig-check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run editorconfig-checker
+        uses: editorconfig-checker/action-editorconfig-checker@v2.1.0

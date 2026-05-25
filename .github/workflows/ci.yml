@@ -1,0 +1,86 @@
+# CI/CD - per-job split (ITM-024 hardening + ITM-025 lint + ITM-026 ty +
+# ITM-030 matrix). Hygiene tools live in their own workflows (ITM-011/014/017).
+
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ITM-025 - lint job (ruff check + format --check). Decided round 3 (option B).
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Ruff check
+        run: uvx ruff check .
+      - name: Ruff format check
+        run: uvx ruff format --check .
+
+  # ITM-026 - typecheck job (ty, per ADR-03). Decided round 3 direct switch.
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Sync dev env (ty needs project deps on the python path)
+        run: uv sync --group dev
+      - name: ty check
+        run: uv run ty check py_launch_blueprint/
+
+  # ITM-030 - test matrix: ubuntu + macOS x py3.12/3.13 (decided round 3).
+  test:
+    name: test (${{ matrix.os }} / py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false  # see all failures, not just the first (round-3)
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Sync dev env
+        run: uv sync --group dev  # PEP 735 (ITM-063)
+      - name: Run tests
+        # Default skips slow/live markers (ITM-046 addopts); CI runs everything.
+        run: uv run pytest -m ""
+
+  # Taplo (TOML formatter check) kept here for now; ITM-066 will fold into
+  # justfile + add a dedicated workflow if needed.
+  toml-format:
+    name: toml-format-check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Just + Taplo
+        uses: extractions/setup-just@v2
+      - name: Install Taplo
+        run: just install-taplo
+      - name: Check TOML formatting
+        run: taplo check '**/*.toml'
