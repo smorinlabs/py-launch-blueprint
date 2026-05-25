@@ -65,3 +65,27 @@ jobs:
 
       - name: Check 4 — manifest drift
         run: uv run python init/ci/check_manifest_drift.py
+
+  unit-tests:
+    # Runs in parallel with `guard`. Pytest suite under init/tests/ exercises
+    # the 5 §4.7 instantiation modes (subprocess against tmp fixtures) plus
+    # the manifest schema and doctor checks. ~5s locally; expect ~30-60s here
+    # once uv has provisioned the PEP-723 script deps (questionary/rich/tomlkit).
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install just
+        # Needed because some fixtures shell out to `just` (Tier-1 banner tests).
+        uses: extractions/setup-just@v2
+        with:
+          just-version: '1.51.0'
+
+      - name: Run init/tests/ (5 §4.7 modes + manifest + doctor)
+        # --override-ini drops the project default `-m 'not slow and not live'`;
+        # init/tests are not marked and need to run unconditionally here.
+        run: uv run pytest init/tests/ --override-ini="addopts=" -v
