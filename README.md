@@ -2,6 +2,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/py-launch-blueprint.svg)](https://pypi.org/project/py-launch-blueprint/)
 [![Python versions](https://img.shields.io/pypi/pyversions/py-launch-blueprint.svg)](https://pypi.org/project/py-launch-blueprint/)
 [![CI](https://github.com/smorinlabs/py-launch-blueprint/actions/workflows/ci.yml/badge.svg)](https://github.com/smorinlabs/py-launch-blueprint/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/smorinlabs/py-launch-blueprint/branch/main/graph/badge.svg)](https://codecov.io/gh/smorinlabs/py-launch-blueprint)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)

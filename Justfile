@@ -157,6 +157,17 @@ alias tc := typecheck
 
 alias t := test
 
+# Run tests with coverage and generate term-missing + HTML + XML reports
+[group('test'), group('dev')]
+@coverage:
+    uv run pytest --cov=py_launch_blueprint --cov-report=term-missing --cov-report=html --cov-report=xml
+    echo "Coverage report at htmlcov/index.html"
+
+# Open the local HTML coverage report (macOS: open / Linux: xdg-open)
+[group('test'), group('dev')]
+@open-coverage-report:
+    if command -v open >/dev/null 2>&1; then open htmlcov/index.html; else xdg-open htmlcov/index.html; fi
+
 # Run all checks
 [group('test'), group('dev'), group('quick start')]
 @check: test lint typecheck check-yaml check-spelling check-editorconfig
