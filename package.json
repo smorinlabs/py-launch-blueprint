@@ -4,7 +4,7 @@
   "private": true,
   "description": "Bun-managed dev tooling for py-launch-blueprint (commitlint only). ITM-041.",
   "devDependencies": {
-    "@commitlint/cli": "^19.5.0",
-    "@commitlint/config-conventional": "^19.5.0"
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1"
   }
 }
