@@ -2,7 +2,7 @@
 
 ## Setup
 
-GitHub Actions automates testing and deployment. The Py Launch Blueprint project includes a pre-configured workflows in [`.github/workflows/`](https://github.com/smorin/py-launch-blueprint/tree/main/.github/workflows).
+GitHub Actions automates testing and deployment. The Py Launch Blueprint project includes a pre-configured workflows in [`.github/workflows/`](https://github.com/smorinlabs/py-launch-blueprint/tree/main/.github/workflows).
 
 ## Workflow Configuration
 

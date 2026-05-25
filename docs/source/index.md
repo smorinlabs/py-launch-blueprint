@@ -10,10 +10,10 @@
 **A Production-Ready Python Project Template with Integrated Best Practices**
 
 ![GitHub repo](https://img.shields.io/badge/github-repo-green)
-![Changelog](https://img.shields.io/github/v/release/smorin/py-launch-blueprint?include_prereleases&label=changelog)
+![Changelog](https://img.shields.io/github/v/release/smorinlabs/py-launch-blueprint?include_prereleases&label=changelog)
 ![Tests](https://github.com/simonw/llm/workflows/Test/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-![GitHub stars](https://img.shields.io/github/stars/smorin/py-launch-blueprint?style=social)
+![GitHub stars](https://img.shields.io/github/stars/smorinlabs/py-launch-blueprint?style=social)
 ![Discord](https://img.shields.io/discord/1364098187375153192?style=flat&logo=discord)
 
 ---
@@ -48,7 +48,7 @@ Teams and professionals needing maintainable, type-safe Python projects followin
 
 ### Step 1 - Copy repository
 ```bash
-git clone https://github.com/smorin/py-launch-blueprint
+git clone https://github.com/smorinlabs/py-launch-blueprint
 cd py-launch-blueprint
 ```
 
@@ -142,7 +142,7 @@ just run
 
 - **Automated dependency security scanning with `codeql`**: Detect vulnerable dependencies automatically, protecting your users from known security issues.
 
-- **CLA (Contributor License Agreement) check `[TODO:LOOKUP ISSUE](https://github.com/smorin/py-launch-blueprint/issues/162)`**: Ensure all contributors have signed appropriate licensing agreements, protecting the project legally.
+- **CLA (Contributor License Agreement) check `[TODO:LOOKUP ISSUE](https://github.com/smorinlabs/py-launch-blueprint/issues/162)`**: Ensure all contributors have signed appropriate licensing agreements, protecting the project legally.
 
 ### IDE Integration
 
@@ -182,7 +182,7 @@ pip install py-launch-blueprint
 #### From Source
 
 ```bash
-git clone https://github.com/smorin/py-launch-blueprint.git
+git clone https://github.com/smorinlabs/py-launch-blueprint.git
 cd py-launch-blueprint
 pip install -e ".[dev]"  # Install with development dependencies
 ```
