@@ -15,7 +15,7 @@ set -euo pipefail
 #
 # If owner/repo is omitted, the script auto-detects via `gh repo view`.
 
-WORKFLOW_FILE=".github/workflows/release.yml"
+WORKFLOW_FILE=".github/workflows/publish.yml"
 ENVIRONMENTS=(testpypi pypi)
 
 cyan() { printf '\033[36m%s\033[0m' "$*"; }
