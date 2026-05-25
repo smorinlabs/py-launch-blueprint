@@ -58,15 +58,15 @@ jobs:
           - zip
     name: ${{ matrix.mode }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true  # caches ~/.cache/uv across jobs
 
       - name: Install just
-        uses: extractions/setup-just@v2
+        uses: extractions/setup-just@v4
         with:
           just-version: '1.51.0'  # pinned — Tier-1 depends on eager :=
 
