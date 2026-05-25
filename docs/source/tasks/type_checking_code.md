@@ -13,7 +13,7 @@ To set up MyPy for your project, follow these steps:
    ```
 
 2. **Configure MyPy**:
-   check in the [`pyproject.toml`](https://github.com/smorin/py-launch-blueprint/blob/main/pyproject.toml) file the [tool.mypy] section
+   check in the [`pyproject.toml`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/pyproject.toml) file the [tool.mypy] section
 
 3. **Run MyPy**:
    To check your code with MyPy, run the following command:
@@ -36,7 +36,7 @@ To set up Pyright for your project, follow these steps:
    ```
 
 2. **Configure Pyright**:
-   check [`pyrightconfig.json`](https://github.com/smorin/py-launch-blueprint/blob/main/pyrightconfig.json) file in the root of the project
+   check [`pyrightconfig.json`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/pyrightconfig.json) file in the root of the project
 3. **Run Pyright**:
    To check your code with Pyright, run the following command:
    ```bash
