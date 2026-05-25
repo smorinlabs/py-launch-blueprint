@@ -69,9 +69,10 @@ class Finding:
 class Report:
     migration: list[Finding] = field(default_factory=list)
     environment: list[Finding] = field(default_factory=list)
+    post_init: list[Finding] = field(default_factory=list)
 
     def exit_code(self) -> int:
-        all_findings = self.migration + self.environment
+        all_findings = self.migration + self.environment + self.post_init
         return 1 if any(f.status == "error" for f in all_findings) else 0
 
 
@@ -286,6 +287,163 @@ def run_environment_checks(fix: bool) -> list[Finding]:
 
 
 # ──────────────────────────────────────────────────────────────
+# Post-init checks (consistency between marker [post_init] section
+# and the actual workflow file locations + ci.yml gate state)
+# ──────────────────────────────────────────────────────────────
+
+POST_INIT_WORKFLOWS = (
+    # (workflow filename, marker dotted-key, "enabled" expectation)
+    ("publish.yml", "publishing.pypi"),
+    ("release-please.yml", "publishing.release_please"),
+)
+_CODECOV_GATE_MARKER = "# post-init: codecov-gated"
+
+
+def _read_post_init_section() -> dict | None:
+    if not MARKER_PATH.exists():
+        return None
+    try:
+        raw = tomllib.loads(MARKER_PATH.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError:
+        return None
+    return raw.get("post_init")
+
+
+def _dotted_get(d: dict, path: str) -> str | None:
+    cur: object = d
+    for part in path.split("."):
+        if not isinstance(cur, dict) or part not in cur:
+            return None
+        cur = cur[part]
+    return cur if isinstance(cur, str) else None
+
+
+def check_post_init_marker_present() -> Finding:
+    pi = _read_post_init_section()
+    if pi is None:
+        return Finding(
+            "post_init/marker",
+            "warn",
+            "marker has no [post_init] section — run `just post-init` to configure publishing/Codecov/RTD",
+        )
+    date = pi.get("date", "unknown")
+    mode = pi.get("mode", "unknown")
+    return Finding("post_init/marker", "pass", f"present (date={date}, mode={mode})")
+
+
+def check_post_init_workflows_match_state() -> list[Finding]:
+    """For each tracked workflow, the file's location must match marker state."""
+    pi = _read_post_init_section()
+    if pi is None:
+        return []  # nothing to check yet
+    findings: list[Finding] = []
+    workflows_dir = REPO_ROOT / ".github" / "workflows"
+    disabled_dir = REPO_ROOT / ".github" / "workflows.disabled"
+    for wf_name, key in POST_INIT_WORKFLOWS:
+        state = _dotted_get(pi, key)
+        in_active = (workflows_dir / wf_name).exists()
+        in_disabled = (disabled_dir / wf_name).exists()
+        check_name = f"post_init/{key}"
+        if state == "enabled":
+            if in_active and not in_disabled:
+                findings.append(Finding(check_name, "pass", f"{wf_name} active (as marker says)"))
+            elif in_disabled and not in_active:
+                findings.append(Finding(
+                    check_name, "error",
+                    f"marker says enabled but {wf_name} is in workflows.disabled/ — "
+                    f"run `just post-init` to reconcile",
+                ))
+            elif not in_active and not in_disabled:
+                findings.append(Finding(
+                    check_name, "error",
+                    f"marker says enabled but {wf_name} not found anywhere",
+                ))
+            else:  # both — impossible-but-defensive
+                findings.append(Finding(
+                    check_name, "error",
+                    f"{wf_name} exists in BOTH workflows/ and workflows.disabled/",
+                ))
+        elif state == "disabled":
+            if in_disabled and not in_active:
+                findings.append(Finding(check_name, "pass", f"{wf_name} disabled (as marker says)"))
+            elif in_active and not in_disabled:
+                findings.append(Finding(
+                    check_name, "error",
+                    f"marker says disabled but {wf_name} is in workflows/ — "
+                    f"run `just post-init` to reconcile",
+                ))
+            elif not in_active and not in_disabled:
+                findings.append(Finding(
+                    check_name, "warn",
+                    f"marker says disabled and {wf_name} not found anywhere (may have been deleted)",
+                ))
+            else:
+                findings.append(Finding(
+                    check_name, "error",
+                    f"{wf_name} exists in BOTH workflows/ and workflows.disabled/",
+                ))
+        # state == "deferred" or None — no expectation
+    return findings
+
+
+def check_post_init_codecov_gate() -> Finding:
+    """If marker says codecov is enabled/disabled, ci.yml must carry the gate marker."""
+    pi = _read_post_init_section()
+    if pi is None:
+        return Finding("post_init/codecov-gate", "pass", "n/a — post-init not run")
+    codecov_status = pi.get("codecov", {}).get("status")
+    if codecov_status in (None, "deferred"):
+        return Finding(
+            "post_init/codecov-gate", "pass",
+            f"n/a — codecov status={codecov_status or 'unset'}",
+        )
+    ci_yml = REPO_ROOT / ".github" / "workflows" / "ci.yml"
+    if not ci_yml.exists():
+        return Finding("post_init/codecov-gate", "warn", "ci.yml not found")
+    has_marker = _CODECOV_GATE_MARKER in ci_yml.read_text(encoding="utf-8")
+    if has_marker:
+        return Finding("post_init/codecov-gate", "pass", "ci.yml carries the codecov-gated marker")
+    return Finding(
+        "post_init/codecov-gate", "error",
+        f"marker says codecov={codecov_status} but ci.yml lacks the gate edit — "
+        f"run `just post-init` to apply",
+    )
+
+
+def check_post_init_oidc_freshness() -> Finding:
+    """Informational: surface OIDC verification timestamps if recorded."""
+    pi = _read_post_init_section()
+    if pi is None:
+        return Finding("post_init/oidc", "pass", "n/a")
+    oidc = pi.get("oidc", {})
+    pypi_ts = oidc.get("pypi_trust_verified_at")
+    testpypi_ts = oidc.get("testpypi_trust_verified_at")
+    parts = []
+    if pypi_ts:
+        parts.append(f"pypi@{pypi_ts}")
+    if testpypi_ts:
+        parts.append(f"testpypi@{testpypi_ts}")
+    if not parts:
+        publishing = pi.get("publishing", {})
+        if publishing.get("pypi") == "enabled":
+            return Finding(
+                "post_init/oidc", "warn",
+                "publishing enabled but no OIDC verification recorded — "
+                "re-run `just post-init` after your first release",
+            )
+        return Finding("post_init/oidc", "pass", "n/a — publishing not enabled")
+    return Finding("post_init/oidc", "pass", "verified " + ", ".join(parts))
+
+
+def run_post_init_checks() -> list[Finding]:
+    findings: list[Finding] = [check_post_init_marker_present()]
+    findings.extend(check_post_init_workflows_match_state())
+    findings.append(check_post_init_codecov_gate())
+    findings.append(check_post_init_oidc_freshness())
+    return findings
+
+
+# ──────────────────────────────────────────────────────────────
 # CLI
 # ──────────────────────────────────────────────────────────────
 
@@ -294,6 +452,9 @@ def render_report(report: Report, use_color: bool = True) -> str:
     if report.migration:
         lines.append("\nMigration checks:")
         lines.extend(f.render(use_color) for f in report.migration)
+    if report.post_init:
+        lines.append("\nPost-init checks:")
+        lines.extend(f.render(use_color) for f in report.post_init)
     if report.environment:
         lines.append("\nEnvironment checks:")
         lines.extend(f.render(use_color) for f in report.environment)
@@ -304,13 +465,16 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--fix", action="store_true")
     parser.add_argument("--json", action="store_true")
-    parser.add_argument("--skip", choices=["env", "mig"], default=None)
+    parser.add_argument("--skip", choices=["env", "mig", "pi"], default=None,
+                        help="skip a check class: env (environment), mig (migration), pi (post-init)")
     args = parser.parse_args(argv)
 
     report = Report()
     try:
         if args.skip != "mig":
             report.migration = run_migration_checks()
+        if args.skip != "pi":
+            report.post_init = run_post_init_checks()
         if args.skip != "env":
             report.environment = run_environment_checks(fix=args.fix)
     except Exception as e:
@@ -320,6 +484,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         out = {
             "migration": [asdict(f) for f in report.migration],
+            "post_init": [asdict(f) for f in report.post_init],
             "environment": [asdict(f) for f in report.environment],
             "exit_code": report.exit_code(),
         }
