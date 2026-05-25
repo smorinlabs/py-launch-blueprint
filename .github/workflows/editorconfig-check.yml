@@ -21,6 +21,6 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run editorconfig-checker
         uses: editorconfig-checker/action-editorconfig-checker@v2.1.0

@@ -48,7 +48,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout release PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ fromJson(needs.release-please.outputs.pr).headBranchName }}
           token: ${{ secrets.RELEASE_PLEASE_APP_TOKEN || secrets.GITHUB_TOKEN }}
