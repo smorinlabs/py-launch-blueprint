@@ -1,0 +1,215 @@
+"""Shared utilities for init/, init_doctor/, and CI checks.
+
+Holds the single source of truth for blueprint identity values, the migration-manifest
+schema, and answer validation. Imported by init.py, init_doctor.py, the CI scripts in
+init/ci/, and the test suite.
+
+No third-party imports — runs under stdlib so the doctor's `check no-blueprint-leak`
+path stays usable on a bare clone before `uv sync`.
+"""
+
+from __future__ import annotations
+
+import re
+import tomllib
+from dataclasses import dataclass, field
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+INIT_DIR = Path(__file__).resolve().parent
+MARKER_PATH = INIT_DIR / ".blueprint-initialized"
+CONTRIBUTOR_SENTINEL_PATH = INIT_DIR / ".blueprint-contributor"
+MANIFEST_PATH = INIT_DIR / "manifest.toml"
+
+BLUEPRINT_IDENTITY: dict[str, str] = {
+    "package_name": "py_launch_blueprint",
+    "repo_name": "py-launch-blueprint",
+    "command_name": "py-projects",
+    "author": "Steve Morin",
+    "email": "steve.morin@gmail.com",
+    "owner": "smorinlabs",
+}
+
+BLUEPRINT_ORIGIN_OWNER_REPO: tuple[tuple[str, str], ...] = (
+    ("smorinlabs", "py-launch-blueprint"),
+    ("smorin", "py-launch-blueprint"),
+)
+
+_ORIGIN_RE = re.compile(
+    r"^(?:https?://github\.com/|git@github\.com:)"
+    r"(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$"
+)
+
+
+def parse_origin(url: str) -> tuple[str, str] | None:
+    """Normalize an origin URL to (owner, repo) or None on no match.
+
+    Handles HTTPS + SSH forms, with or without trailing `.git`.
+    """
+    m = _ORIGIN_RE.match(url.strip())
+    return (m["owner"], m["repo"]) if m else None
+
+
+def origin_matches_blueprint(url: str) -> bool:
+    parsed = parse_origin(url)
+    return parsed in BLUEPRINT_ORIGIN_OWNER_REPO if parsed else False
+
+
+PYTHON_IDENTIFIER_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+REPO_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+COMMAND_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+GITHUB_OWNER_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,38}$", re.IGNORECASE)
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+class ValidationError(ValueError):
+    """Raised when a user-supplied answer fails its validator."""
+
+
+def validate_package_name(name: str) -> str:
+    if not PYTHON_IDENTIFIER_RE.fullmatch(name):
+        raise ValidationError(
+            f"package name must be a valid lowercase Python identifier "
+            f"(matching {PYTHON_IDENTIFIER_RE.pattern}): {name!r}"
+        )
+    return name
+
+
+def validate_repo_name(name: str) -> str:
+    if not REPO_NAME_RE.fullmatch(name):
+        raise ValidationError(
+            f"repo name must be lowercase alphanumeric + hyphens "
+            f"(matching {REPO_NAME_RE.pattern}): {name!r}"
+        )
+    return name
+
+
+def validate_command_name(name: str) -> str:
+    if not COMMAND_NAME_RE.fullmatch(name):
+        raise ValidationError(
+            f"CLI command name must be lowercase alphanumeric + hyphens "
+            f"(matching {COMMAND_NAME_RE.pattern}): {name!r}"
+        )
+    return name
+
+
+def validate_owner(name: str) -> str:
+    if not GITHUB_OWNER_RE.fullmatch(name):
+        raise ValidationError(
+            f"GitHub owner must be 1-39 chars, alphanumeric + hyphens, "
+            f"not starting/ending with hyphen: {name!r}"
+        )
+    return name
+
+
+def validate_email(value: str) -> str:
+    if not EMAIL_RE.fullmatch(value):
+        raise ValidationError(f"email must look like local@domain.tld: {value!r}")
+    return value
+
+
+VALIDATORS = {
+    "package_name": validate_package_name,
+    "repo_name": validate_repo_name,
+    "command_name": validate_command_name,
+    "owner": validate_owner,
+    "email": validate_email,
+}
+
+
+@dataclass(frozen=True)
+class ReplaceOp:
+    """One field's replacement scope under one rewrite mode.
+
+    The spec writes `mode` as a block-level property; real files split (TOML wants
+    structured edits, prose wants text), so the same field appears in multiple blocks
+    when its files span both modes — one block per (field, mode).
+    """
+
+    field: str
+    current: tuple[str, ...]
+    files: tuple[str, ...]
+    mode: str  # "structured" | "text"
+
+
+@dataclass(frozen=True)
+class RenameOp:
+    src: str  # may contain {package_name} / {repo_name} templates
+    dst: str
+
+
+@dataclass(frozen=True)
+class RemoveOp:
+    path: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class RegenerateOp:
+    """A file whose content embeds identity but must be regenerated, not edited.
+
+    Lockfiles (`uv.lock`, `bun.lock`) — `init` invokes the regenerator after replaces
+    and renames complete.
+    """
+
+    path: str
+    command: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class Manifest:
+    replaces: tuple[ReplaceOp, ...] = field(default_factory=tuple)
+    renames: tuple[RenameOp, ...] = field(default_factory=tuple)
+    removes: tuple[RemoveOp, ...] = field(default_factory=tuple)
+    regenerates: tuple[RegenerateOp, ...] = field(default_factory=tuple)
+
+
+def load_manifest(path: Path = MANIFEST_PATH) -> Manifest:
+    raw = tomllib.loads(path.read_text(encoding="utf-8"))
+    return Manifest(
+        replaces=tuple(
+            ReplaceOp(
+                field=r["field"],
+                current=tuple(r.get("current", ())),
+                files=tuple(r.get("files", ())),
+                mode=r.get("mode", "text"),
+            )
+            for r in raw.get("replace", [])
+        ),
+        renames=tuple(
+            RenameOp(src=r["from"], dst=r["to"]) for r in raw.get("rename", [])
+        ),
+        removes=tuple(
+            RemoveOp(path=r["path"], reason=r.get("reason", ""))
+            for r in raw.get("remove", [])
+        ),
+        regenerates=tuple(
+            RegenerateOp(path=r["path"], command=tuple(r["command"]))
+            for r in raw.get("regenerate", [])
+        ),
+    )
+
+
+DEFAULT_EXCLUDE_DIRS = frozenset(
+    {".git", "node_modules", ".venv", "dist", "build", "__pycache__", ".pytest_cache"}
+)
+
+
+def is_excluded(path: Path, root: Path = REPO_ROOT) -> bool:
+    try:
+        parts = path.relative_to(root).parts
+    except ValueError:
+        return True
+    return any(p in DEFAULT_EXCLUDE_DIRS for p in parts)
+
+
+def iter_repo_files(root: Path = REPO_ROOT) -> list[Path]:
+    """All non-excluded files under `root`, sorted for deterministic output."""
+    out: list[Path] = []
+    for p in root.rglob("*"):
+        if not p.is_file():
+            continue
+        if is_excluded(p, root):
+            continue
+        out.append(p)
+    return sorted(out)
