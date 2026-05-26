@@ -22,9 +22,29 @@
 import re
 import subprocess
 
+# Identities excluded from CONTRIBUTORS.md.
+# Bots usually follow the GitHub `[bot]` naming convention; one-off bots
+# (e.g. Claude Code's default committer) get explicit entries below.
+BOT_NAME_PATTERN = re.compile(r"\[bot\]$", re.IGNORECASE)
+EXCLUDED_NAMES: set[str] = {
+    "Claude",  # claude.ai / Claude Code default committer name
+}
+EXCLUDED_EMAILS: set[str] = {
+    "noreply@anthropic.com",  # backstop in case the name varies
+}
+
+
+def is_bot(name: str, email: str) -> bool:
+    """True if this author identity should be excluded from CONTRIBUTORS.md."""
+    if BOT_NAME_PATTERN.search(name):
+        return True
+    if name in EXCLUDED_NAMES or email in EXCLUDED_EMAILS:
+        return True
+    return False
+
 
 def get_contributors() -> list[str]:
-    """Get a list of contributors from git log"""
+    """Get a list of contributors from git log, excluding known bot identities."""
     # Using appropriate git command based on platform
     git_cmd = "git"  # Default command
     result = subprocess.run(
@@ -34,11 +54,19 @@ def get_contributors() -> list[str]:
         check=True,
     )
 
-    # Get unique contributors
+    # Get unique contributors, filtering out bots.
     contributors: set[str] = set()
-    for line in result.stdout.strip().split("\n"):
-        if line.strip():
-            contributors.add(line.strip())
+    for raw_line in result.stdout.strip().split("\n"):
+        line = raw_line.strip()
+        if not line:
+            continue
+        # Parse "Name <email>" — name may contain spaces; email is everything
+        # inside the final <...>.
+        name, _, rest = line.partition(" <")
+        email = rest.rstrip(">")
+        if is_bot(name, email):
+            continue
+        contributors.add(line)
 
     # Sort contributors alphabetically
     return sorted(contributors)
