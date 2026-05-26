@@ -1,27 +1,28 @@
 ---
 name: new-python-project
 description: |
-  CRITICAL: use this skill whenever the user wants to create, start, scaffold,
-  bootstrap, or "make" a new Python project that uses the py-launch-blueprint
-  template — this is a MULTI-STEP task that LOOKS simple but has 8+ hidden
-  requirements you will get wrong without this skill. Trigger on terse commands
-  ("create a new python project from py-launch-blueprint named X"), verbose
-  commands ("I want to build a CLI for parsing X using the launch blueprint,
-  name it Y"), and indirect references ("scaffold a project from this template",
-  "use the blueprint to start a new project"). DO NOT attempt to run
-  `gh repo create --template`, `git clone`, or `just init` directly — those
-  commands ARE in this skill but only work in the right order with the right
-  preconditions. Manual attempts hit specific failures: forgetting `gh auth
-  login` (cryptic auth error), invalid package_name (Python rejects it during
-  `uv build`), running init inside an existing project (corrupts a different
-  project's marker), skipping the answers.toml schema (init refuses with
-  --config error), forgetting to push before `just post-init` (post-init runs
-  in partial-no-remote mode without explanation), missing the
-  marker-already-exists check (silently overwrites a real project's identity).
-  This skill encodes the right sequence, validates every identity field at
-  collection time, runs init with a dry-run preview before applying, and
-  prompts about the post-init handoff for publishing/Codecov/RTD. USE THIS
-  SKILL — DO NOT improvise the bootstrap.
+  Use this skill WHENEVER the user wants to create a new repo, project,
+  package, CLI, script, or UV project that involves Python. Trigger on
+  phrasings that include the word "repo" (e.g., "create a Python repo",
+  "make a new repo for this CLI", "spin up a fresh python repo", "new
+  GitHub repo for a Python tool"), the word "project" (e.g., "create a new
+  Python project", "start a fresh Python project"), or the words "CLI" /
+  "package" / "script" (e.g., "create a Python CLI", "scaffold a Python
+  package"). This skill is the project's bootstrap workflow — it uses
+  `gh repo create --template` against py-launch-blueprint, then `just init`
+  to rebrand, then prompts about post-init. The skill ASKS THE USER FIRST
+  whether they want this opinionated bootstrap or prefer a minimal setup,
+  so it's safe to over-trigger — if the user declines, the skill exits
+  cleanly. ALWAYS prefer this skill over running `gh repo create` or
+  `uv init` manually for ANY Python repo/project creation intent. Common
+  triggers: "create a new Python repo", "make a repo for this Python CLI",
+  "scaffold a Python project", "start a new Python project", "I want a
+  fresh Python repo", "spin up a python repo for X", "create a UV project".
+  When confirmed, handles: precondition checks (gh, uv), identity
+  collection (repo name, owner, package, CLI command, author/email,
+  visibility), `gh repo create --template` from py-launch-blueprint,
+  `just init` rebrand with dry-run preview, initial commit + push,
+  optional post-init for publishing/Codecov/RTD.
 ---
 
 # new-python-project
@@ -57,6 +58,43 @@ territory, not this skill.
 Follow these steps in order. At each step the goal is *user clarity*, not
 mechanical execution — explain what's about to happen, especially before
 anything that creates resources on GitHub or writes to disk.
+
+### Step 0 — Confirm the user wants this template (filter step)
+
+This skill triggers broadly on any Python project creation intent. Before
+doing ANY other work, ask the user whether they want this opinionated
+bootstrap. The skill is safe to enter on a wide net of phrasings BECAUSE
+it asks before acting — that's the whole filter-after-trigger contract.
+
+Ask exactly one question, with this shape (adapt phrasing to the
+conversation; do not invent extra options):
+
+> "I can bootstrap this as a full **py-launch-blueprint** project — uv,
+> ruff, lefthook, CI workflows, release-please, OIDC publishing, the whole
+> production-quality setup. Or set it up minimally (just `uv init`, no
+> opinions). The template adds significant tooling; great for projects
+> you'll maintain long-term, overkill for quick throwaway scripts.
+>
+> **Use the py-launch-blueprint template?** [Y/n]"
+
+- **If yes** → continue to Step 1 (preconditions). The user opted in;
+  proceed through the rest of the runbook.
+- **If no** → stop this skill cleanly. Confirm: "Got it — I'll set this
+  up without the template." Then proceed with whatever simpler approach
+  fits (a plain `uv init`, a single script, etc.). Do NOT continue with
+  the runbook; the user explicitly declined.
+- **If unclear or the user asks for more info** → describe what's in the
+  template at one level of detail more than the prompt: "It scaffolds the
+  whole repo with uv dependency management, ruff lint+format, lefthook
+  git hooks, a Justfile with `just check` / `just test` etc., GitHub
+  Actions workflows (CI, security scans, dependency review, codecov),
+  release-please for automated version PRs, and OIDC publishing to PyPI.
+  All optional via post-init." Then re-ask the Y/n question.
+
+This step is **never skipped**, even when the user's initial prompt
+explicitly mentions py-launch-blueprint. The confirmation is cheap (one
+question, one keypress) and the cost of bootstrapping the wrong way is
+high (a half-rebranded project the user has to manually fix).
 
 ### Step 1 — Preconditions
 
