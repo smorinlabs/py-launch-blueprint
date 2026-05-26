@@ -21,7 +21,7 @@ contributor="${guard_dir}/.blueprint-contributor"
 blueprint_owner_repos="smorinlabs/py-launch-blueprint smorin/py-launch-blueprint"
 
 parse_origin() {
-    # Echoes "owner/repo" with trailing .git stripped; empty if no origin or unparseable.
+    # Echoes "owner/repo" with trailing .git stripped; empty if no origin or unparsable.
     url="$(git -C "${guard_dir}/.." remote get-url origin 2>/dev/null)" || return 0
     [ -n "$url" ] || return 0
     printf '%s' "$url" \

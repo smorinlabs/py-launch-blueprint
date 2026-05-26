@@ -16,7 +16,6 @@ sys.path.insert(0, str(INIT_DIR))
 
 import init_doctor  # noqa: E402
 
-
 _BASE_MARKER_NO_POSTINIT = """\
 [meta]
 version = "0.1.0"

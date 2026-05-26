@@ -11,12 +11,10 @@ import sys
 import tomllib
 from pathlib import Path
 
-import pytest
-
 INIT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(INIT_DIR))
 
-from _engine import Answers, _resolve_renames, _replacement_map  # noqa: E402
+from _engine import Answers, _replacement_map, _resolve_renames  # noqa: E402
 from common import (  # noqa: E402
     BLUEPRINT_IDENTITY,
     MANIFEST_PATH,

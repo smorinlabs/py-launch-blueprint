@@ -11,8 +11,8 @@
 field   = "author"
 current = ["Steve Morin"]
 files   = [
-  ".taplo.toml",   # 1×
-  "pyproject.toml",   # 2×
+  ".taplo.toml",   # 1x
+  "pyproject.toml",   # 2x
 ]
 mode    = "structured"
 
@@ -21,26 +21,26 @@ mode    = "structured"
 field   = "author"
 current = ["Steve Morin"]
 files   = [
-  ".github/FUNDING.yml",   # 1×
-  ".github/ISSUE_TEMPLATE/01-feature-request.yml",   # 1×
-  ".github/ISSUE_TEMPLATE/02-documentation-request.yml",   # 1×
-  ".github/ISSUE_TEMPLATE/03-bug-report.yml",   # 1×
-  ".github/ISSUE_TEMPLATE/config.yml",   # 1×
-  ".github/workflows/dependency-review.yml",   # 1×
-  ".github/workflows/manual-pr-security-scan.yml",   # 1×
-  ".github/workflows/update-contributors.yml",   # 1×
-  ".readthedocs.yaml",   # 1×
-  "CONTRIBUTORS.md",   # 1×
-  "LICENSE",   # 1×
-  "docs/source/_templates/base.html",   # 1×
-  "docs/source/conf.py",   # 2×
-  "py_launch_blueprint/__init__.py",   # 1×
-  "py_launch_blueprint/projects.py",   # 1×
-  "scripts/update_contributors.py",   # 1×
-  "tests/__init__.py",   # 1×
-  "tests/test_api.py",   # 1×
-  "tests/test_cli.py",   # 1×
-  "tests/test_config.py",   # 1×
+  ".github/FUNDING.yml",   # 1x
+  ".github/ISSUE_TEMPLATE/01-feature-request.yml",   # 1x
+  ".github/ISSUE_TEMPLATE/02-documentation-request.yml",   # 1x
+  ".github/ISSUE_TEMPLATE/03-bug-report.yml",   # 1x
+  ".github/ISSUE_TEMPLATE/config.yml",   # 1x
+  ".github/workflows/dependency-review.yml",   # 1x
+  ".github/workflows/manual-pr-security-scan.yml",   # 1x
+  ".github/workflows/update-contributors.yml",   # 1x
+  ".readthedocs.yaml",   # 1x
+  "CONTRIBUTORS.md",   # 1x
+  "LICENSE",   # 1x
+  "docs/source/_templates/base.html",   # 1x
+  "docs/source/conf.py",   # 2x
+  "py_launch_blueprint/__init__.py",   # 1x
+  "py_launch_blueprint/projects.py",   # 1x
+  "scripts/update_contributors.py",   # 1x
+  "tests/__init__.py",   # 1x
+  "tests/test_api.py",   # 1x
+  "tests/test_cli.py",   # 1x
+  "tests/test_config.py",   # 1x
 ]
 mode    = "text"
 
@@ -49,7 +49,7 @@ mode    = "text"
 field   = "command_name"
 current = ["py-projects"]
 files   = [
-  "pyproject.toml",   # 1×
+  "pyproject.toml",   # 1x
 ]
 mode    = "structured"
 
@@ -58,14 +58,14 @@ mode    = "structured"
 field   = "command_name"
 current = ["py-projects"]
 files   = [
-  ".github/CONTRIBUTING.md",   # 1×
-  ".windsurfrules",   # 1×
-  "EXAMPLECLI.md",   # 11×
-  "Justfile",   # 1×
-  "README.md",   # 2×
-  "docs/source/index.md",   # 11×
-  "docs/source/reference/cli_reference.md",   # 1×
-  "docs/source/tasks/setting_up_development.md",   # 2×
+  ".github/CONTRIBUTING.md",   # 1x
+  ".windsurfrules",   # 1x
+  "EXAMPLECLI.md",   # 11x
+  "Justfile",   # 1x
+  "README.md",   # 2x
+  "docs/source/index.md",   # 11x
+  "docs/source/reference/cli_reference.md",   # 1x
+  "docs/source/tasks/setting_up_development.md",   # 2x
 ]
 mode    = "text"
 
@@ -74,7 +74,7 @@ mode    = "text"
 field   = "email"
 current = ["steve.morin@gmail.com"]
 files   = [
-  "pyproject.toml",   # 1×
+  "pyproject.toml",   # 1x
 ]
 mode    = "structured"
 
@@ -83,7 +83,7 @@ mode    = "structured"
 field   = "email"
 current = ["steve.morin@gmail.com"]
 files   = [
-  "CONTRIBUTORS.md",   # 1×
+  "CONTRIBUTORS.md",   # 1x
 ]
 mode    = "text"
 
@@ -92,7 +92,7 @@ mode    = "text"
 field   = "owner"
 current = ["smorinlabs"]
 files   = [
-  "pyproject.toml",   # 4×
+  "pyproject.toml",   # 4x
 ]
 mode    = "structured"
 
@@ -101,19 +101,19 @@ mode    = "structured"
 field   = "owner"
 current = ["smorinlabs"]
 files   = [
-  ".github/CONTRIBUTING.md",   # 1×
-  ".github/ISSUE_TEMPLATE/config.yml",   # 1×
-  "EXAMPLECLI.md",   # 1×
-  "README.md",   # 5×
-  "docs/source/conf.py",   # 2×
-  "docs/source/contributing/index.md",   # 1×
-  "docs/source/index.md",   # 5×
-  "docs/source/reference/configuration_files.md",   # 4×
-  "docs/source/tasks/setting_up_development.md",   # 1×
-  "docs/source/tasks/type_checking_code.md",   # 2×
-  "docs/source/tools/github_actions.md",   # 1×
-  "docs/source/tools/justfiles.md",   # 1×
-  "docs/source/tutorials/full_project_setup.md",   # 1×
+  ".github/CONTRIBUTING.md",   # 1x
+  ".github/ISSUE_TEMPLATE/config.yml",   # 1x
+  "EXAMPLECLI.md",   # 1x
+  "README.md",   # 5x
+  "docs/source/conf.py",   # 2x
+  "docs/source/contributing/index.md",   # 1x
+  "docs/source/index.md",   # 5x
+  "docs/source/reference/configuration_files.md",   # 4x
+  "docs/source/tasks/setting_up_development.md",   # 1x
+  "docs/source/tasks/type_checking_code.md",   # 2x
+  "docs/source/tools/github_actions.md",   # 1x
+  "docs/source/tools/justfiles.md",   # 1x
+  "docs/source/tutorials/full_project_setup.md",   # 1x
 ]
 mode    = "text"
 
@@ -122,7 +122,7 @@ mode    = "text"
 field   = "package_name"
 current = ["py_launch_blueprint"]
 files   = [
-  "pyproject.toml",   # 5×
+  "pyproject.toml",   # 5x
 ]
 mode    = "structured"
 
@@ -131,33 +131,33 @@ mode    = "structured"
 field   = "package_name"
 current = ["py_launch_blueprint"]
 files   = [
-  ".github/workflows/bandit.yml",   # 1×
-  ".github/workflows/ci.yml",   # 2×
-  ".vscode/launch.json",   # 2×
-  ".windsurfrules",   # 1×
-  "AGENTS.md",   # 1×
-  "CLAUDE.md",   # 3×
-  "Justfile",   # 2×
-  "README.md",   # 1×
-  "docs/source/conf.py",   # 1×
-  "docs/source/index.md",   # 1×
-  "docs/source/reference/project_structure.md",   # 4×
-  "docs/source/reference/versioning.md",   # 5×
-  "docs/source/tasks/debugging_configuration.md",   # 2×
-  "docs/source/tasks/managing_dependencies.md",   # 8×
-  "docs/source/tasks/setting_up_development.md",   # 10×
-  "docs/source/tasks/type_checking_code.md",   # 2×
-  "docs/source/tasks/using_ci_cd.md",   # 3×
-  "docs/source/tools/github_actions.md",   # 2×
-  "docs/source/tutorials/full_project_setup.md",   # 3×
-  "lefthook.yml",   # 1×
-  "py_launch_blueprint/__init__.py",   # 1×
-  "py_launch_blueprint/projects.py",   # 1×
-  "pyrightconfig.json",   # 1×
-  "release-please-config.json",   # 1×
-  "tests/test_api.py",   # 1×
-  "tests/test_cli.py",   # 10×
-  "tests/test_config.py",   # 1×
+  ".github/workflows/bandit.yml",   # 1x
+  ".github/workflows/ci.yml",   # 2x
+  ".vscode/launch.json",   # 2x
+  ".windsurfrules",   # 1x
+  "AGENTS.md",   # 1x
+  "CLAUDE.md",   # 3x
+  "Justfile",   # 2x
+  "README.md",   # 1x
+  "docs/source/conf.py",   # 1x
+  "docs/source/index.md",   # 1x
+  "docs/source/reference/project_structure.md",   # 4x
+  "docs/source/reference/versioning.md",   # 5x
+  "docs/source/tasks/debugging_configuration.md",   # 2x
+  "docs/source/tasks/managing_dependencies.md",   # 8x
+  "docs/source/tasks/setting_up_development.md",   # 10x
+  "docs/source/tasks/type_checking_code.md",   # 2x
+  "docs/source/tasks/using_ci_cd.md",   # 3x
+  "docs/source/tools/github_actions.md",   # 2x
+  "docs/source/tutorials/full_project_setup.md",   # 3x
+  "lefthook.yml",   # 1x
+  "py_launch_blueprint/__init__.py",   # 1x
+  "py_launch_blueprint/projects.py",   # 1x
+  "pyrightconfig.json",   # 1x
+  "release-please-config.json",   # 1x
+  "tests/test_api.py",   # 1x
+  "tests/test_cli.py",   # 10x
+  "tests/test_config.py",   # 1x
 ]
 mode    = "text"
 
@@ -166,37 +166,38 @@ mode    = "text"
 field   = "repo_name"
 current = ["py-launch-blueprint"]
 files   = [
-  ".gitleaks.toml",   # 1×
-  "pyproject.toml",   # 5×
+  ".gitleaks.toml",   # 1x
+  "pyproject.toml",   # 5x
 ]
 mode    = "structured"
 
-# repo_name (text) — 66 occurrences in 21 files
+# repo_name (text) — 68 occurrences in 22 files
 [[replace]]
 field   = "repo_name"
 current = ["py-launch-blueprint"]
 files   = [
-  ".devcontainer/devcontainer.json",   # 1×
-  ".github/CONTRIBUTING.md",   # 1×
-  ".github/ISSUE_TEMPLATE/config.yml",   # 1×
-  ".github/codeql/codeql-config.yml",   # 1×
-  ".github/workflows/blueprint-guard.yml",   # 1×
-  "EXAMPLECLI.md",   # 7×
-  "Justfile",   # 1×
-  "README.md",   # 16×
-  "docs/source/_templates/base.html",   # 1×
-  "docs/source/conf.py",   # 3×
-  "docs/source/contributing/index.md",   # 1×
-  "docs/source/index.md",   # 15×
-  "docs/source/reference/configuration_files.md",   # 4×
-  "docs/source/reference/project_structure.md",   # 2×
-  "docs/source/tasks/contributing_code.md",   # 2×
-  "docs/source/tasks/setting_up_development.md",   # 1×
-  "docs/source/tasks/type_checking_code.md",   # 2×
-  "docs/source/tools/github_actions.md",   # 1×
-  "docs/source/tools/justfiles.md",   # 1×
-  "docs/source/tutorials/full_project_setup.md",   # 2×
-  "package.json",   # 2×
+  ".devcontainer/devcontainer.json",   # 1x
+  ".github/CONTRIBUTING.md",   # 1x
+  ".github/ISSUE_TEMPLATE/config.yml",   # 1x
+  ".github/codeql/codeql-config.yml",   # 1x
+  ".github/workflows/blueprint-guard.yml",   # 1x
+  "AGENTS.md",   # 1x
+  "EXAMPLECLI.md",   # 7x
+  "Justfile",   # 1x
+  "README.md",   # 17x
+  "docs/source/_templates/base.html",   # 1x
+  "docs/source/conf.py",   # 3x
+  "docs/source/contributing/index.md",   # 1x
+  "docs/source/index.md",   # 15x
+  "docs/source/reference/configuration_files.md",   # 4x
+  "docs/source/reference/project_structure.md",   # 2x
+  "docs/source/tasks/contributing_code.md",   # 2x
+  "docs/source/tasks/setting_up_development.md",   # 1x
+  "docs/source/tasks/type_checking_code.md",   # 2x
+  "docs/source/tools/github_actions.md",   # 1x
+  "docs/source/tools/justfiles.md",   # 1x
+  "docs/source/tutorials/full_project_setup.md",   # 2x
+  "package.json",   # 2x
 ]
 mode    = "text"
 

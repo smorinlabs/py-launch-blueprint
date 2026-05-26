@@ -32,10 +32,10 @@ from collections.abc import Iterable
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import (  # noqa: E402
+from common import (
     BLUEPRINT_IDENTITY,
-    INIT_DIR,
     REPO_ROOT,
+    is_bootstrap_path,
     iter_repo_files,
 )
 
@@ -59,16 +59,13 @@ def is_binary(path: Path) -> bool:
 def scan_files(files: Iterable[Path]) -> dict[tuple[str, str], dict[Path, int]]:
     """Map (field, mode) → {file: count}.
 
-    Excludes files under init/ itself — discovery output references identity
-    strings as *data*, not as identity that should be rewritten.
+    Excludes files under init/ and skill/ — bootstrap tooling that references
+    identity strings as *data*, not as identity that should be rewritten.
     """
     hits: dict[tuple[str, str], dict[Path, int]] = defaultdict(dict)
     for path in files:
-        try:
-            path.relative_to(INIT_DIR)
-            continue  # skip init/ — it's tooling, not migration target
-        except ValueError:
-            pass
+        if is_bootstrap_path(path):
+            continue  # init/ + skill/ are tooling, not migration targets
         if path.name in LOCKFILES:
             continue  # lockfiles are regenerated, not replaced
         if is_binary(path):
@@ -162,7 +159,7 @@ def format_toml(
         out.append("files   = [")
         for p in sorted(files):
             rel = p.relative_to(REPO_ROOT)
-            out.append(f'  "{rel}",   # {files[p]}×')
+            out.append(f'  "{rel}",   # {files[p]}x')
         out.append("]")
         out.append(f'mode    = "{mode}"')
         out.append("")
@@ -199,8 +196,8 @@ def format_summary(hits: dict[tuple[str, str], dict[Path, int]]) -> str:
         total = sum(files.values())
         grand_total += total
         grand_files.update(files.keys())
-        out.append(f"  {fieldname:<14} [{mode:<10}]  {total:>4} × in {len(files):>3} files")
-    out.append(f"  {'TOTAL':<14} {'':<12}  {grand_total:>4} × in {len(grand_files):>3} files")
+        out.append(f"  {fieldname:<14} [{mode:<10}]  {total:>4} x in {len(files):>3} files")
+    out.append(f"  {'TOTAL':<14} {'':<12}  {grand_total:>4} x in {len(grand_files):>3} files")
     return "\n".join(out)
 
 

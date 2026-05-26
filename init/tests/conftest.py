@@ -35,7 +35,8 @@ _CURATED_DIRS = (
     "init",
 )
 
-import sys as _sys
+import sys as _sys  # noqa: E402 - deliberate placement after LIVE_BLUEPRINT definition
+
 _sys.path.insert(0, str(LIVE_BLUEPRINT / "init"))
 from common import MODES  # noqa: E402 — SSOT; re-exported for legacy imports
 

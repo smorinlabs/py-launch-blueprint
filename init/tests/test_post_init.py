@@ -31,9 +31,7 @@ from post_init import (  # noqa: E402
     PostInitConfig,
     PublishingConfig,
     RTDConfig,
-    _render_post_init_toml,
 )
-
 
 # ──────────────────────────────────────────────────────────────
 # Helpers — tmp marker fixture
