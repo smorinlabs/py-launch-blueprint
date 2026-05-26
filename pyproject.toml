@@ -20,7 +20,7 @@
 [project]
 name = "py_launch_blueprint"
 # ITM-070 — static version (ADR-06 cutover). release-please bumps this.
-version = "1.1.0"
+version = "1.1.1"
 description = "CLI tools for interacting with Py, including project search functionality"
 readme = "README.md"
 requires-python = ">=3.12"
