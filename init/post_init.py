@@ -140,9 +140,13 @@ class PreconditionError(RuntimeError):
 
 
 def _run(
-    cmd: list[str], cwd: Path = REPO_ROOT, check: bool = False
+    cmd: list[str], cwd: Path | None = None, check: bool = False
 ) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, check=check)
+    # Resolve cwd at call time, not def time — keeps test monkeypatching of
+    # REPO_ROOT effective.
+    return subprocess.run(
+        cmd, cwd=cwd or REPO_ROOT, capture_output=True, text=True, check=check
+    )
 
 
 def check_preconditions() -> bool:
@@ -665,14 +669,21 @@ def main(argv: list[str] | None = None) -> int:
         print_status(existing)
         return 0
 
-    try:
-        remote_available = check_preconditions()
-    except PreconditionError as e:
-        err(str(e))
-        return 1
-
     if args.skip_remote:
+        # --skip-remote bypasses gh/auth/remote checks entirely; only the
+        # marker-existence precondition still applies.
+        if not MARKER_PATH.exists():
+            err(
+                f"{MARKER_PATH.relative_to(REPO_ROOT)} not found — run `just init` first."
+            )
+            return 1
         remote_available = False
+    else:
+        try:
+            remote_available = check_preconditions()
+        except PreconditionError as e:
+            err(str(e))
+            return 1
 
     if existing:
         header(f"post-init has already run on this project ({existing.date})")

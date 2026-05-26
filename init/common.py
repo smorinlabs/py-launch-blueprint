@@ -89,7 +89,9 @@ def origin_matches_blueprint(url: str) -> bool:
 PYTHON_IDENTIFIER_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 REPO_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 COMMAND_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
-GITHUB_OWNER_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,38}$", re.IGNORECASE)
+GITHUB_OWNER_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?$", re.IGNORECASE)
+# Must start AND end with alphanumeric (GitHub rejects trailing hyphens).
+# 1-39 chars total; the middle 0-37 chars may include hyphens.
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
