@@ -36,14 +36,12 @@ import datetime as _dt
 import subprocess
 import sys
 import tomllib
-from dataclasses import asdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _engine import Answers, apply, build_plan  # noqa: E402
-from common import (  # noqa: E402
+from _engine import Answers, apply, build_plan
+from common import (
     BLUEPRINT_IDENTITY,
-    CONTRIBUTOR_SENTINEL_PATH,
     INIT_DIR,
     MARKER_PATH,
     REPO_ROOT,
@@ -113,7 +111,7 @@ def discover_origin_defaults() -> dict[str, str]:
             v = _run(["git", "config", "--get", git_key], check=False).stdout.strip()
             if v:
                 out[ans_key] = v
-        except Exception:
+        except Exception:  # noqa: S110 - best-effort defaults; missing git config is normal
             pass
     return out
 
@@ -150,7 +148,7 @@ def collect_answers_interactive() -> Answers:
         raise PreconditionError(
             "interactive mode requires `questionary` (not installed in this env). "
             "Use --config answers.toml for headless runs."
-        )
+        ) from None
     defaults = discover_origin_defaults()
 
     def _ask(prompt: str, key: str, derive=None) -> str:
@@ -228,6 +226,7 @@ def prune_init_system() -> None:
         INIT_DIR / "common.py",
         INIT_DIR / "ci",
         INIT_DIR / "tests",
+        REPO_ROOT / "skill",  # agent skill is blueprint-only tooling
         REPO_ROOT / ".github" / "workflows" / "blueprint-guard.yml",
     ]
     import shutil

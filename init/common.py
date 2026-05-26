@@ -17,9 +17,27 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 INIT_DIR = Path(__file__).resolve().parent
+SKILL_DIR = REPO_ROOT / "skill"
 MARKER_PATH = INIT_DIR / ".blueprint-initialized"
 CONTRIBUTOR_SENTINEL_PATH = INIT_DIR / ".blueprint-contributor"
 MANIFEST_PATH = INIT_DIR / "manifest.toml"
+
+# Directories that hold bootstrap tooling — excluded from identity scans
+# (manifest drift, doctor no-identity-leak) AND removed by `init --prune`.
+# These are blueprint-only; downstream projects never need them.
+BOOTSTRAP_DIRS: tuple[Path, ...] = (INIT_DIR, SKILL_DIR)
+
+
+def is_bootstrap_path(path: Path) -> bool:
+    """True if `path` lives inside one of the bootstrap tooling dirs."""
+    resolved = path.resolve()
+    for d in BOOTSTRAP_DIRS:
+        try:
+            resolved.relative_to(d)
+            return True
+        except ValueError:
+            continue
+    return False
 
 BLUEPRINT_IDENTITY: dict[str, str] = {
     "package_name": "py_launch_blueprint",

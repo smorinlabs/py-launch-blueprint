@@ -18,7 +18,6 @@ git is the undo button.
 
 from __future__ import annotations
 
-import re
 import shutil
 import sys
 from collections.abc import Iterable
@@ -26,15 +25,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import (  # noqa: E402
+from common import (
     BLUEPRINT_IDENTITY,
     REPO_ROOT,
+    VALIDATORS,
     Manifest,
     RemoveOp,
     RenameOp,
-    ReplaceOp,
-    ValidationError,
-    VALIDATORS,
 )
 
 

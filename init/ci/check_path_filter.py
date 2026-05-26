@@ -35,7 +35,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from common import REPO_ROOT, load_manifest  # noqa: E402
+from common import REPO_ROOT, load_manifest
 
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "init-integration.yml"
 

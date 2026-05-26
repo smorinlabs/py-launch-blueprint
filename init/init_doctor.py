@@ -37,10 +37,9 @@ from typing import Literal
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent / "ci"))
-from check_guard_wiring import check as check_guard_wiring  # noqa: E402
-from common import (  # noqa: E402
+from check_guard_wiring import check as check_guard_wiring
+from common import (
     BLUEPRINT_IDENTITY,
-    INIT_DIR,
     MARKER_PATH,
     REPO_ROOT,
     iter_repo_files,
@@ -103,14 +102,13 @@ def check_no_identity_leftover() -> Finding:
     except (FileNotFoundError, OSError):
         regenerate_paths = set()
 
+    from common import is_bootstrap_path
+
     leftover: dict[str, list[Path]] = {}
     for value in BLUEPRINT_IDENTITY.values():
         for path in iter_repo_files():
-            try:
-                path.relative_to(INIT_DIR)
-                continue
-            except ValueError:
-                pass
+            if is_bootstrap_path(path):
+                continue  # init/ and skill/ are bootstrap tooling, not migration targets
             if path.resolve() in regenerate_paths:
                 continue
             try:
@@ -172,7 +170,6 @@ def check_internal_consistency() -> list[Finding]:
 
     py_name = _scrape(py_path, r'^name\s*=\s*"([^"]+)"')
     just_pkg = _scrape(just_path, r'^py_package_name\s*:=\s*"([^"]+)"')
-    just_repo = _scrape(just_path, r'^repo_name\s*:=\s*"([^"]+)"')
     just_cmd = _scrape(just_path, r'^command_name\s*:=\s*"([^"]+)"')
 
     if py_name and just_pkg and py_name != just_pkg:

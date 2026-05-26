@@ -27,10 +27,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from common import (  # noqa: E402
+from common import (
     BLUEPRINT_IDENTITY,
-    INIT_DIR,
     REPO_ROOT,
+    is_bootstrap_path,
     iter_repo_files,
     load_manifest,
 )
@@ -48,11 +48,8 @@ def main() -> int:
 
     leftover: dict[Path, list[str]] = {}
     for path in iter_repo_files():
-        try:
-            path.relative_to(INIT_DIR)
-            continue
-        except ValueError:
-            pass
+        if is_bootstrap_path(path):
+            continue  # init/ and skill/ are bootstrap tooling, not migration targets
         resolved = path.resolve()
         if (
             resolved in rename_srcs

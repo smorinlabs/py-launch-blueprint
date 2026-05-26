@@ -37,18 +37,17 @@ from __future__ import annotations
 
 import argparse
 import datetime as _dt
-import json
 import shutil
 import subprocess
 import sys
 import tomllib
 import urllib.error
 import urllib.request
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import (  # noqa: E402
+from common import (
     INIT_DIR,
     MARKER_PATH,
     REPO_ROOT,
@@ -508,7 +507,7 @@ def print_oidc_form_values(
     base = "https://pypi.org" if target == "pypi" else "https://test.pypi.org"
     url = f"{base}/manage/account/publishing/"
     print()
-    info(f"Paste these values into the Pending Publisher form at:")
+    info("Paste these values into the Pending Publisher form at:")
     info(_c("36;4", url))
     print()
     print(f"    PyPI Project Name:       {_c('1', project_name)}")
@@ -537,7 +536,7 @@ def poll_pypi_trust(
     info(f"polling {url} (timeout {timeout_s}s; Ctrl-C to skip)")
     while time.time() < deadline:
         try:
-            with urllib.request.urlopen(url, timeout=5) as resp:
+            with urllib.request.urlopen(url, timeout=5) as resp:  # noqa: S310 - hardcoded PyPI/TestPyPI URL, not user input
                 if resp.status == 200:
                     return True
         except urllib.error.HTTPError as e:
