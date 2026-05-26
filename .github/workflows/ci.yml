@@ -87,9 +87,13 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: Install Just + Taplo
+      - name: Install just
         uses: extractions/setup-just@v4
-      - name: Install Taplo
+      # `just install-taplo` now downloads the upstream pre-built binary
+      # (curl + gunzip from https://github.com/tamasfe/taplo/releases) —
+      # ~1-3s installed vs the prior ~2min `cargo install taplo-cli`. Same
+      # path as local dev; no external installer action needed.
+      - name: Install taplo
         run: just install-taplo
       - name: Check TOML formatting
         run: taplo check '**/*.toml'
