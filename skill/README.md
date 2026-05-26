@@ -36,16 +36,50 @@ through identity collection → `gh repo create --template` → `just init` →
 optional `just post-init`. Total time: about 60–90 seconds for the
 interactive bits, plus whatever the user spends thinking about the name.
 
-## When this skill might fail to trigger
+## When this skill might fail to trigger (and how to force it)
 
-Skill triggering is description-driven. If your phrasing is far from the
-descriptions in `SKILL.md`'s frontmatter, Claude may not consult the
-skill. Phrasings that reliably work:
+Empirically, this skill **undertriggers reliably** — measured via the
+skill-creator's trigger eval (20 queries × 3 runs each, see
+`optimization-workspace/`), all three description versions tested (V1
+original, V2 more aggressive, V3 with CRITICAL framing + named failure
+modes) scored ~0% recall on should-trigger queries while keeping 100%
+specificity (no false positives).
 
-- "create a new project from this template"
-- "bootstrap a new Python project from py-launch-blueprint"
-- "start a new project using py-launch-blueprint"
-- "scaffold a Python project from the blueprint"
+The root cause is structural, not phrasing: per the skill-creator's own
+documentation, *"Claude only consults skills for tasks it can't easily
+handle on its own."* The bootstrap task LOOKS simple to Claude even
+though it isn't — Claude evaluates "do I need help?" and concludes "I'll
+just run `gh repo create` and `git clone` myself," bypassing the skill.
+No amount of description-pushing seems to overcome this evaluation.
 
-If the skill doesn't trigger, you can invoke it directly by pointing
-Claude at `skill/SKILL.md` and saying "follow this skill."
+**The practical workaround is to invoke the skill directly** rather than
+relying on auto-triggering:
+
+```text
+"Follow the runbook in skill/SKILL.md to bootstrap a new Python project.
+ I want it named X, owner Y, package Z."
+```
+
+Or even shorter:
+
+```text
+"Use the new-python-project skill — repo name X, owner Y."
+```
+
+Direct invocation always works. Auto-triggering is best-effort but not
+something to rely on for this skill specifically. The descriptions are
+written as if auto-triggering will work because it MIGHT in some
+contexts, and the skill body's value is the same either way.
+
+## When this skill is most likely to auto-trigger
+
+When the user's request makes the *multi-step nature* obvious:
+
+- "I need to bootstrap a project AND set up publishing AND configure
+  Codecov — can you walk me through it?"
+- "Help me start a new project from this template, I haven't done it
+  before and I always forget the OIDC step"
+- "What's the right order to do the bootstrap from py-launch-blueprint?"
+
+Single-line "create a project named X" rarely triggers — Claude treats
+it as a one-shot command.

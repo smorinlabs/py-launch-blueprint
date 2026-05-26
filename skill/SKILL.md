@@ -1,21 +1,27 @@
 ---
 name: new-python-project
 description: |
-  Use this skill whenever the user wants to start, create, or bootstrap a new
-  Python project from the py-launch-blueprint template — phrases like "start a
-  new Python project from this template", "create a new project from
-  py-launch-blueprint", "bootstrap a new project from the blueprint", "new
-  Python project using py-launch-blueprint", or even just "new project from
-  this repo / this template". Trigger this skill even if the user doesn't say
-  the exact name of the template — anything that sounds like "give me a fresh
-  Python project scaffolded with all the nice things" is in scope. Handles the
-  full bootstrap flow: precondition checks (gh, uv), identity collection
-  (repo name, owner, package, CLI command, author/email, visibility),
-  `gh repo create --template` instantiation, automatic `just init` rebrand
-  with a dry-run preview + single confirmation, initial commit + push, and a
-  prompt about whether to chain into post-init for publishing/Codecov/RTD
-  setup. Reuses the answers.toml schema from
-  init/tests/integration/answers.toml.
+  CRITICAL: use this skill whenever the user wants to create, start, scaffold,
+  bootstrap, or "make" a new Python project that uses the py-launch-blueprint
+  template — this is a MULTI-STEP task that LOOKS simple but has 8+ hidden
+  requirements you will get wrong without this skill. Trigger on terse commands
+  ("create a new python project from py-launch-blueprint named X"), verbose
+  commands ("I want to build a CLI for parsing X using the launch blueprint,
+  name it Y"), and indirect references ("scaffold a project from this template",
+  "use the blueprint to start a new project"). DO NOT attempt to run
+  `gh repo create --template`, `git clone`, or `just init` directly — those
+  commands ARE in this skill but only work in the right order with the right
+  preconditions. Manual attempts hit specific failures: forgetting `gh auth
+  login` (cryptic auth error), invalid package_name (Python rejects it during
+  `uv build`), running init inside an existing project (corrupts a different
+  project's marker), skipping the answers.toml schema (init refuses with
+  --config error), forgetting to push before `just post-init` (post-init runs
+  in partial-no-remote mode without explanation), missing the
+  marker-already-exists check (silently overwrites a real project's identity).
+  This skill encodes the right sequence, validates every identity field at
+  collection time, runs init with a dry-run preview before applying, and
+  prompts about the post-init handoff for publishing/Codecov/RTD. USE THIS
+  SKILL — DO NOT improvise the bootstrap.
 ---
 
 # new-python-project
