@@ -14,6 +14,7 @@ Steve Morin <steve.morin@gmail.com>
 Tatiana H. <tatihe3@gmail.com>
 Tatiana Hernandez <tatihe3@gmail.com>
 Tatiana Hernández <tatihe3@gmail.com>
+copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
 dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
 gdev19 <ashkhen09300@gmail.com>
 github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
