@@ -1,4 +1,4 @@
-# `init/skill/` — agent skill for bootstrapping new projects
+# `skill/` — agent skill for bootstrapping new projects
 
 A self-contained skill that guides an AI agent (Claude Code, Codex, or
 anything that reads `AGENTS.md`) through creating a new Python project
@@ -31,7 +31,7 @@ this repo locally, and say something like:
 
 > "I want to create a new Python project from py-launch-blueprint."
 
-Claude will pick up the skill from `init/skill/SKILL.md` and walk you
+Claude will pick up the skill from `skill/SKILL.md` and walk you
 through identity collection → `gh repo create --template` → `just init` →
 optional `just post-init`. Total time: about 60–90 seconds for the
 interactive bits, plus whatever the user spends thinking about the name.
@@ -48,4 +48,4 @@ skill. Phrasings that reliably work:
 - "scaffold a Python project from the blueprint"
 
 If the skill doesn't trigger, you can invoke it directly by pointing
-Claude at `init/skill/SKILL.md` and saying "follow this skill."
+Claude at `skill/SKILL.md` and saying "follow this skill."
