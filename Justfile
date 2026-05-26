@@ -114,7 +114,7 @@ alias c := check-deps
 [group('install')]
 install-taplo:
     #!/usr/bin/env bash
-    set -eu
+    set -euo pipefail
     if command -v taplo >/dev/null 2>&1; then
         echo -e "{{YELLOW}}Taplo is already installed{{NC}}"
         exit 0
