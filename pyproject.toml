@@ -149,8 +149,12 @@ max-line-length = 88
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]             # Ignore unused imports in __init__.py files
 "tests/*" = ["S101", "S105", "S106"] # Ignore assert statements in tests
+"init/tests/**" = ["S101", "S105", "S106"]   # same exemption — pytest convention
+"init/**" = ["S603", "S607"]                  # init/ wraps gh/just/uv via subprocess; that's the point
+"skill/**" = ["S101"]                         # skill/ has illustrative example assertions in markdown
 # S101: assert statements removed under -O — security risk if assert is the only gate.
 # S105/S106: hardcoded password strings/variables in code.
+# S603/S607: subprocess module use + partial-path executables — init/ tooling wraps gh/just/uv intentionally.
 
 # ITM-018 — explicit format config (round-2; mirrors source). Values match Ruff
 # defaults but being explicit prevents silent drift if defaults change.
@@ -162,7 +166,7 @@ line-ending = "auto"
 # ITM-027 — bandit config (round 3). Tests legitimately use `assert`
 # (pytest convention) — exclude_dirs covers tests/.
 [tool.bandit]
-exclude_dirs = ["tests", ".venv", "build", "dist"]
+exclude_dirs = ["tests", "init/tests", ".venv", "build", "dist"]
 skips = []  # No global skips; add with rationale only.
 
 [tool.pytest.ini_options]
@@ -181,9 +185,12 @@ strict_markers = true
 # ITM-015 — codespell. US English baseline (default builtin="clear,rare"); empty
 # ignore list — add terms only when intentional. Decided round 9.
 [tool.codespell]
-skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache"
-# ignore-words-list intentionally omitted: codespell 2.4.x rejects empty string;
-# round-9 decided empty baseline — add terms only when intentional.
+skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache,*.log,skill/optimization-workspace"
+# *.log + skill/optimization-workspace: optimizer logs contain LLM-truncated
+# text artifacts that aren't real typos; skip the whole tree.
+ignore-words-list = "ans"
+# ans: variable name used in prompt-handling code; codespell wants to "fix"
+# it to "and". Whitelist to keep the short variable name.
 check-filenames = true
 check-hidden = false
 

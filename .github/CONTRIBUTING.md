@@ -63,7 +63,7 @@ For more details on how the CLA Assistant works, see the [CLA Assistant document
 
 ### Reporting Bugs
 
-If you find a bug in the project, please open an issue on GitHub using the [Bug Report template](https://github.com/smorin/py-launch-blueprint/issues). Provide as much detail as possible, including:
+If you find a bug in the project, please open an issue on GitHub using the [Bug Report template](https://github.com/smorinlabs/py-launch-blueprint/issues). Provide as much detail as possible, including:
 - A clear and descriptive title
 - A detailed description of the problem
 - Steps to reproduce the issue

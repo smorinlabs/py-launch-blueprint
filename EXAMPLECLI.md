@@ -19,7 +19,7 @@ pip install py-launch-blueprint
 ### From Source
 
 ```bash
-git clone https://github.com/smorin/py-launch-blueprint.git
+git clone https://github.com/smorinlabs/py-launch-blueprint.git
 cd py-launch-blueprint
 pip install -e ".[dev]"  # Install with development dependencies
 ```
