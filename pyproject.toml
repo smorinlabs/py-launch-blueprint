@@ -186,10 +186,10 @@ strict_markers = true
 # ignore list — add terms only when intentional. Decided round 9.
 [tool.codespell]
 skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache,*.log,skill/optimization-workspace"
-# *.log + skill/optimization-workspace: optimizer logs contain LLM-truncated text
-# (e.g. "alread", "itsel") that is data captured from runs, not authored content.
+# *.log + skill/optimization-workspace: optimizer logs contain LLM-truncated
+# text artifacts that aren't real typos; skip the whole tree.
 ignore-words-list = "ans"
-# ans: variable name `ans` used in prompt-handling code; codespell wants to "fix"
+# ans: variable name used in prompt-handling code; codespell wants to "fix"
 # it to "and". Whitelist to keep the short variable name.
 check-filenames = true
 check-hidden = false

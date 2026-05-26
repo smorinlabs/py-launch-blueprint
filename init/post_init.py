@@ -67,6 +67,7 @@ STATES = (ENABLED, DISABLED, DEFERRED)
 # State (the [post_init] section of the marker)
 # ──────────────────────────────────────────────────────────────
 
+
 @dataclass
 class PublishingConfig:
     pypi: str = DEFERRED
@@ -101,6 +102,7 @@ class PostInitConfig:
 # Printing helpers (no rich/questionary — kept stdlib for portability)
 # ──────────────────────────────────────────────────────────────
 
+
 def _c(code: str, s: str) -> str:
     if not sys.stdout.isatty():
         return s
@@ -132,11 +134,14 @@ def err(s: str) -> None:
 # Preconditions
 # ──────────────────────────────────────────────────────────────
 
+
 class PreconditionError(RuntimeError):
     pass
 
 
-def _run(cmd: list[str], cwd: Path = REPO_ROOT, check: bool = False) -> subprocess.CompletedProcess:
+def _run(
+    cmd: list[str], cwd: Path = REPO_ROOT, check: bool = False
+) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, check=check)
 
 
@@ -147,14 +152,10 @@ def check_preconditions() -> bool:
             f"{MARKER_PATH.relative_to(REPO_ROOT)} not found — run `just init` first."
         )
     if shutil.which("gh") is None:
-        raise PreconditionError(
-            "gh CLI not installed. See https://cli.github.com/"
-        )
+        raise PreconditionError("gh CLI not installed. See https://cli.github.com/")
     auth = _run(["gh", "auth", "status"])
     if auth.returncode != 0:
-        raise PreconditionError(
-            "gh is not authenticated. Run: gh auth login"
-        )
+        raise PreconditionError("gh is not authenticated. Run: gh auth login")
     # Remote detection: parse origin → check the repo exists on GitHub.
     origin = _run(["git", "remote", "get-url", "origin"]).stdout.strip()
     if not origin:
@@ -167,7 +168,9 @@ def check_preconditions() -> bool:
     owner, repo = parsed
     rv = _run(["gh", "repo", "view", f"{owner}/{repo}", "--json", "name"])
     if rv.returncode != 0:
-        warn(f"{owner}/{repo} not found via gh — push to GitHub then re-run for remote setup.")
+        warn(
+            f"{owner}/{repo} not found via gh — push to GitHub then re-run for remote setup."
+        )
         return False
     return True
 
@@ -180,6 +183,7 @@ def get_origin_owner_repo() -> tuple[str, str] | None:
 # ──────────────────────────────────────────────────────────────
 # Marker I/O (preserves existing [meta] + [answers]; manages [post_init])
 # ──────────────────────────────────────────────────────────────
+
 
 def read_existing_post_init() -> PostInitConfig | None:
     raw = tomllib.loads(MARKER_PATH.read_text(encoding="utf-8"))
@@ -241,6 +245,7 @@ def write_marker_with_post_init(cfg: PostInitConfig) -> None:
 # Interactive prompts (stdlib `input` — keep deps to zero)
 # ──────────────────────────────────────────────────────────────
 
+
 def ask_choice(prompt: str, choices: tuple[str, ...], default: str) -> str:
     options = "/".join(c.upper() if c == default else c for c in choices)
     while True:
@@ -277,26 +282,39 @@ def ask_yes_no(prompt: str, default: bool = True) -> bool:
 # Decision flow
 # ──────────────────────────────────────────────────────────────
 
+
 def ask_publishing(current: PublishingConfig | None) -> PublishingConfig:
     header("Publishing — release artifacts to PyPI")
     cur = current or PublishingConfig()
     pypi = ask_yes_no_defer("Publish to PyPI?", cur.pypi)
     new = PublishingConfig(pypi=pypi)
     if pypi == ENABLED:
-        new.testpypi = ENABLED if ask_yes_no(
-            "Mirror to TestPyPI for pre-release validation? (recommended)",
-            default=cur.testpypi != DISABLED,
-        ) else DISABLED
-        new.release_please = ENABLED if ask_yes_no(
-            "Use release-please to auto-generate version-bump PRs? (recommended)",
-            default=cur.release_please != DISABLED,
-        ) else DISABLED
+        new.testpypi = (
+            ENABLED
+            if ask_yes_no(
+                "Mirror to TestPyPI for pre-release validation? (recommended)",
+                default=cur.testpypi != DISABLED,
+            )
+            else DISABLED
+        )
+        new.release_please = (
+            ENABLED
+            if ask_yes_no(
+                "Use release-please to auto-generate version-bump PRs? (recommended)",
+                default=cur.release_please != DISABLED,
+            )
+            else DISABLED
+        )
     elif pypi == DISABLED:
         new.testpypi = DISABLED
-        new.release_please = DISABLED if ask_yes_no(
-            "Also disable release-please version-bump PRs? (recommended when not publishing)",
-            default=True,
-        ) else ENABLED
+        new.release_please = (
+            DISABLED
+            if ask_yes_no(
+                "Also disable release-please version-bump PRs? (recommended when not publishing)",
+                default=True,
+            )
+            else ENABLED
+        )
     else:  # DEFERRED
         new.testpypi = cur.testpypi
         new.release_please = cur.release_please
@@ -315,9 +333,11 @@ def ask_readthedocs(current: RTDConfig | None) -> RTDConfig:
     header("ReadTheDocs — publish docs at readthedocs.org")
     cur = current or RTDConfig()
     # RTDConfig uses configured/declined/deferred instead of enabled/disabled.
-    cur_for_prompt = {"configured": ENABLED, "declined": DISABLED, "deferred": DEFERRED}.get(
-        cur.status, DEFERRED
-    )
+    cur_for_prompt = {
+        "configured": ENABLED,
+        "declined": DISABLED,
+        "deferred": DEFERRED,
+    }.get(cur.status, DEFERRED)
     pick = ask_yes_no_defer("Publish docs to ReadTheDocs?", cur_for_prompt)
     rev = {ENABLED: "configured", DISABLED: "declined", DEFERRED: "deferred"}
     return RTDConfig(status=rev[pick])
@@ -326,6 +346,7 @@ def ask_readthedocs(current: RTDConfig | None) -> RTDConfig:
 # ──────────────────────────────────────────────────────────────
 # Apply: local file operations
 # ──────────────────────────────────────────────────────────────
+
 
 def _git_mv(src: Path, dst: Path) -> None:
     dst.parent.mkdir(parents=True, exist_ok=True)
@@ -437,7 +458,7 @@ def edit_ci_yml_codecov_gate() -> bool:
                     f"{pad}- name: Codecov upload dormant warning  {_CODECOV_GATE_MARKER}",
                     f"{pad}  if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' && secrets.CODECOV_TOKEN == ''",
                     f"{pad}  run: |",
-                    f"{pad}    echo \"::warning::Codecov uploads dormant — set CODECOV_TOKEN repo secret to enable.\"",
+                    f'{pad}    echo "::warning::Codecov uploads dormant — set CODECOV_TOKEN repo secret to enable."',
                 ]
                 new_lines = new_lines[:end_idx] + snippet + new_lines[end_idx:]
                 warning_step_added = True
@@ -454,6 +475,7 @@ def edit_ci_yml_codecov_gate() -> bool:
 # ──────────────────────────────────────────────────────────────
 # Apply: remote operations (skipped in partial mode)
 # ──────────────────────────────────────────────────────────────
+
 
 def run_setup_github_environments(repo_slug: str, envs: list[str]) -> bool:
     """Wraps init/setup-github-environments.sh for the chosen envs."""
@@ -475,7 +497,8 @@ def run_setup_github_environments(repo_slug: str, envs: list[str]) -> bool:
 def set_codecov_token_via_gh(repo_slug: str, token: str) -> bool:
     r = subprocess.run(
         ["gh", "secret", "set", "CODECOV_TOKEN", "--repo", repo_slug, "--body", token],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if r.returncode != 0:
         err(f"gh secret set failed: {r.stderr.strip()[:200]}")
@@ -487,6 +510,7 @@ def set_codecov_token_via_gh(repo_slug: str, token: str) -> bool:
 # ──────────────────────────────────────────────────────────────
 # OIDC walkthrough (assisted manual + verification polling)
 # ──────────────────────────────────────────────────────────────
+
 
 def _open_url(url: str) -> bool:
     for cmd in (["open", url], ["xdg-open", url]):
@@ -500,7 +524,10 @@ def _open_url(url: str) -> bool:
 
 
 def print_oidc_form_values(
-    project_name: str, owner: str, repo: str, target: str,
+    project_name: str,
+    owner: str,
+    repo: str,
+    target: str,
 ) -> str:
     """Returns the URL the user must visit."""
     env_name = "pypi" if target == "pypi" else "testpypi"
@@ -520,7 +547,9 @@ def print_oidc_form_values(
 
 
 def poll_pypi_trust(
-    project_name: str, target: str, timeout_s: int = 300,
+    project_name: str,
+    target: str,
+    timeout_s: int = 300,
 ) -> bool:
     """Polls the public PyPI JSON until the project exists. Crude but reliable.
 
@@ -532,6 +561,7 @@ def poll_pypi_trust(
     base = "https://pypi.org" if target == "pypi" else "https://test.pypi.org"
     url = f"{base}/pypi/{project_name}/json"
     import time
+
     deadline = time.time() + timeout_s
     info(f"polling {url} (timeout {timeout_s}s; Ctrl-C to skip)")
     while time.time() < deadline:
@@ -552,7 +582,10 @@ def poll_pypi_trust(
 
 
 def oidc_walkthrough(
-    project_name: str, owner: str, repo: str, target: str,
+    project_name: str,
+    owner: str,
+    repo: str,
+    target: str,
 ) -> str | None:
     """Returns ISO timestamp on verified, None if user skipped."""
     url = print_oidc_form_values(project_name, owner, repo, target)
@@ -579,6 +612,7 @@ def oidc_walkthrough(
 # Status / summary
 # ──────────────────────────────────────────────────────────────
 
+
 def print_status(cfg: PostInitConfig | None) -> None:
     if cfg is None:
         print("post-init has not been run on this project yet.")
@@ -588,7 +622,9 @@ def print_status(cfg: PostInitConfig | None) -> None:
     print(f"  publishing.pypi           = {cfg.publishing.pypi}")
     print(f"  publishing.testpypi       = {cfg.publishing.testpypi}")
     print(f"  publishing.release_please = {cfg.publishing.release_please}")
-    print(f"  codecov.status            = {cfg.codecov.status}  (token_set={cfg.codecov.token_set})")
+    print(
+        f"  codecov.status            = {cfg.codecov.status}  (token_set={cfg.codecov.token_set})"
+    )
     print(f"  readthedocs.status        = {cfg.readthedocs.status}")
     if cfg.pypi_trust_verified_at:
         print(f"  oidc.pypi_verified_at     = {cfg.pypi_trust_verified_at}")
@@ -610,10 +646,17 @@ def print_summary(cfg: PostInitConfig, remote_available: bool) -> None:
 # Main
 # ──────────────────────────────────────────────────────────────
 
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--status", action="store_true", help="print current state and exit")
-    parser.add_argument("--skip-remote", action="store_true", help="skip gh/PyPI ops (local edits only)")
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "--status", action="store_true", help="print current state and exit"
+    )
+    parser.add_argument(
+        "--skip-remote", action="store_true", help="skip gh/PyPI ops (local edits only)"
+    )
     args = parser.parse_args(argv)
 
     existing = read_existing_post_init() if MARKER_PATH.exists() else None
@@ -634,7 +677,9 @@ def main(argv: list[str] | None = None) -> int:
     if existing:
         header(f"post-init has already run on this project ({existing.date})")
         print_status(existing)
-        if not ask_yes_no("Reconfigure? (current values shown as defaults below)", default=False):
+        if not ask_yes_no(
+            "Reconfigure? (current values shown as defaults below)", default=False
+        ):
             info("no changes; exiting")
             return 0
 
@@ -644,7 +689,9 @@ def main(argv: list[str] | None = None) -> int:
         codecov=ask_codecov(existing.codecov if existing else None),
         readthedocs=ask_readthedocs(existing.readthedocs if existing else None),
         pypi_trust_verified_at=existing.pypi_trust_verified_at if existing else None,
-        testpypi_trust_verified_at=existing.testpypi_trust_verified_at if existing else None,
+        testpypi_trust_verified_at=existing.testpypi_trust_verified_at
+        if existing
+        else None,
     )
 
     # ── Apply local: workflow file moves
@@ -675,7 +722,10 @@ def main(argv: list[str] | None = None) -> int:
 
     # ── Codecov token (only if user said enabled and remote available)
     if remote_available and cfg.codecov.status == ENABLED and not cfg.codecov.token_set:
-        if ask_yes_no("Paste your Codecov token now? (else set later via `gh secret set CODECOV_TOKEN`)", default=False):
+        if ask_yes_no(
+            "Paste your Codecov token now? (else set later via `gh secret set CODECOV_TOKEN`)",
+            default=False,
+        ):
             try:
                 token = input("  CODECOV_TOKEN: ").strip()
             except EOFError:
@@ -734,6 +784,7 @@ def _derive_project_name() -> str | None:
         return None
     raw = pj.read_text(encoding="utf-8")
     import re
+
     m = re.search(r'^name\s*=\s*"([^"]+)"', raw, re.MULTILINE)
     return m.group(1) if m else None
 

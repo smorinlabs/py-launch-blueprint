@@ -76,16 +76,23 @@ class Report:
 
 
 def _run(cmd: list[str], check: bool = False) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True, check=check)
+    return subprocess.run(
+        cmd, cwd=REPO_ROOT, capture_output=True, text=True, check=check
+    )
 
 
 # ──────────────────────────────────────────────────────────────
 # Migration checks
 # ──────────────────────────────────────────────────────────────
 
+
 def check_marker_present() -> Finding:
     if not MARKER_PATH.exists():
-        return Finding("marker", "warn", f"{MARKER_PATH.relative_to(REPO_ROOT)} not found — init not run yet")
+        return Finding(
+            "marker",
+            "warn",
+            f"{MARKER_PATH.relative_to(REPO_ROOT)} not found — init not run yet",
+        )
     return Finding("marker", "pass", f"{MARKER_PATH.relative_to(REPO_ROOT)} present")
 
 
@@ -98,7 +105,9 @@ def check_no_identity_leftover() -> Finding:
     """
     try:
         manifest = load_manifest()
-        regenerate_paths = {(REPO_ROOT / r.path).resolve() for r in manifest.regenerates}
+        regenerate_paths = {
+            (REPO_ROOT / r.path).resolve() for r in manifest.regenerates
+        }
     except (FileNotFoundError, OSError):
         regenerate_paths = set()
 
@@ -117,7 +126,9 @@ def check_no_identity_leftover() -> Finding:
             except (OSError, UnicodeDecodeError):
                 continue
     if not leftover:
-        return Finding("no-identity-leak", "pass", "no blueprint identity values remain")
+        return Finding(
+            "no-identity-leak", "pass", "no blueprint identity values remain"
+        )
     sample = next(iter(leftover))
     n = sum(len(v) for v in leftover.values())
     return Finding(
@@ -150,7 +161,9 @@ def check_marker_matches_state() -> Finding:
             "error",
             f"marker says package_name={expected_pkg!r} but pyproject.toml [project].name doesn't match",
         )
-    return Finding("marker-matches", "pass", "marker answers consistent with pyproject.toml")
+    return Finding(
+        "marker-matches", "pass", "marker answers consistent with pyproject.toml"
+    )
 
 
 def check_internal_consistency() -> list[Finding]:
@@ -163,6 +176,7 @@ def check_internal_consistency() -> list[Finding]:
 
     def _scrape(path: Path, pattern: str) -> str | None:
         import re
+
         if not path.exists():
             return None
         m = re.search(pattern, path.read_text(encoding="utf-8"), re.MULTILINE)
@@ -173,32 +187,43 @@ def check_internal_consistency() -> list[Finding]:
     just_cmd = _scrape(just_path, r'^command_name\s*:=\s*"([^"]+)"')
 
     if py_name and just_pkg and py_name != just_pkg:
-        findings.append(Finding(
-            "consistency/package-name", "error",
-            f"pyproject.toml name={py_name!r} ≠ Justfile py_package_name={just_pkg!r}",
-        ))
+        findings.append(
+            Finding(
+                "consistency/package-name",
+                "error",
+                f"pyproject.toml name={py_name!r} ≠ Justfile py_package_name={just_pkg!r}",
+            )
+        )
     elif py_name and just_pkg:
         findings.append(Finding("consistency/package-name", "pass", f"{py_name}"))
 
     if just_pkg:
         pkg_dir = REPO_ROOT / just_pkg
         if not pkg_dir.is_dir():
-            findings.append(Finding(
-                "consistency/package-dir", "error",
-                f"package directory {just_pkg}/ does not exist",
-            ))
+            findings.append(
+                Finding(
+                    "consistency/package-dir",
+                    "error",
+                    f"package directory {just_pkg}/ does not exist",
+                )
+            )
         else:
-            findings.append(Finding("consistency/package-dir", "pass", f"{just_pkg}/ exists"))
+            findings.append(
+                Finding("consistency/package-dir", "pass", f"{just_pkg}/ exists")
+            )
 
     if just_cmd:
         py_text = py_path.read_text(encoding="utf-8") if py_path.exists() else ""
         if f"{just_cmd} =" in py_text or f'"{just_cmd}"' in py_text:
             findings.append(Finding("consistency/cli-command", "pass", just_cmd))
         else:
-            findings.append(Finding(
-                "consistency/cli-command", "error",
-                f"Justfile command_name={just_cmd!r} not found in [project.scripts]",
-            ))
+            findings.append(
+                Finding(
+                    "consistency/cli-command",
+                    "error",
+                    f"Justfile command_name={just_cmd!r} not found in [project.scripts]",
+                )
+            )
 
     license_year = _scrape(license_path, r"Copyright \(c\) (\d{4})")
     py_year = _scrape(py_path, r"Copyright \(c\) (\d{4})")
@@ -206,12 +231,17 @@ def check_internal_consistency() -> list[Finding]:
     years = {"LICENSE": license_year, "pyproject.toml": py_year, "conf.py": conf_year}
     distinct = {y for y in years.values() if y}
     if len(distinct) > 1:
-        findings.append(Finding(
-            "consistency/copyright-year", "warn",
-            f"year mismatch: {years}",
-        ))
+        findings.append(
+            Finding(
+                "consistency/copyright-year",
+                "warn",
+                f"year mismatch: {years}",
+            )
+        )
     elif distinct:
-        findings.append(Finding("consistency/copyright-year", "pass", next(iter(distinct))))
+        findings.append(
+            Finding("consistency/copyright-year", "pass", next(iter(distinct)))
+        )
 
     return findings
 
@@ -225,7 +255,11 @@ def run_migration_checks() -> list[Finding]:
     just = REPO_ROOT / "Justfile"
     if just.exists():
         gw = check_guard_wiring(just)
-        findings.append(Finding("guard-wiring", "pass" if gw.ok else "error", "; ".join(gw.messages)))
+        findings.append(
+            Finding(
+                "guard-wiring", "pass" if gw.ok else "error", "; ".join(gw.messages)
+            )
+        )
     findings.extend(check_internal_consistency())
     return findings
 
@@ -239,21 +273,31 @@ REQUIRED_TOOLS = ("just", "uv", "git", "bun", "lefthook", "gitleaks", "cog")
 
 def check_tool(name: str) -> Finding:
     if shutil.which(name) is None:
-        return Finding(f"tool/{name}", "warn", f"{name} not on PATH (some recipes won't work)")
+        return Finding(
+            f"tool/{name}", "warn", f"{name} not on PATH (some recipes won't work)"
+        )
     return Finding(f"tool/{name}", "pass", f"{name} available")
 
 
 def check_python_version() -> Finding:
     v = sys.version_info
     if (v.major, v.minor) < (3, 12):
-        return Finding("python-version", "error", f"Python {v.major}.{v.minor} < 3.12 required (ITM-033)")
+        return Finding(
+            "python-version",
+            "error",
+            f"Python {v.major}.{v.minor} < 3.12 required (ITM-033)",
+        )
     return Finding("python-version", "pass", f"Python {v.major}.{v.minor}.{v.micro}")
 
 
 def check_origin_configured() -> Finding:
     res = _run(["git", "remote", "get-url", "origin"])
     if res.returncode != 0 or not res.stdout.strip():
-        return Finding("git-origin", "warn", "no `origin` remote configured (mode #3 — clone-reinit)")
+        return Finding(
+            "git-origin",
+            "warn",
+            "no `origin` remote configured (mode #3 — clone-reinit)",
+        )
     return Finding("git-origin", "pass", res.stdout.strip())
 
 
@@ -271,7 +315,9 @@ def check_venv_present(fix: bool = False) -> Finding:
 
 def check_lefthook_installed() -> Finding:
     if not (REPO_ROOT / ".git" / "hooks" / "pre-commit").exists():
-        return Finding("git-hooks", "warn", "lefthook not installed — run `just hooks-install`")
+        return Finding(
+            "git-hooks", "warn", "lefthook not installed — run `just hooks-install`"
+        )
     return Finding("git-hooks", "pass", "pre-commit hook present")
 
 
@@ -343,42 +389,64 @@ def check_post_init_workflows_match_state() -> list[Finding]:
         check_name = f"post_init/{key}"
         if state == "enabled":
             if in_active and not in_disabled:
-                findings.append(Finding(check_name, "pass", f"{wf_name} active (as marker says)"))
+                findings.append(
+                    Finding(check_name, "pass", f"{wf_name} active (as marker says)")
+                )
             elif in_disabled and not in_active:
-                findings.append(Finding(
-                    check_name, "error",
-                    f"marker says enabled but {wf_name} is in workflows.disabled/ — "
-                    f"run `just post-init` to reconcile",
-                ))
+                findings.append(
+                    Finding(
+                        check_name,
+                        "error",
+                        f"marker says enabled but {wf_name} is in workflows.disabled/ — "
+                        f"run `just post-init` to reconcile",
+                    )
+                )
             elif not in_active and not in_disabled:
-                findings.append(Finding(
-                    check_name, "error",
-                    f"marker says enabled but {wf_name} not found anywhere",
-                ))
+                findings.append(
+                    Finding(
+                        check_name,
+                        "error",
+                        f"marker says enabled but {wf_name} not found anywhere",
+                    )
+                )
             else:  # both — impossible-but-defensive
-                findings.append(Finding(
-                    check_name, "error",
-                    f"{wf_name} exists in BOTH workflows/ and workflows.disabled/",
-                ))
+                findings.append(
+                    Finding(
+                        check_name,
+                        "error",
+                        f"{wf_name} exists in BOTH workflows/ and workflows.disabled/",
+                    )
+                )
         elif state == "disabled":
             if in_disabled and not in_active:
-                findings.append(Finding(check_name, "pass", f"{wf_name} disabled (as marker says)"))
+                findings.append(
+                    Finding(check_name, "pass", f"{wf_name} disabled (as marker says)")
+                )
             elif in_active and not in_disabled:
-                findings.append(Finding(
-                    check_name, "error",
-                    f"marker says disabled but {wf_name} is in workflows/ — "
-                    f"run `just post-init` to reconcile",
-                ))
+                findings.append(
+                    Finding(
+                        check_name,
+                        "error",
+                        f"marker says disabled but {wf_name} is in workflows/ — "
+                        f"run `just post-init` to reconcile",
+                    )
+                )
             elif not in_active and not in_disabled:
-                findings.append(Finding(
-                    check_name, "warn",
-                    f"marker says disabled and {wf_name} not found anywhere (may have been deleted)",
-                ))
+                findings.append(
+                    Finding(
+                        check_name,
+                        "warn",
+                        f"marker says disabled and {wf_name} not found anywhere (may have been deleted)",
+                    )
+                )
             else:
-                findings.append(Finding(
-                    check_name, "error",
-                    f"{wf_name} exists in BOTH workflows/ and workflows.disabled/",
-                ))
+                findings.append(
+                    Finding(
+                        check_name,
+                        "error",
+                        f"{wf_name} exists in BOTH workflows/ and workflows.disabled/",
+                    )
+                )
         # state == "deferred" or None — no expectation
     return findings
 
@@ -391,7 +459,8 @@ def check_post_init_codecov_gate() -> Finding:
     codecov_status = pi.get("codecov", {}).get("status")
     if codecov_status in (None, "deferred"):
         return Finding(
-            "post_init/codecov-gate", "pass",
+            "post_init/codecov-gate",
+            "pass",
             f"n/a — codecov status={codecov_status or 'unset'}",
         )
     ci_yml = REPO_ROOT / ".github" / "workflows" / "ci.yml"
@@ -399,9 +468,12 @@ def check_post_init_codecov_gate() -> Finding:
         return Finding("post_init/codecov-gate", "warn", "ci.yml not found")
     has_marker = _CODECOV_GATE_MARKER in ci_yml.read_text(encoding="utf-8")
     if has_marker:
-        return Finding("post_init/codecov-gate", "pass", "ci.yml carries the codecov-gated marker")
+        return Finding(
+            "post_init/codecov-gate", "pass", "ci.yml carries the codecov-gated marker"
+        )
     return Finding(
-        "post_init/codecov-gate", "error",
+        "post_init/codecov-gate",
+        "error",
         f"marker says codecov={codecov_status} but ci.yml lacks the gate edit — "
         f"run `just post-init` to apply",
     )
@@ -424,7 +496,8 @@ def check_post_init_oidc_freshness() -> Finding:
         publishing = pi.get("publishing", {})
         if publishing.get("pypi") == "enabled":
             return Finding(
-                "post_init/oidc", "warn",
+                "post_init/oidc",
+                "warn",
                 "publishing enabled but no OIDC verification recorded — "
                 "re-run `just post-init` after your first release",
             )
@@ -444,6 +517,7 @@ def run_post_init_checks() -> list[Finding]:
 # CLI
 # ──────────────────────────────────────────────────────────────
 
+
 def render_report(report: Report, use_color: bool = True) -> str:
     lines: list[str] = []
     if report.migration:
@@ -459,11 +533,17 @@ def render_report(report: Report, use_color: bool = True) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--fix", action="store_true")
     parser.add_argument("--json", action="store_true")
-    parser.add_argument("--skip", choices=["env", "mig", "pi"], default=None,
-                        help="skip a check class: env (environment), mig (migration), pi (post-init)")
+    parser.add_argument(
+        "--skip",
+        choices=["env", "mig", "pi"],
+        default=None,
+        help="skip a check class: env (environment), mig (migration), pi (post-init)",
+    )
     args = parser.parse_args(argv)
 
     report = Report()

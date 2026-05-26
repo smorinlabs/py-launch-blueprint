@@ -63,7 +63,9 @@ def patched_paths(tmp_path, monkeypatch):
     workflows.mkdir(parents=True)
     # populate sample workflows that match what post_init knows about
     (workflows / "publish.yml").write_text("name: publish\n", encoding="utf-8")
-    (workflows / "release-please.yml").write_text("name: release-please\n", encoding="utf-8")
+    (workflows / "release-please.yml").write_text(
+        "name: release-please\n", encoding="utf-8"
+    )
     monkeypatch.setattr(post_init, "REPO_ROOT", tmp_path)
     monkeypatch.setattr(post_init, "MARKER_PATH", marker)
     monkeypatch.setattr(post_init, "WORKFLOWS_DIR", workflows)
@@ -76,11 +78,14 @@ def patched_paths(tmp_path, monkeypatch):
 # Marker I/O
 # ──────────────────────────────────────────────────────────────
 
+
 class TestMarkerRoundTrip:
     def test_write_then_read_preserves_publishing(self, patched_paths):
         cfg = PostInitConfig(
             mode="full",
-            publishing=PublishingConfig(pypi=ENABLED, testpypi=DISABLED, release_please=ENABLED),
+            publishing=PublishingConfig(
+                pypi=ENABLED, testpypi=DISABLED, release_please=ENABLED
+            ),
         )
         post_init.write_marker_with_post_init(cfg)
         out = post_init.read_existing_post_init()
@@ -134,11 +139,14 @@ class TestMarkerRoundTrip:
 # Workflow file disable / enable
 # ──────────────────────────────────────────────────────────────
 
+
 class TestWorkflowMoves:
     def test_disable_moves_file_to_disabled_dir(self, patched_paths):
         assert post_init.disable_workflow("publish.yml") is True
         assert not (patched_paths / ".github" / "workflows" / "publish.yml").exists()
-        assert (patched_paths / ".github" / "workflows.disabled" / "publish.yml").exists()
+        assert (
+            patched_paths / ".github" / "workflows.disabled" / "publish.yml"
+        ).exists()
 
     def test_disable_is_idempotent(self, patched_paths):
         post_init.disable_workflow("publish.yml")
@@ -149,7 +157,9 @@ class TestWorkflowMoves:
         post_init.disable_workflow("publish.yml")
         assert post_init.enable_workflow("publish.yml") is True
         assert (patched_paths / ".github" / "workflows" / "publish.yml").exists()
-        assert not (patched_paths / ".github" / "workflows.disabled" / "publish.yml").exists()
+        assert not (
+            patched_paths / ".github" / "workflows.disabled" / "publish.yml"
+        ).exists()
 
     def test_enable_is_idempotent(self, patched_paths):
         # publish.yml starts in workflows/; enable() finds it there → no-op
@@ -232,6 +242,7 @@ class TestCiYmlCodecovGate:
 # Status output
 # ──────────────────────────────────────────────────────────────
 
+
 class TestStatusOutput:
     def test_status_none_shows_not_run(self, capsys):
         post_init.print_status(None)
@@ -255,6 +266,7 @@ class TestStatusOutput:
 # ──────────────────────────────────────────────────────────────
 # Project-name derivation
 # ──────────────────────────────────────────────────────────────
+
 
 class TestDeriveProjectName:
     def test_returns_name_from_pyproject(self, tmp_path, monkeypatch):

@@ -37,7 +37,9 @@ def test_every_identity_field_has_at_least_one_replace_block() -> None:
 def test_replace_blocks_have_valid_mode() -> None:
     m = load_manifest(MANIFEST_PATH)
     for r in m.replaces:
-        assert r.mode in ("structured", "text"), f"unknown mode {r.mode!r} for {r.field!r}"
+        assert r.mode in ("structured", "text"), (
+            f"unknown mode {r.mode!r} for {r.field!r}"
+        )
 
 
 def test_replace_blocks_enumerate_current_values_against_identity() -> None:
@@ -69,8 +71,12 @@ def test_rename_templates_resolve_cleanly() -> None:
 
 def test_replacement_map_is_longest_first() -> None:
     answers = Answers(
-        package_name="a", repo_name="b", command_name="c",
-        author="d", email="e", owner="f",
+        package_name="a",
+        repo_name="b",
+        command_name="c",
+        author="d",
+        email="e",
+        owner="f",
     )
     rep = _replacement_map(answers)
     keys = list(rep.keys())

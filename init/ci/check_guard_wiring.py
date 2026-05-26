@@ -32,7 +32,9 @@ class CheckResult:
 
     def render(self) -> str:
         prefix = "OK" if self.ok else "FAIL"
-        return f"[{prefix}] guard-wiring:\n" + "\n".join(f"  - {m}" for m in self.messages)
+        return f"[{prefix}] guard-wiring:\n" + "\n".join(
+            f"  - {m}" for m in self.messages
+        )
 
 
 def _recipe_line_re(name: str) -> re.Pattern[str]:

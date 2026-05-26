@@ -39,6 +39,7 @@ def is_bootstrap_path(path: Path) -> bool:
             continue
     return False
 
+
 BLUEPRINT_IDENTITY: dict[str, str] = {
     "package_name": "py_launch_blueprint",
     "repo_name": "py-launch-blueprint",

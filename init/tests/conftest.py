@@ -44,14 +44,21 @@ from common import MODES  # noqa: E402 — SSOT; re-exported for legacy imports
 def _git(*args: str, cwd: Path) -> subprocess.CompletedProcess:
     """Run git with a sandboxed identity (no global config side-effects)."""
     env_args = [
-        "-c", "user.email=test@example.com",
-        "-c", "user.name=Test Fixture",
-        "-c", "commit.gpgsign=false",
-        "-c", "init.defaultBranch=main",
+        "-c",
+        "user.email=test@example.com",
+        "-c",
+        "user.name=Test Fixture",
+        "-c",
+        "commit.gpgsign=false",
+        "-c",
+        "init.defaultBranch=main",
     ]
     return subprocess.run(
         ["git", *env_args, *args],
-        cwd=cwd, check=True, capture_output=True, text=True,
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+        text=True,
     )
 
 
@@ -83,14 +90,24 @@ def build_fixture(tmp_path: Path, mode: str) -> Path:
     _git("commit", "-q", "-m", "initial commit (fixture)", cwd=proj)
 
     if mode in ("template_button", "gh_template"):
-        _git("remote", "add", "origin",
-             "git@github.com:newowner/my-project.git", cwd=proj)
+        _git(
+            "remote",
+            "add",
+            "origin",
+            "git@github.com:newowner/my-project.git",
+            cwd=proj,
+        )
     elif mode == "clone_reinit":
         pass  # Mode 3: no remote configured yet
     elif mode == "fork":
         # Mode 4: fork — same repo NAME, different OWNER.
-        _git("remote", "add", "origin",
-             "git@github.com:alice/py-launch-blueprint.git", cwd=proj)
+        _git(
+            "remote",
+            "add",
+            "origin",
+            "git@github.com:alice/py-launch-blueprint.git",
+            cwd=proj,
+        )
 
     return proj
 
@@ -115,23 +132,38 @@ def write_answers(proj: Path) -> Path:
 def run_guard(proj: Path, mode_arg: str) -> subprocess.CompletedProcess:
     return subprocess.run(
         ["bash", "init/guard.sh", mode_arg],
-        cwd=proj, capture_output=True, text=True,
+        cwd=proj,
+        capture_output=True,
+        text=True,
     )
 
 
 def run_init(proj: Path, *extra: str) -> subprocess.CompletedProcess:
     answers = write_answers(proj)
     return subprocess.run(
-        ["uv", "run", "--script", "init/init.py",
-         "--config", str(answers.relative_to(proj)),
-         "--no-lockfile", "--yes", "--allow-dirty", *extra],
-        cwd=proj, capture_output=True, text=True,
+        [
+            "uv",
+            "run",
+            "--script",
+            "init/init.py",
+            "--config",
+            str(answers.relative_to(proj)),
+            "--no-lockfile",
+            "--yes",
+            "--allow-dirty",
+            *extra,
+        ],
+        cwd=proj,
+        capture_output=True,
+        text=True,
     )
 
 
 @pytest.fixture
 def fixture_for_mode(tmp_path):
     """Parametrize-friendly: returns a callable to build a fixture in a mode."""
+
     def _build(mode: str) -> Path:
         return build_fixture(tmp_path, mode)
+
     return _build

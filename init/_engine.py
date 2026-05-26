@@ -134,21 +134,31 @@ def build_plan(manifest: Manifest, answers: Answers, root: Path = REPO_ROOT) -> 
         for f in op.files:
             target = root / f
             if not target.exists():
-                plan.items.append(PlanItem("replace", f, f"field={op.field} mode={op.mode} (missing — skip)"))
+                plan.items.append(
+                    PlanItem(
+                        "replace",
+                        f,
+                        f"field={op.field} mode={op.mode} (missing — skip)",
+                    )
+                )
                 continue
             plan.items.append(
                 PlanItem(
                     "replace",
                     f,
                     f"field={op.field} mode={op.mode}  "
-                    + ", ".join(f"{cur!r}→{rep_map.get(cur, '?')!r}" for cur in op.current),
+                    + ", ".join(
+                        f"{cur!r}→{rep_map.get(cur, '?')!r}" for cur in op.current
+                    ),
                 )
             )
 
     for op in _resolve_renames(manifest.renames, answers):
         src = root / op.src
         if not src.exists():
-            plan.items.append(PlanItem("rename", op.src, f"→ {op.dst} (missing — skip)"))
+            plan.items.append(
+                PlanItem("rename", op.src, f"→ {op.dst} (missing — skip)")
+            )
             continue
         plan.items.append(PlanItem("rename", op.src, f"→ {op.dst}"))
 
@@ -166,7 +176,9 @@ def apply_remove(op: RemoveOp, root: Path = REPO_ROOT) -> bool:
     return True
 
 
-def apply_replace_text(path: Path, current_values: list[str], rep_map: dict[str, str]) -> bool:
+def apply_replace_text(
+    path: Path, current_values: list[str], rep_map: dict[str, str]
+) -> bool:
     """Longest-first string replacement. Returns True if file changed."""
     text = path.read_text(encoding="utf-8")
     new_text = text
@@ -245,7 +257,9 @@ def apply(manifest: Manifest, answers: Answers, root: Path = REPO_ROOT) -> Apply
                 continue
             current_values = list(op.current)
             if op.mode == "structured":
-                changed = apply_replace_structured(target, current_values, rep_map, op.field)
+                changed = apply_replace_structured(
+                    target, current_values, rep_map, op.field
+                )
             else:
                 changed = apply_replace_text(target, current_values, rep_map)
             if changed:
