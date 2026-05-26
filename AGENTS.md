@@ -64,7 +64,7 @@ Trusted Publishing. See [ITM-053..060] for the full chain.
 When the user wants to bootstrap a new Python project from this template
 (phrases like *"create a new project from py-launch-blueprint"*, *"start a
 new Python project from this template"*, *"scaffold a project from the
-blueprint"*), follow the runbook at [`init/skill/SKILL.md`](init/skill/SKILL.md).
+blueprint"*), follow the runbook at [`skill/SKILL.md`](skill/SKILL.md).
 
 It encodes the full sequence: precondition checks (`gh`/`uv`), identity
 collection, `gh repo create --template` instantiation, `just init` rebrand
