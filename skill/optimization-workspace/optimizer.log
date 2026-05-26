@@ -1,0 +1,64 @@
+Split: 12 train, 8 test (holdout=0.4)
+
+============================================================
+Iteration 1/5
+Description: Use this skill whenever the user wants to start, create, or bootstrap a new Python project from the py-launch-blueprint template — phrases like "start a new Python project from this template", "create a new project from py-launch-blueprint", "bootstrap a new project from the blueprint", "new Python project using py-launch-blueprint", or even just "new project from this repo / this template". Trigger this skill even if the user doesn't say the exact name of the template — anything that sounds like "give me a fresh Python project scaffolded with all the nice things" is in scope. Handles the full bootstrap flow: precondition checks (gh, uv), identity collection (repo name, owner, package, CLI command, author/email, visibility), `gh repo create --template` instantiation, automatic `just init` rebrand with a dry-run preview + single confirmation, initial commit + push, and a prompt about whether to chain into post-init for publishing/Codecov/RTD setup. Reuses the answers.toml schema from init/tests/integration/answers.toml.
+============================================================
+Train: 19/36 correct, precision=100% recall=6% accuracy=53% (90.7s)
+  [FAIL] rate=0/3 expected=True: I need a new python project set up the way py-launch-bluepri
+  [FAIL] rate=0/3 expected=True: ok so I've been wanting to build a tiny tool that takes scre
+  [FAIL] rate=0/3 expected=True: start a fresh project from the blueprint. python package=ml_
+  [FAIL] rate=1/3 expected=True: make me a new python project using this template, name it 'q
+  [FAIL] rate=0/3 expected=True: ok i want to start a new python project — i'm building a CLI
+  [FAIL] rate=0/3 expected=True: scaffold me a fresh python project from this blueprint, call
+  [PASS] rate=0/3 expected=False: I want to rename my GitHub repo from foo to bar. It's alread
+  [PASS] rate=0/3 expected=False: I want to set up codecov uploads for my project — it was boo
+  [PASS] rate=0/3 expected=False: uv sync is failing with 'no compatible version found for tom
+  [PASS] rate=0/3 expected=False: I made a typo in the package name when I ran just init last 
+  [PASS] rate=0/3 expected=False: How do I configure ReadTheDocs for a project that uses .read
+  [PASS] rate=0/3 expected=False: I want to contribute a fix back to py-launch-blueprint itsel
+Test : 13/24 correct, precision=100% recall=8% accuracy=54% (0.0s)
+  [FAIL] rate=1/3 expected=True: create a new python project from py-launch-blueprint named '
+  [FAIL] rate=0/3 expected=True: Can you help me bootstrap a new python repo from py-launch-b
+  [FAIL] rate=0/3 expected=True: I need to bootstrap a brand new python project with proper t
+  [FAIL] rate=0/3 expected=True: give me a fresh python project from this template. repo name
+  [PASS] rate=0/3 expected=False: I ran just init on a fresh clone but it says 'no .git direct
+  [PASS] rate=0/3 expected=False: I want to release the next version of my package to PyPI. re
+  [PASS] rate=0/3 expected=False: Can you help me add a new step to .github/workflows/ci.yml t
+  [PASS] rate=0/3 expected=False: what's the difference between py-launch-blueprint and using 
+
+Improving description...
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/stevemorin/.claude/plugins/cache/claude-plugins-official/skill-creator/unknown/skills/skill-creator/scripts/run_loop.py", line 332, in <module>
+    main()
+  File "/Users/stevemorin/.claude/plugins/cache/claude-plugins-official/skill-creator/unknown/skills/skill-creator/scripts/run_loop.py", line 297, in main
+    output = run_loop(
+             ^^^^^^^^^
+  File "/Users/stevemorin/.claude/plugins/cache/claude-plugins-official/skill-creator/unknown/skills/skill-creator/scripts/run_loop.py", line 202, in run_loop
+    new_description = improve_description(
+                      ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/stevemorin/.claude/plugins/cache/claude-plugins-official/skill-creator/unknown/skills/skill-creator/scripts/improve_description.py", line 114, in improve_description
+    response = client.messages.create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/stevemorin/.cache/uv/archive-v0/68f-gtfjbTCHizs1Ual4j/lib/python3.12/site-packages/anthropic/_utils/_utils.py", line 294, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/stevemorin/.cache/uv/archive-v0/68f-gtfjbTCHizs1Ual4j/lib/python3.12/site-packages/anthropic/resources/messages/messages.py", line 1003, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/Users/stevemorin/.cache/uv/archive-v0/68f-gtfjbTCHizs1Ual4j/lib/python3.12/site-packages/anthropic/_base_client.py", line 1374, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/stevemorin/.cache/uv/archive-v0/68f-gtfjbTCHizs1Ual4j/lib/python3.12/site-packages/anthropic/_base_client.py", line 1064, in request
+    request = self._build_request(options, retries_taken=retries_taken)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/stevemorin/.cache/uv/archive-v0/68f-gtfjbTCHizs1Ual4j/lib/python3.12/site-packages/anthropic/_base_client.py", line 522, in _build_request
+    headers = self._build_headers(options, retries_taken=retries_taken)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/stevemorin/.cache/uv/archive-v0/68f-gtfjbTCHizs1Ual4j/lib/python3.12/site-packages/anthropic/_base_client.py", line 452, in _build_headers
+    self._validate_headers(headers_dict, custom_headers)
+  File "/Users/stevemorin/.cache/uv/archive-v0/68f-gtfjbTCHizs1Ual4j/lib/python3.12/site-packages/anthropic/_client.py", line 385, in _validate_headers
+    raise TypeError(
+TypeError: "Could not resolve authentication method. Expected one of api_key, auth_token, or credentials to be set. Or for one of the `X-Api-Key` or `Authorization` headers to be explicitly omitted"

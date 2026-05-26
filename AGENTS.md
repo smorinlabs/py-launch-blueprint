@@ -69,9 +69,12 @@ blueprint"*), follow the runbook at [`skill/SKILL.md`](skill/SKILL.md).
 It encodes the full sequence: precondition checks (`gh`/`uv`), identity
 collection, `gh repo create --template` instantiation, `just init` rebrand
 with a dry-run preview, initial commit + push, and an optional handoff to
-`just post-init` for publishing/Codecov/RTD setup. Claude Code auto-triggers
-this skill via the YAML frontmatter in `SKILL.md`; for other agents the
-file is a direct runbook — every step is a copy-pasteable shell block.
+`just post-init` for publishing/Codecov/RTD setup. Claude Code's auto-trigger
+on this skill is **unreliable** (empirically 0% recall — Claude tends to do
+the bootstrap directly and skip the skill); for predictable invocation, tell
+the agent explicitly: *"Follow the runbook in `skill/SKILL.md`."* For Codex
+and any agent following this file, the SKILL.md is a direct runbook — every
+step is a copy-pasteable shell block.
 
 ## For generated projects
 
