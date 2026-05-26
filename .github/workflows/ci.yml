@@ -87,9 +87,16 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: Install Just + Taplo
-        uses: extractions/setup-just@v4
-      - name: Install Taplo
-        run: just install-taplo
+      # taiki-e/install-action downloads a pre-built taplo binary directly
+      # from the upstream GitHub release (no cargo compile). ~1-3s installed
+      # vs ~2min for the previous `cargo install taplo-cli` path. The action
+      # also caches the binary across runs (key includes runner OS + version).
+      # Local dev: see `just install-taplo` — Justfile recipe uses the same
+      # upstream binary directly (curl + gunzip), so both CI and local paths
+      # get the same speedup.
+      - name: Install taplo
+        uses: taiki-e/install-action@v2
+        with:
+          tool: taplo-cli
       - name: Check TOML formatting
         run: taplo check '**/*.toml'

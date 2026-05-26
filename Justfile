@@ -104,15 +104,48 @@ alias c := check-deps
 @install-dev: check-deps
     uv pip install --editable ".[dev]"
 
-# Install Taplo in editable mode with dev dependencies
+# Install Taplo from upstream pre-built binary (much faster than `cargo install`,
+# which compiles from source — ~1s vs ~2min). Detects OS + arch and pulls the
+# matching release asset from https://github.com/tamasfe/taplo/releases.
+# Falls back to `cargo install` if the platform isn't covered.
+#
+# Uses a shebang body so bash interprets $(...) and ${...} directly — Just's
+# template engine would otherwise mangle them.
 [group('install')]
-@install-taplo:
-	if ! command -v taplo >/dev/null 2>&1; then \
-		cargo install taplo-cli && echo "{{GREEN}} Taplo installed successfully{{NC}}" || \
-		(echo "{{RED}}Failed to install taplo-cli.{{NC}} Try running '{{BLUE}}rustup update{{NC}}' to update your Rust toolchain." && exit 1); \
-	else \
-		echo "{{YELLOW}}Taplo is already installed{{NC}}"; \
-	fi
+install-taplo:
+    #!/usr/bin/env bash
+    set -eu
+    if command -v taplo >/dev/null 2>&1; then
+        echo -e "{{YELLOW}}Taplo is already installed{{NC}}"
+        exit 0
+    fi
+    VERSION=0.10.0
+    case "$(uname -s)" in
+        Linux*)  os=linux ;;
+        Darwin*) os=darwin ;;
+        *)       os= ;;
+    esac
+    case "$(uname -m)" in
+        x86_64)        arch=x86_64 ;;
+        arm64|aarch64) arch=aarch64 ;;
+        *)             arch= ;;
+    esac
+    if [ -z "$os" ] || [ -z "$arch" ]; then
+        echo -e "{{YELLOW}}No pre-built binary for $(uname -s)/$(uname -m); using cargo install{{NC}}"
+        cargo install taplo-cli \
+            || { echo -e "{{RED}}Failed to install taplo-cli.{{NC}} Try '{{BLUE}}rustup update{{NC}}' first." >&2; exit 1; }
+        exit 0
+    fi
+    INSTALL_DIR="${CARGO_HOME:-$HOME/.cargo}/bin"
+    mkdir -p "$INSTALL_DIR"
+    URL="https://github.com/tamasfe/taplo/releases/download/${VERSION}/taplo-${os}-${arch}.gz"
+    echo -e "{{BLUE}}Downloading $URL{{NC}}"
+    if curl -fsSL "$URL" | gunzip > "$INSTALL_DIR/taplo" && chmod +x "$INSTALL_DIR/taplo"; then
+        echo -e "{{GREEN}}✓ Taplo ${VERSION} installed to $INSTALL_DIR/taplo{{NC}}"
+    else
+        echo -e "{{RED}}Failed to download pre-built taplo; falling back to cargo install{{NC}}" >&2
+        cargo install taplo-cli
+    fi
 
 # Format code
 [group('dev')]
