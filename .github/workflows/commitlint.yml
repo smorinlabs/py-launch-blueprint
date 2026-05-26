@@ -1,6 +1,16 @@
 # Commitlint CI (ITM-037 workflow + ITM-038 job). Decided round 7.
 # Validates PR commits against conventional-commits format using
 # wagoid/commitlint-github-action (round-7 choice over manual bunx run).
+#
+# Per-author split: humans get strict 200-char body/footer caps; dependabot
+# gets the line-length rules disabled (it embeds long release-notes URLs
+# that can't be wrapped — see commitlint.dependabot.config.mjs).
+# Selection is on github.event.pull_request.user.login (the PR author),
+# NOT github.actor (which changes per-push and would mis-route after a
+# human pushes a merge commit into a bot-opened PR).
+#
+# The `if:` expressions use a known-vocabulary GitHub context field
+# (user.login) for equality comparison — no shell interpolation, safe.
 
 name: commitlint
 
@@ -16,8 +26,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  commitlint:
-    name: commitlint
+  commitlint-humans:
+    name: commitlint (humans)
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,3 +41,19 @@ jobs:
         uses: wagoid/commitlint-github-action@v6.2.1
         with:
           configFile: commitlint.config.mjs
+
+  commitlint-dependabot:
+    name: commitlint (dependabot)
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: commitlint (lax)
+        uses: wagoid/commitlint-github-action@v6.2.1
+        with:
+          configFile: commitlint.dependabot.config.mjs

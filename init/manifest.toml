@@ -16,7 +16,7 @@ files   = [
 ]
 mode    = "structured"
 
-# author (text) — 21 occurrences in 20 files
+# author (text) — 22 occurrences in 21 files
 [[replace]]
 field   = "author"
 current = ["Steve Morin"]
@@ -30,6 +30,7 @@ files   = [
   ".github/workflows/manual-pr-security-scan.yml",   # 1x
   ".github/workflows/update-contributors.yml",   # 1x
   ".readthedocs.yaml",   # 1x
+  "CHANGELOG.md",   # 1x
   "CONTRIBUTORS.md",   # 1x
   "LICENSE",   # 1x
   "docs/source/_templates/base.html",   # 1x
@@ -96,13 +97,14 @@ files   = [
 ]
 mode    = "structured"
 
-# owner (text) — 26 occurrences in 13 files
+# owner (text) — 122 occurrences in 14 files
 [[replace]]
 field   = "owner"
 current = ["smorinlabs"]
 files   = [
   ".github/CONTRIBUTING.md",   # 1x
   ".github/ISSUE_TEMPLATE/config.yml",   # 1x
+  "CHANGELOG.md",   # 96x
   "EXAMPLECLI.md",   # 1x
   "README.md",   # 5x
   "docs/source/conf.py",   # 2x
@@ -126,7 +128,7 @@ files   = [
 ]
 mode    = "structured"
 
-# package_name (text) — 71 occurrences in 27 files
+# package_name (text) — 73 occurrences in 28 files
 [[replace]]
 field   = "package_name"
 current = ["py_launch_blueprint"]
@@ -136,6 +138,7 @@ files   = [
   ".vscode/launch.json",   # 2x
   ".windsurfrules",   # 1x
   "AGENTS.md",   # 1x
+  "CHANGELOG.md",   # 2x
   "CLAUDE.md",   # 3x
   "Justfile",   # 2x
   "README.md",   # 1x
@@ -171,7 +174,7 @@ files   = [
 ]
 mode    = "structured"
 
-# repo_name (text) — 68 occurrences in 22 files
+# repo_name (text) — 164 occurrences in 23 files
 [[replace]]
 field   = "repo_name"
 current = ["py-launch-blueprint"]
@@ -182,6 +185,7 @@ files   = [
   ".github/codeql/codeql-config.yml",   # 1x
   ".github/workflows/blueprint-guard.yml",   # 1x
   "AGENTS.md",   # 1x
+  "CHANGELOG.md",   # 96x
   "EXAMPLECLI.md",   # 7x
   "Justfile",   # 1x
   "README.md",   # 17x
