@@ -40,14 +40,18 @@ jobs:
       with:
         fetch-depth: 0
         ref: main
+
     - name: Setup Python
       uses: actions/setup-python@v6
       with:
         python-version: '3.12'
-    - name: Update CONTRIBUTORS.md
-      run: |
-        python scripts/update_contributors.py
-    # Checkout and sync the update-contributors branch first
+
+    # Switch to the update-contributors branch BEFORE generating CONTRIBUTORS.md.
+    # The previous step order (generate first, then checkout) left CONTRIBUTORS.md
+    # dirty in the working tree, causing `git checkout -B` to refuse with
+    # "Your local changes ... would be overwritten by checkout". Generating ON the
+    # target branch means the dirty file lives in the branch it belongs to and the
+    # subsequent commit step commits it cleanly.
     - name: Checkout & sync update-contributors branch
       run: |
         git fetch origin || true
@@ -64,6 +68,10 @@ jobs:
           # Push the new branch to the remote so future runs can reference it.
           git push origin update-contributors
         fi
+
+    - name: Update CONTRIBUTORS.md
+      run: |
+        python scripts/update_contributors.py
 
     # Now commit any changes on the correct branch
     - name: Commit CONTRIBUTORS.md updates
