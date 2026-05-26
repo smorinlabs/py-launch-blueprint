@@ -94,10 +94,18 @@ def find_renames(root: Path = REPO_ROOT) -> list[tuple[str, str]]:
             rel_parts = path.relative_to(root).parts
         except ValueError:
             continue
-        if not rel_parts or rel_parts[0] in {".git", "node_modules", ".venv", "dist", "build"}:
+        if not rel_parts or rel_parts[0] in {
+            ".git",
+            "node_modules",
+            ".venv",
+            "dist",
+            "build",
+        }:
             continue
-        if any(part.startswith("init") and len(rel_parts) > 1 and rel_parts[0] == "init"
-               for part in [rel_parts[0]]):
+        if any(
+            part.startswith("init") and len(rel_parts) > 1 and rel_parts[0] == "init"
+            for part in [rel_parts[0]]
+        ):
             continue
         rel = path.relative_to(root)
         rel_str = str(rel)
@@ -123,7 +131,11 @@ def find_removes() -> list[tuple[str, str]]:
         (".github/workflows/blueprint-guard.yml", "guard CI is blueprint-only"),
         ("init/discover.py", "Phase-0 one-off discovery script"),
     ]
-    return [c for c in candidates if (REPO_ROOT / c[0]).exists() or c[0].startswith("init/discover")]
+    return [
+        c
+        for c in candidates
+        if (REPO_ROOT / c[0]).exists() or c[0].startswith("init/discover")
+    ]
 
 
 def find_regenerates() -> list[tuple[str, list[str]]]:
@@ -149,10 +161,12 @@ def format_toml(
     out.append("#   * Re-run `uv run init/discover.py --summary` to verify coverage.")
     out.append("")
 
-    for (fieldname, mode) in sorted(hits.keys()):
+    for fieldname, mode in sorted(hits.keys()):
         files = hits[(fieldname, mode)]
         total = sum(files.values())
-        out.append(f"# {fieldname} ({mode}) — {total} occurrences in {len(files)} files")
+        out.append(
+            f"# {fieldname} ({mode}) — {total} occurrences in {len(files)} files"
+        )
         out.append("[[replace]]")
         out.append(f'field   = "{fieldname}"')
         out.append(f'current = ["{BLUEPRINT_IDENTITY[fieldname]}"]')
@@ -196,8 +210,12 @@ def format_summary(hits: dict[tuple[str, str], dict[Path, int]]) -> str:
         total = sum(files.values())
         grand_total += total
         grand_files.update(files.keys())
-        out.append(f"  {fieldname:<14} [{mode:<10}]  {total:>4} x in {len(files):>3} files")
-    out.append(f"  {'TOTAL':<14} {'':<12}  {grand_total:>4} x in {len(grand_files):>3} files")
+        out.append(
+            f"  {fieldname:<14} [{mode:<10}]  {total:>4} x in {len(files):>3} files"
+        )
+    out.append(
+        f"  {'TOTAL':<14} {'':<12}  {grand_total:>4} x in {len(grand_files):>3} files"
+    )
     return "\n".join(out)
 
 

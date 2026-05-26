@@ -58,7 +58,9 @@ class PreconditionError(RuntimeError):
     pass
 
 
-def _run(cmd: list[str], cwd: Path = REPO_ROOT, check: bool = True) -> subprocess.CompletedProcess:
+def _run(
+    cmd: list[str], cwd: Path = REPO_ROOT, check: bool = True
+) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, cwd=cwd, check=check, capture_output=True, text=True)
 
 
@@ -81,7 +83,9 @@ def check_preconditions(args: argparse.Namespace) -> None:
         try:
             _run([tool, "--version"])
         except (FileNotFoundError, subprocess.CalledProcessError) as e:
-            raise PreconditionError(f"required tool {tool!r} not available: {e}") from None
+            raise PreconditionError(
+                f"required tool {tool!r} not available: {e}"
+            ) from None
 
     if not args.allow_dirty:
         try:
@@ -164,17 +168,25 @@ def collect_answers_interactive() -> Answers:
     )
     repo_name = _ask("repo name (kebab-case)", "repo_name")
     package_name = _ask(
-        "Python package name (snake_case)", "package_name", derive=lambda: derive_package_name(repo_name)
+        "Python package name (snake_case)",
+        "package_name",
+        derive=lambda: derive_package_name(repo_name),
     )
     command_name = _ask(
-        "CLI command name (kebab-case)", "command_name", derive=lambda: derive_command_name(repo_name)
+        "CLI command name (kebab-case)",
+        "command_name",
+        derive=lambda: derive_command_name(repo_name),
     )
     owner = _ask("GitHub owner (user or org)", "owner")
     author = _ask("author name", "author")
     email = _ask("author email", "email")
     return Answers(
-        package_name=package_name, repo_name=repo_name, command_name=command_name,
-        author=author, email=email, owner=owner,
+        package_name=package_name,
+        repo_name=repo_name,
+        command_name=command_name,
+        author=author,
+        email=email,
+        owner=owner,
     )
 
 
@@ -238,14 +250,18 @@ def prune_init_system() -> None:
             shutil.rmtree(t)
         else:
             t.unlink()
-    print("pruned init/ system. Manually remove `_blueprint_notice`, `_guard`, "
-          "`init`, `init-doctor` from Justfile and the .blueprint-contributor line "
-          "from .gitignore — those are out of scope for automated removal.",
-          file=sys.stderr)
+    print(
+        "pruned init/ system. Manually remove `_blueprint_notice`, `_guard`, "
+        "`init`, `init-doctor` from Justfile and the .blueprint-contributor line "
+        "from .gitignore — those are out of scope for automated removal.",
+        file=sys.stderr,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--config", type=Path, help="TOML file with [answers] table")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true")
@@ -253,13 +269,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--commit", action="store_true")
     parser.add_argument("--prune", action="store_true")
     parser.add_argument("--no-lockfile", action="store_true")
-    parser.add_argument("--yes", action="store_true", help="skip interactive confirmation")
+    parser.add_argument(
+        "--yes", action="store_true", help="skip interactive confirmation"
+    )
     args = parser.parse_args(argv)
 
     if args.prune and not args.force:
         if not MARKER_PATH.exists():
-            print("--prune requires the marker to exist (run init first, or pass --force).",
-                  file=sys.stderr)
+            print(
+                "--prune requires the marker to exist (run init first, or pass --force).",
+                file=sys.stderr,
+            )
             return 2
 
     try:
@@ -296,7 +316,9 @@ def main(argv: list[str] | None = None) -> int:
 
     print(plan.render())
     counts = plan.counts()
-    print(f"\nSummary: {counts['remove']} removes, {counts['replace']} replaces, {counts['rename']} renames.")
+    print(
+        f"\nSummary: {counts['remove']} removes, {counts['replace']} replaces, {counts['rename']} renames."
+    )
 
     if args.dry_run:
         print("\n(--dry-run: no changes written)")
@@ -330,9 +352,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.commit:
         try:
             _run(["git", "add", "-A"])
-            _run(["git", "commit", "-m", f"chore: blueprint init → {answers.repo_name}"])
+            _run(
+                ["git", "commit", "-m", f"chore: blueprint init → {answers.repo_name}"]
+            )
         except subprocess.CalledProcessError as e:
-            print(f"init: --commit failed (changes still on disk) — {e.stderr}", file=sys.stderr)
+            print(
+                f"init: --commit failed (changes still on disk) — {e.stderr}",
+                file=sys.stderr,
+            )
             return 2
 
     print("\n✓ done. Review with `git diff HEAD~1` (or `git status` if not --commit).")
@@ -342,14 +369,19 @@ def main(argv: list[str] | None = None) -> int:
     # itself and runs partial-flow when GitHub isn't reachable yet.
     if not args.config and sys.stdin.isatty():
         try:
-            do_post = input("\nRun post-init now? (publishing, Codecov, RTD) [y/N] ").strip().lower()
+            do_post = (
+                input("\nRun post-init now? (publishing, Codecov, RTD) [y/N] ")
+                .strip()
+                .lower()
+            )
         except EOFError:
             do_post = ""
         if do_post in {"y", "yes"}:
             post_init_path = Path(__file__).resolve().parent / "post_init.py"
             subprocess.run(
                 ["uv", "run", "--script", str(post_init_path)],
-                cwd=REPO_ROOT, check=False,
+                cwd=REPO_ROOT,
+                check=False,
             )
 
     return 0

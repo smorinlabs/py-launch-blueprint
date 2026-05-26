@@ -27,7 +27,7 @@ def _parse_shell_owner_repos() -> set[tuple[str, str]]:
     """Extract the `blueprint_owner_repos="..."` assignment from guard.sh."""
     guard_text = (INIT_DIR / "guard.sh").read_text(encoding="utf-8")
     m = re.search(r'^blueprint_owner_repos="([^"]+)"', guard_text, re.MULTILINE)
-    assert m, "guard.sh: expected `blueprint_owner_repos=\"...\"` assignment"
+    assert m, 'guard.sh: expected `blueprint_owner_repos="..."` assignment'
     pairs = set()
     for item in m.group(1).split():
         owner, _, repo = item.partition("/")

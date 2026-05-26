@@ -28,6 +28,7 @@ BANNER = "blueprint un-initialized"
 # Mode 1 — GitHub "Use this template" button
 # ──────────────────────────────────────────────────────────────
 
+
 class TestMode1TemplateButton:
     @pytest.fixture
     def proj(self, tmp_path):
@@ -53,6 +54,7 @@ class TestMode1TemplateButton:
 # Mode 2 — `gh repo create --template` (state identical to mode 1)
 # ──────────────────────────────────────────────────────────────
 
+
 class TestMode2GhTemplate:
     @pytest.fixture
     def proj(self, tmp_path):
@@ -76,6 +78,7 @@ class TestMode2GhTemplate:
 # ──────────────────────────────────────────────────────────────
 # Mode 3 — Clone + rm -rf .git + git init  (no origin configured)
 # ──────────────────────────────────────────────────────────────
+
 
 class TestMode3CloneReinit:
     @pytest.fixture
@@ -101,6 +104,7 @@ class TestMode3CloneReinit:
 # ──────────────────────────────────────────────────────────────
 # Mode 4 — Fork (origin owner differs, repo name collides)
 # ──────────────────────────────────────────────────────────────
+
 
 class TestMode4Fork:
     @pytest.fixture
@@ -142,13 +146,16 @@ class TestMode4Fork:
 # Mode 5 — ZIP download (no .git at all)
 # ──────────────────────────────────────────────────────────────
 
+
 class TestMode5Zip:
     @pytest.fixture
     def proj(self, tmp_path):
         return build_fixture(tmp_path, "zip")
 
     def test_no_git_dir(self, proj):
-        assert not (proj / ".git").exists(), "fixture sanity: ZIP mode should have no .git"
+        assert not (proj / ".git").exists(), (
+            "fixture sanity: ZIP mode should have no .git"
+        )
 
     def test_guard_warns_with_no_git(self, proj):
         """Guard's git invocation fails → no origin → guard does not skip."""
@@ -175,6 +182,7 @@ class TestMode5Zip:
 # Cross-mode invariants — the marker silences everything (post-init)
 # ──────────────────────────────────────────────────────────────
 
+
 class TestMarkerSilences:
     @pytest.fixture(params=["template_button", "gh_template", "clone_reinit", "fork"])
     def proj(self, tmp_path, request):
@@ -182,7 +190,8 @@ class TestMarkerSilences:
 
     def test_marker_silences_warn_and_block(self, proj):
         (proj / "init" / ".blueprint-initialized").write_text(
-            "[meta]\nversion=\"0.1.0\"\n", encoding="utf-8",
+            '[meta]\nversion="0.1.0"\n',
+            encoding="utf-8",
         )
         warn = run_guard(proj, "warn")
         block = run_guard(proj, "block")

@@ -73,9 +73,11 @@ def main() -> int:
         print("manifest-drift: ok — every identity occurrence is covered.")
         return 0
 
-    print("manifest-drift: DRIFT detected — the following files contain identity",
-          "values but are not listed in the manifest's [[replace]] / [[rename]] /",
-          "[[remove]] sections:")
+    print(
+        "manifest-drift: DRIFT detected — the following files contain identity",
+        "values but are not listed in the manifest's [[replace]] / [[rename]] /",
+        "[[remove]] sections:",
+    )
     for path, values in sorted(leftover.items()):
         rel = path.relative_to(REPO_ROOT)
         print(f"  {rel}  ({', '.join(values)})")

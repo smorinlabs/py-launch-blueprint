@@ -19,7 +19,9 @@ from conftest import build_fixture, run_init
 def run_doctor(proj: Path, *extra: str) -> subprocess.CompletedProcess:
     return subprocess.run(
         ["uv", "run", "--script", "init/init_doctor.py", *extra],
-        cwd=proj, capture_output=True, text=True,
+        cwd=proj,
+        capture_output=True,
+        text=True,
     )
 
 
@@ -52,7 +54,11 @@ class TestDoctorAfterInit:
         assert "no-identity-leak" in r.stdout
         # Marker present
         assert (proj / "init" / ".blueprint-initialized").exists()
-        assert "[ ok  ] marker" in r.stdout or "[ok] marker" in r.stdout or "ok" in r.stdout
+        assert (
+            "[ ok  ] marker" in r.stdout
+            or "[ok] marker" in r.stdout
+            or "ok" in r.stdout
+        )
 
     def test_marker_matches_state(self, tmp_path):
         proj = build_fixture(tmp_path, "template_button")
@@ -67,6 +73,7 @@ class TestDoctorAfterInit:
 class TestDoctorJsonOutput:
     def test_json_is_parseable(self, tmp_path):
         import json
+
         proj = build_fixture(tmp_path, "template_button")
         r = run_doctor(proj, "--json")
         parsed = json.loads(r.stdout)

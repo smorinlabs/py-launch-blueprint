@@ -95,6 +95,7 @@ def _write_marker(fixture: Path, *suffixes: str) -> None:
 # marker-present
 # ──────────────────────────────────────────────────────────────
 
+
 class TestMarkerPresent:
     def test_no_marker_at_all_returns_warn(self, doctor_fixture):
         # don't write a marker
@@ -118,6 +119,7 @@ class TestMarkerPresent:
 # workflows-match-state
 # ──────────────────────────────────────────────────────────────
 
+
 class TestWorkflowsMatchState:
     def test_no_post_init_returns_empty(self, doctor_fixture):
         # no marker — function returns []
@@ -126,8 +128,12 @@ class TestWorkflowsMatchState:
 
     def test_enabled_and_in_workflows_dir_passes(self, doctor_fixture):
         _write_marker(doctor_fixture, _POSTINIT_PYPI_ENABLED)
-        (doctor_fixture / ".github" / "workflows" / "publish.yml").write_text("name: x\n")
-        (doctor_fixture / ".github" / "workflows" / "release-please.yml").write_text("name: x\n")
+        (doctor_fixture / ".github" / "workflows" / "publish.yml").write_text(
+            "name: x\n"
+        )
+        (doctor_fixture / ".github" / "workflows" / "release-please.yml").write_text(
+            "name: x\n"
+        )
         results = init_doctor.check_post_init_workflows_match_state()
         statuses = {r.status for r in results}
         assert "error" not in statuses
@@ -138,11 +144,16 @@ class TestWorkflowsMatchState:
         disabled.mkdir(parents=True)
         (disabled / "publish.yml").write_text("name: x\n")
         # release-please.yml properly in workflows/
-        (doctor_fixture / ".github" / "workflows" / "release-please.yml").write_text("name: x\n")
+        (doctor_fixture / ".github" / "workflows" / "release-please.yml").write_text(
+            "name: x\n"
+        )
         results = init_doctor.check_post_init_workflows_match_state()
         pypi_finding = next(r for r in results if r.name.endswith("publishing.pypi"))
         assert pypi_finding.status == "error"
-        assert "reconcile" in pypi_finding.message.lower() or "workflows.disabled" in pypi_finding.message
+        assert (
+            "reconcile" in pypi_finding.message.lower()
+            or "workflows.disabled" in pypi_finding.message
+        )
 
     def test_disabled_and_in_disabled_dir_passes(self, doctor_fixture):
         _write_marker(doctor_fixture, _POSTINIT_PYPI_DISABLED)
@@ -155,7 +166,9 @@ class TestWorkflowsMatchState:
 
     def test_disabled_but_still_in_active_dir_errors(self, doctor_fixture):
         _write_marker(doctor_fixture, _POSTINIT_PYPI_DISABLED)
-        (doctor_fixture / ".github" / "workflows" / "publish.yml").write_text("name: x\n")
+        (doctor_fixture / ".github" / "workflows" / "publish.yml").write_text(
+            "name: x\n"
+        )
         results = init_doctor.check_post_init_workflows_match_state()
         pypi_finding = next(r for r in results if r.name.endswith("publishing.pypi"))
         assert pypi_finding.status == "error"
@@ -207,7 +220,9 @@ class TestCodecovGate:
 
     def test_status_enabled_without_gate_errors(self, doctor_fixture):
         _write_marker(doctor_fixture, _POSTINIT_PYPI_ENABLED)
-        (doctor_fixture / ".github" / "workflows" / "ci.yml").write_text(_CI_WITHOUT_GATE)
+        (doctor_fixture / ".github" / "workflows" / "ci.yml").write_text(
+            _CI_WITHOUT_GATE
+        )
         r = init_doctor.check_post_init_codecov_gate()
         assert r.status == "error"
         assert "post-init" in r.message.lower() or "gate" in r.message.lower()
