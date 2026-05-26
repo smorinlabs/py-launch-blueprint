@@ -34,6 +34,15 @@ pre-commit:
     # ITM-016 — codespell staged files (decided round 9).
     codespell:
       run: uvx codespell --toml pyproject.toml {staged_files}
+    # ITM-066 — ruff lint + format check on staged Python files.
+    # Added after PR #319 hit lint failures in CI that should have been
+    # caught locally. `{staged_files}` keeps the check scoped — fast.
+    ruff-check:
+      glob: "*.py"
+      run: uvx ruff check --output-format=concise {staged_files}
+    ruff-format:
+      glob: "*.py"
+      run: uvx ruff format --check {staged_files}
 
 # Pre-push stage — per-tool steps land via downstream ITMs.
 pre-push:
@@ -46,3 +55,20 @@ pre-push:
     # pre-push, not pre-commit, since full-tree scan is too slow per commit).
     bandit:
       run: uvx bandit -r py_launch_blueprint/ -c pyproject.toml
+    # Init-system integrity — these are the checks the blueprint-guard
+    # CI workflow runs. Caught locally at pre-push, they prevent the
+    # "push → CI fails → push again" cycle that PR #319 went through.
+    # `uv run --script` (not `uv run python ...`) so PEP 723 inline metadata
+    # is honored — check_path_filter.py needs pyyaml from its dep block.
+    init-guard-wiring:
+      run: uv run --script init/ci/check_guard_wiring.py
+    init-manifest-drift:
+      run: uv run --script init/ci/check_manifest_drift.py
+    init-path-filter:
+      run: uv run --script init/ci/check_path_filter.py
+    # Init unit tests (~3s; safe at pre-push, too slow for pre-commit).
+    # `--override-ini=addopts=` because the project default excludes
+    # slow/live markers — init tests aren't marked so they need explicit
+    # override to run consistently regardless of marker config drift.
+    init-tests:
+      run: uv run pytest init/tests/ --override-ini="addopts=" -q
