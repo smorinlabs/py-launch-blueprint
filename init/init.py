@@ -59,9 +59,12 @@ class PreconditionError(RuntimeError):
 
 
 def _run(
-    cmd: list[str], cwd: Path = REPO_ROOT, check: bool = True
+    cmd: list[str], cwd: Path | None = None, check: bool = True
 ) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, cwd=cwd, check=check, capture_output=True, text=True)
+    # Resolve cwd at call time — keeps test monkeypatching of REPO_ROOT effective.
+    return subprocess.run(
+        cmd, cwd=cwd or REPO_ROOT, check=check, capture_output=True, text=True
+    )
 
 
 def check_preconditions(args: argparse.Namespace) -> None:
@@ -236,10 +239,14 @@ def prune_init_system() -> None:
         INIT_DIR / "_engine.py",
         INIT_DIR / "_rewriters.py",
         INIT_DIR / "common.py",
+        INIT_DIR / "post_init.py",
+        INIT_DIR / "init-spec.md",
+        INIT_DIR / "README.md",
         INIT_DIR / "ci",
         INIT_DIR / "tests",
         REPO_ROOT / "skill",  # agent skill is blueprint-only tooling
         REPO_ROOT / ".github" / "workflows" / "blueprint-guard.yml",
+        REPO_ROOT / ".github" / "workflows" / "init-integration.yml",
     ]
     import shutil
 
