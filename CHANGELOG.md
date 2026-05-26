@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2](https://github.com/smorinlabs/py-launch-blueprint/compare/py_launch_blueprint-v1.1.1...py_launch_blueprint-v1.1.2) (2026-05-26)
+
+
+### Bug Fixes
+
+* **contributors:** filter bot identities from CONTRIBUTORS.md ([d895eb6](https://github.com/smorinlabs/py-launch-blueprint/commit/d895eb69efb4964ff3bf23d50b17b5013e71c026))
+* **contributors:** filter bot identities from CONTRIBUTORS.md ([#332](https://github.com/smorinlabs/py-launch-blueprint/issues/332)) ([c31c4b0](https://github.com/smorinlabs/py-launch-blueprint/commit/c31c4b0fba0bc5d317d81ad673adab52b0266c9f))
+
 ## [1.1.1](https://github.com/smorinlabs/py-launch-blueprint/compare/py_launch_blueprint-v1.1.0...py_launch_blueprint-v1.1.1) (2026-05-26)
 
 
