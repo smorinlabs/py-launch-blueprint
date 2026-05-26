@@ -31,19 +31,45 @@ this repo locally, and say something like:
 
 > "I want to create a new Python project from py-launch-blueprint."
 
-Claude will pick up the skill from `skill/SKILL.md` and walk you
-through identity collection → `gh repo create --template` → `just init` →
-optional `just post-init`. Total time: about 60–90 seconds for the
-interactive bits, plus whatever the user spends thinking about the name.
+…or (per the V6 broader-trigger design):
+
+> "Create a new Python repo for me — it's a CLI for parsing X."
+
+Claude will pick up the skill from `skill/SKILL.md` and **first ask**
+whether you want the full template setup or a minimal one (Step 0 in the
+runbook). On confirmation, it walks identity collection → `gh repo create
+--template` → `just init` → optional `just post-init`. Total time: about
+60–90 seconds for the interactive bits, plus whatever the user spends
+thinking about the name.
+
+## The "filter-after-trigger" design
+
+V6 of the skill description casts a deliberately wide net — it triggers
+on ANY Python project/repo/CLI/script creation intent, not just on
+explicit template mentions. The SKILL.md body's **Step 0** then asks the
+user whether they want the full template or a minimal setup. If declined,
+the skill exits cleanly; if confirmed, the rest of the runbook runs.
+
+This is intentional: rather than try (and fail) to thread a precise
+trigger that fires only when the user wants this template specifically,
+the skill triggers liberally and uses the conversation itself as the
+filter. Costs the user one extra Y/n prompt; gains everyone who would
+have otherwise missed the template option entirely.
 
 ## When this skill might fail to trigger (and how to force it)
 
 Empirically, this skill **undertriggers reliably** — measured via the
 skill-creator's trigger eval (20 queries × 3 runs each, see
-`optimization-workspace/`), all three description versions tested (V1
-original, V2 more aggressive, V3 with CRITICAL framing + named failure
-modes) scored ~0% recall on should-trigger queries while keeping 100%
-specificity (no false positives).
+`optimization-workspace/`), all **six** description versions tested
+scored 0% recall on should-trigger queries while keeping 100%
+specificity (no false positives). Versions tested:
+
+- V1: original informational
+- V2: aggressive "DO NOT do directly"
+- V3: CRITICAL framing + named failure modes
+- V4: broad Python intent + ask-first framing
+- V5: mandatory-prerequisite ("You MUST consult... NEVER bootstrap without")
+- V6: "repo" emphasis + ask-first framing (currently shipped)
 
 The root cause is structural, not phrasing: per the skill-creator's own
 documentation, *"Claude only consults skills for tasks it can't easily
