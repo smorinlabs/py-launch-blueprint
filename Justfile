@@ -139,10 +139,14 @@ install-taplo:
     INSTALL_DIR="${CARGO_HOME:-$HOME/.cargo}/bin"
     mkdir -p "$INSTALL_DIR"
     URL="https://github.com/tamasfe/taplo/releases/download/${VERSION}/taplo-${os}-${arch}.gz"
+    TMP_TAPLO="$(mktemp "$INSTALL_DIR/taplo.tmp.XXXXXX")"
+    trap 'rm -f "$TMP_TAPLO"' EXIT
     echo -e "{{BLUE}}Downloading $URL{{NC}}"
-    if curl -fsSL "$URL" | gunzip > "$INSTALL_DIR/taplo" && chmod +x "$INSTALL_DIR/taplo"; then
+    if curl -fsSL "$URL" | gunzip > "$TMP_TAPLO" && chmod +x "$TMP_TAPLO" && mv -f "$TMP_TAPLO" "$INSTALL_DIR/taplo"; then
+        trap - EXIT
         echo -e "{{GREEN}}✓ Taplo ${VERSION} installed to $INSTALL_DIR/taplo{{NC}}"
     else
+        rm -f "$TMP_TAPLO"
         echo -e "{{RED}}Failed to download pre-built taplo; falling back to cargo install{{NC}}" >&2
         cargo install taplo-cli
     fi
