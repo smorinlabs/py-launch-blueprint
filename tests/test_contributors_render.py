@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 START_MARKER = "<!-- contributors-please:start -->"
 END_MARKER = "<!-- contributors-please:end -->"
@@ -57,8 +56,8 @@ def test_rendered_contributors_block_matches_state_and_ignore_config() -> None:
     records.sort(key=lambda record: int(record["commits"]), reverse=True)
 
     expected = [
-        f'- [{record["name"]}]({record["profile"]}) - '
-        f'{record["title"]} ({record["commits"]} commits)'
+        f"- [{record['name']}]({record['profile']}) - "
+        f"{record['title']} ({record['commits']} commits)"
         for record in records
     ]
 
