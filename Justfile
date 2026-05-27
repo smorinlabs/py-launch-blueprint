@@ -190,7 +190,7 @@ alias l := lint
 @typecheck:
     echo "Running type checker..."
     echo "  ty (ITM-026, per ADR-03)"
-    uvx ty check {{py_package_name}}/
+    uv run ty check {{py_package_name}}/
 
 alias tc := typecheck
 
@@ -376,15 +376,11 @@ debug-info:
     cd docs && make clean
 
 # Update CONTRIBUTORS.md file
+alias contributors := update-contributors
+
 [group('build')]
-@contributors:
 update-contributors:
-    echo "Updating CONTRIBUTORS.md..."
-    # Cross-platform way to update CONTRIBUTORS.md using git shortlog
-    echo "# Contributors" > CONTRIBUTORS.md
-    echo "" >> CONTRIBUTORS.md
-    git shortlog -sne >> CONTRIBUTORS.md
-    echo "✓ Contributors list updated"
+    npx @smorinlabs/contributors-please@1 init --non-interactive --owner smorinlabs --repo py-launch-blueprint --config-file .contributors.yml
 
 # Verify commit messages follow conventional commit format (commitlint per ADR-04).
 [group('hooks')]

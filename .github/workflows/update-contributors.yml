@@ -1,93 +1,35 @@
-# Copyright (c) 2025, Steve Morin
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy of
-# this software and associated documentation files (the "Software"), to deal in
-# the Software without restriction, including without limitation the rights to
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-# the Software, and to permit persons to whom the Software is furnished to do so,
-# subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 name: Update Contributors
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+    paths-ignore:
+      - CONTRIBUTORS.md
+      - .contributors.jsonl
   workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
-  update-contributors:
+  contributors-please:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
-        ref: main
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-    - name: Setup Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: '3.12'
-
-    # Switch to the update-contributors branch BEFORE generating CONTRIBUTORS.md.
-    # The previous step order (generate first, then checkout) left CONTRIBUTORS.md
-    # dirty in the working tree, causing `git checkout -B` to refuse with
-    # "Your local changes ... would be overwritten by checkout". Generating ON the
-    # target branch means the dirty file lives in the branch it belongs to and the
-    # subsequent commit step commits it cleanly.
-    - name: Checkout & sync update-contributors branch
-      run: |
-        git fetch origin || true
-
-        # Check if the 'update-contributors' branch exists on the remote.
-        # This avoids errors when trying to check out a branch that doesn't exist.
-        if git show-ref --verify --quiet refs/remotes/origin/update-contributors; then
-          # If it exists, create a local branch from the remote-tracking branch.
-          git checkout -B update-contributors origin/update-contributors
-        else
-          # If it doesn't exist remotely, create the local branch from scratch.
-          git checkout -B update-contributors
-
-          # Push the new branch to the remote so future runs can reference it.
-          git push origin update-contributors
-        fi
-
-    - name: Update CONTRIBUTORS.md
-      run: |
-        python scripts/update_contributors.py
-
-    # Now commit any changes on the correct branch
-    - name: Commit CONTRIBUTORS.md updates
-      run: |
-        if [[ $(git status --porcelain) ]]; then
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add CONTRIBUTORS.md
-          git commit -m "chore: update CONTRIBUTORS.md"
-        fi
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v8
-      with:
-        commit-message: 'chore: update contributors list'
-        title: 'chore: update contributors list'
-        body: 'Automatically updated contributors list using Git log'
-        branch: update-contributors
-        base: main  # Use the main branch as the base
-        delete-branch: true
+      - name: Update contributors
+        uses: smorinlabs/contributors-please-action@v1
+        with:
+          app-id: ${{ secrets.CONTRIBUTORS_PLEASE_APP_ID }}
+          private-key: ${{ secrets.CONTRIBUTORS_PLEASE_PRIVATE_KEY }}
+          pat: ${{ secrets.CONTRIBUTORS_PLEASE_PAT }}
+          output-file: CONTRIBUTORS.md
+          state-file: .contributors.jsonl
+          config-file: .contributors.yml
+          mode: pull-request

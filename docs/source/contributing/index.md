@@ -40,7 +40,7 @@ Before your contributions can be accepted, you must sign a **Contributor License
 When you open a pull request, the **CLA Assistant Bot** will check if you've signed the CLA. If not, it will provide a link to complete the process.
 
 ## Tracking Contributors
-This project uses [COG (Cocogitto)](https://github.com/cocogitto/cocogitto) to track contributors automatically in [`CONTRIBUTORS.md`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/CONTRIBUTORS.md). The list updates when:
+This project uses [`contributors-please`](https://github.com/smorinlabs/contributors-please-action) to track contributors automatically in [`CONTRIBUTORS.md`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/CONTRIBUTORS.md). The list updates when:
 1. A push is made to the main branch.
 2. A pull request is merged.
 3. Manually, using the following command:
@@ -53,10 +53,10 @@ This project uses [COG (Cocogitto)](https://github.com/cocogitto/cocogitto) to t
 Contributors are tracked based on git commit history. The system:
 - Counts commits per contributor
 - Shows contribution statistics
-- Excludes certain email domains (e.g., noreply.github.com)
+- Joins commit authors to GitHub logins using no-reply addresses and `.contributors.yml`
 - Sorts contributors by number of commits
 
-For more details about COG's contributor tracking, see the [official documentation](https://docs.cocogitto.io/).
+For more details, see the [contributors-please action](https://github.com/smorinlabs/contributors-please-action).
 ## Code of Conduct
 We are committed to fostering a **welcoming and inclusive** community. Please review and adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
 

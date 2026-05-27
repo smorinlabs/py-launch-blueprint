@@ -16,7 +16,7 @@ files   = [
 ]
 mode    = "structured"
 
-# author (text) — 22 occurrences in 21 files
+# author (text) — 20 occurrences in 19 files
 [[replace]]
 field   = "author"
 current = ["Steve Morin"]
@@ -31,13 +31,11 @@ files   = [
   ".github/workflows/update-contributors.yml",   # 1x
   ".readthedocs.yaml",   # 1x
   "CHANGELOG.md",   # 1x
-  "CONTRIBUTORS.md",   # 1x
   "LICENSE",   # 1x
   "docs/source/_templates/base.html",   # 1x
   "docs/source/conf.py",   # 2x
   "py_launch_blueprint/__init__.py",   # 1x
   "py_launch_blueprint/projects.py",   # 1x
-  "scripts/update_contributors.py",   # 1x
   "tests/__init__.py",   # 1x
   "tests/test_api.py",   # 1x
   "tests/test_cli.py",   # 1x
@@ -78,15 +76,6 @@ files   = [
   "pyproject.toml",   # 1x
 ]
 mode    = "structured"
-
-# email (text) — 1 occurrences in 1 files
-[[replace]]
-field   = "email"
-current = ["steve.morin@gmail.com"]
-files   = [
-  "CONTRIBUTORS.md",   # 1x
-]
-mode    = "text"
 
 # owner (structured) — 4 occurrences in 1 files
 [[replace]]
