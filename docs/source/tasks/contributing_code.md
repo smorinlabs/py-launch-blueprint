@@ -86,11 +86,8 @@ for more information, see the [Contributor License Agreement](../contributing/in
 
 ## Contributors
 
-This project uses [`contributors-please`](https://github.com/smorinlabs/contributors-please-action) to automatically track and maintain our [CONTRIBUTORS.md](CONTRIBUTORS.md) file. The list of contributors is automatically updated when:
-
-1. A push is made to the main branch
-2. A pull request is merged
-3. Manually using the `just contributors` command
+This project includes a `just contributors` helper that invokes
+`contributors-please` to bootstrap or refresh the local contributors list.
 
 ### Manual Update
 
@@ -105,7 +102,6 @@ just contributors
 Contributors are tracked based on git commit history. The system:
 - Counts commits per contributor
 - Shows contribution statistics
-- Joins commit authors to GitHub logins using no-reply addresses and `.contributors.yml`
+- Joins commit authors to GitHub logins using no-reply addresses and optional
+  identity-map configuration
 - Sorts contributors by number of commits
-
-For more details, see the [contributors-please action](https://github.com/smorinlabs/contributors-please-action).

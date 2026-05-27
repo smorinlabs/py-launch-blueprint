@@ -2,6 +2,8 @@
 py_package_name := "py_launch_blueprint"
 repo_name := "py-launch-blueprint"
 command_name := "py-projects"
+contributors_owner := "smorinlabs"
+contributors_package := "@smo" + "rinlabs/contributors-please@1"
 args := " "
 
 # Blueprint setup guard — Tier 1 (universal discovery warning).
@@ -380,7 +382,7 @@ alias contributors := update-contributors
 
 [group('build')]
 update-contributors:
-    npx @smorinlabs/contributors-please@1 init --non-interactive --owner smorinlabs --repo py-launch-blueprint --config-file .contributors.yml
+    npx {{contributors_package}} init --non-interactive --owner {{contributors_owner}} --repo {{repo_name}} --config-file .contributors.yml
 
 # Verify commit messages follow conventional commit format (commitlint per ADR-04).
 [group('hooks')]

@@ -1,8 +1,8 @@
 import json
 import re
+import shutil
 import subprocess
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parents[1]
 NO_REPLY_RE = re.compile(
@@ -46,27 +46,37 @@ def _login_for_email(email: str, mapping: dict[str, str]) -> str | None:
     return None
 
 
-def _ensure_full_history() -> None:
-    result = subprocess.run(
-        ["git", "rev-parse", "--is-shallow-repository"],
+def _git() -> str:
+    git = shutil.which("git")
+    if git is None:
+        msg = "git is required for contributor history checks"
+        raise RuntimeError(msg)
+    return git
+
+
+def _ensure_full_history() -> str:
+    git = _git()
+    result = subprocess.run(  # noqa: S603
+        [git, "rev-parse", "--is-shallow-repository"],
         cwd=ROOT,
         check=True,
         capture_output=True,
         text=True,
     )
     if result.stdout.strip() == "true":
-        subprocess.run(
-            ["git", "fetch", "--unshallow", "--filter=blob:none"],
+        subprocess.run(  # noqa: S603
+            [git, "fetch", "--unshallow", "--filter=blob:none"],
             cwd=ROOT,
             check=True,
         )
+    return git
 
 
 def _earliest_non_merge_commit_dates() -> dict[str, str]:
-    _ensure_full_history()
+    git = _ensure_full_history()
     mapping = _identity_map()
-    result = subprocess.run(
-        ["git", "log", "--no-merges", "--format=%ad%x09%ae", "--date=short"],
+    result = subprocess.run(  # noqa: S603
+        [git, "log", "--no-merges", "--format=%ad%x09%ae", "--date=short"],
         cwd=ROOT,
         check=True,
         capture_output=True,
