@@ -46,7 +46,24 @@ def _login_for_email(email: str, mapping: dict[str, str]) -> str | None:
     return None
 
 
+def _ensure_full_history() -> None:
+    result = subprocess.run(
+        ["git", "rev-parse", "--is-shallow-repository"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    if result.stdout.strip() == "true":
+        subprocess.run(
+            ["git", "fetch", "--unshallow", "--filter=blob:none"],
+            cwd=ROOT,
+            check=True,
+        )
+
+
 def _earliest_non_merge_commit_dates() -> dict[str, str]:
+    _ensure_full_history()
     mapping = _identity_map()
     result = subprocess.run(
         ["git", "log", "--no-merges", "--format=%ad%x09%ae", "--date=short"],

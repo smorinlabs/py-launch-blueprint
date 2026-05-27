@@ -77,6 +77,15 @@ files   = [
 ]
 mode    = "structured"
 
+# email (text) — 1 occurrences in 1 files
+[[replace]]
+field   = "email"
+current = ["steve.morin@gmail.com"]
+files   = [
+  ".contributors.yml",   # 1x
+]
+mode    = "text"
+
 # owner (structured) — 4 occurrences in 1 files
 [[replace]]
 field   = "owner"
@@ -86,14 +95,16 @@ files   = [
 ]
 mode    = "structured"
 
-# owner (text) — 122 occurrences in 14 files
+# owner (text) — 126 occurrences in 18 files
 [[replace]]
 field   = "owner"
 current = ["smorinlabs"]
 files   = [
+  ".contributors.yml",   # 1x
   ".github/CONTRIBUTING.md",   # 1x
   ".github/ISSUE_TEMPLATE/config.yml",   # 1x
   "CHANGELOG.md",   # 96x
+  "CONTRIBUTORS.md",   # 1x
   "EXAMPLECLI.md",   # 1x
   "README.md",   # 5x
   "docs/source/conf.py",   # 2x
@@ -105,6 +116,8 @@ files   = [
   "docs/source/tools/github_actions.md",   # 1x
   "docs/source/tools/justfiles.md",   # 1x
   "docs/source/tutorials/full_project_setup.md",   # 1x
+  "tests/test_contributors_workflow.py",   # 1x
+  "tests/test_justfile.py",   # 1x
 ]
 mode    = "text"
 
