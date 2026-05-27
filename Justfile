@@ -2,6 +2,8 @@
 py_package_name := "py_launch_blueprint"
 repo_name := "py-launch-blueprint"
 command_name := "py-projects"
+contributors_owner := "smorinlabs"
+contributors_package := "contributors-please@1"
 args := " "
 
 # Blueprint setup guard — Tier 1 (universal discovery warning).
@@ -190,7 +192,7 @@ alias l := lint
 @typecheck:
     echo "Running type checker..."
     echo "  ty (ITM-026, per ADR-03)"
-    uvx ty check {{py_package_name}}/
+    uv run ty check {{py_package_name}}/
 
 alias tc := typecheck
 
@@ -376,15 +378,11 @@ debug-info:
     cd docs && make clean
 
 # Update CONTRIBUTORS.md file
+alias contributors := update-contributors
+
 [group('build')]
-@contributors:
 update-contributors:
-    echo "Updating CONTRIBUTORS.md..."
-    # Cross-platform way to update CONTRIBUTORS.md using git shortlog
-    echo "# Contributors" > CONTRIBUTORS.md
-    echo "" >> CONTRIBUTORS.md
-    git shortlog -sne >> CONTRIBUTORS.md
-    echo "✓ Contributors list updated"
+    npx {{contributors_package}} init --non-interactive --owner {{contributors_owner}} --repo {{repo_name}} --config-file .contributors.yml
 
 # Verify commit messages follow conventional commit format (commitlint per ADR-04).
 [group('hooks')]

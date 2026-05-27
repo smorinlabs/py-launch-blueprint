@@ -16,7 +16,7 @@ files   = [
 ]
 mode    = "structured"
 
-# author (text) — 22 occurrences in 21 files
+# author (text) — 19 occurrences in 18 files
 [[replace]]
 field   = "author"
 current = ["Steve Morin"]
@@ -28,16 +28,13 @@ files   = [
   ".github/ISSUE_TEMPLATE/config.yml",   # 1x
   ".github/workflows/dependency-review.yml",   # 1x
   ".github/workflows/manual-pr-security-scan.yml",   # 1x
-  ".github/workflows/update-contributors.yml",   # 1x
   ".readthedocs.yaml",   # 1x
   "CHANGELOG.md",   # 1x
-  "CONTRIBUTORS.md",   # 1x
   "LICENSE",   # 1x
   "docs/source/_templates/base.html",   # 1x
   "docs/source/conf.py",   # 2x
   "py_launch_blueprint/__init__.py",   # 1x
   "py_launch_blueprint/projects.py",   # 1x
-  "scripts/update_contributors.py",   # 1x
   "tests/__init__.py",   # 1x
   "tests/test_api.py",   # 1x
   "tests/test_cli.py",   # 1x
@@ -79,15 +76,6 @@ files   = [
 ]
 mode    = "structured"
 
-# email (text) — 1 occurrences in 1 files
-[[replace]]
-field   = "email"
-current = ["steve.morin@gmail.com"]
-files   = [
-  "CONTRIBUTORS.md",   # 1x
-]
-mode    = "text"
-
 # owner (structured) — 4 occurrences in 1 files
 [[replace]]
 field   = "owner"
@@ -97,7 +85,7 @@ files   = [
 ]
 mode    = "structured"
 
-# owner (text) — 122 occurrences in 14 files
+# owner (text) — 123 occurrences in 15 files
 [[replace]]
 field   = "owner"
 current = ["smorinlabs"]
@@ -106,6 +94,7 @@ files   = [
   ".github/ISSUE_TEMPLATE/config.yml",   # 1x
   "CHANGELOG.md",   # 96x
   "EXAMPLECLI.md",   # 1x
+  "Justfile",   # 1x
   "README.md",   # 5x
   "docs/source/conf.py",   # 2x
   "docs/source/contributing/index.md",   # 1x
@@ -228,6 +217,38 @@ to   = "{package_name}"
 [[remove]]
 path   = ".github/workflows/blueprint-guard.yml"
 reason = "guard CI is blueprint-only"
+
+[[remove]]
+path   = ".github/workflows/update-contributors.yml"
+reason = "py-launch-blueprint contributors automation is project-specific"
+
+[[remove]]
+path   = ".contributors.yml"
+reason = "py-launch-blueprint contributor config is project-specific"
+
+[[remove]]
+path   = ".contributors.jsonl"
+reason = "py-launch-blueprint contributor state is project-specific"
+
+[[remove]]
+path   = "CONTRIBUTORS.md"
+reason = "py-launch-blueprint generated contributors file is project-specific"
+
+[[remove]]
+path   = "tests/test_contributors_render.py"
+reason = "py-launch-blueprint contributor-state regression is project-specific"
+
+[[remove]]
+path   = "tests/test_contributors_state.py"
+reason = "py-launch-blueprint contributor-state regression is project-specific"
+
+[[remove]]
+path   = "tests/test_contributors_workflow.py"
+reason = "py-launch-blueprint contributor-workflow regression is project-specific"
+
+[[remove]]
+path   = "tests/test_justfile.py"
+reason = "py-launch-blueprint contributor-recipe regression is project-specific"
 
 [[remove]]
 path   = "init/discover.py"

@@ -22,4 +22,4 @@ The `cog.toml` file configures the `cog` tool, which is used to generate changel
 - **Remote Links**: Links changelog entries to the GitHub repository.
 - **Author Mapping**: Maps local git signatures to GitHub usernames for changelog links.
 
-Contributor list updates are handled by `scripts/update_contributors.py` and the update-contributors workflow. See [cog.toml](https://github.com/smorinlabs/py-launch-blueprint/blob/main/cog.toml) for more details.
+Contributor list updates are handled by `smorinlabs/contributors-please-action` and `.contributors.yml`; `cog.toml` is only used for changelog generation.
