@@ -3,7 +3,7 @@ py_package_name := "py_launch_blueprint"
 repo_name := "py-launch-blueprint"
 command_name := "py-projects"
 contributors_owner := "smorinlabs"
-contributors_package := "@smo" + "rinlabs/contributors-please@1"
+contributors_package := "contributors-please@1"
 args := " "
 
 # Blueprint setup guard — Tier 1 (universal discovery warning).
