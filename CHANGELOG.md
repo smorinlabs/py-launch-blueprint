@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.2](https://github.com/smorinlabs/py-launch-blueprint/compare/py_launch_blueprint-v1.1.1...py_launch_blueprint-v1.1.2) (2026-05-26)
+## [1.1.2](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.1...v1.1.2) (2026-05-26)
 
 
 ### Bug Fixes
@@ -8,7 +8,7 @@
 * **contributors:** filter bot identities from CONTRIBUTORS.md ([d895eb6](https://github.com/smorinlabs/py-launch-blueprint/commit/d895eb69efb4964ff3bf23d50b17b5013e71c026))
 * **contributors:** filter bot identities from CONTRIBUTORS.md ([#332](https://github.com/smorinlabs/py-launch-blueprint/issues/332)) ([c31c4b0](https://github.com/smorinlabs/py-launch-blueprint/commit/c31c4b0fba0bc5d317d81ad673adab52b0266c9f))
 
-## [1.1.1](https://github.com/smorinlabs/py-launch-blueprint/compare/py_launch_blueprint-v1.1.0...py_launch_blueprint-v1.1.1) (2026-05-26)
+## [1.1.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.0...v1.1.1) (2026-05-26)
 
 
 ### Performance Improvements
@@ -16,7 +16,7 @@
 * **ci:** swap taplo install from cargo build to pre-built binary (~40x faster) ([1f58d5a](https://github.com/smorinlabs/py-launch-blueprint/commit/1f58d5a4945df647da032e538c0f3bdf5986dcc7))
 * **ci:** swap taplo install from cargo build to pre-built binary (~40x faster) ([#327](https://github.com/smorinlabs/py-launch-blueprint/issues/327)) ([06c0590](https://github.com/smorinlabs/py-launch-blueprint/commit/06c0590e8076139c8b4311d834e801f8b7633882))
 
-## [1.1.0](https://github.com/smorinlabs/py-launch-blueprint/compare/py_launch_blueprint-v1.0.0...py_launch_blueprint-v1.1.0) (2026-05-26)
+## [1.1.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.0.0...v1.1.0) (2026-05-26)
 
 
 ### Features

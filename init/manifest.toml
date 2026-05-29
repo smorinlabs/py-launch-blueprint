@@ -39,6 +39,7 @@ files   = [
   "tests/test_api.py",   # 1x
   "tests/test_cli.py",   # 1x
   "tests/test_config.py",   # 1x
+  "tests/test_version_consistency.py",   # 1x
 ]
 mode    = "text"
 
@@ -150,6 +151,7 @@ files   = [
   "tests/test_api.py",   # 1x
   "tests/test_cli.py",   # 10x
   "tests/test_config.py",   # 1x
+  "tests/test_version_consistency.py",   # 2x
 ]
 mode    = "text"
 

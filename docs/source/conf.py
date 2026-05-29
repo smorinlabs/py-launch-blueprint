@@ -6,10 +6,15 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+from py_launch_blueprint import __version__
+
 project = 'py-launch-blueprint'
 copyright = '2025, Steve Morin'
 author = 'Steve Morin'
-release = '0.1.0'
+# Single-sourced from pyproject.toml [project] version via the installed
+# package metadata (py_launch_blueprint.__version__); never hardcode here.
+release = __version__
+version = '.'.join(release.split('.')[:2])
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

@@ -113,9 +113,9 @@ Teams and professionals needing maintainable, type-safe Python projects followin
 
 - **Issue templates (Feature, Bug, Documentation)**: Standardize issue reporting with appropriate fields for each type, gathering all necessary information upfront.
 
-- **Automated contributor recognition with `cog`**: Automatically update contributor lists with cog, acknowledging all project participants without manual tracking.
+- **Automated contributor recognition with `contributors-please`**: Automatically update contributor lists, acknowledging all project participants without manual tracking.
 
-- **Conventional commits support with `cog`**: Enforce structured commit messages, enabling automated changelog generation and version management.
+- **Conventional commits enforced with `commitlint`**: Enforce structured commit messages so `release-please` can automate changelog generation and version bumps.
 
 - **Security policy**: Establish clear vulnerability reporting procedures, promoting responsible disclosure and faster security fixes.
 
