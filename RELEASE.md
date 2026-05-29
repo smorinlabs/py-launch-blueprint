@@ -32,13 +32,25 @@ The `publish` workflow still fires on the tag and uploads to PyPI.
 
 ## Token setup
 
-Default token for the release-please job is `RELEASE_PLEASE_APP_TOKEN`
-(GitHub App, needed so the merge of release-please's PR re-triggers
-downstream workflows). Falls back to `GITHUB_TOKEN` if the secret is
-not set — fine for single-repo use but won't re-trigger other workflows.
+release-please must authenticate with a token that can **both** open PRs and
+trigger downstream workflows (so merging the release PR fires `publish.yml`).
+`GITHUB_TOKEN` does neither reliably — it never re-triggers other workflows, and
+org policy can block it from opening PRs — so it is **not** used. Configure one
+of these two mechanisms instead:
 
-App setup: https://github.com/apps/release-please-action — install on
-the repo and create a secret named `RELEASE_PLEASE_APP_TOKEN`.
+1. **GitHub App (preferred).** Create a GitHub App with **Contents** and
+   **Pull requests: write**, install it on this repo, then add two secrets:
+   - `RELEASE_PLEASE_APP_ID` — the App's numeric ID
+   - `RELEASE_PLEASE_PRIVATE_KEY` — the App's private key (`.pem` contents)
+
+   Both jobs mint a short-lived installation token from these.
+
+2. **Fallback PAT.** Create a fine-grained Personal Access Token scoped to this
+   repo with **Contents** and **Pull requests: write**, stored as the
+   `RELEASE_PLEASE_APP_TOKEN` secret.
+
+With neither configured, release-please fails fast rather than silently
+producing a release that can't publish.
 
 ## First-release cutover (one-time)
 
