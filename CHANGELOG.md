@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.2...v1.1.3) (2026-05-29)
+
+
+### Bug Fixes
+
+* correct deprecated SpacesAftertabs key in editorconfig-checker config ([09a05b7](https://github.com/smorinlabs/py-launch-blueprint/commit/09a05b70a7e66c2a74cd2e980356bf286f7787ce))
+
 ## [1.1.2](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.1...v1.1.2) (2026-05-26)
 
 
