@@ -5,6 +5,7 @@
     ".": {
       "release-type": "python",
       "package-name": "py_launch_blueprint",
+      "include-component-in-tag": false,
       "extra-files": [
         {
           "type": "toml",
