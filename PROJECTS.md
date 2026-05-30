@@ -1,7 +1,7 @@
 # PROJECTS.md
 
-Project trunk for **py-launch-blueprint**. One row per project below; detailed
-scope, tasks, and references live in per-project files under `projects/`.
+Project trunk. One row per project below; detailed scope, tasks, and
+references live in per-project files under `projects/`.
 
 Route every project-state change through a project-harness skill
 (`project-add`, `project-refine`, `project-audit`) rather than editing this
