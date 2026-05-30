@@ -82,3 +82,16 @@ If you scaffold from this template and your project's command surface
 diverges (extra tools, different test runner, custom hooks), update **this
 file first**, then `CLAUDE.md` if you use Claude Code. Vendor-specific
 agent configs (`.cursor/`, `.windsurf*`, etc.) inherit from these two.
+
+## Project tracking (plugin: project-harness)
+
+Project state lives in `PROJECTS.md` (trunk) + `projects/` (per-project files).
+Route state changes through these skills rather than hand-editing:
+
+- `using-project-harness` — bootstrap / which skill to use
+- `project-next` — what's in progress / next / recently touched
+- `project-add` — capture an idea (reserves the ID with a commit)
+- `project-refine` — scope / decompose a project
+- `project-audit` — verify state matches conventions
+
+Planning system: Superpowers (specs under `docs/superpowers/specs/`).

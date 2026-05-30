@@ -28,3 +28,16 @@
 - Build backend: `uv_build` with static `[project] version` (per ADR-06)
 - Releases: `release-please` opens version PR; tag triggers OIDC trusted publish (per ADR-05/07)
 - IDE: VS Code with Ruff, Pyright, EditorConfig extensions
+
+## Project tracking (plugin: project-harness)
+
+Project state lives in `PROJECTS.md` (trunk) + `projects/` (per-project files).
+Route state changes through these skills rather than hand-editing:
+
+- `using-project-harness` — bootstrap / which skill to use
+- `project-next` — what's in progress / next / recently touched
+- `project-add` — capture an idea (reserves the ID with a commit)
+- `project-refine` — scope / decompose a project
+- `project-audit` — verify state matches conventions
+
+Planning system: Superpowers (specs under `docs/superpowers/specs/`).
