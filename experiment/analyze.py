@@ -7,7 +7,7 @@
 
 Two modes:
   --fixture PATH   read pre-tagged runs from a JSON array (no gh calls)
-  --live --repo O/R --branch B   collect via `gh api` (see experiment/README.md)
+  --live --repo O/R --run-ids run-ids.json   collect via `gh api` (see experiment/README.md)
 """
 from __future__ import annotations
 
@@ -79,6 +79,8 @@ def main() -> int:
     if args.fixture:
         tagged = _tagged_from_fixture(args.fixture)
     elif args.live:
+        if not args.repo or not args.run_ids:
+            ap.error("--live requires --repo and --run-ids")
         run_ids = json.loads(args.run_ids.read_text())
         tagged = _tagged_from_live(args.repo, run_ids)
     else:

@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       sides:
-        description: comma-separated subset of trad-suite,flox-mirror-suite,flox-consolidated
+        description: comma-separated subset of traditional,flox-mirror,flox-consolidated
         type: string
-        default: trad-suite,flox-mirror-suite,flox-consolidated
+        default: traditional,flox-mirror,flox-consolidated
       oses:
         description: comma-separated subset of ubuntu-latest,macos-latest
         type: string
@@ -45,13 +45,19 @@ jobs:
           IFS=',' read -ra CACHE_ARR <<< "$CACHES"
           collect='{}'
           for side in "${SIDE_ARR[@]}"; do
+            case "$side" in
+              traditional) wf="trad-suite" ;;
+              flox-mirror) wf="flox-mirror-suite" ;;
+              flox-consolidated) wf="flox-consolidated" ;;
+              *) echo "unknown side: $side" >&2; exit 1 ;;
+            esac
             for os in "${OS_ARR[@]}"; do
               for cache in "${CACHE_ARR[@]}"; do
                 # warm: prime once (not measured) so the measured runs hit cache
                 if [ "$cache" = "warm" ]; then
-                  gh workflow run "${side}.yml" --ref "$REF" -f os="$os" -f cache="warm" || true
-                  sleep 20
-                  prime_id=$(gh run list --workflow="${side}.yml" \
+                  gh workflow run "${wf}.yml" --ref "$REF" -f os="$os" -f cache="warm" || true
+                  sleep 45
+                  prime_id=$(gh run list --workflow="${wf}.yml" \
                     --branch "$REF" --limit 1 \
                     --json databaseId -q '.[0].databaseId')
                   gh run watch "$prime_id" --exit-status || true
@@ -59,9 +65,9 @@ jobs:
                 ids=()
                 for rep in $(seq 1 "$REPS"); do
                   echo "rep $rep of $REPS: side=$side os=$os cache=$cache"
-                  gh workflow run "${side}.yml" --ref "$REF" -f os="$os" -f cache="$cache"
-                  sleep 20
-                  rid=$(gh run list --workflow="${side}.yml" \
+                  gh workflow run "${wf}.yml" --ref "$REF" -f os="$os" -f cache="$cache"
+                  sleep 45
+                  rid=$(gh run list --workflow="${wf}.yml" \
                     --branch "$REF" --limit 1 \
                     --json databaseId -q '.[0].databaseId')
                   gh run watch "$rid" --exit-status || true

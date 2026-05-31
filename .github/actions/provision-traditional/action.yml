@@ -29,3 +29,7 @@ runs:
       if: contains(inputs.tools, 'gitleaks')
       shell: bash
       run: bash scripts/install-gitleaks.sh
+    - name: Ensure gitleaks on PATH
+      if: contains(inputs.tools, 'gitleaks')
+      shell: bash
+      run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"

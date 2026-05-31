@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ inputs.provisioner }}" = "flox" ]; then
-            flox activate -- bash -c 'uv sync --group dev && ty check py_launch_blueprint/'
+            flox activate -- bash -c 'uv sync --group dev && uv run ty check py_launch_blueprint/'
           else
             uv sync --group dev && uv run ty check py_launch_blueprint/
           fi
@@ -97,7 +97,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ inputs.provisioner }}" = "flox" ]; then
-            flox activate -- bash -c 'uv sync --group dev && pytest -m "" --cov=py_launch_blueprint --cov-report=xml'
+            flox activate -- bash -c 'uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml'
           else
             uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml
           fi
