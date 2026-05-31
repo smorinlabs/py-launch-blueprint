@@ -1,0 +1,12 @@
+{
+  "init_done": true,
+  "planning_system": "superpowers",
+  "spec_paths": ["docs/superpowers/specs/"],
+  "plan_paths": ["docs/superpowers/specs/"],
+  "steps": {
+    "projects_md": true,
+    "doc_mentions": true,
+    "planning_system": true,
+    "references_nudge": true
+  }
+}
