@@ -48,9 +48,10 @@
 
 ## Conventions for this plan
 
+- **Activate Flox before running commands (dogfooding rule).** After Task 1 locks `.flox/`, run every build/test/tool command inside the Flox environment via `flox activate -- <cmd>` (e.g. `flox activate -- uv run pytest …`). The premise of the experiment is that Flox provisions the toolchain, so the harness is built *using* it — this also continuously smoke-tests the env from Task 2 onward. **Task 1 is the only exception** (it creates the env, so it calls the local `flox` CLI directly). Each subagent is told this rule at dispatch.
 - All Python uses `from __future__ import annotations` and 3.12 syntax; line length ≤ 88 (repo Ruff config).
 - Tests live under `tests/experiment/` (picked up by `testpaths=["tests"]`); test files are exempt from `S101` per existing `per-file-ignores`.
-- Run unit tests with: `uv run pytest tests/experiment/ --override-ini="addopts=" -q` (the override clears the default `-m 'not live and not slow'` so nothing is silently skipped).
+- Run unit tests with: `flox activate -- uv run pytest tests/experiment/ --override-ini="addopts=" -q` (the override clears the default `-m 'not live and not slow'` so nothing is silently skipped).
 - Workflows are validated with `actionlint` (already vendored as a CI tool): `bunx --bun actionlint <file>` — if `actionlint` is unavailable locally, the repo's `actionlint.yml` workflow covers it; note expected manual install in the step.
 - The 11 checks and their invocations are the single source of truth — defined in Task 8's table and reused verbatim.
 
