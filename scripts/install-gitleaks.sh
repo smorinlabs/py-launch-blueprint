@@ -38,7 +38,11 @@ main() {
         echo "INFO: existing gitleaks at ${existing}; reinstalling pinned ${GITLEAKS_VERSION}"
     fi
 
-    local platform tar checksums url tmpdir
+    # tmpdir is intentionally NOT local: the EXIT trap below references it after
+    # main() returns, so a local would be unbound under `set -u` (exit 1 even on
+    # a successful install). Global scope lets the trap both see and clean it up.
+    local platform tar checksums url
+    tmpdir=""
     platform=$(detect_platform)
     tar="gitleaks_${GITLEAKS_VERSION}_${platform}.tar.gz"
     checksums="gitleaks_${GITLEAKS_VERSION}_checksums.txt"
