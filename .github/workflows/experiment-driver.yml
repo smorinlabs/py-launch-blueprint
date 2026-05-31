@@ -54,7 +54,9 @@ jobs:
             before=$(gh run list --workflow="${wfname}.yml" --branch "$REF" \
               --event workflow_dispatch --limit 60 --json databaseId \
               -q '[.[].databaseId] | join(" ")')
-            gh workflow run "${wfname}.yml" --ref "$REF" -f os="$os" -f cache="$cache"
+            # 1>&2: `gh workflow run` prints the run URL to stdout; redirect it to
+            # stderr so it doesn't pollute this function's stdout (the returned id).
+            gh workflow run "${wfname}.yml" --ref "$REF" -f os="$os" -f cache="$cache" 1>&2
             for _ in $(seq 1 30); do
               sleep 6
               for id in $(gh run list --workflow="${wfname}.yml" --branch "$REF" \
