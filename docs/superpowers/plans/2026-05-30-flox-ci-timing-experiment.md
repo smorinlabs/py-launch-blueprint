@@ -818,7 +818,7 @@ def main() -> int:
             w.writerow([c.side, c.os, c.cache, s.n, s.min, s.max, s.avg, s.median, s.stddev])
     # per-job table (markdown)
     job_lines = ["| job | side | os | cache | avg | stddev |", "| --- | --- | --- | --- | ---: | ---: |"]
-    for (c, name), s in sorted(jobs.items(), key=lambda kv: (kv[0][1].os, kv[0][1].side, kv[0][0])):
+    for (c, name), s in sorted(jobs.items(), key=lambda kv: (kv[0][0].os, kv[0][0].side, kv[0][1])):
         job_lines.append(f"| {name} | {c.side} | {c.os} | {c.cache} | {s.avg:.1f} | {s.stddev:.1f} |")
 
     report = (
