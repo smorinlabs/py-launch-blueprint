@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from experiment.bench.collect import duration_seconds, parse_jobs, parse_run
 
 FIX = Path(__file__).parent / "fixtures"

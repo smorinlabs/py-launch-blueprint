@@ -16,7 +16,9 @@ def grouped_total_bars(totals: dict[Cell, Stats], out: Path) -> Path:
     caches = sorted({c.cache for c in totals})
     sides = sorted({c.side for c in totals})
     oses = sorted({c.os for c in totals})
-    fig, axes = plt.subplots(1, len(caches), figsize=(6 * len(caches), 4), squeeze=False)
+    fig, axes = plt.subplots(
+        1, len(caches), figsize=(6 * len(caches), 4), squeeze=False
+    )
     for ax, cache in zip(axes[0], caches, strict=True):
         width = 0.8 / max(len(sides), 1)
         for i, side in enumerate(sides):

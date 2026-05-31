@@ -9,6 +9,7 @@ Two modes:
   --fixture PATH   read pre-tagged runs from a JSON array (no gh calls)
   --live --repo O/R --run-ids run-ids.json   collect via `gh api` (see experiment/README.md)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -21,15 +22,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from experiment.bench.aggregate import (  # noqa: E402
+from experiment.bench.aggregate import (
     Cell,
     TaggedRun,
     aggregate_jobs,
     aggregate_totals,
 )
-from experiment.bench.charts import grouped_total_bars  # noqa: E402
-from experiment.bench.collect import JobTiming, RunTiming, parse_run  # noqa: E402
-from experiment.bench.report import render_totals_table  # noqa: E402
+from experiment.bench.charts import grouped_total_bars
+from experiment.bench.collect import JobTiming, RunTiming, parse_run
+from experiment.bench.report import render_totals_table
 
 
 def _tagged_from_fixture(path: Path) -> list[TaggedRun]:
@@ -90,23 +91,37 @@ def main() -> int:
     jobs = aggregate_jobs(tagged)
     args.out.mkdir(parents=True, exist_ok=True)
 
-    # raw json
+    # raw json (trailing newline so generated files satisfy editorconfig)
     (args.out / "results.json").write_text(
         json.dumps(
             {f"{c.side}|{c.os}|{c.cache}": asdict(s) for c, s in totals.items()},
             indent=2,
         )
+        + "\n"
     )
-    # csv
+    # csv (force LF line endings; csv.writer defaults to CRLF)
     with (args.out / "results.csv").open("w", newline="") as fh:
-        w = csv.writer(fh)
-        w.writerow(["side", "os", "cache", "n", "min", "max", "avg", "median", "stddev"])
-        for c, s in sorted(totals.items(), key=lambda kv: (kv[0].os, kv[0].cache, kv[0].side)):
-            w.writerow([c.side, c.os, c.cache, s.n, s.min, s.max, s.avg, s.median, s.stddev])
+        w = csv.writer(fh, lineterminator="\n")
+        w.writerow(
+            ["side", "os", "cache", "n", "min", "max", "avg", "median", "stddev"]
+        )
+        for c, s in sorted(
+            totals.items(), key=lambda kv: (kv[0].os, kv[0].cache, kv[0].side)
+        ):
+            w.writerow(
+                [c.side, c.os, c.cache, s.n, s.min, s.max, s.avg, s.median, s.stddev]
+            )
     # per-job table (markdown)
-    job_lines = ["| job | side | os | cache | avg | stddev |", "| --- | --- | --- | --- | ---: | ---: |"]
-    for (c, name), s in sorted(jobs.items(), key=lambda kv: (kv[0][0].os, kv[0][0].side, kv[0][1])):
-        job_lines.append(f"| {name} | {c.side} | {c.os} | {c.cache} | {s.avg:.1f} | {s.stddev:.1f} |")
+    job_lines = [
+        "| job | side | os | cache | avg | stddev |",
+        "| --- | --- | --- | --- | ---: | ---: |",
+    ]
+    for (c, name), s in sorted(
+        jobs.items(), key=lambda kv: (kv[0][0].os, kv[0][0].side, kv[0][1])
+    ):
+        job_lines.append(
+            f"| {name} | {c.side} | {c.os} | {c.cache} | {s.avg:.1f} | {s.stddev:.1f} |"
+        )
 
     report = (
         "# Flox vs Traditional CI — timing results\n\n"

@@ -221,7 +221,7 @@ jobs:
           cache: ${{ inputs.cache }}
       - name: run
         shell: bash
-        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- gitleaks detect --source . --no-banner' || 'gitleaks detect --source . --no-banner' }}
+        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- gitleaks detect --source . --config .gitleaks.toml --no-banner' || 'gitleaks detect --source . --config .gitleaks.toml --no-banner' }}
 
   commitlint:
     runs-on: ${{ inputs.os }}
