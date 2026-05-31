@@ -47,6 +47,32 @@ flaky binary downloads). Consolidating flox activations is the single biggest mi
 | flox-mirror / flox-consolidated | **0** (both OS) |
 | traditional | flaky `editorconfig` (removed); 1 transient on macOS |
 
+## What gets provisioned — traditional vs flox
+
+![Provisioning model: traditional vs flox](results/provisioning_infographic.png)
+
+| check | traditional installer (source) | flox |
+| --- | --- | --- |
+| ruff · ruff-format · codespell · yamllint · bandit | `astral-sh/setup-uv` → `uvx <tool>` (PyPI) | bare tool from Nix store |
+| ty · pytest | `astral-sh/setup-uv` → `uv run` (project venv) | `uv run` (same — project deps, not flox-managed) |
+| taplo | `extractions/setup-just` → `just install-taplo` (curl GitHub release) | bare `taplo` from Nix store |
+| commitlint | `oven-sh/setup-bun` → `bunx commitlint` (npm) | bare `commitlint` from Nix store |
+| gitleaks | `scripts/install-gitleaks.sh` (curl GitHub release + SHA) | bare `gitleaks` from Nix store |
+
+- **Traditional:** 4 heterogeneous installers (3 marketplace/official actions + 1 curl
+  script); each job installs **only the tool it needs**, from PyPI / npm / GitHub releases
+  at runtime (~3s/job, but flaky under load).
+- **Flox:** one `.flox/env/manifest.toml` (15 pinned packages) → `flox/install-flox-action`
+  + `flox activate` materializes the **entire** toolchain from the content-addressed Nix
+  store on every activation (python312, uv, ruff, taplo, gitleaks, bun, commitlint, yamllint,
+  codespell, bandit, just, lefthook, gh, editorconfig-checker, gnumake), then runs each check
+  as a bare command. ~38s ubuntu / ~110s macOS per activation, deterministic. (`ty` & `pytest`
+  come from `uv run` either way — project deps, not flox-managed: the uv/flox boundary.)
+- **Major differences:** granularity (only-needed-tool vs whole-env-every-time) · mechanism
+  (4 installers vs 1 manifest) · source (runtime PyPI/npm/GitHub vs Nix store) · cost
+  (~3s vs ~38–110s/job) · reliability (flaky downloads vs deterministic) · maintenance
+  (4 scripts + scattered version pins vs one `manifest.toml` + `manifest.lock`).
+
 ## Key findings
 
 1. **The flox CI tax is provisioning, not the checks.** ~75% of each flox job is the
