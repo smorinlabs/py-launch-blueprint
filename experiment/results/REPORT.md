@@ -17,7 +17,26 @@
 | flox-mirror | ubuntu-latest | warm | 5 | 63.0 | 67.0 | 64.6 | 64.0 | 1.4 | +275.6% |
 | traditional | ubuntu-latest | warm | 5 | 16.0 | 19.0 | 17.2 | 17.0 | 1.2 | — |
 
-## Per-job breakdown
+## Provisioning (setup) vs work — per job
+
+setup = the `provision` step (flox install/activate, or setup-uv/just/bun); work = the rest of the job. `total provisioning/run` = setup summed across all jobs in a run (the cumulative billable provisioning cost).
+
+| side | os | cache | jobs | avg setup/job | avg work/job | setup % | total provisioning/run |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
+| flox-consolidated | macos-latest | cold | 2 | 120.3s | 45.0s | 73% | 241s |
+| flox-mirror | macos-latest | cold | 10 | 110.0s | 34.8s | 76% | 1100s |
+| traditional | macos-latest | cold | 10 | 4.0s | 7.9s | 33% | 40s |
+| flox-consolidated | macos-latest | warm | 2 | 105.2s | 36.4s | 74% | 210s |
+| flox-mirror | macos-latest | warm | 10 | 104.7s | 31.9s | 77% | 1047s |
+| traditional | macos-latest | warm | 10 | 4.8s | 7.5s | 39% | 48s |
+| flox-consolidated | ubuntu-latest | cold | 2 | 41.3s | 16.7s | 71% | 83s |
+| flox-mirror | ubuntu-latest | cold | 10 | 38.1s | 13.5s | 74% | 381s |
+| traditional | ubuntu-latest | cold | 10 | 2.9s | 5.5s | 34% | 29s |
+| flox-consolidated | ubuntu-latest | warm | 2 | 40.3s | 16.2s | 71% | 81s |
+| flox-mirror | ubuntu-latest | warm | 10 | 39.3s | 13.4s | 75% | 393s |
+| traditional | ubuntu-latest | warm | 10 | 3.1s | 5.4s | 37% | 31s |
+
+## Per-job breakdown (total job seconds)
 
 | job | side | os | cache | avg | stddev |
 | --- | --- | --- | --- | ---: | ---: |

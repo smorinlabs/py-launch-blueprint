@@ -123,11 +123,52 @@ def main() -> int:
             f"| {name} | {c.side} | {c.os} | {c.cache} | {s.avg:.1f} | {s.stddev:.1f} |"
         )
 
+    # provisioning (setup) vs work, averaged over all jobs and reps per cell.
+    # setup = the `provision (flox|traditional)` step; work = rest of the job.
+    setup_acc: dict[Cell, list[float]] = {}
+    work_acc: dict[Cell, list[float]] = {}
+    jobtot_acc: dict[Cell, list[float]] = {}
+    prov_per_run: dict[Cell, list[float]] = {}
+    jobs_per_run: dict[Cell, list[int]] = {}
+    for tr in tagged:
+        run_setup = 0.0
+        for j in tr.run.jobs:
+            setup_acc.setdefault(tr.cell, []).append(j.setup_seconds)
+            work_acc.setdefault(tr.cell, []).append(j.work_seconds)
+            jobtot_acc.setdefault(tr.cell, []).append(j.seconds)
+            run_setup += j.setup_seconds
+        prov_per_run.setdefault(tr.cell, []).append(run_setup)
+        jobs_per_run.setdefault(tr.cell, []).append(len(tr.run.jobs))
+
+    def _mean(xs: list[float]) -> float:
+        return sum(xs) / len(xs) if xs else 0.0
+
+    setup_lines = [
+        "| side | os | cache | jobs | avg setup/job | avg work/job "
+        "| setup % | total provisioning/run |",
+        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    for cell in sorted(setup_acc, key=lambda c: (c.os, c.cache, c.side)):
+        s = _mean(setup_acc[cell])
+        t = _mean(jobtot_acc[cell])
+        pct = (100 * s / t) if t else 0.0
+        setup_lines.append(
+            f"| {cell.side} | {cell.os} | {cell.cache} "
+            f"| {_mean([float(n) for n in jobs_per_run[cell]]):.0f} "
+            f"| {s:.1f}s | {_mean(work_acc[cell]):.1f}s | {pct:.0f}% "
+            f"| {_mean(prov_per_run[cell]):.0f}s |"
+        )
+
     report = (
         "# Flox vs Traditional CI — timing results\n\n"
         "## Total run time (per side × os × cache)\n\n"
         + render_totals_table(totals, baseline_side="traditional")
-        + "\n## Per-job breakdown\n\n"
+        + "\n## Provisioning (setup) vs work — per job\n\n"
+        "setup = the `provision` step (flox install/activate, or setup-uv/just/"
+        "bun); work = the rest of the job. `total provisioning/run` = setup summed "
+        "across all jobs in a run (the cumulative billable provisioning cost).\n\n"
+        + "\n".join(setup_lines)
+        + "\n\n## Per-job breakdown (total job seconds)\n\n"
         + "\n".join(job_lines)
         + "\n\n## Charts\n\n![total time](total_time.png)\n"
     )
