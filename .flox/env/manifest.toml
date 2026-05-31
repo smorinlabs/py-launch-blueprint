@@ -1,0 +1,28 @@
+schema-version = "1.12.0"
+
+[install]
+python.pkg-path = "python312"
+uv.pkg-path = "uv"
+just.pkg-path = "just"
+bun.pkg-path = "bun"
+lefthook.pkg-path = "lefthook"
+gitleaks.pkg-path = "gitleaks"
+gh.pkg-path = "gh"
+taplo.pkg-path = "taplo"
+ruff.pkg-path = "ruff"
+yamllint.pkg-path = "yamllint"
+codespell.pkg-path = "codespell"
+editorconfig-checker.pkg-path = "editorconfig-checker"
+bandit.pkg-path = "bandit"
+commitlint.pkg-path = "commitlint"
+gnumake.pkg-path = "gnumake"
+
+[vars]
+
+[hook]
+on-activate = ''
+
+[profile]
+
+[options]
+systems = ["aarch64-darwin", "x86_64-linux", "aarch64-linux", "x86_64-darwin"]
