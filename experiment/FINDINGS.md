@@ -4,10 +4,12 @@
 (Nix-based) instead of the traditional per-tool installs (`setup-uv`, `setup-just`,
 `bunx`, release-download scripts) make GitHub Actions faster or slower? Informs ADR-12.
 
-**TL;DR:** Flox is **3.8× slower on ubuntu and up to ~8.7× slower on macOS**, because
-**~75% of every flox job is provisioning** (the `flox` install/activate step). Traditional
-wins decisively on speed; Flox wins decisively on reliability (0 failures vs traditional's
-flaky binary downloads). Consolidating flox activations is the single biggest mitigation.
+**TL;DR:** Flox is **3.8× slower on ubuntu and up to ~8.7× slower on macOS** — and it's
+**~90–94% provisioning**: the actual checks run at the *same speed* on both sides
+(see root-cause below); essentially all of flox's cost is installing/activating the env
+and saving its Nix store to cache. Traditional wins decisively on speed; Flox wins
+decisively on reliability (0 failures vs traditional's flaky binary downloads).
+Consolidating flox activations is the single biggest mitigation.
 
 ## Method
 
@@ -31,14 +33,34 @@ flaky binary downloads). Consolidating flox activations is the single biggest mi
 
 ## Results — provisioning (setup) vs work
 
-`setup` = the `provision` step (flox install/activate, or setup-uv/just/bun).
+`setup` = all provisioning: the `provision` step (flox install/activate, or
+setup-uv/just/bun) **plus** the `Post provision` cache-save step.
 `provisioning/run` = setup summed across all jobs in a run (cumulative billable cost).
 
 | side | setup/job (ubuntu) | setup/job (macOS) | setup % of job | provisioning/run (ubuntu) | provisioning/run (macOS) |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| traditional | ~3s | ~4–5s | 33–39% | ~30s | ~40–48s |
-| flox-mirror | ~38s | ~110s | 74–77% | ~381s | **~1100s** |
-| flox-consolidated | ~41s | ~120s | 71–74% | ~82s | ~225s |
+| traditional | ~3s | ~4–5s | 34–41% | ~30s | ~41–50s |
+| flox-mirror | ~47s | ~130s | **90–94%** | ~465–476s | **~1288–1358s** |
+| flox-consolidated | ~49s | ~129–151s | 85–91% | ~97–99s | ~258–301s |
+
+## Root cause — why flox "work" looked longer (it isn't)
+
+The checks themselves run at the **same speed** regardless of provisioning. Per-step,
+same check, macOS cold:
+
+| step | flox-mirror | traditional |
+| --- | ---: | ---: |
+| `provision` (install + activate) | 97–136s | 3–4s |
+| **`run` (the actual check)** | **identical** — ruff 1s=1s · codespell 0s=0s · yamllint 1s=1s · ty 2s≈1s · pytest 10s≈6s | — |
+| `Post provision` (cache **save**) | 19–39s | 0s |
+
+The "longer flox work" in an earlier cut was a **measurement artifact**: the per-job
+split only subtracted the *pre*-step `provision (flox)` from the total, so the *post*-step
+**`Post provision (flox)` — the `actions/cache` step that saves the ~Nix store (19–39s on
+macOS) — leaked into "work."** Counting that cache-save as provisioning (it is) makes work
+fall to ~5s ubuntu / ~8–9s per job — **equal to traditional** — and pushes flox's setup to
+~90–94%. Conclusion: **flox doesn't run the checks slower; ~all of its CI cost is
+provisioning** (install + activate + cache-save).
 
 ## Results — reliability
 
@@ -66,20 +88,21 @@ flaky binary downloads). Consolidating flox activations is the single biggest mi
   + `flox activate` materializes the **entire** toolchain from the content-addressed Nix
   store on every activation (python312, uv, ruff, taplo, gitleaks, bun, commitlint, yamllint,
   codespell, bandit, just, lefthook, gh, editorconfig-checker, gnumake), then runs each check
-  as a bare command. ~38s ubuntu / ~110s macOS per activation, deterministic. (`ty` & `pytest`
-  come from `uv run` either way — project deps, not flox-managed: the uv/flox boundary.)
+  as a bare command. ~46s ubuntu / ~136s macOS provisioning per job (install + activate +
+  cache-save), deterministic. (`ty` & `pytest` come from `uv run` either way — project deps,
+  not flox-managed: the uv/flox boundary.)
 - **Major differences:** granularity (only-needed-tool vs whole-env-every-time) · mechanism
   (4 installers vs 1 manifest) · source (runtime PyPI/npm/GitHub vs Nix store) · cost
-  (~3s vs ~38–110s/job) · reliability (flaky downloads vs deterministic) · maintenance
+  (~3s vs ~46–136s/job) · reliability (flaky downloads vs deterministic) · maintenance
   (4 scripts + scattered version pins vs one `manifest.toml` + `manifest.lock`).
 
 ## Key findings
 
-1. **The flox CI tax is provisioning, not the checks.** ~75% of each flox job is the
-   `flox` install/activate step; the actual check work (~13s ubuntu, ~33s macOS) is small
-   and comparable to traditional. Traditional tool installs are ~3–5s.
-2. **macOS is where Flox hurts most.** Per-job flox setup is ~110s on macOS vs ~38s on
-   ubuntu (Nix-on-macOS cold build), pushing flox-mirror to ~8.7× slower.
+1. **The flox CI tax is provisioning, not the checks.** ~90–94% of each flox job is
+   provisioning (install + activate + cache-save); the actual check `run` step is **equal to
+   traditional** (e.g. ruff 1s, codespell 0s, ty ~2s — same both sides). See Root cause.
+2. **macOS is where Flox hurts most.** Per-job flox provisioning is ~130s on macOS vs ~47s
+   on ubuntu (Nix-on-macOS cold build + larger cache save), pushing flox-mirror to ~8.7×.
 3. **Consolidation is the decisive lever — where provisioning is costly.** mirror and
    consolidated have ~equal per-job setup, but mirror pays it 10× (1100s/run on macOS) vs
    consolidated ~2× (225s/run). Identical work, ~4.5× less provisioning. On ubuntu the two

@@ -198,8 +198,8 @@ def main(out: Path) -> int:
         40,
         44,
         6,
-        "1 declarative manifest+lock · FULL env per activation · "
-        "Nix store · ~38s ubuntu / ~110s macOS · deterministic",
+        "1 declarative manifest+lock · FULL env every activation · Nix store · "
+        "~46s ubuntu / ~136s macOS provisioning/job · deterministic",
         "#f4f4f4",
         ec=FLOX,
         fs=8.5,
@@ -216,11 +216,11 @@ def main(out: Path) -> int:
         weight="bold",
     )
     data = [
-        ("traditional", 4.0, 7.9, TRAD),
-        ("flox-mirror", 110.0, 34.8, FLOX),
-        ("flox-consolidated", 120.3, 45.0, "#f0ad4e"),
+        ("traditional", 4.1, 7.8, TRAD),
+        ("flox-mirror", 135.8, 9.0, FLOX),
+        ("flox-consolidated", 150.6, 14.7, "#f0ad4e"),
     ]
-    maxv = 170.0
+    maxv = 175.0
     for i, (name, setup, work, _c) in enumerate(data):
         yy = 28 - i * 5.5
         ws = 42 * setup / maxv
@@ -252,7 +252,7 @@ def main(out: Path) -> int:
         "   script) vs 1 declarative manifest + lockfile.",
         "Source: PyPI / npm / GitHub releases at runtime",
         "   vs content-addressed Nix store (cached).",
-        "Cost: ~3s/job  vs  ~38s ubuntu to ~110s macOS per job.",
+        "Cost: ~3s/job  vs  ~46s ubuntu to ~136s macOS per job.",
         "Reliability: runtime downloads flake (editorconfig pulled",
         "   ~45%); Nix store is deterministic (0 flox failures).",
         "Maintenance: 4 scripts + scattered version pins",

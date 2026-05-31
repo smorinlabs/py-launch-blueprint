@@ -32,17 +32,18 @@ TOTAL = {
     "flox-mirror": [64.8, 64.6, 318.4, 303.6],
     "flox-consolidated": [64.8, 62.8, 181.6, 161.6],
 }
-# per-job setup / work (macOS cold)
+# per-job setup / work (macOS cold). setup includes BOTH provision pre-step AND
+# the `Post provision` cache-SAVE post-step, so work is only the actual check.
 SETUP_WORK_MAC = {  # side -> (setup, work)
-    "traditional": (4.0, 7.9),
-    "flox-mirror": (110.0, 34.8),
-    "flox-consolidated": (120.3, 45.0),
+    "traditional": (4.1, 7.8),
+    "flox-mirror": (135.8, 9.0),
+    "flox-consolidated": (150.6, 14.7),
 }
 # cumulative provisioning per run (seconds): [ubuntu_cold, macos_cold]
 PROV_RUN = {
-    "traditional": [29, 40],
-    "flox-mirror": [381, 1100],
-    "flox-consolidated": [83, 241],
+    "traditional": [30, 41],
+    "flox-mirror": [465, 1358],
+    "flox-consolidated": [99, 301],
 }
 
 
@@ -97,7 +98,9 @@ def main(out: Path) -> int:
     ax.set_xticks(xs)
     ax.set_xticklabels(SIDES, fontsize=9)
     ax.set_ylabel("seconds per job")
-    ax.set_title("Where the time goes (macOS, per job)  —  flox is ~75% provisioning")
+    ax.set_title(
+        "Where the time goes (macOS, per job)  —  flox is ~90-94% provisioning"
+    )
     ax.legend(fontsize=8)
 
     # Panel C: cumulative provisioning per run (log scale), ubuntu vs macOS cold

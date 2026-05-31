@@ -35,8 +35,13 @@ def parse_jobs(jobs_json: dict) -> list[JobTiming]:
         secs = duration_seconds(job["started_at"], job["completed_at"])
         setup = 0.0
         for step in job.get("steps", []):
+            name = step.get("name") or ""
+            # Count BOTH the pre-step ("provision (flox)") and the post-step
+            # ("Post provision (flox)" — the actions/cache SAVE of the Nix store)
+            # as provisioning, so `work` reflects only the actual check, not the
+            # cache-save overhead. Substring match catches the "Post " prefix.
             if (
-                step.get("name") in SETUP_STEP_NAMES
+                any(tag in name for tag in SETUP_STEP_NAMES)
                 and step.get("started_at")
                 and step.get("completed_at")
             ):

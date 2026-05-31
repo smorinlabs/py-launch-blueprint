@@ -23,18 +23,18 @@ setup = the `provision` step (flox install/activate, or setup-uv/just/bun); work
 
 | side | os | cache | jobs | avg setup/job | avg work/job | setup % | total provisioning/run |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| flox-consolidated | macos-latest | cold | 2 | 120.3s | 45.0s | 73% | 241s |
-| flox-mirror | macos-latest | cold | 10 | 110.0s | 34.8s | 76% | 1100s |
-| traditional | macos-latest | cold | 10 | 4.0s | 7.9s | 33% | 40s |
-| flox-consolidated | macos-latest | warm | 2 | 105.2s | 36.4s | 74% | 210s |
-| flox-mirror | macos-latest | warm | 10 | 104.7s | 31.9s | 77% | 1047s |
-| traditional | macos-latest | warm | 10 | 4.8s | 7.5s | 39% | 48s |
-| flox-consolidated | ubuntu-latest | cold | 2 | 41.3s | 16.7s | 71% | 83s |
-| flox-mirror | ubuntu-latest | cold | 10 | 38.1s | 13.5s | 74% | 381s |
-| traditional | ubuntu-latest | cold | 10 | 2.9s | 5.5s | 34% | 29s |
-| flox-consolidated | ubuntu-latest | warm | 2 | 40.3s | 16.2s | 71% | 81s |
-| flox-mirror | ubuntu-latest | warm | 10 | 39.3s | 13.4s | 75% | 393s |
-| traditional | ubuntu-latest | warm | 10 | 3.1s | 5.4s | 37% | 31s |
+| flox-consolidated | macos-latest | cold | 2 | 150.6s | 14.7s | 91% | 301s |
+| flox-mirror | macos-latest | cold | 10 | 135.8s | 9.0s | 94% | 1358s |
+| traditional | macos-latest | cold | 10 | 4.1s | 7.8s | 34% | 41s |
+| flox-consolidated | macos-latest | warm | 2 | 128.8s | 12.8s | 91% | 258s |
+| flox-mirror | macos-latest | warm | 10 | 128.8s | 7.8s | 94% | 1288s |
+| traditional | macos-latest | warm | 10 | 5.0s | 7.3s | 41% | 50s |
+| flox-consolidated | ubuntu-latest | cold | 2 | 49.3s | 8.7s | 85% | 99s |
+| flox-mirror | ubuntu-latest | cold | 10 | 46.5s | 5.1s | 90% | 465s |
+| traditional | ubuntu-latest | cold | 10 | 3.0s | 5.3s | 36% | 30s |
+| flox-consolidated | ubuntu-latest | warm | 2 | 48.3s | 8.2s | 85% | 97s |
+| flox-mirror | ubuntu-latest | warm | 10 | 47.6s | 5.1s | 90% | 476s |
+| traditional | ubuntu-latest | warm | 10 | 3.3s | 5.2s | 39% | 33s |
 
 ## Per-job breakdown (total job seconds)
 
