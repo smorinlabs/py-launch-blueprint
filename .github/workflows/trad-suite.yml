@@ -1,0 +1,21 @@
+name: trad-suite
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        type: string
+        required: true
+      cache:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    uses: ./.github/workflows/_checks.yml
+    with:
+      provisioner: traditional
+      os: ${{ inputs.os }}
+      cache: ${{ inputs.cache }}
