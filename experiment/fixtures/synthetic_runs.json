@@ -1,0 +1,1142 @@
+[
+  {
+    "side": "traditional",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1000,
+    "total_seconds": 234.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 11.7,
+        "setup_seconds": 7.0
+      },
+      {
+        "name": "pytest",
+        "seconds": 93.6,
+        "setup_seconds": 11.7
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1001,
+    "total_seconds": 237.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 11.9,
+        "setup_seconds": 7.1
+      },
+      {
+        "name": "pytest",
+        "seconds": 94.8,
+        "setup_seconds": 11.9
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1002,
+    "total_seconds": 240.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 12.0,
+        "setup_seconds": 7.2
+      },
+      {
+        "name": "pytest",
+        "seconds": 96.0,
+        "setup_seconds": 12.0
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1003,
+    "total_seconds": 243.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 12.2,
+        "setup_seconds": 7.3
+      },
+      {
+        "name": "pytest",
+        "seconds": 97.2,
+        "setup_seconds": 12.2
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1004,
+    "total_seconds": 246.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 12.3,
+        "setup_seconds": 7.4
+      },
+      {
+        "name": "pytest",
+        "seconds": 98.4,
+        "setup_seconds": 12.3
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1005,
+    "total_seconds": 194.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 9.7,
+        "setup_seconds": 5.8
+      },
+      {
+        "name": "pytest",
+        "seconds": 77.6,
+        "setup_seconds": 9.7
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1006,
+    "total_seconds": 197.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 9.9,
+        "setup_seconds": 5.9
+      },
+      {
+        "name": "pytest",
+        "seconds": 78.8,
+        "setup_seconds": 9.9
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1007,
+    "total_seconds": 200.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 10.0,
+        "setup_seconds": 6.0
+      },
+      {
+        "name": "pytest",
+        "seconds": 80.0,
+        "setup_seconds": 10.0
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1008,
+    "total_seconds": 203.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 10.2,
+        "setup_seconds": 6.1
+      },
+      {
+        "name": "pytest",
+        "seconds": 81.2,
+        "setup_seconds": 10.2
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1009,
+    "total_seconds": 206.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 10.3,
+        "setup_seconds": 6.2
+      },
+      {
+        "name": "pytest",
+        "seconds": 82.4,
+        "setup_seconds": 10.3
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1010,
+    "total_seconds": 378.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 18.9,
+        "setup_seconds": 11.3
+      },
+      {
+        "name": "pytest",
+        "seconds": 151.2,
+        "setup_seconds": 18.9
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1011,
+    "total_seconds": 381.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 19.1,
+        "setup_seconds": 11.4
+      },
+      {
+        "name": "pytest",
+        "seconds": 152.4,
+        "setup_seconds": 19.1
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1012,
+    "total_seconds": 384.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 19.2,
+        "setup_seconds": 11.5
+      },
+      {
+        "name": "pytest",
+        "seconds": 153.6,
+        "setup_seconds": 19.2
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1013,
+    "total_seconds": 387.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 19.4,
+        "setup_seconds": 11.6
+      },
+      {
+        "name": "pytest",
+        "seconds": 154.8,
+        "setup_seconds": 19.4
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1014,
+    "total_seconds": 390.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 19.5,
+        "setup_seconds": 11.7
+      },
+      {
+        "name": "pytest",
+        "seconds": 156.0,
+        "setup_seconds": 19.5
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1015,
+    "total_seconds": 314.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 15.7,
+        "setup_seconds": 9.4
+      },
+      {
+        "name": "pytest",
+        "seconds": 125.6,
+        "setup_seconds": 15.7
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1016,
+    "total_seconds": 317.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 15.9,
+        "setup_seconds": 9.5
+      },
+      {
+        "name": "pytest",
+        "seconds": 126.8,
+        "setup_seconds": 15.9
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1017,
+    "total_seconds": 320.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.0,
+        "setup_seconds": 9.6
+      },
+      {
+        "name": "pytest",
+        "seconds": 128.0,
+        "setup_seconds": 16.0
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1018,
+    "total_seconds": 323.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.2,
+        "setup_seconds": 9.7
+      },
+      {
+        "name": "pytest",
+        "seconds": 129.2,
+        "setup_seconds": 16.2
+      }
+    ]
+  },
+  {
+    "side": "traditional",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1019,
+    "total_seconds": 326.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.3,
+        "setup_seconds": 9.8
+      },
+      {
+        "name": "pytest",
+        "seconds": 130.4,
+        "setup_seconds": 16.3
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1020,
+    "total_seconds": 324.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.2,
+        "setup_seconds": 9.7
+      },
+      {
+        "name": "pytest",
+        "seconds": 129.6,
+        "setup_seconds": 16.2
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1021,
+    "total_seconds": 327.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.4,
+        "setup_seconds": 9.8
+      },
+      {
+        "name": "pytest",
+        "seconds": 130.8,
+        "setup_seconds": 16.4
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1022,
+    "total_seconds": 330.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.5,
+        "setup_seconds": 9.9
+      },
+      {
+        "name": "pytest",
+        "seconds": 132.0,
+        "setup_seconds": 16.5
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1023,
+    "total_seconds": 333.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.7,
+        "setup_seconds": 10.0
+      },
+      {
+        "name": "pytest",
+        "seconds": 133.2,
+        "setup_seconds": 16.7
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1024,
+    "total_seconds": 336.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.8,
+        "setup_seconds": 10.1
+      },
+      {
+        "name": "pytest",
+        "seconds": 134.4,
+        "setup_seconds": 16.8
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1025,
+    "total_seconds": 204.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 10.2,
+        "setup_seconds": 6.1
+      },
+      {
+        "name": "pytest",
+        "seconds": 81.6,
+        "setup_seconds": 10.2
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1026,
+    "total_seconds": 207.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 10.4,
+        "setup_seconds": 6.2
+      },
+      {
+        "name": "pytest",
+        "seconds": 82.8,
+        "setup_seconds": 10.4
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1027,
+    "total_seconds": 210.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 10.5,
+        "setup_seconds": 6.3
+      },
+      {
+        "name": "pytest",
+        "seconds": 84.0,
+        "setup_seconds": 10.5
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1028,
+    "total_seconds": 213.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 10.7,
+        "setup_seconds": 6.4
+      },
+      {
+        "name": "pytest",
+        "seconds": 85.2,
+        "setup_seconds": 10.7
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1029,
+    "total_seconds": 216.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 10.8,
+        "setup_seconds": 6.5
+      },
+      {
+        "name": "pytest",
+        "seconds": 86.4,
+        "setup_seconds": 10.8
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1030,
+    "total_seconds": 522.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 26.1,
+        "setup_seconds": 15.7
+      },
+      {
+        "name": "pytest",
+        "seconds": 208.8,
+        "setup_seconds": 26.1
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1031,
+    "total_seconds": 525.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 26.2,
+        "setup_seconds": 15.8
+      },
+      {
+        "name": "pytest",
+        "seconds": 210.0,
+        "setup_seconds": 26.2
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1032,
+    "total_seconds": 528.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 26.4,
+        "setup_seconds": 15.8
+      },
+      {
+        "name": "pytest",
+        "seconds": 211.2,
+        "setup_seconds": 26.4
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1033,
+    "total_seconds": 531.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 26.6,
+        "setup_seconds": 15.9
+      },
+      {
+        "name": "pytest",
+        "seconds": 212.4,
+        "setup_seconds": 26.6
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1034,
+    "total_seconds": 534.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 26.7,
+        "setup_seconds": 16.0
+      },
+      {
+        "name": "pytest",
+        "seconds": 213.6,
+        "setup_seconds": 26.7
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1035,
+    "total_seconds": 330.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.5,
+        "setup_seconds": 9.9
+      },
+      {
+        "name": "pytest",
+        "seconds": 132.0,
+        "setup_seconds": 16.5
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1036,
+    "total_seconds": 333.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.7,
+        "setup_seconds": 10.0
+      },
+      {
+        "name": "pytest",
+        "seconds": 133.2,
+        "setup_seconds": 16.7
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1037,
+    "total_seconds": 336.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.8,
+        "setup_seconds": 10.1
+      },
+      {
+        "name": "pytest",
+        "seconds": 134.4,
+        "setup_seconds": 16.8
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1038,
+    "total_seconds": 339.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 16.9,
+        "setup_seconds": 10.2
+      },
+      {
+        "name": "pytest",
+        "seconds": 135.6,
+        "setup_seconds": 16.9
+      }
+    ]
+  },
+  {
+    "side": "flox-mirror",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1039,
+    "total_seconds": 342.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 17.1,
+        "setup_seconds": 10.3
+      },
+      {
+        "name": "pytest",
+        "seconds": 136.8,
+        "setup_seconds": 17.1
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1040,
+    "total_seconds": 264.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 13.2,
+        "setup_seconds": 7.9
+      },
+      {
+        "name": "pytest",
+        "seconds": 105.6,
+        "setup_seconds": 13.2
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1041,
+    "total_seconds": 267.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 13.4,
+        "setup_seconds": 8.0
+      },
+      {
+        "name": "pytest",
+        "seconds": 106.8,
+        "setup_seconds": 13.4
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1042,
+    "total_seconds": 270.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 13.5,
+        "setup_seconds": 8.1
+      },
+      {
+        "name": "pytest",
+        "seconds": 108.0,
+        "setup_seconds": 13.5
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1043,
+    "total_seconds": 273.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 13.7,
+        "setup_seconds": 8.2
+      },
+      {
+        "name": "pytest",
+        "seconds": 109.2,
+        "setup_seconds": 13.7
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "ubuntu-latest",
+    "cache": "cold",
+    "run_id": 1044,
+    "total_seconds": 276.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 13.8,
+        "setup_seconds": 8.3
+      },
+      {
+        "name": "pytest",
+        "seconds": 110.4,
+        "setup_seconds": 13.8
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1045,
+    "total_seconds": 164.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 8.2,
+        "setup_seconds": 4.9
+      },
+      {
+        "name": "pytest",
+        "seconds": 65.6,
+        "setup_seconds": 8.2
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1046,
+    "total_seconds": 167.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 8.3,
+        "setup_seconds": 5.0
+      },
+      {
+        "name": "pytest",
+        "seconds": 66.8,
+        "setup_seconds": 8.3
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1047,
+    "total_seconds": 170.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 8.5,
+        "setup_seconds": 5.1
+      },
+      {
+        "name": "pytest",
+        "seconds": 68.0,
+        "setup_seconds": 8.5
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1048,
+    "total_seconds": 173.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 8.7,
+        "setup_seconds": 5.2
+      },
+      {
+        "name": "pytest",
+        "seconds": 69.2,
+        "setup_seconds": 8.7
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "ubuntu-latest",
+    "cache": "warm",
+    "run_id": 1049,
+    "total_seconds": 176.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 8.8,
+        "setup_seconds": 5.3
+      },
+      {
+        "name": "pytest",
+        "seconds": 70.4,
+        "setup_seconds": 8.8
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1050,
+    "total_seconds": 426.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 21.3,
+        "setup_seconds": 12.8
+      },
+      {
+        "name": "pytest",
+        "seconds": 170.4,
+        "setup_seconds": 21.3
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1051,
+    "total_seconds": 429.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 21.5,
+        "setup_seconds": 12.9
+      },
+      {
+        "name": "pytest",
+        "seconds": 171.6,
+        "setup_seconds": 21.5
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1052,
+    "total_seconds": 432.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 21.6,
+        "setup_seconds": 13.0
+      },
+      {
+        "name": "pytest",
+        "seconds": 172.8,
+        "setup_seconds": 21.6
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1053,
+    "total_seconds": 435.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 21.8,
+        "setup_seconds": 13.0
+      },
+      {
+        "name": "pytest",
+        "seconds": 174.0,
+        "setup_seconds": 21.8
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "macos-latest",
+    "cache": "cold",
+    "run_id": 1054,
+    "total_seconds": 438.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 21.9,
+        "setup_seconds": 13.1
+      },
+      {
+        "name": "pytest",
+        "seconds": 175.2,
+        "setup_seconds": 21.9
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1055,
+    "total_seconds": 266.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 13.3,
+        "setup_seconds": 8.0
+      },
+      {
+        "name": "pytest",
+        "seconds": 106.4,
+        "setup_seconds": 13.3
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1056,
+    "total_seconds": 269.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 13.5,
+        "setup_seconds": 8.1
+      },
+      {
+        "name": "pytest",
+        "seconds": 107.6,
+        "setup_seconds": 13.5
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1057,
+    "total_seconds": 272.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 13.6,
+        "setup_seconds": 8.2
+      },
+      {
+        "name": "pytest",
+        "seconds": 108.8,
+        "setup_seconds": 13.6
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1058,
+    "total_seconds": 275.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 13.8,
+        "setup_seconds": 8.2
+      },
+      {
+        "name": "pytest",
+        "seconds": 110.0,
+        "setup_seconds": 13.8
+      }
+    ]
+  },
+  {
+    "side": "flox-consolidated",
+    "os": "macos-latest",
+    "cache": "warm",
+    "run_id": 1059,
+    "total_seconds": 278.0,
+    "jobs": [
+      {
+        "name": "ruff-check",
+        "seconds": 13.9,
+        "setup_seconds": 8.3
+      },
+      {
+        "name": "pytest",
+        "seconds": 111.2,
+        "setup_seconds": 13.9
+      }
+    ]
+  }
+]
