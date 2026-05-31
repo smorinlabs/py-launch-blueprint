@@ -1,0 +1,123 @@
+name: experiment-driver
+on:
+  workflow_dispatch:
+    inputs:
+      sides:
+        description: comma-separated subset of traditional,flox-mirror,flox-consolidated
+        type: string
+        default: traditional,flox-mirror,flox-consolidated
+      oses:
+        description: comma-separated subset of ubuntu-latest,macos-latest
+        type: string
+        default: ubuntu-latest
+      caches:
+        description: comma-separated subset of cold,warm
+        type: string
+        default: cold,warm
+      reps:
+        description: repetitions per cell
+        type: string
+        default: "5"
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  drive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v6
+      - name: Dispatch, wait, collect run IDs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ github.ref_name }}
+          SIDES: ${{ inputs.sides }}
+          OSES: ${{ inputs.oses }}
+          CACHES: ${{ inputs.caches }}
+          REPS: ${{ inputs.reps }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra SIDE_ARR <<< "$SIDES"
+          IFS=',' read -ra OS_ARR <<< "$OSES"
+          IFS=',' read -ra CACHE_ARR <<< "$CACHES"
+
+          # Dispatch a workflow and return the run id it actually created.
+          # Snapshots existing workflow_dispatch run ids before dispatching,
+          # then polls for the new id that wasn't present before. This avoids
+          # the `gh run list --limit 1` race, which could return a different
+          # run (concurrent/manual dispatch) and silently misattribute timings.
+          dispatch_run() {
+            local wfname="$1" os="$2" cache="$3" before id
+            before=$(gh run list --workflow="${wfname}.yml" --branch "$REF" \
+              --event workflow_dispatch --limit 60 --json databaseId \
+              -q '[.[].databaseId] | join(" ")')
+            gh workflow run "${wfname}.yml" --ref "$REF" -f os="$os" -f cache="$cache"
+            for _ in $(seq 1 30); do
+              sleep 6
+              for id in $(gh run list --workflow="${wfname}.yml" --branch "$REF" \
+                --event workflow_dispatch --limit 60 --json databaseId \
+                -q '.[].databaseId'); do
+                case " ${before} " in
+                  *" ${id} "*) ;;
+                  *) echo "${id}"; return 0 ;;
+                esac
+              done
+            done
+            return 1
+          }
+
+          collect='{}'
+          for side in "${SIDE_ARR[@]}"; do
+            case "$side" in
+              traditional) wf="trad-suite" ;;
+              flox-mirror) wf="flox-mirror-suite" ;;
+              flox-consolidated) wf="flox-consolidated" ;;
+              *) echo "unknown side: $side" >&2; exit 1 ;;
+            esac
+            for os in "${OS_ARR[@]}"; do
+              for cache in "${CACHE_ARR[@]}"; do
+                # warm: prime once (not measured) so the measured runs hit cache
+                if [ "$cache" = "warm" ]; then
+                  if prime_id=$(dispatch_run "$wf" "$os" "warm"); then
+                    gh run watch "$prime_id" --exit-status || true
+                  else
+                    echo "WARN: could not identify warm-prime run for $wf/$os" >&2
+                  fi
+                fi
+                ids=()
+                for rep in $(seq 1 "$REPS"); do
+                  echo "rep $rep of $REPS: side=$side os=$os cache=$cache"
+                  if ! rid=$(dispatch_run "$wf" "$os" "$cache"); then
+                    echo "WARN: could not identify dispatched run; skipping rep" >&2
+                    continue
+                  fi
+                  # Only record successful runs — a failed/wrong run must not be
+                  # counted as a valid timing sample (would bias the experiment).
+                  if gh run watch "$rid" --exit-status; then
+                    ids+=("$rid")
+                  else
+                    echo "WARN: run $rid concluded non-success; excluding from samples" >&2
+                  fi
+                done
+                tag="${side}|${os}|${cache}"
+                if [ "${#ids[@]}" -gt 0 ]; then
+                  joined=$(printf '%s\n' "${ids[@]}" | paste -sd, -)
+                  collect=$(echo "$collect" | \
+                    jq --arg k "$tag" --arg v "$joined" \
+                    '.[$k] = ($v|split(",")|map(tonumber))')
+                else
+                  echo "WARN: no successful reps recorded for $tag" >&2
+                  collect=$(echo "$collect" | jq --arg k "$tag" '.[$k] = []')
+                fi
+              done
+            done
+          done
+          echo "$collect" > run-ids.json
+          cat run-ids.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: experiment-run-ids
+          path: run-ids.json

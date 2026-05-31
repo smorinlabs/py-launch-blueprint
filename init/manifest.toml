@@ -118,13 +118,15 @@ files   = [
 ]
 mode    = "structured"
 
-# package_name (text) — 73 occurrences in 28 files
+# package_name (text) — 82 occurrences in 30 files
 [[replace]]
 field   = "package_name"
 current = ["py_launch_blueprint"]
 files   = [
+  ".github/workflows/_checks.yml",   # 6x
   ".github/workflows/bandit.yml",   # 1x
   ".github/workflows/ci.yml",   # 2x
+  ".github/workflows/flox-consolidated.yml",   # 3x
   ".vscode/launch.json",   # 2x
   ".windsurfrules",   # 1x
   "AGENTS.md",   # 1x
