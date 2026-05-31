@@ -1,0 +1,35 @@
+name: provision-traditional
+description: Install the traditional per-tool toolchain (uv / just / bun / gitleaks).
+inputs:
+  tools:
+    description: space-separated subset of "uv just bun gitleaks"
+    required: true
+  cache:
+    description: cold | warm
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Setup uv
+      if: contains(inputs.tools, 'uv')
+      uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: ${{ inputs.cache == 'warm' }}
+    - name: Setup just
+      if: contains(inputs.tools, 'just')
+      uses: extractions/setup-just@v4
+    - name: Install taplo (when just present)
+      if: contains(inputs.tools, 'just')
+      shell: bash
+      run: just install-taplo
+    - name: Setup bun
+      if: contains(inputs.tools, 'bun')
+      uses: oven-sh/setup-bun@v2
+    - name: Install gitleaks
+      if: contains(inputs.tools, 'gitleaks')
+      shell: bash
+      run: bash scripts/install-gitleaks.sh
+    - name: Ensure gitleaks on PATH
+      if: contains(inputs.tools, 'gitleaks')
+      shell: bash
+      run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"

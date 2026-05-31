@@ -1,0 +1,26 @@
+name: provision-flox
+description: Install Flox and restore/save the Nix store cache.
+inputs:
+  cache:
+    description: cold | warm
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install Flox
+      uses: flox/install-flox-action@v2
+    - name: Cache Nix store
+      uses: actions/cache@v4
+      with:
+        path: |
+          /nix
+          ~/.cache/flox
+        # cold -> unique key (guaranteed miss); warm -> stable key per lock+os
+        key: >-
+          flox-${{ inputs.cache }}-${{ runner.os }}-${{ hashFiles('.flox/env/manifest.lock') }}-${{
+            inputs.cache == 'cold' && github.run_id || 'stable' }}
+        restore-keys: |
+          ${{ inputs.cache == 'warm' && format('flox-warm-{0}-{1}-stable', runner.os, hashFiles('.flox/env/manifest.lock')) || 'flox-never-restore' }}
+    - name: Warm the flox env
+      shell: bash
+      run: flox activate -- true
