@@ -43,6 +43,32 @@ jobs:
           IFS=',' read -ra SIDE_ARR <<< "$SIDES"
           IFS=',' read -ra OS_ARR <<< "$OSES"
           IFS=',' read -ra CACHE_ARR <<< "$CACHES"
+
+          # Dispatch a workflow and return the run id it actually created.
+          # Snapshots existing workflow_dispatch run ids before dispatching,
+          # then polls for the new id that wasn't present before. This avoids
+          # the `gh run list --limit 1` race, which could return a different
+          # run (concurrent/manual dispatch) and silently misattribute timings.
+          dispatch_run() {
+            local wfname="$1" os="$2" cache="$3" before id
+            before=$(gh run list --workflow="${wfname}.yml" --branch "$REF" \
+              --event workflow_dispatch --limit 60 --json databaseId \
+              -q '[.[].databaseId] | join(" ")')
+            gh workflow run "${wfname}.yml" --ref "$REF" -f os="$os" -f cache="$cache"
+            for _ in $(seq 1 30); do
+              sleep 6
+              for id in $(gh run list --workflow="${wfname}.yml" --branch "$REF" \
+                --event workflow_dispatch --limit 60 --json databaseId \
+                -q '.[].databaseId'); do
+                case " ${before} " in
+                  *" ${id} "*) ;;
+                  *) echo "${id}"; return 0 ;;
+                esac
+              done
+            done
+            return 1
+          }
+
           collect='{}'
           for side in "${SIDE_ARR[@]}"; do
             case "$side" in
@@ -55,29 +81,37 @@ jobs:
               for cache in "${CACHE_ARR[@]}"; do
                 # warm: prime once (not measured) so the measured runs hit cache
                 if [ "$cache" = "warm" ]; then
-                  gh workflow run "${wf}.yml" --ref "$REF" -f os="$os" -f cache="warm" || true
-                  sleep 45
-                  prime_id=$(gh run list --workflow="${wf}.yml" \
-                    --branch "$REF" --limit 1 \
-                    --json databaseId -q '.[0].databaseId')
-                  gh run watch "$prime_id" --exit-status || true
+                  if prime_id=$(dispatch_run "$wf" "$os" "warm"); then
+                    gh run watch "$prime_id" --exit-status || true
+                  else
+                    echo "WARN: could not identify warm-prime run for $wf/$os" >&2
+                  fi
                 fi
                 ids=()
                 for rep in $(seq 1 "$REPS"); do
                   echo "rep $rep of $REPS: side=$side os=$os cache=$cache"
-                  gh workflow run "${wf}.yml" --ref "$REF" -f os="$os" -f cache="$cache"
-                  sleep 45
-                  rid=$(gh run list --workflow="${wf}.yml" \
-                    --branch "$REF" --limit 1 \
-                    --json databaseId -q '.[0].databaseId')
-                  gh run watch "$rid" --exit-status || true
-                  ids+=("$rid")
+                  if ! rid=$(dispatch_run "$wf" "$os" "$cache"); then
+                    echo "WARN: could not identify dispatched run; skipping rep" >&2
+                    continue
+                  fi
+                  # Only record successful runs — a failed/wrong run must not be
+                  # counted as a valid timing sample (would bias the experiment).
+                  if gh run watch "$rid" --exit-status; then
+                    ids+=("$rid")
+                  else
+                    echo "WARN: run $rid concluded non-success; excluding from samples" >&2
+                  fi
                 done
                 tag="${side}|${os}|${cache}"
-                joined=$(printf '%s\n' "${ids[@]}" | paste -sd, -)
-                collect=$(echo "$collect" | \
-                  jq --arg k "$tag" --arg v "$joined" \
-                  '.[$k] = ($v|split(",")|map(tonumber))')
+                if [ "${#ids[@]}" -gt 0 ]; then
+                  joined=$(printf '%s\n' "${ids[@]}" | paste -sd, -)
+                  collect=$(echo "$collect" | \
+                    jq --arg k "$tag" --arg v "$joined" \
+                    '.[$k] = ($v|split(",")|map(tonumber))')
+                else
+                  echo "WARN: no successful reps recorded for $tag" >&2
+                  collect=$(echo "$collect" | jq --arg k "$tag" '.[$k] = []')
+                fi
               done
             done
           done
