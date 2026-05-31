@@ -1,0 +1,245 @@
+name: _checks
+on:
+  workflow_call:
+    inputs:
+      provisioner:
+        type: string
+        required: true   # traditional | flox
+      os:
+        type: string
+        required: true
+      cache:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  ruff-check:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- ruff check .' || 'uvx ruff check .' }}
+
+  ruff-format:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- ruff format --check .' || 'uvx ruff format --check .' }}
+
+  ty:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          if [ "${{ inputs.provisioner }}" = "flox" ]; then
+            flox activate -- bash -c 'uv sync --group dev && ty check py_launch_blueprint/'
+          else
+            uv sync --group dev && uv run ty check py_launch_blueprint/
+          fi
+
+  pytest:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          if [ "${{ inputs.provisioner }}" = "flox" ]; then
+            flox activate -- bash -c 'uv sync --group dev && pytest -m "" --cov=py_launch_blueprint --cov-report=xml'
+          else
+            uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml
+          fi
+
+  taplo:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: just
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          if [ "${{ inputs.provisioner }}" = "flox" ]; then
+            flox activate -- taplo check '**/*.toml'
+          else
+            taplo check '**/*.toml'
+          fi
+
+  codespell:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- codespell --toml pyproject.toml' || 'uvx codespell --toml pyproject.toml' }}
+
+  yamllint:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- yamllint -c .yamllint .' || 'uvx yamllint -c .yamllint .' }}
+
+  editorconfig:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: bun
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- editorconfig-checker --config .editorconfig-checker.json' || 'bunx --bun editorconfig-checker --config .editorconfig-checker.json' }}
+
+  bandit:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- bandit -r py_launch_blueprint/ -c pyproject.toml' || 'uvx bandit -r py_launch_blueprint/ -c pyproject.toml' }}
+
+  gitleaks:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: gitleaks
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- gitleaks detect --source . --no-banner' || 'gitleaks detect --source . --no-banner' }}
+
+  commitlint:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: bun
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- commitlint --from=HEAD~10 --to=HEAD' || 'bunx --bun commitlint --from=HEAD~10 --to=HEAD' }}
