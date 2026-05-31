@@ -1,0 +1,98 @@
+{
+  "traditional|ubuntu-latest|cold": {
+    "n": 5,
+    "min": 234.0,
+    "max": 246.0,
+    "avg": 240.0,
+    "median": 240.0,
+    "stddev": 4.242640687119285
+  },
+  "traditional|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 194.0,
+    "max": 206.0,
+    "avg": 200.0,
+    "median": 200.0,
+    "stddev": 4.242640687119285
+  },
+  "traditional|macos-latest|cold": {
+    "n": 5,
+    "min": 378.0,
+    "max": 390.0,
+    "avg": 384.0,
+    "median": 384.0,
+    "stddev": 4.242640687119285
+  },
+  "traditional|macos-latest|warm": {
+    "n": 5,
+    "min": 314.0,
+    "max": 326.0,
+    "avg": 320.0,
+    "median": 320.0,
+    "stddev": 4.242640687119285
+  },
+  "flox-mirror|ubuntu-latest|cold": {
+    "n": 5,
+    "min": 324.0,
+    "max": 336.0,
+    "avg": 330.0,
+    "median": 330.0,
+    "stddev": 4.242640687119285
+  },
+  "flox-mirror|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 204.0,
+    "max": 216.0,
+    "avg": 210.0,
+    "median": 210.0,
+    "stddev": 4.242640687119285
+  },
+  "flox-mirror|macos-latest|cold": {
+    "n": 5,
+    "min": 522.0,
+    "max": 534.0,
+    "avg": 528.0,
+    "median": 528.0,
+    "stddev": 4.242640687119285
+  },
+  "flox-mirror|macos-latest|warm": {
+    "n": 5,
+    "min": 330.0,
+    "max": 342.0,
+    "avg": 336.0,
+    "median": 336.0,
+    "stddev": 4.242640687119285
+  },
+  "flox-consolidated|ubuntu-latest|cold": {
+    "n": 5,
+    "min": 264.0,
+    "max": 276.0,
+    "avg": 270.0,
+    "median": 270.0,
+    "stddev": 4.242640687119285
+  },
+  "flox-consolidated|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 164.0,
+    "max": 176.0,
+    "avg": 170.0,
+    "median": 170.0,
+    "stddev": 4.242640687119285
+  },
+  "flox-consolidated|macos-latest|cold": {
+    "n": 5,
+    "min": 426.0,
+    "max": 438.0,
+    "avg": 432.0,
+    "median": 432.0,
+    "stddev": 4.242640687119285
+  },
+  "flox-consolidated|macos-latest|warm": {
+    "n": 5,
+    "min": 266.0,
+    "max": 278.0,
+    "avg": 272.0,
+    "median": 272.0,
+    "stddev": 4.242640687119285
+  }
+}
