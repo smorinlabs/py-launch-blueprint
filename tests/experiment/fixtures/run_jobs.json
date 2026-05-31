@@ -1,0 +1,20 @@
+{
+  "jobs": [
+    {
+      "name": "ruff-check",
+      "started_at": "2026-05-30T10:00:00Z",
+      "completed_at": "2026-05-30T10:00:30Z",
+      "steps": [
+        {"name": "provision (flox)", "started_at": "2026-05-30T10:00:05Z", "completed_at": "2026-05-30T10:00:20Z"}
+      ]
+    },
+    {
+      "name": "pytest",
+      "started_at": "2026-05-30T10:00:00Z",
+      "completed_at": "2026-05-30T10:02:00Z",
+      "steps": [
+        {"name": "provision (flox)", "started_at": "2026-05-30T10:00:05Z", "completed_at": "2026-05-30T10:00:25Z"}
+      ]
+    }
+  ]
+}
