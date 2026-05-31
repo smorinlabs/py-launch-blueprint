@@ -1,7 +1,7 @@
 # ADR-12: Flox for developer-environment provisioning
 
 - Status: proposed
-- Date: 2026-05-30
+- Date: 2026-05-30 (updated 2026-05-31 with CI timing experiment results)
 - Deciders: Steve Morin
 
 ## Context
@@ -169,6 +169,9 @@ systems = ["aarch64-darwin", "x86_64-linux"]
   Makefile's "almost everyone has `make`" premise. This is the central tension.
 - Two activation models coexist during transition (`flox activate` vs. bare
   shell) until the scripts/Makefile are retired.
+- **CI is 3.8–8.7× slower** when provisioned via Flox (empirical — see below):
+  ~90–94% provisioning overhead. This hits migration step #7 (CI) specifically;
+  local-dev/devcontainer activation (one `flox activate` per shell) is unaffected.
 
 **Neutral**
 
@@ -176,8 +179,52 @@ systems = ["aarch64-darwin", "x86_64-linux"]
 - Keep `ty` (pre-release pin) and `commitlint` (config-next-to-binary) in their
   current managers even though both are catalog-available.
 
+## Empirical evidence — CI timing experiment (2026-05-31)
+
+Migration step #7 (swap CI tool-installs for `flox/install-flox-action` +
+`flox activate`) was tested directly with a GitHub Actions benchmark:
+3 sides × 2 OS × cold/warm × 5 reps — `traditional` vs `flox-mirror` (per-job
+activation) vs `flox-consolidated` (one activation). Full write-up, raw data, and
+figures: [`experiment/FINDINGS.md`](../../experiment/FINDINGS.md) (on branch
+`experiment/flox-ci-timing`).
+
+![Flox vs traditional CI timing](../../experiment/results/summary.png)
+
+**Result: Flox CI is 3.8× slower on ubuntu and up to ~8.7× slower on macOS.**
+
+| total run time (avg) | ubuntu | macOS |
+| --- | ---: | ---: |
+| traditional | ~17s | ~37s |
+| flox-mirror | ~65s (+277%) | ~318s (+775%) |
+| flox-consolidated | ~65s (+277%) | ~182s (+399%) |
+
+- **The checks run at the same speed.** Flox is **~90–94% provisioning** (install +
+  `flox activate` + Nix-store cache-save); the actual check step is identical to
+  traditional (ruff 1s, codespell 0s, ty ~2s — same both sides). Flox's *entire* CI
+  cost is provisioning, not slower checks.
+- **macOS is worst** — per-job flox provisioning ~130s vs ~47s on ubuntu (Nix cold
+  build + larger cache save); cumulative provisioning reaches **~1358s/run** for
+  flox-mirror on macOS.
+- **Consolidation is the decisive lever** — `flox-mirror` pays the install per job
+  (10×); `flox-consolidated` pays it ~2×, for ~4.5× less provisioning on identical work.
+- **Warm cache barely helps** — the install-action/activation overhead dominates, not
+  the cacheable Nix store.
+- **Reliability flips to Flox** — 0 flox failures across ~110 runs; traditional's runtime
+  binary downloads flaked (the `editorconfig` npm download failed ~45% and was excluded).
+
+**Implication.** Buckets 1–3 (local dev + devcontainer) are unaffected — a developer
+pays one `flox activate` per shell. But **migration step #7 (CI) should be re-scoped**:
+moving CI provisioning to Flox imposes a 3.8–8.7× wall-clock tax that is essentially all
+provisioning. If CI adopts Flox at all, it **must** use a single consolidated activation
+(never per-job), and the install-action/activation overhead (not caching) is the lever to
+optimize. The maintenance-simplicity and reliability gains are real but must be weighed
+against this CI cost.
+
 ## Status note
 
-`proposed` — this ADR records the analysis and decision space. Adoption is a
-separate step (the migration delta above) and should land behind its own ITM.
+`proposed` — this ADR records the analysis and decision space. The 2026-05-31 CI
+experiment (above) settles the **CI** sub-question: Flox CI is markedly slower, so
+step #7 is **not** recommended as-is (consolidated-only if pursued). The local-dev /
+devcontainer migration (Buckets 1–3) remains an open `proposed` decision. Adoption of
+either is a separate step and should land behind its own ITM.
 ```
