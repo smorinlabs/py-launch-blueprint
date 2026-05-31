@@ -1,0 +1,83 @@
+name: experiment-driver
+on:
+  workflow_dispatch:
+    inputs:
+      sides:
+        description: comma-separated subset of trad-suite,flox-mirror-suite,flox-consolidated
+        type: string
+        default: trad-suite,flox-mirror-suite,flox-consolidated
+      oses:
+        description: comma-separated subset of ubuntu-latest,macos-latest
+        type: string
+        default: ubuntu-latest
+      caches:
+        description: comma-separated subset of cold,warm
+        type: string
+        default: cold,warm
+      reps:
+        description: repetitions per cell
+        type: string
+        default: "5"
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  drive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dispatch, wait, collect run IDs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ github.ref_name }}
+          SIDES: ${{ inputs.sides }}
+          OSES: ${{ inputs.oses }}
+          CACHES: ${{ inputs.caches }}
+          REPS: ${{ inputs.reps }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra SIDE_ARR <<< "$SIDES"
+          IFS=',' read -ra OS_ARR <<< "$OSES"
+          IFS=',' read -ra CACHE_ARR <<< "$CACHES"
+          collect='{}'
+          for side in "${SIDE_ARR[@]}"; do
+            for os in "${OS_ARR[@]}"; do
+              for cache in "${CACHE_ARR[@]}"; do
+                # warm: prime once (not measured) so the measured runs hit cache
+                if [ "$cache" = "warm" ]; then
+                  gh workflow run "${side}.yml" --ref "$REF" -f os="$os" -f cache="warm" || true
+                  sleep 20
+                  prime_id=$(gh run list --workflow="${side}.yml" \
+                    --branch "$REF" --limit 1 \
+                    --json databaseId -q '.[0].databaseId')
+                  gh run watch "$prime_id" --exit-status || true
+                fi
+                ids=()
+                for rep in $(seq 1 "$REPS"); do
+                  echo "rep $rep of $REPS: side=$side os=$os cache=$cache"
+                  gh workflow run "${side}.yml" --ref "$REF" -f os="$os" -f cache="$cache"
+                  sleep 20
+                  rid=$(gh run list --workflow="${side}.yml" \
+                    --branch "$REF" --limit 1 \
+                    --json databaseId -q '.[0].databaseId')
+                  gh run watch "$rid" --exit-status || true
+                  ids+=("$rid")
+                done
+                tag="${side}|${os}|${cache}"
+                joined=$(printf '%s\n' "${ids[@]}" | paste -sd, -)
+                collect=$(echo "$collect" | \
+                  jq --arg k "$tag" --arg v "$joined" \
+                  '.[$k] = ($v|split(",")|map(tonumber))')
+              done
+            done
+          done
+          echo "$collect" > run-ids.json
+          cat run-ids.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: experiment-run-ids
+          path: run-ids.json
