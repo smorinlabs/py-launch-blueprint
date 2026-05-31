@@ -164,29 +164,13 @@ jobs:
         shell: bash
         run: ${{ inputs.provisioner == 'flox' && 'flox activate -- yamllint -c .yamllint .' || 'uvx yamllint -c .yamllint .' }}
 
-  editorconfig:
-    runs-on: ${{ inputs.os }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: provision (traditional)
-        if: inputs.provisioner == 'traditional'
-        uses: ./.github/actions/provision-traditional
-        with:
-          tools: bun
-          cache: ${{ inputs.cache }}
-      - name: provision (flox)
-        if: inputs.provisioner == 'flox'
-        uses: ./.github/actions/provision-flox
-        with:
-          cache: ${{ inputs.cache }}
-      - name: run
-        shell: bash
-        # GITHUB_TOKEN authenticates the npm editorconfig-checker binary download
-        # (it queries the GitHub API); without it, the experiment's rapid repeated
-        # runs hit the unauthenticated 60/hr rate limit. Harmless on the flox path.
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- editorconfig-checker --config .editorconfig-checker.json' || 'bunx --bun editorconfig-checker --config .editorconfig-checker.json' }}
+  # NOTE: the `editorconfig` check was removed from this experiment. Its only
+  # traditional provisioning path (npm editorconfig-checker) downloads a binary
+  # from GitHub at runtime, which flaked (~45%: rate-limit + TAR_BAD_ARCHIVE
+  # corrupt downloads) under the driver's rapid repeated dispatches — isolated
+  # entirely to this one job (0 failures in any other check or on the flox side).
+  # It was poisoning the traditional sample counts, so it's excluded from both
+  # sides to keep the comparison fair and the data meaningful.
 
   bandit:
     runs-on: ${{ inputs.os }}
