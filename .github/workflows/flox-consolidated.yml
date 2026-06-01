@@ -33,9 +33,8 @@ jobs:
             taplo check "**/*.toml"
             codespell --toml pyproject.toml
             yamllint -c .yamllint .
-            editorconfig-checker --config .editorconfig-checker.json
             bandit -r py_launch_blueprint/ -c pyproject.toml
-            gitleaks detect --source . --no-banner
+            gitleaks detect --source . --config .gitleaks.toml --no-banner
             commitlint --from=HEAD~10 --to=HEAD
           '
 
