@@ -1,0 +1,20 @@
+# mise toolchain for the CI provisioning experiment (third side, alongside
+# traditional + flox). Declares the same logical toolchain flox's manifest does
+# (minus editorconfig, dropped from the suite, and system make), via mise's
+# mixed backends: release binaries (aqua/core) + pipx (Python) + npm.
+# ty & pytest are NOT here — they come from `uv run` (project deps), same as the
+# flox/traditional sides (the uv boundary).
+[tools]
+python = "3.12"
+uv = "latest"
+ruff = "latest"
+taplo = "latest"
+gitleaks = "latest"
+just = "latest"
+bun = "latest"
+gh = "latest"
+lefthook = "latest"
+"pipx:yamllint" = "latest"
+"pipx:codespell" = "latest"
+"pipx:bandit" = "latest"
+"npm:@commitlint/cli" = "latest"

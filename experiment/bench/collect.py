@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
-SETUP_STEP_NAMES = ("provision (flox)", "provision (traditional)")
+SETUP_STEP_NAMES = ("provision (flox)", "provision (traditional)", "provision (mise)")
 
 
 def _parse_ts(value: str) -> datetime:

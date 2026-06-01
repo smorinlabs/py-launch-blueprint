@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       sides:
-        description: comma-separated subset of traditional,flox-mirror,flox-consolidated
+        description: subset of traditional,flox-mirror,flox-consolidated,mise-mirror,mise-consolidated
         type: string
-        default: traditional,flox-mirror,flox-consolidated
+        default: traditional,flox-mirror,flox-consolidated,mise-mirror,mise-consolidated
       oses:
         description: comma-separated subset of ubuntu-latest,macos-latest
         type: string
@@ -77,6 +77,8 @@ jobs:
               traditional) wf="trad-suite" ;;
               flox-mirror) wf="flox-mirror-suite" ;;
               flox-consolidated) wf="flox-consolidated" ;;
+              mise-mirror) wf="mise-suite" ;;
+              mise-consolidated) wf="mise-consolidated" ;;
               *) echo "unknown side: $side" >&2; exit 1 ;;
             esac
             for os in "${OS_ARR[@]}"; do
