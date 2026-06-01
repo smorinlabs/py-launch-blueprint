@@ -7,7 +7,11 @@ flox-mirror,macos-latest,warm,5,292.0,323.0,303.6,302.0,10.89219904335208
 traditional,macos-latest,warm,3,34.0,41.0,38.666666666666664,41.0,3.2998316455372216
 flox-consolidated,ubuntu-latest,cold,5,60.0,71.0,64.8,65.0,3.7629775444453557
 flox-mirror,ubuntu-latest,cold,5,60.0,68.0,64.8,64.0,2.9933259094191533
+mise-consolidated,ubuntu-latest,cold,3,33.0,63.0,46.333333333333336,43.0,12.47219128924647
+mise-mirror,ubuntu-latest,cold,3,32.0,38.0,34.666666666666664,34.0,2.494438257849294
 traditional,ubuntu-latest,cold,5,15.0,20.0,17.2,17.0,2.039607805437114
 flox-consolidated,ubuntu-latest,warm,5,60.0,65.0,62.8,64.0,2.3151673805580453
 flox-mirror,ubuntu-latest,warm,5,63.0,67.0,64.6,64.0,1.3564659966250536
+mise-consolidated,ubuntu-latest,warm,3,19.0,23.0,21.0,21.0,1.632993161855452
+mise-mirror,ubuntu-latest,warm,3,24.0,35.0,29.666666666666668,30.0,4.4969125210773475
 traditional,ubuntu-latest,warm,5,16.0,19.0,17.2,17.0,1.1661903789690602

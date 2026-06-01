@@ -12,9 +12,13 @@
 | traditional | macos-latest | warm | 3 | 34.0 | 41.0 | 38.7 | 41.0 | 3.3 | — |
 | flox-consolidated | ubuntu-latest | cold | 5 | 60.0 | 71.0 | 64.8 | 65.0 | 3.8 | +276.7% |
 | flox-mirror | ubuntu-latest | cold | 5 | 60.0 | 68.0 | 64.8 | 64.0 | 3.0 | +276.7% |
+| mise-consolidated | ubuntu-latest | cold | 3 | 33.0 | 63.0 | 46.3 | 43.0 | 12.5 | +169.4% |
+| mise-mirror | ubuntu-latest | cold | 3 | 32.0 | 38.0 | 34.7 | 34.0 | 2.5 | +101.6% |
 | traditional | ubuntu-latest | cold | 5 | 15.0 | 20.0 | 17.2 | 17.0 | 2.0 | — |
 | flox-consolidated | ubuntu-latest | warm | 5 | 60.0 | 65.0 | 62.8 | 64.0 | 2.3 | +265.1% |
 | flox-mirror | ubuntu-latest | warm | 5 | 63.0 | 67.0 | 64.6 | 64.0 | 1.4 | +275.6% |
+| mise-consolidated | ubuntu-latest | warm | 3 | 19.0 | 23.0 | 21.0 | 21.0 | 1.6 | +22.1% |
+| mise-mirror | ubuntu-latest | warm | 3 | 24.0 | 35.0 | 29.7 | 30.0 | 4.5 | +72.5% |
 | traditional | ubuntu-latest | warm | 5 | 16.0 | 19.0 | 17.2 | 17.0 | 1.2 | — |
 
 ## Provisioning (setup) vs work — per job
@@ -31,9 +35,13 @@ setup = the `provision` step (flox install/activate, or setup-uv/just/bun); work
 | traditional | macos-latest | warm | 10 | 5.0s | 7.3s | 41% | 50s |
 | flox-consolidated | ubuntu-latest | cold | 2 | 49.3s | 8.7s | 85% | 99s |
 | flox-mirror | ubuntu-latest | cold | 10 | 46.5s | 5.1s | 90% | 465s |
+| mise-consolidated | ubuntu-latest | cold | 2 | 16.7s | 9.5s | 64% | 33s |
+| mise-mirror | ubuntu-latest | cold | 10 | 12.2s | 5.5s | 69% | 122s |
 | traditional | ubuntu-latest | cold | 10 | 3.0s | 5.3s | 36% | 30s |
 | flox-consolidated | ubuntu-latest | warm | 2 | 48.3s | 8.2s | 85% | 97s |
 | flox-mirror | ubuntu-latest | warm | 10 | 47.6s | 5.1s | 90% | 476s |
+| mise-consolidated | ubuntu-latest | warm | 2 | 3.7s | 8.8s | 29% | 7s |
+| mise-mirror | ubuntu-latest | warm | 10 | 4.2s | 5.4s | 44% | 42s |
 | traditional | ubuntu-latest | warm | 10 | 3.3s | 5.2s | 39% | 33s |
 
 ## Per-job breakdown (total job seconds)
@@ -108,6 +116,30 @@ setup = the `provision` step (flox install/activate, or setup-uv/just/bun); work
 | checks / ty | flox-mirror | ubuntu-latest | warm | 55.8 | 4.5 |
 | checks / yamllint | flox-mirror | ubuntu-latest | cold | 48.4 | 1.5 |
 | checks / yamllint | flox-mirror | ubuntu-latest | warm | 51.4 | 4.5 |
+| hygiene | mise-consolidated | ubuntu-latest | cold | 25.3 | 9.7 |
+| hygiene | mise-consolidated | ubuntu-latest | warm | 13.3 | 1.9 |
+| pytest | mise-consolidated | ubuntu-latest | cold | 27.0 | 6.4 |
+| pytest | mise-consolidated | ubuntu-latest | warm | 11.7 | 0.9 |
+| checks / bandit | mise-mirror | ubuntu-latest | cold | 19.0 | 3.6 |
+| checks / bandit | mise-mirror | ubuntu-latest | warm | 8.3 | 1.9 |
+| checks / codespell | mise-mirror | ubuntu-latest | cold | 14.0 | 1.6 |
+| checks / codespell | mise-mirror | ubuntu-latest | warm | 8.3 | 2.1 |
+| checks / commitlint | mise-mirror | ubuntu-latest | cold | 20.3 | 4.0 |
+| checks / commitlint | mise-mirror | ubuntu-latest | warm | 8.3 | 0.9 |
+| checks / gitleaks | mise-mirror | ubuntu-latest | cold | 14.3 | 0.9 |
+| checks / gitleaks | mise-mirror | ubuntu-latest | warm | 10.0 | 2.2 |
+| checks / pytest | mise-mirror | ubuntu-latest | cold | 22.0 | 0.8 |
+| checks / pytest | mise-mirror | ubuntu-latest | warm | 15.0 | 4.2 |
+| checks / ruff-check | mise-mirror | ubuntu-latest | cold | 18.3 | 3.1 |
+| checks / ruff-check | mise-mirror | ubuntu-latest | warm | 8.0 | 1.4 |
+| checks / ruff-format | mise-mirror | ubuntu-latest | cold | 17.3 | 0.5 |
+| checks / ruff-format | mise-mirror | ubuntu-latest | warm | 8.0 | 1.6 |
+| checks / taplo | mise-mirror | ubuntu-latest | cold | 18.3 | 1.7 |
+| checks / taplo | mise-mirror | ubuntu-latest | warm | 11.0 | 5.0 |
+| checks / ty | mise-mirror | ubuntu-latest | cold | 16.7 | 1.9 |
+| checks / ty | mise-mirror | ubuntu-latest | warm | 10.3 | 2.4 |
+| checks / yamllint | mise-mirror | ubuntu-latest | cold | 17.3 | 0.5 |
+| checks / yamllint | mise-mirror | ubuntu-latest | warm | 9.0 | 2.2 |
 | checks / bandit | traditional | ubuntu-latest | cold | 8.0 | 1.8 |
 | checks / bandit | traditional | ubuntu-latest | warm | 10.8 | 0.4 |
 | checks / codespell | traditional | ubuntu-latest | cold | 6.6 | 1.7 |
