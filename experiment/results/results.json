@@ -96,35 +96,67 @@
     "stddev": 27.059933481071234
   },
   "mise-mirror|ubuntu-latest|cold": {
-    "n": 3,
-    "min": 32.0,
-    "max": 38.0,
-    "avg": 34.666666666666664,
-    "median": 34.0,
-    "stddev": 2.494438257849294
+    "n": 5,
+    "min": 28.0,
+    "max": 46.0,
+    "avg": 33.0,
+    "median": 30.0,
+    "stddev": 6.6332495807108
   },
   "mise-mirror|ubuntu-latest|warm": {
-    "n": 3,
-    "min": 24.0,
-    "max": 35.0,
-    "avg": 29.666666666666668,
-    "median": 30.0,
-    "stddev": 4.4969125210773475
+    "n": 5,
+    "min": 19.0,
+    "max": 27.0,
+    "avg": 23.0,
+    "median": 24.0,
+    "stddev": 2.756809750418044
+  },
+  "mise-mirror|macos-latest|cold": {
+    "n": 5,
+    "min": 58.0,
+    "max": 71.0,
+    "avg": 63.0,
+    "median": 61.0,
+    "stddev": 4.857983120596447
+  },
+  "mise-mirror|macos-latest|warm": {
+    "n": 5,
+    "min": 39.0,
+    "max": 49.0,
+    "avg": 43.6,
+    "median": 43.0,
+    "stddev": 3.878143885933063
   },
   "mise-consolidated|ubuntu-latest|cold": {
-    "n": 3,
-    "min": 33.0,
-    "max": 63.0,
-    "avg": 46.333333333333336,
-    "median": 43.0,
-    "stddev": 12.47219128924647
+    "n": 5,
+    "min": 25.0,
+    "max": 36.0,
+    "avg": 29.8,
+    "median": 29.0,
+    "stddev": 3.655133376499413
   },
   "mise-consolidated|ubuntu-latest|warm": {
-    "n": 3,
+    "n": 5,
     "min": 19.0,
-    "max": 23.0,
-    "avg": 21.0,
-    "median": 21.0,
-    "stddev": 1.632993161855452
+    "max": 30.0,
+    "avg": 23.2,
+    "median": 22.0,
+    "stddev": 3.9698866482558417
+  },
+  "mise-consolidated|macos-latest|cold": {
+    "n": 5,
+    "min": 30.0,
+    "max": 39.0,
+    "avg": 35.8,
+    "median": 36.0,
+    "stddev": 3.3105890714493698
+  },
+  "mise-consolidated|macos-latest|warm": {
+    "n": 5,
+    "min": 26.0,
+    "max": 35.0,
+    "avg": 30.6,
+    "median": 31.0,
+    "stddev": 3.6110940170535577
   }
 }
