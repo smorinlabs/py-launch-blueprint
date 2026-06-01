@@ -317,6 +317,8 @@ jobs:
         run: |
           case "${{ inputs.provisioner }}" in
             flox) flox activate -- commitlint --from=HEAD~10 --to=HEAD ;;
-            mise) mise exec -- commitlint --from=HEAD~10 --to=HEAD ;;
+            # mise's isolated commitlint can't see @commitlint/config-conventional
+            # (a repo devDep); bun (from mise) installs it, then mise commitlint runs.
+            mise) mise exec -- bash -c 'bun install && commitlint --from=HEAD~10 --to=HEAD' ;;
             *)    bunx --bun commitlint --from=HEAD~10 --to=HEAD ;;
           esac
