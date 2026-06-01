@@ -4,7 +4,7 @@ on:
     inputs:
       provisioner:
         type: string
-        required: true   # traditional | flox
+        required: true   # traditional | flox | mise
       os:
         type: string
         required: true
@@ -14,6 +14,15 @@ on:
 
 permissions:
   contents: read
+
+# NOTE: the `editorconfig` check was removed from this experiment. Its only
+# traditional path (npm editorconfig-checker) downloads a binary from GitHub at
+# runtime, which flaked (~45%: rate-limit + TAR_BAD_ARCHIVE) under the driver's
+# rapid dispatches — isolated to that one job. Excluded from all sides for fairness.
+#
+# Each job: checkout -> one provision step (gated by `provisioner`) -> run the
+# check. flox runs the bare tool under `flox activate --`; mise under `mise exec
+# --`; traditional uses uvx/bunx/uv-run as the repo does today.
 
 jobs:
   ruff-check:
@@ -31,9 +40,19 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
       - name: run
         shell: bash
-        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- ruff check .' || 'uvx ruff check .' }}
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox) flox activate -- ruff check . ;;
+            mise) mise exec -- ruff check . ;;
+            *)    uvx ruff check . ;;
+          esac
 
   ruff-format:
     runs-on: ${{ inputs.os }}
@@ -50,9 +69,19 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
       - name: run
         shell: bash
-        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- ruff format --check .' || 'uvx ruff format --check .' }}
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox) flox activate -- ruff format --check . ;;
+            mise) mise exec -- ruff format --check . ;;
+            *)    uvx ruff format --check . ;;
+          esac
 
   ty:
     runs-on: ${{ inputs.os }}
@@ -69,14 +98,20 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
       - name: run
         shell: bash
         run: |
-          if [ "${{ inputs.provisioner }}" = "flox" ]; then
-            flox activate -- bash -c 'uv sync --group dev && uv run ty check py_launch_blueprint/'
-          else
-            uv sync --group dev && uv run ty check py_launch_blueprint/
-          fi
+          cmd='uv sync --group dev && uv run ty check py_launch_blueprint/'
+          case "${{ inputs.provisioner }}" in
+            flox) flox activate -- bash -c "$cmd" ;;
+            mise) mise exec -- bash -c "$cmd" ;;
+            *)    bash -c "$cmd" ;;
+          esac
 
   pytest:
     runs-on: ${{ inputs.os }}
@@ -93,14 +128,20 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
       - name: run
         shell: bash
         run: |
-          if [ "${{ inputs.provisioner }}" = "flox" ]; then
-            flox activate -- bash -c 'uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml'
-          else
-            uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml
-          fi
+          cmd='uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml'
+          case "${{ inputs.provisioner }}" in
+            flox) flox activate -- bash -c "$cmd" ;;
+            mise) mise exec -- bash -c "$cmd" ;;
+            *)    bash -c "$cmd" ;;
+          esac
 
   taplo:
     runs-on: ${{ inputs.os }}
@@ -117,14 +158,19 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
       - name: run
         shell: bash
         run: |
-          if [ "${{ inputs.provisioner }}" = "flox" ]; then
-            flox activate -- taplo check '**/*.toml'
-          else
-            taplo check '**/*.toml'
-          fi
+          case "${{ inputs.provisioner }}" in
+            flox) flox activate -- taplo check '**/*.toml' ;;
+            mise) mise exec -- taplo check '**/*.toml' ;;
+            *)    taplo check '**/*.toml' ;;
+          esac
 
   codespell:
     runs-on: ${{ inputs.os }}
@@ -141,9 +187,19 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
       - name: run
         shell: bash
-        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- codespell --toml pyproject.toml' || 'uvx codespell --toml pyproject.toml' }}
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox) flox activate -- codespell --toml pyproject.toml ;;
+            mise) mise exec -- codespell --toml pyproject.toml ;;
+            *)    uvx codespell --toml pyproject.toml ;;
+          esac
 
   yamllint:
     runs-on: ${{ inputs.os }}
@@ -160,28 +216,19 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
-      - name: run
-        shell: bash
-        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- yamllint -c .yamllint .' || 'uvx yamllint -c .yamllint .' }}
-
-  editorconfig:
-    runs-on: ${{ inputs.os }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: provision (traditional)
-        if: inputs.provisioner == 'traditional'
-        uses: ./.github/actions/provision-traditional
-        with:
-          tools: bun
-          cache: ${{ inputs.cache }}
-      - name: provision (flox)
-        if: inputs.provisioner == 'flox'
-        uses: ./.github/actions/provision-flox
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
         with:
           cache: ${{ inputs.cache }}
       - name: run
         shell: bash
-        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- editorconfig-checker --config .editorconfig-checker.json' || 'bunx --bun editorconfig-checker --config .editorconfig-checker.json' }}
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox) flox activate -- yamllint -c .yamllint . ;;
+            mise) mise exec -- yamllint -c .yamllint . ;;
+            *)    uvx yamllint -c .yamllint . ;;
+          esac
 
   bandit:
     runs-on: ${{ inputs.os }}
@@ -198,9 +245,19 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
       - name: run
         shell: bash
-        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- bandit -r py_launch_blueprint/ -c pyproject.toml' || 'uvx bandit -r py_launch_blueprint/ -c pyproject.toml' }}
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox) flox activate -- bandit -r py_launch_blueprint/ -c pyproject.toml ;;
+            mise) mise exec -- bandit -r py_launch_blueprint/ -c pyproject.toml ;;
+            *)    uvx bandit -r py_launch_blueprint/ -c pyproject.toml ;;
+          esac
 
   gitleaks:
     runs-on: ${{ inputs.os }}
@@ -219,9 +276,19 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
       - name: run
         shell: bash
-        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- gitleaks detect --source . --no-banner' || 'gitleaks detect --source . --no-banner' }}
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox) flox activate -- gitleaks detect --source . --config .gitleaks.toml --no-banner ;;
+            mise) mise exec -- gitleaks detect --source . --config .gitleaks.toml --no-banner ;;
+            *)    gitleaks detect --source . --config .gitleaks.toml --no-banner ;;
+          esac
 
   commitlint:
     runs-on: ${{ inputs.os }}
@@ -240,6 +307,16 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
       - name: run
         shell: bash
-        run: ${{ inputs.provisioner == 'flox' && 'flox activate -- commitlint --from=HEAD~10 --to=HEAD' || 'bunx --bun commitlint --from=HEAD~10 --to=HEAD' }}
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox) flox activate -- commitlint --from=HEAD~10 --to=HEAD ;;
+            mise) mise exec -- commitlint --from=HEAD~10 --to=HEAD ;;
+            *)    bunx --bun commitlint --from=HEAD~10 --to=HEAD ;;
+          esac
