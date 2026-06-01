@@ -179,52 +179,51 @@ systems = ["aarch64-darwin", "x86_64-linux"]
 - Keep `ty` (pre-release pin) and `commitlint` (config-next-to-binary) in their
   current managers even though both are catalog-available.
 
-## Empirical evidence — CI timing experiment (2026-05-31)
+## Empirical evidence — CI timing experiment (2026-05-31, mise added 2026-06-01)
 
-Migration step #7 (swap CI tool-installs for `flox/install-flox-action` +
-`flox activate`) was tested directly with a GitHub Actions benchmark:
-3 sides × 2 OS × cold/warm × 5 reps — `traditional` vs `flox-mirror` (per-job
-activation) vs `flox-consolidated` (one activation). Full write-up, raw data, and
-figures: [`experiment/FINDINGS.md`](../../experiment/FINDINGS.md) (on branch
-`experiment/flox-ci-timing`).
+Migration step #7 (swap CI tool-installs for a managed toolchain) was tested directly with
+a GitHub Actions benchmark: 5 sides × 2 OS × cold/warm × 5 reps — `traditional` vs
+`flox-mirror`/`flox-consolidated` (Nix store via `flox activate`) vs
+`mise-mirror`/`mise-consolidated` (release-binary/pipx/npm toolchain via `mise`). Full
+write-up, raw data, and figures: [`experiment/FINDINGS.md`](../../experiment/FINDINGS.md)
+(on branch `experiment/flox-ci-timing`).
 
-![Flox vs traditional CI timing](../../experiment/results/summary.png)
+![CI provisioning: traditional vs mise vs flox](../../experiment/results/summary.png)
 
-**Result: Flox CI is 3.8× slower on ubuntu and up to ~8.7× slower on macOS.**
+**Result: Flox CI is 3.8–8.7× slower; mise is the middle ground (~2× on ubuntu, and on
+macOS `mise-consolidated` matches/beats traditional).**
 
-| total run time (avg) | ubuntu | macOS |
+| total run time (avg) | ubuntu cold/warm | macOS cold/warm |
 | --- | ---: | ---: |
-| traditional | ~17s | ~37s |
-| flox-mirror | ~65s (+277%) | ~318s (+775%) |
-| flox-consolidated | ~65s (+277%) | ~182s (+399%) |
+| traditional | 17 / 17s | 36 / 39s |
+| mise-consolidated | 30 / 23s | **36 / 31s** |
+| mise-mirror | 33 / 23s | 63 / 44s |
+| flox-consolidated | 65 / 63s | 182 / 162s |
+| flox-mirror | 65 / 65s | 318 / 304s |
 
-- **The checks run at the same speed.** Flox is **~90–94% provisioning** (install +
-  `flox activate` + Nix-store cache-save); the actual check step is identical to
-  traditional (ruff 1s, codespell 0s, ty ~2s — same both sides). Flox's *entire* CI
-  cost is provisioning, not slower checks.
-- **macOS is worst** — per-job flox provisioning ~130s vs ~47s on ubuntu (Nix cold
-  build + larger cache save); cumulative provisioning reaches **~1358s/run** for
-  flox-mirror on macOS.
-- **Consolidation is the decisive lever** — `flox-mirror` pays the install per job
-  (10×); `flox-consolidated` pays it ~2×, for ~4.5× less provisioning on identical work.
-- **Warm cache barely helps** — the install-action/activation overhead dominates, not
-  the cacheable Nix store.
-- **Reliability flips to Flox** — 0 flox failures across ~110 runs; traditional's runtime
-  binary downloads flaked (the `editorconfig` npm download failed ~45% and was excluded).
+- **The checks run at the same speed on all three** — the cost is *provisioning*. Flox is
+  **~90–94% provisioning** (install + activate + Nix-store cache-save); ~1358s/run for
+  flox-mirror on macOS. mise is ~12s/job; traditional ~3s/job.
+- **Flox is OS-sensitive** (Nix build: ~47s ubuntu → ~136s macOS) with an **ineffective warm
+  cache**. **mise is OS-insensitive** (~12s ubuntu ≈ ~14s macOS — release binaries) with an
+  **effective warm cache** (~4–7s warm), so warm mise approaches/undercuts traditional.
+- **Consolidation** is decisive for flox (expensive install paid 10× vs 2×) and matters for
+  mise on macOS (higher per-job overhead), neutral for mise on ubuntu.
+- **Reliability flips to the managed envs** — 0 flox *and* mise failures; traditional's
+  runtime binary downloads flaked (`editorconfig` npm download ~45%, excluded).
 
-**Implication.** Buckets 1–3 (local dev + devcontainer) are unaffected — a developer
-pays one `flox activate` per shell. But **migration step #7 (CI) should be re-scoped**:
-moving CI provisioning to Flox imposes a 3.8–8.7× wall-clock tax that is essentially all
-provisioning. If CI adopts Flox at all, it **must** use a single consolidated activation
-(never per-job), and the install-action/activation overhead (not caching) is the lever to
-optimize. The maintenance-simplicity and reliability gains are real but must be weighed
-against this CI cost.
+**Implication.** Buckets 1–3 (local dev + devcontainer) are unaffected — one activation per
+shell. For **CI (step #7)**: **Flox imposes a 3.8–8.7× tax** (Nix build, worst on macOS) —
+not recommended as-is; consolidated-only if pursued. **mise delivers the single-manifest
+simplicity + reliability *without* flox's tax** (~2× traditional on ubuntu, ≈ traditional on
+macOS), so it is the recommended option if a single-source-of-truth toolchain manager is
+wanted in CI; plain traditional stays fastest in raw ubuntu terms.
 
 ## Status note
 
-`proposed` — this ADR records the analysis and decision space. The 2026-05-31 CI
-experiment (above) settles the **CI** sub-question: Flox CI is markedly slower, so
-step #7 is **not** recommended as-is (consolidated-only if pursued). The local-dev /
-devcontainer migration (Buckets 1–3) remains an open `proposed` decision. Adoption of
-either is a separate step and should land behind its own ITM.
+`proposed` — this ADR records the analysis and decision space. The CI experiment settles the
+**CI** sub-question: **Flox CI is markedly slower** (step #7 not recommended as-is); **mise**
+is a viable single-source-of-truth alternative without the speed tax; plain traditional is
+fastest on ubuntu. The local-dev / devcontainer migration (Buckets 1–3) remains an open
+`proposed` decision. Adoption of any path is a separate step behind its own ITM.
 ```
