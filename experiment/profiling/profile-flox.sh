@@ -40,6 +40,10 @@ if [ "$DEEP" = "1" ] && [ "$(uname -s)" = "Linux" ]; then
   offcpu_flame "$OUT/realize.offcpu.svg" 120 -- \
     flox activate -d "$ENV_DIR" -- true
   FLAMEGRAPHS="$FLAMEGRAPHS realize.offcpu.svg"
+  # The offcpu run above already materialized the env, so a second activate would
+  # be a warm cache hit. Re-cold the closure so realize-activate times cold too
+  # (a separate but equivalent cold provision to the flame graph above).
+  [ "$CACHE" = "cold" ] && cold_reset_env "$ENV_DIR"
   run_phase realize-activate -- flox activate -d "$ENV_DIR" -- true
 else
   sample_pid "$OUT/realize.daemon.json" "$DAEMON_PID" 120 &
