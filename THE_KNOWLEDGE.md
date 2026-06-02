@@ -27,7 +27,13 @@ Tick these off as you go. If you can't explain one in a sentence, re-read its se
 - [ ] Why "warm cache" barely helped in CI
 - [ ] The edge cases/caveats that almost fooled us (warm store, debug Python, cross-arch)
 
-**3. The broader context**
+**3. The mise comparison**
+- [ ] How mise installs tools differently from flox (release binaries vs Nix closure)
+- [ ] Why mise's Python is ~53 MB while flox's drags ~1.1 GB (loose `cc` ref vs concrete store-path ref)
+- [ ] Why mise is OS-insensitive and its warm cache works, but flox's doesn't
+- [ ] The trade-off: what flox gives you *in exchange* for the tax
+
+**4. The broader context**
 - [ ] What changes this implies (the ranked fixes) and their expected impact
 - [ ] What the reusable harness gives the team going forward
 - [ ] The transferable lessons (silent failures, "don't assume CPU", scoping claims)
@@ -321,7 +327,63 @@ Ranked in `FINDINGS-perf.md`; the dominant one:
 
 ---
 
-## Part 4 — BROADER CONTEXT (why this matters)
+## Part 4 — COMPARING flox vs mise (why the alternative is fast)
+
+The team also tests **mise**, which installs the *same logical toolchain* but is much
+faster. Understanding *why* makes the flox finding click into place — it's the same root
+issue seen from the other side.
+
+### 4.1 The measurements
+
+| | flox (Nix closure) | mise (release binaries) |
+| --- | ---: | ---: |
+| macOS footprint | **1653 MB** | **285 MB** (~5.8× smaller) |
+| Linux footprint | 549 MB | 350 MB |
+| macOS ÷ Linux | **3.0× (OS-sensitive)** | ~1× (OS-insensitive) |
+| Python | pulls Apple SDK + Clang + LLVM (~1.1 GB) | 53–87 MB standalone, no SDK |
+
+### 4.2 Why mise dodges the bullet (the one idea that explains everything)
+
+The difference is the **dependency model**:
+
+- **flox/Nix is hermetic and content-addressed.** To guarantee a build is *perfectly
+  reproducible*, every reference must be an *exact* path: Nix's Python literally records
+  `CC = /nix/store/…-clang/bin/cc`. That exact compiler is now a **runtime dependency**
+  and must be installed — and on macOS it drags the whole Apple SDK + LLVM. **The price of
+  reproducibility is shipping the entire closure.**
+- **mise installs prebuilt release binaries with *loose* references.** Its standalone
+  Python records `CC = cc` — "use whatever `cc` is around at the time." Nothing is pinned,
+  so **no compiler or SDK is bundled.** Each tool is its own self-contained download; there
+  is no transitive closure to explode.
+
+> Analogy: flox is like shipping a recipe *plus the exact farm every ingredient came
+> from*; mise ships the finished dish and trusts your kitchen has salt. The first is
+> perfectly reproducible and enormous; the second is small and "good enough."
+
+### 4.3 Why this explains all three of mise's wins
+
+1. **Smaller** (285 vs 1653 MB on macOS) → less to unpack → fast.
+2. **OS-insensitive** → no macOS penalty, because there's no per-OS *closure* to blow up,
+   just per-OS *binaries* of similar size. (flox's 3.0× macOS blow-up is the SDK leak;
+   mise has nothing equivalent.)
+3. **Warm cache actually helps** → ~300 MB of a few big files restores fast; flox's 1.6 GB
+   of countless tiny files is slow to restore (which is why flox warm ≈ cold).
+
+### 4.4 The honest trade-off (don't oversell either)
+
+flox isn't "bad" — it buys **true reproducibility** and **identical local-dev /
+devcontainer / CI environments** from one file. The closure tax is the cost of that
+guarantee, and in *local dev* it's paid once per shell (invisible). It only hurts in
+**CI**, where you pay it every run. Fixing the Python leak (candidate #1) **narrows** the
+gap but can't fully erase it — the hermetic model inherently ships more. So the decision
+(tracked in ADR-12) is a values choice: **reproducibility (flox) vs CI speed + simplicity
+(mise)**, not "which is better" in the abstract.
+
+> Intern takeaway: the comparison isn't "mise wins." It's "these tools make *opposite
+> trade-offs*, and now you can articulate exactly what each costs and buys." That's what
+> lets a team choose deliberately.
+
+## Part 5 — BROADER CONTEXT (why this matters)
 
 ### 4.1 What the changes impact
 

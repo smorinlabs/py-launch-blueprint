@@ -134,3 +134,32 @@ Reframed FINDINGS: SDK leak = **confirmed 1.2 GB bloat, high confidence**; "expl
 `macos-latest` = arm64 (darwin size is arch-consistent); `ubuntu-latest` = x86_64 so the
 2.9× ratio is cross-arch/suggestive; the Linux 600 MB baseline is inflated by a debug
 python — exact ratio approximate, mechanism unaffected.
+
+### Arch-rigorous sizing (advisor follow-up)
+Queried closure sizes straight from `cache.nixos.org` for the real CI arches:
+x86_64-linux 549 MB NAR / 180 MB download; aarch64-darwin 1653 MB / 256 MB;
+aarch64-linux 551 MB (≈ x86_64 ⇒ Lima representative; debug-python was a realization
+artifact, not in the locked closure). **Sharper finding:** the macOS penalty tracks the
+**uncompressed** ratio (3.0×) not the **compressed download** (1.4×) ⇒ the bottleneck is
+**decompress + write-to-`/nix`** (unpack), not network — which also explains warm ≈ cold.
+
+---
+
+## 2026-06-01 — mise comparison (after flox, by request)
+
+Same closure/footprint method applied to mise (`experiment/mise.toml`, same logical
+toolchain):
+
+- **Footprint:** mise macOS **285 MB** vs flox **1653 MB** (~5.8×); mise Linux 350 MB vs
+  flox 549 MB. mise macOS÷Linux ≈ **0.8× (OS-insensitive)** vs flox **3.0× (OS-sensitive)**.
+- **Mechanism (the crux):** mise standalone python records `CC = cc` (loose ref, no
+  compiler bundled); flox/Nix python records `CC = /nix/store/…-clang` (concrete ref) →
+  must materialize apple-sdk + clang + llvm. **Content-addressed hermetic model (flox)
+  ships the whole closure incl. build compiler; release-binary model (mise) doesn't.**
+- Explains all 3 mise wins: smaller → fast; OS-insensitive (no per-OS closure); warm
+  cache works (small few-file dir restores fast).
+- **Caveat:** local cold `mise install` 9.6 s ≈ `flox activate` 8.45 s on the fast VM —
+  the disk hides the unpack gap; **footprint is the robust predictor** (matches CI flox
+  macOS 136 s vs mise ~14 s), not local wall-clock.
+- Written up in `FINDINGS-perf.md` ("flox vs mise") + `THE_KNOWLEDGE.md` Part 4.
+- (npm commitlint excluded from VM footprint — node absent in VM; immaterial.)

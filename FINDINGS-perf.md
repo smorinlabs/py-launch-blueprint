@@ -160,6 +160,51 @@ flox env` steps would upgrade this from inference to measurement.
    closure shrinks, the remaining cost is throughput-bound and where. Harness:
    `profile-flox.sh --deep` in a freshly-recreated Lima VM.
 
+## flox vs mise — why mise avoids the tax
+
+mise installs the **same logical toolchain** (`experiment/mise.toml`: python, uv, ruff,
+taplo, gitleaks, just, bun, gh, lefthook + pipx + npm) but is the experiment's
+middle-ground (≈2× traditional on ubuntu; macOS-consolidated ≈ traditional). Same
+closure-analysis method, applied to mise:
+
+| metric | flox (Nix closure) | mise (release binaries) |
+| --- | ---: | ---: |
+| macOS footprint | **1653 MB** | **285 MB** |
+| Linux footprint | 549 MB | 350 MB |
+| macOS ÷ Linux | **3.0× (OS-sensitive)** | ~0.8× (OS-insensitive) |
+| python | pulls apple-sdk + clang + llvm (~1.1 GB) | 53–87 MB standalone, no SDK |
+
+**The root difference is the dependency model, not just size:**
+
+- **Nix is content-addressed and hermetic.** Every reference is a *concrete store path*
+  (`CC = /nix/store/…-clang-wrapper/bin/cc`), so the build compiler becomes a **runtime**
+  dependency that must be materialized — and on darwin that pulls the Apple SDK + Clang +
+  LLVM. The price of perfect reproducibility is that the whole closure ships.
+- **mise installs prebuilt release binaries** with *loose* references. Its standalone
+  python records `CC = cc` (resolved against the system at use-time), so **no compiler or
+  SDK is bundled**. Each tool is self-contained; there is no transitive closure to
+  explode, and nothing OS-specific blows up on macOS.
+
+This single difference explains all three observed mise advantages from the experiment:
+
+1. **~5.8× smaller on macOS** (285 vs 1653 MB) ⇒ far less to unpack ⇒ fast provisioning.
+2. **OS-insensitive** (footprint ~same on both OSes) ⇒ no macOS penalty — because there's
+   no per-OS closure, just per-OS release binaries of similar size.
+3. **Warm cache works** (experiment: ~4–7 s warm) ⇒ a ~300 MB install dir of few large
+   files restores quickly, unlike flox's ~1.6 GB `/nix` of countless tiny files
+   (warm ≈ cold).
+
+*Caveat on local timings:* a cold `mise install` (9.6 s, Linux VM) ≈ a cold `flox
+activate` (8.45 s) **on this fast VM**, because a fast disk hides the unpack-volume gap.
+**Footprint is the robust predictor** that tracks the CI reality (flox macOS 136 s vs
+mise macOS ~14 s), not local wall-clock. (npm `commitlint` was excluded from the VM
+footprint — node wasn't present; immaterial to the comparison.)
+
+**Takeaway:** flox's cost is intrinsic to the hermetic Nix model (full closure, concrete
+refs); fixing candidate #1 narrows but does not erase the gap to mise. If single-source
+simplicity + reliability without a Nix tax is the goal, mise is the better CI fit; flox's
+value is reproducibility/local-dev parity, where one activation per shell hides the cost.
+
 ## Limitations (how cold was — and wasn't — reproduced)
 
 - **Arch consistency — resolved.** The headline 3.0× ratio uses cache-queried sizes for
