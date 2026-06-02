@@ -150,8 +150,14 @@ artifact, not in the locked closure). **Sharper finding:** the macOS penalty tra
 Same closure/footprint method applied to mise (`experiment/mise.toml`, same logical
 toolchain):
 
-- **Footprint:** mise macOS **285 MB** vs flox **1653 MB** (~5.8×); mise Linux 350 MB vs
-  flox 549 MB. mise macOS÷Linux ≈ **0.8× (OS-insensitive)** vs flox **3.0× (OS-sensitive)**.
+- **Footprint:** mise Linux **350 MB** vs flox **549 MB** (same-OS, most rigorous); mise
+  macOS ~298 MB vs flox 1653 MB. mise ≈ same on both OSes (no 3× explosion) vs flox
+  **3.0× (OS-sensitive)**.
+- **Measurement-rigor fix (advisor catch):** first macOS mise `du` used a *lexical*
+  `sort|tail -1` and grabbed python **3.13.13** (not pinned 3.12.13) + uv 0.11.3 — an
+  artifact on the cluttered global mac mise (same class of bug as the flox harness ones).
+  Re-measured via `mise where` (mise-resolved dirs) → 298 MB. Reframed both docs to lead
+  with the clean same-OS Linux numbers + mechanism, and softened precise cross-tool ratios.
 - **Mechanism (the crux):** mise standalone python records `CC = cc` (loose ref, no
   compiler bundled); flox/Nix python records `CC = /nix/store/…-clang` (concrete ref) →
   must materialize apple-sdk + clang + llvm. **Content-addressed hermetic model (flox)

@@ -337,10 +337,14 @@ issue seen from the other side.
 
 | | flox (Nix closure) | mise (release binaries) |
 | --- | ---: | ---: |
-| macOS footprint | **1653 MB** | **285 MB** (~5.8× smaller) |
-| Linux footprint | 549 MB | 350 MB |
+| Linux footprint (most rigorous, same-OS) | **549 MB** | **350 MB** |
+| macOS footprint | **1653 MB** | ~298 MB |
 | macOS ÷ Linux | **3.0× (OS-sensitive)** | ~1× (OS-insensitive) |
-| Python | pulls Apple SDK + Clang + LLVM (~1.1 GB) | 53–87 MB standalone, no SDK |
+| Python | pulls Apple SDK + Clang + LLVM (~1.1 GB) | 66–87 MB standalone, no SDK |
+
+*(Trust the same-OS Linux row most — both measured cleanly. The macOS mise figure is
+approximate; the OS-insensitivity claim rests on the mechanism below + the experiment's
+timing, mise ~12 s ubuntu ≈ ~14 s macOS, not on an exact footprint ratio.)*
 
 ### 4.2 Why mise dodges the bullet (the one idea that explains everything)
 
@@ -362,7 +366,7 @@ The difference is the **dependency model**:
 
 ### 4.3 Why this explains all three of mise's wins
 
-1. **Smaller** (285 vs 1653 MB on macOS) → less to unpack → fast.
+1. **Smaller** (~300 MB vs flox's 549 MB Linux / 1653 MB macOS) → less to unpack → fast.
 2. **OS-insensitive** → no macOS penalty, because there's no per-OS *closure* to blow up,
    just per-OS *binaries* of similar size. (flox's 3.0× macOS blow-up is the SDK leak;
    mise has nothing equivalent.)

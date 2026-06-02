@@ -169,10 +169,17 @@ closure-analysis method, applied to mise:
 
 | metric | flox (Nix closure) | mise (release binaries) |
 | --- | ---: | ---: |
-| macOS footprint | **1653 MB** | **285 MB** |
-| Linux footprint | 549 MB | 350 MB |
-| macOS ÷ Linux | **3.0× (OS-sensitive)** | ~0.8× (OS-insensitive) |
-| python | pulls apple-sdk + clang + llvm (~1.1 GB) | 53–87 MB standalone, no SDK |
+| Linux footprint (same-OS, most rigorous) | **549 MB** | **350 MB** |
+| macOS footprint | **1653 MB** | ~298 MB |
+| macOS ÷ Linux | **3.0× (OS-sensitive)** | ~1× (OS-insensitive) |
+| python | pulls apple-sdk + clang + llvm (~1.1 GB) | 66–87 MB standalone, no SDK |
+
+*Measurement note:* flox sizes are `nix path-info` against the cache (the locked closure);
+mise sizes are `du` of the dirs `mise where` resolves for the pinned toolchain. Lead with
+the **same-OS Linux** numbers (mise 350 vs flox 549 MB) — those are the most directly
+comparable. The macOS mise figure is approximate; the OS-insensitivity claim leans on the
+**mechanism** (below) and the experiment's own timing (mise ~12 s ubuntu ≈ ~14 s macOS),
+not on a precise footprint ratio.
 
 **The root difference is the dependency model, not just size:**
 
@@ -187,9 +194,11 @@ closure-analysis method, applied to mise:
 
 This single difference explains all three observed mise advantages from the experiment:
 
-1. **~5.8× smaller on macOS** (285 vs 1653 MB) ⇒ far less to unpack ⇒ fast provisioning.
-2. **OS-insensitive** (footprint ~same on both OSes) ⇒ no macOS penalty — because there's
-   no per-OS closure, just per-OS release binaries of similar size.
+1. **Much smaller** (~300 MB vs flox's 549 MB Linux / 1653 MB macOS) ⇒ far less to
+   unpack ⇒ fast provisioning.
+2. **OS-insensitive** (~300 MB on both OSes; experiment timing ~12 s ubuntu ≈ ~14 s
+   macOS) ⇒ no macOS penalty — because there's no per-OS closure, just per-OS release
+   binaries of similar size.
 3. **Warm cache works** (experiment: ~4–7 s warm) ⇒ a ~300 MB install dir of few large
    files restores quickly, unlike flox's ~1.6 GB `/nix` of countless tiny files
    (warm ≈ cold).
