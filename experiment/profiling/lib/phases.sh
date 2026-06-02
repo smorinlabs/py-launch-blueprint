@@ -9,19 +9,23 @@ now() { python3 -c 'import time; print(time.time())'; }
 run_phase() {
   local name="$1"; shift
   [ "$1" = "--" ] && shift
-  local timefile start end secs rss_mb
+  local timefile start end secs rss_mb rc=0
   timefile="$(mktemp)"
   start="$(now)"
   if [ "$(uname -s)" = "Darwin" ]; then
-    /usr/bin/time -l "$@" 2>"$timefile" || true
+    /usr/bin/time -l "$@" 2>"$timefile" || rc=$?
     rss_mb="$(awk '/maximum resident set size/ {print $1/1048576}' "$timefile")"
   else
-    /usr/bin/time -v "$@" 2>"$timefile" || true
+    /usr/bin/time -v "$@" 2>"$timefile" || rc=$?
     rss_mb="$(awk -F': ' '/Maximum resident set size/ {print $2/1024}' "$timefile")"
   fi
   end="$(now)"
   secs="$(python3 -c "print(round($end-$start,3))")"
   rss_mb="${rss_mb:-0}"
+  # A non-zero exit means the wrapped command failed; without this warning a
+  # failed phase is silently recorded as a fast (~0s) success. Return 0 so the
+  # harness keeps going (the caller decides whether a phase is fatal).
+  [ "$rc" -ne 0 ] && echo "[phase] WARNING: ${name} exited ${rc}; timing is invalid" >&2
   python3 - "$name" "$secs" "$rss_mb" <<'PY' >>"$PHASES_TMP"
 import json, sys
 name, secs, rss = sys.argv[1], float(sys.argv[2]), float(sys.argv[3])

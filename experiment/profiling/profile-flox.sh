@@ -27,12 +27,14 @@ FLAMEGRAPHS=""
 
 [ "$CACHE" = "cold" ] && cold_reset_env "$ENV_DIR"
 
-# lock-eval: re-lock (cheap if unchanged) — exercises flox resolve + nix eval.
-run_phase lock-eval -- flox activate -d "$ENV_DIR" --mode dev-only -- true 2>/dev/null || \
-  run_phase lock-eval -- true
+# lock-eval: a dev-mode activate exercising flox resolve + nix eval. On a warm
+# store this overlaps realize (the first activate also realizes); the lock-eval
+# vs realize split is meaningful on a cold store (Lima/CI), not a warm host.
+run_phase lock-eval -- flox activate -d "$ENV_DIR" --mode dev -- true
 
-# realize + activate: the cold materialization is the big one. Profile the
-# nix-daemon over this window (its work isn't a child of flox).
+# realize + activate: the cold materialization is the big one. The heavy lifting
+# runs in the nix-daemon (NOT a child of flox), so time the flox binary directly
+# and sample the daemon by pid over the same window.
 DAEMON_PID="$(nix_daemon_pid)"
 if [ "$DEEP" = "1" ] && [ "$(uname -s)" = "Linux" ]; then
   offcpu_flame "$OUT/realize.offcpu.svg" 120 -- \
@@ -41,10 +43,10 @@ if [ "$DEEP" = "1" ] && [ "$(uname -s)" = "Linux" ]; then
   run_phase realize-activate -- flox activate -d "$ENV_DIR" -- true
 else
   sample_pid "$OUT/realize.daemon.json" "$DAEMON_PID" 120 &
-  run_phase realize-activate -- \
-    sample_cmd "$OUT/realize.flox.json" -- flox activate -d "$ENV_DIR" -- true
-  wait 2>/dev/null || true
-  [ -f "$OUT/realize.flox.json" ] && FLAMEGRAPHS="$FLAMEGRAPHS realize.flox.json"
+  SAMPLE_BG=$!
+  run_phase realize-activate -- flox activate -d "$ENV_DIR" -- true
+  wait "$SAMPLE_BG" 2>/dev/null || true
+  [ -f "$OUT/realize.daemon.json" ] && FLAMEGRAPHS="$FLAMEGRAPHS realize.daemon.json"
 fi
 
 export FLAMEGRAPHS
