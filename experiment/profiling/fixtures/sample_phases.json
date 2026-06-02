@@ -1,0 +1,12 @@
+{
+  "meta": {"os": "macos", "arch": "arm64", "cache": "cold", "flox_version": "1.12.1",
+           "env": "profiling", "ts": "2026-06-01T12:00:00Z"},
+  "phases": [
+    {"name": "flox-install", "seconds": 3.0, "max_rss_mb": 40.0, "io_read_mb": 10.0, "io_write_mb": 30.0},
+    {"name": "lock-eval", "seconds": 2.0, "max_rss_mb": 120.0, "io_read_mb": 2.0, "io_write_mb": 0.5},
+    {"name": "realize", "seconds": 90.0, "max_rss_mb": 300.0, "io_read_mb": 250.0, "io_write_mb": 600.0},
+    {"name": "build", "seconds": 8.0, "max_rss_mb": 200.0, "io_read_mb": 5.0, "io_write_mb": 40.0},
+    {"name": "activate", "seconds": 2.0, "max_rss_mb": 80.0, "io_read_mb": 1.0, "io_write_mb": 1.0}
+  ],
+  "artifacts": {"flamegraphs": ["realize.cpu.svg", "realize.offcpu.svg"]}
+}
