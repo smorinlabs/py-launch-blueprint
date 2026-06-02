@@ -8,16 +8,19 @@ journey log `PROFILE_LOG.md`, prior experiment `experiment/FINDINGS.md` + ADR-12
 
 Flox CI cost is ~90% **provisioning** = materializing the env's Nix store closure onto
 the runner, **not** the checks and **not** local compilation. **Confirmed, high
-confidence:** the aarch64-darwin closure is **1714 MB vs 600 MB on Linux (~2.9×)**, and
-the entire ~1.2 GB difference is **LLVM + Clang + the Apple SDK dragged into the runtime
-closure by `python3` on darwin** (proven by `why-depends`). That is a real, isolated,
-upstream-fixable 1.2 GB of bloat and the #1 optimization target.
+confidence:** the **uncompressed** macOS (aarch64-darwin) closure is **1653 MB vs 549 MB
+for Linux (x86_64) — a 3.0× ratio that matches the ~2.9× macOS time penalty almost
+exactly** — and the entire ~1.1 GB difference is **LLVM + Clang + the Apple SDK dragged
+into the runtime closure by `python3` on darwin** (proven by `why-depends`). That is a
+real, isolated, upstream-fixable bloat and the #1 optimization target.
 
-**Scoped claim:** closure size is *very likely the dominant driver* of the ~3× macOS CI
-penalty, but the causal link to CI wall-clock is inferred, not directly measured —
-because CI cost is *materializing* the closure (cold: download from `cache.nixos.org`;
-warm: restore + untar a cached `/nix`), and both are volume-bound. See "CI mechanism"
-for the one piece still to confirm.
+**The cost is unpack, not download.** The *compressed* download is only ~1.4× bigger on
+macOS (256 vs 180 MB) — but *uncompressed* it's 3.0× (1653 vs 549 MB), and the time
+penalty tracks the **uncompressed** ratio. So provisioning is bound by **decompress +
+write-to-`/nix`** (bytes + file count), not network transfer. This also explains why CI
+warm ≈ cold: restoring a cached `/nix` untars the same uncompressed bytes. Shrinking the
+closure (candidate #1) attacks the binding constraint directly. (Still inferred, not
+step-measured, on real CI: see "CI mechanism".)
 
 ## Method (why closure analysis, not flame graphs, was the primary tool)
 
@@ -33,7 +36,7 @@ aarch64-linux, flox 1.12.1).
 
 ## Evidence
 
-### 1. It's download-bound, not built locally (refutes the build hypothesis)
+### 1. It's materialized (downloaded+unpacked), not built locally (refutes the build hypothesis)
 
 Substitutability of the realized closure (cached ⇒ fetched; uncached ⇒ built locally):
 
@@ -47,8 +50,23 @@ The few "uncached" paths on **both** OSes are flox's own tiny per-env wrappers
 every machine regardless of OS. **The toolchain itself (python/uv/ruff/bun/…) is
 substituted on macOS exactly as on Linux.** macOS does *not* compile it.
 
-Baseline cold `flox activate` on Linux = **8.45 s** (warm = 0.06 s), and 60/65 paths
-fetched ⇒ Linux cold is overwhelmingly network download + unpack.
+Baseline cold `flox activate` on Linux = **8.45 s** (warm = 0.06 s) ⇒ cold is
+overwhelmingly network download + unpack, not eval/build.
+
+**Arch-consistent closure sizes (queried straight from `cache.nixos.org`, so no
+warm-store or debug-build artifacts):**
+
+| arch (CI target) | closure paths | NAR (uncompressed) | download (compressed) |
+| --- | ---: | ---: | ---: |
+| x86_64-linux (ubuntu CI) | 43 | 549 MB | 180 MB |
+| aarch64-darwin (macOS CI) | 68 | **1653 MB** | 256 MB |
+| aarch64-linux (Lima) | 43 | 551 MB | 170 MB |
+
+Two things fall out: (a) x86_64-linux ≈ aarch64-linux, so the Lima leg is representative
+of CI ubuntu; (b) the macOS penalty tracks the **uncompressed** ratio (1653/549 = 3.0×),
+**not** the compressed-download ratio (256/180 = 1.4×). So provisioning is bound by
+**decompress + write to `/nix`** (bytes + file count), not the network transfer — and a
+cached `/nix` doesn't help much because the restore untars the same uncompressed bytes.
 
 ### 2. The macOS bloat is LLVM + Clang + Apple SDK (~1.2 GB)
 
@@ -144,15 +162,15 @@ flox env` steps would upgrade this from inference to measurement.
 
 ## Limitations (how cold was — and wasn't — reproduced)
 
-- **Arch consistency.** `macos-latest` runners are arm64, so the darwin 1714 MB figure
-  matches the CI macOS arch — the macOS comparison is arch-consistent. But `ubuntu-latest`
-  is x86_64 while the 600 MB Linux figure is aarch64-linux (Lima), so the **2.9× ratio is
-  cross-arch and suggestive, not exact**. To make it rigorous, size the x86_64-linux
-  closure from `manifest.lock` against the cache.
-- **The Linux 600 MB baseline is inflated by a debug Python** (`python3-3.12.13-debug`
-  on aarch64-linux vs the normal build on darwin — candidate #3). Until that's explained,
-  treat the exact ratio as approximate; the *mechanism* (python → SDK/compiler leak on
-  darwin) is independent of it.
+- **Arch consistency — resolved.** The headline 3.0× ratio uses cache-queried sizes for
+  the *actual* CI arches (x86_64-linux 549 MB vs aarch64-darwin 1653 MB). `macos-latest`
+  is arm64, matching the darwin figure. The earlier on-disk numbers (1714/600 MB) were
+  realized-store sizes (arch-mixed, debug-Python-inflated) and are superseded by the
+  cache table for the ratio.
+- **Debug Python — explained.** `python3-3.12.13-debug` appeared only in the *realized*
+  Lima store, not in the locked closure queried from cache (x86_64 ≈ aarch64-linux at
+  ~550 MB). It's a VM realization artifact, not part of the CI closure — so it does not
+  affect the ratio. (Still worth a glance: candidate #3.)
 - A true cold provision can't be reproduced on a warm host (`nix store delete` is
   all-or-nothing and refuses in-use/shared paths like `glibc`; flox also roots the env
   internally, so scoped cold-reset frees only the ~2 MB wrapper; global GC is out of
