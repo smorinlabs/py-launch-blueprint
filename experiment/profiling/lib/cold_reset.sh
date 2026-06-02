@@ -15,7 +15,13 @@ cold_reset_env() {
   fi
   store_path="$(readlink -f "$run_link" 2>/dev/null || true)"
   echo "[cold-reset] deleting closure of ${store_path}" >&2
-  # delete the realized env + its closure; nix skips still-referenced paths.
-  nix store delete --recursive "$store_path" 2>&1 | tail -3 >&2 || true
+  # Drop the gc-root first so the closure isn't held alive, then delete it. nix
+  # still skips paths referenced by OTHER roots (shared deps stay warm).
+  # `nix store` needs the nix-command experimental feature, which isn't enabled
+  # by default in a vanilla flox/nix install (e.g. a fresh Lima VM). The dedicated
+  # --extra-experimental-features flag isn't honored early enough to unlock the
+  # subcommand, so pass it via --option (confirmed on nix 2.31).
   rm -f "$run_link" 2>/dev/null || true
+  nix --option extra-experimental-features nix-command \
+    store delete --recursive "$store_path" 2>&1 | tail -3 >&2 || true
 }
