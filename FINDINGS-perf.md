@@ -6,13 +6,18 @@ journey log `PROFILE_LOG.md`, prior experiment `experiment/FINDINGS.md` + ADR-12
 
 ## TL;DR
 
-Flox CI cost is ~90% **provisioning** = cold-realizing the env's Nix store closure
-(download + unpack from `cache.nixos.org`), **not** the checks and **not** local
-compilation. The **~3× macOS penalty is a closure-size problem**: the aarch64-darwin
-closure is **1714 MB vs 600 MB on Linux (~2.9×)**, and the entire ~1.2 GB difference
-is **LLVM + Clang + the Apple SDK dragged into the runtime closure by `python3` on
-darwin**. Shrinking that one leak should bring macOS cold provisioning roughly in line
-with Linux.
+Flox CI cost is ~90% **provisioning** = materializing the env's Nix store closure onto
+the runner, **not** the checks and **not** local compilation. **Confirmed, high
+confidence:** the aarch64-darwin closure is **1714 MB vs 600 MB on Linux (~2.9×)**, and
+the entire ~1.2 GB difference is **LLVM + Clang + the Apple SDK dragged into the runtime
+closure by `python3` on darwin** (proven by `why-depends`). That is a real, isolated,
+upstream-fixable 1.2 GB of bloat and the #1 optimization target.
+
+**Scoped claim:** closure size is *very likely the dominant driver* of the ~3× macOS CI
+penalty, but the causal link to CI wall-clock is inferred, not directly measured —
+because CI cost is *materializing* the closure (cold: download from `cache.nixos.org`;
+warm: restore + untar a cached `/nix`), and both are volume-bound. See "CI mechanism"
+for the one piece still to confirm.
 
 ## Method (why closure analysis, not flame graphs, was the primary tool)
 
@@ -86,6 +91,23 @@ sysconfig` and on-the-fly C-extension builds keep working), pulling Clang + the 
 SDK into every consumer's runtime closure. On Linux the equivalent reference is just
 gcc/glibc — tiny by comparison.
 
+### 4. CI mechanism — why "warm ≈ cold" doesn't refute the size theory
+
+The prior experiment found flox CI warm ≈ cold (ubuntu 46.5 s cold / 47.6 s warm;
+macOS 135.8 / 129.0) — the opposite of the local signature (cold 8.45 s, warm 0.06 s).
+That looked like it might refute "download-bound." Reading the workflow
+(`.github/actions/provision-flox/action.yml`) resolves it: it **does** cache `/nix` +
+`~/.cache/flox` via `actions/cache@v4` (stable warm key) and then runs `flox activate`.
+So warm runs restore the store — but restoring + **untarring a 0.6–1.7 GB `/nix` (a
+huge count of small files)** costs about as much as downloading it cold. Both paths are
+**volume-bound**, so a smaller closure helps cold *and* warm. The local warm (0.06 s) is
+fast only because it skips the cache-restore step entirely (store already on disk).
+
+*Still to confirm (the one open item):* that the CI warm ~47 s is actually spent in
+cache-restore/untar (not elsewhere). The committed results hold only per-run totals, not
+per-step times — a single CI run with step timing on the `Cache Nix store` vs `Warm the
+flox env` steps would upgrade this from inference to measurement.
+
 ## Ranked optimization candidates
 
 1. **Strip Python's darwin SDK/compiler runtime leak — the dominant lever.**
@@ -107,10 +129,11 @@ gcc/glibc — tiny by comparison.
    build is larger/slower; if flox/nixpkgs is selecting it, switching to release trims
    the Linux closure too. Verify the lock's intent.
 
-4. **Make the CI warm cache effective.** The prior experiment found flox's warm cache
-   barely helps (~47 → 48 s ubuntu) — provisioning is re-paid every run. Orthogonal to
-   closure size but compounds the tax; worth confirming whether `actions/cache` of
-   `/nix` actually restores the store before activate.
+4. **The warm cache "works" but barely helps — and that's a size symptom, not a cache
+   bug.** `/nix` *is* cached (§4), yet warm ≈ cold because restoring + untarring a large
+   `/nix` is itself ~as slow as a cold download. So #1 (shrink the closure) is what makes
+   warm cheap too; a `tar`-vs-`zstd` archive method or fewer/larger store paths is a
+   secondary lever. Confirm with per-step CI timing first.
 
 5. **Confirmatory flame graph (the literal Brendan-Gregg layer).** On a *fresh* store
    (the only way to a true cold — see "Limitations"), capture an off-CPU + on-CPU flame
@@ -121,11 +144,17 @@ gcc/glibc — tiny by comparison.
 
 ## Limitations (how cold was — and wasn't — reproduced)
 
-- **A true cold provision can't be reproduced on a warm host.** `nix store delete` is
-  all-or-nothing on a closure and refuses any in-use/shared path (e.g. `glibc`); flox
-  also roots the realized env internally, so a *scoped* cold-reset frees only the ~2 MB
-  env wrapper, and a *global* GC is out of bounds. Genuine cold needs a fresh store
-  (recreate the Lima VM) or CI. The closure-composition evidence above needs neither,
-  which is why the root cause stands without a cold flame.
-- Lima is aarch64; CI macOS/x86 numbers differ in magnitude, but the **mechanism**
-  (python → SDK/compiler closure leak) is arch-independent.
+- **Arch consistency.** `macos-latest` runners are arm64, so the darwin 1714 MB figure
+  matches the CI macOS arch — the macOS comparison is arch-consistent. But `ubuntu-latest`
+  is x86_64 while the 600 MB Linux figure is aarch64-linux (Lima), so the **2.9× ratio is
+  cross-arch and suggestive, not exact**. To make it rigorous, size the x86_64-linux
+  closure from `manifest.lock` against the cache.
+- **The Linux 600 MB baseline is inflated by a debug Python** (`python3-3.12.13-debug`
+  on aarch64-linux vs the normal build on darwin — candidate #3). Until that's explained,
+  treat the exact ratio as approximate; the *mechanism* (python → SDK/compiler leak on
+  darwin) is independent of it.
+- A true cold provision can't be reproduced on a warm host (`nix store delete` is
+  all-or-nothing and refuses in-use/shared paths like `glibc`; flox also roots the env
+  internally, so scoped cold-reset frees only the ~2 MB wrapper; global GC is out of
+  bounds). Genuine cold needs a fresh store (recreate the Lima VM) or CI — which is why
+  the root cause rests on closure composition, which needs no cold reset.

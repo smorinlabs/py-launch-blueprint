@@ -120,3 +120,17 @@ while the Mac pulled the normal `python3-3.12.13` — flagged as candidate #3.
 
 Full write-up + ranked fixes in `FINDINGS-perf.md`. The signature cold flame graph is
 now *confirmatory* (candidate #5), needing a fresh Lima VM for a genuine cold store.
+
+### Reconcile: scoping the CI causal claim (advisor catch)
+Advisor flagged an overclaim: the experiment shows flox CI **warm ≈ cold** (ubuntu
+46.5/47.6 s; macOS 135.8/129.0) — opposite of local (cold 8.45 s, warm 0.06 s). If
+download volume drove CI cost *and* the cache restored `/nix`, warm would collapse.
+**Read the workflow** (`.github/actions/provision-flox/action.yml`): it **does** cache
+`/nix` + `~/.cache/flox` (`actions/cache@v4`, stable warm key). So warm ≈ cold means
+**restoring + untarring a 0.6–1.7 GB `/nix` ≈ cold download** — both volume-bound, so
+closure size is still the lever, but the warm mechanism is restore/extract, not network.
+Reframed FINDINGS: SDK leak = **confirmed 1.2 GB bloat, high confidence**; "explains the
+3× CI penalty" **downgraded to inferred** pending per-step CI timing. Also confirmed
+`macos-latest` = arm64 (darwin size is arch-consistent); `ubuntu-latest` = x86_64 so the
+2.9× ratio is cross-arch/suggestive; the Linux 600 MB baseline is inflated by a debug
+python — exact ratio approximate, mechanism unaffected.
