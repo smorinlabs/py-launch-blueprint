@@ -398,18 +398,25 @@ The closure analysis *predicted* the CI behavior. Then we went and *measured* it
 dispatching real GitHub Actions runs and reading per-step timings. This is the
 "proven, not inferred" step — and it produced one correction worth studying.
 
-### 5.1 The macOS 3× penalty is real (measured)
+### 5.1 The macOS penalty is real (114 vs 36 s) — but it's *two* costs, not one
 
-We dispatched the flox suite on both runners and looked at the `provision (flox)` step:
+We dispatched the flox suite on both runners and split `provision (flox)` by sub-step:
 
-| | provision (flox) |
-| --- | ---: |
-| ubuntu cold | 36 s |
-| **macOS cold** | **114 s** (~3.2×) |
+| sub-step | ubuntu cold | macOS cold |
+| --- | ---: | ---: |
+| install flox/nix | ~11 s | **~58 s** |
+| `flox activate` (download+unpack) | ~24 s | **~54 s** |
+| **total** | **36 s** | **114 s** |
 
-3.2× in time, 3.0× in closure size. The prediction held. **This is the value of going to
-the real environment: a local VM was 5–6× too fast to trust for magnitude (it has a fast
-disk), but real CI confirmed the ratio.**
+We *expected* the whole ~3× gap to be closure size. It wasn't: only the **activate** half
+(~30 s extra) is closure-driven; the other half (~47 s extra) is macOS installing Nix into
+an APFS volume every job — unrelated to our toolchain. The "3.2× time ≈ 3.0× closure" we
+first wrote down was **partly a coincidence of two costs summing**.
+
+> Intern takeaway (twice in one investigation now): a clean ratio that "matches" your
+> theory is seductive. Splitting the measurement showed half the penalty was something
+> else entirely. **Decompose before you attribute.** This also right-sizes the fix:
+> shrinking the closure helps ~half the macOS penalty, not all of it.
 
 ### 5.2 The surprise: "warm ≈ cold" is a *bug*, not what we thought
 

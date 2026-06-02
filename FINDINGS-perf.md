@@ -6,21 +6,28 @@ journey log `PROFILE_LOG.md`, prior experiment `experiment/FINDINGS.md` + ADR-12
 
 ## TL;DR
 
-Flox CI cost is ~90% **provisioning** = materializing the env's Nix store closure onto
-the runner, **not** the checks and **not** local compilation. **Confirmed, high
-confidence:** the **uncompressed** macOS (aarch64-darwin) closure is **1653 MB vs 549 MB
-for Linux (x86_64) — a 3.0× ratio that matches the ~2.9× macOS time penalty almost
-exactly** — and the entire ~1.1 GB difference is **LLVM + Clang + the Apple SDK dragged
-into the runtime closure by `python3` on darwin** (proven by `why-depends`). That is a
-real, isolated, upstream-fixable bloat and the #1 optimization target.
+Flox CI cost is ~90% **provisioning** = materializing the env onto the runner, **not** the
+checks and **not** local compilation. The macOS penalty (CI: `provision (flox)` 114 s vs
+ubuntu 36 s, *measured* §4) is **two roughly-equal costs**:
 
-**The cost is unpack, not download.** The *compressed* download is only ~1.4× bigger on
-macOS (256 vs 180 MB) — but *uncompressed* it's 3.0× (1653 vs 549 MB), and the time
-penalty tracks the **uncompressed** ratio. So provisioning is bound by **decompress +
-write-to-`/nix`** (bytes + file count), not network transfer. This also explains why CI
-warm ≈ cold: restoring a cached `/nix` untars the same uncompressed bytes. Shrinking the
-closure (candidate #1) attacks the binding constraint directly. (Still inferred, not
-step-measured, on real CI: see "CI mechanism".)
+1. **A bloated closure** — *confirmed, high confidence.* The uncompressed macOS closure is
+   **1653 MB vs 549 MB Linux (3.0×)**; the entire ~1.1 GB difference is **LLVM + Clang +
+   Apple SDK dragged into the runtime closure by `python3` on darwin** (proven by
+   `why-depends`). This drives the ~54 s vs ~24 s `flox activate` (download+unpack) gap.
+   Real, isolated, upstream-fixable — the #1 *closure* lever.
+2. **A slow macOS Nix install** — ~58 s vs ~11 s, because `flox/install-flox-action`
+   provisions Nix into a dedicated APFS volume every job (§4a). This is ~half the penalty
+   and is **not** fixed by shrinking the closure (candidate #2).
+
+Plus a separate **CI defect**: the warm `/nix` cache **never saves** (root-owned store
+files break the `tar`), so every run pays full cold cost (§4b) — why "warm ≈ cold."
+
+**The closure cost is unpack, not download.** Compressed download is only ~1.4× bigger on
+macOS (256 vs 180 MB); uncompressed it's 3.0× — and the activate time tracks the
+**uncompressed** side. So provisioning is bound by **decompress + write-to-`/nix`**, not
+network transfer (confirmed by the flame graphs, §5: idle CPU + `nix-daemon` blocked on
+I/O). Earlier this section claimed the closure explained the *whole* 3× penalty; per-step
+CI timing corrected that to ~half.
 
 ## Method (why closure analysis, not flame graphs, was the primary tool)
 
@@ -114,18 +121,22 @@ gcc/glibc — tiny by comparison.
 I dispatched `flox-mirror-suite` on both OSes (cold + warm) and read per-step timings
 from the logs. Two distinct findings, both now measured on real CI rather than inferred:
 
-**(a) The macOS ~3× penalty is real and tracks closure size.** Per-step `provision (flox)`:
+**(a) The macOS penalty is real (114 vs 36 s) but is TWO costs, only one of which is the
+closure.** Splitting `provision (flox)` by sub-step timestamps from the logs:
 
-| run | provision (flox) | Post (cache save) |
-| --- | ---: | ---: |
-| ubuntu cold | 36–39 s | 11 s |
-| ubuntu "warm" | 36 s | 11 s |
-| **macOS cold** | **114 s** | 30 s |
+| sub-step | ubuntu cold | macOS cold | macOS extra |
+| --- | ---: | ---: | ---: |
+| Download & Install flox (flox/nix install) | ~11 s | **~58 s** | ~47 s |
+| configure / verify / cache-restore | ~1 s | ~1 s | — |
+| `flox activate` (closure download + unpack) | ~24 s | **~54 s** | ~30 s |
+| **total `provision (flox)`** | **36 s** | **114 s** | **~78 s** |
 
-macOS cold provision is **~3.2× ubuntu** (114 vs 36 s) — matching the 3.0× uncompressed
-closure ratio. Within `provision (flox)`, the `flox activate` (download + unpack) portion
-is ~54 s on macOS vs ~24 s on ubuntu (~2.25×, the closure-size effect), plus extra macOS
-flox/nix bootstrap overhead in install/verify.
+So the ~78 s macOS penalty is **~47 s flox/nix *install* overhead** (macOS installs Nix
+into a dedicated APFS volume — slow, and unrelated to our toolchain) **+ ~30 s extra
+closure download/unpack** (the part the SDK leak drives; activate is ~2.25× ubuntu,
+consistent with the size delta). The earlier "3.2× ≈ 3.0× closure" match was partly a
+coincidence of two unrelated costs summing — the closure explains roughly **half** the
+gap, not all of it.
 
 **(b) "warm ≈ cold" is a CACHE-SAVE BUG, not slow restore — a concrete, fixable defect.**
 The earlier inference (restore-untar ≈ download) was *wrong*. The logs show the warm
@@ -167,26 +178,26 @@ would have been the wrong tool.
 
 ## Ranked optimization candidates
 
-1. **Strip Python's darwin SDK/compiler runtime leak — the dominant lever.**
+1. **Strip Python's darwin SDK/compiler runtime leak — the dominant *closure* lever.**
    *What:* darwin `python3` propagates `apple-sdk` + `clang-wrapper` + `llvm-lib` into
-   its runtime closure (~1.2 GB). *Evidence:* §2–§3 above. *Est. impact:* darwin
-   closure 1714 → ~530 MB (≈ Linux); macOS cold provisioning potentially ~3× faster
-   (~136 s → ~50 s), every run. *Where:* nixpkgs `python3` darwin packaging.
-   *Upstream-fixable:* yes. *Mitigations to test, fastest first:* (a) a nixpkgs
-   `python3` revision that drops the `sysconfig` cc/SDK reference; (b) `python3Minimal`
-   if the env doesn't need `distutils`/headers; (c) a flox overlay that removes the
-   propagated SDK from the runtime output.
+   its runtime closure (~1.2 GB). *Evidence:* §2–§3. *Est. impact (corrected):* shrinks
+   the ~54 s macOS `flox activate` to roughly ~18 s (closure 1.65 GB → ~0.5 GB), i.e.
+   macOS `provision (flox)` ~114 s → **~78 s**, and ubuntu ~36 → ~28 s. (It does **not**
+   touch the ~47 s macOS flox/nix *install* cost — see #2.) *Where:* nixpkgs `python3`
+   darwin packaging. *Upstream-fixable:* yes. *Mitigations, fastest first:* (a) a nixpkgs
+   `python3` revision dropping the `sysconfig` cc/SDK reference; (b) `python3Minimal` if
+   `distutils`/headers aren't needed; (c) a flox overlay stripping the SDK from the
+   runtime output.
 
-2. **Dedupe duplicated libraries.** darwin ships `libiconv` ×2 (~92 MB); Linux ships
-   `glibc` ×2 (~94 MB). Pin single versions so two toolchain generations don't coexist
-   in the closure. Small but free.
+2. **The macOS flox/nix install is ~58 s per job (vs ~11 s ubuntu) — the *other* half of
+   the macOS penalty.** *What:* `flox/install-flox-action` installs Nix into a dedicated
+   APFS volume on every macOS job (§4a). *Est. impact:* ~47 s of the ~78 s penalty; not
+   addressable by closure shrinking. *Fix options:* cache/pre-provision Nix on the runner;
+   a faster macOS install path; or run fewer flox jobs (consolidation — the experiment
+   already showed consolidated flox is much better on macOS). This is the **biggest single
+   macOS lever** and is orthogonal to #1.
 
-3. **Investigate the debug Python on Linux.** The Lima closure pulled
-   `python3-3.12.13-debug` while the Mac pulled the normal `python3-3.12.13`. A debug
-   build is larger/slower; if flox/nixpkgs is selecting it, switching to release trims
-   the Linux closure too. Verify the lock's intent.
-
-4. **Fix the broken `/nix` cache save (concrete CI bug, second-biggest lever).**
+3. **Fix the broken `/nix` cache save (concrete CI bug).**
    *What:* `actions/cache` can't `tar` root-owned Nix store files
    (`/nix/var/nix/db/reserved`, `gc.lock`, …) → save fails → warm cache never exists →
    **every run pays full cold cost** (§4b, both OSes). *Est. impact:* a working warm cache
@@ -194,9 +205,18 @@ would have been the wrong tool.
    the archive step with `sudo`; or exclude/`chmod` the root-owned lock/db files; or adopt
    a Nix-aware cache action (`DeterminateSystems/magic-nix-cache`,
    `nix-community/cache-nix-action`) that snapshots the store correctly. Independent of #1
-   and stacks with it: #1 shrinks each cold pay, #4 stops paying cold every time.
+   and stacks: #1 shrinks each cold pay; #3 stops paying cold every time.
 
-5. **[DONE] Flame graphs captured** — see §5. on-CPU idle-dominated + `lzma_decode`;
+4. **Dedupe duplicated libraries.** darwin ships `libiconv` ×2 (~92 MB); Linux ships
+   `glibc` ×2 (~94 MB). Pin single versions so two toolchain generations don't coexist
+   in the closure. Small but free.
+
+5. **Investigate the debug Python on Linux.** The Lima closure pulled
+   `python3-3.12.13-debug` while the Mac pulled the normal `python3-3.12.13`. A debug
+   build is larger/slower; if flox/nixpkgs is selecting it, switching to release trims
+   the Linux closure too. Verify the lock's intent.
+
+6. **[DONE] Flame graphs captured** — see §5. on-CPU idle-dominated + `lzma_decode`;
    off-CPU dominated by `nix-daemon` blocked on I/O. Confirms I/O/unpack-bound; no further
    action needed unless re-profiling after #1 to find the next constraint.
 

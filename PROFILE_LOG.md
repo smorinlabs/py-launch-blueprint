@@ -177,9 +177,12 @@ toolchain):
 Dispatched `flox-mirror-suite` (ubuntu + macOS, cold + warm) on
 `experiment/flox-ci-timing`; read per-step timings from logs.
 
-**(1) macOS 3× penalty CONFIRMED on real CI.** `provision (flox)` step: ubuntu cold 36 s
-vs **macOS cold 114 s (~3.2×)** — matches the 3.0× closure-size ratio. (+Post cache-save
-11 s ubuntu / 30 s macOS.)
+**(1) macOS penalty MEASURED + DECOMPOSED (advisor catch — it's two costs).** `provision
+(flox)`: ubuntu cold 36 s vs macOS cold 114 s. Splitting sub-steps from logs: macOS = ~58 s
+flox/nix **install** (APFS volume, vs ubuntu ~11 s) + ~54 s **activate** download/unpack
+(vs ubuntu ~24 s). So of the ~78 s penalty, only ~30 s is closure-driven (the SDK leak);
+~47 s is install overhead candidate #1 can't touch. The earlier "3.2× ≈ 3.0× closure" was
+partly two costs summing — corrected in FINDINGS §4a + candidate #1/#2 estimates.
 
 **(2) "warm ≈ cold" root cause CORRECTED — it's a cache-SAVE bug, not slow restore.** My
 earlier inference (restore-untar ≈ download) was **wrong**. Logs show the `/nix` cache is
