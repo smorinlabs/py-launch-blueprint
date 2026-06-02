@@ -1,0 +1,16 @@
+schema-version = "1.12.0"
+
+[install]
+python.pkg-path = "python312"
+uv.pkg-path = "uv"
+ruff.pkg-path = "ruff"
+taplo.pkg-path = "taplo"
+gitleaks.pkg-path = "gitleaks"
+just.pkg-path = "just"
+bun.pkg-path = "bun"
+gh.pkg-path = "gh"
+lefthook.pkg-path = "lefthook"
+gnumake.pkg-path = "gnumake"
+
+[options]
+systems = ["aarch64-darwin", "x86_64-linux", "aarch64-linux", "x86_64-darwin"]
