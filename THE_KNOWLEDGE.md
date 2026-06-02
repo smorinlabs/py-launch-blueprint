@@ -33,7 +33,12 @@ Tick these off as you go. If you can't explain one in a sentence, re-read its se
 - [ ] Why mise is OS-insensitive and its warm cache works, but flox's doesn't
 - [ ] The trade-off: what flox gives you *in exchange* for the tax
 
-**4. The broader context**
+**4. Verifying on real CI + flame graphs**
+- [ ] What the per-step CI timing proved (macOS 3× is real; the warm-cache is broken)
+- [ ] Why "warm ≈ cold" turned out to be a *cache-save bug*, not slow restore
+- [ ] What the on-CPU vs off-CPU flame graphs show, and why "idle CPU" is the key clue
+
+**5. The broader context**
 - [ ] What changes this implies (the ranked fixes) and their expected impact
 - [ ] What the reusable harness gives the team going forward
 - [ ] The transferable lessons (silent failures, "don't assume CPU", scoping claims)
@@ -387,7 +392,70 @@ gap but can't fully erase it — the hermetic model inherently ships more. So th
 > trade-offs*, and now you can articulate exactly what each costs and buys." That's what
 > lets a team choose deliberately.
 
-## Part 5 — BROADER CONTEXT (why this matters)
+## Part 5 — VERIFYING ON REAL CI (and the flame graphs)
+
+The closure analysis *predicted* the CI behavior. Then we went and *measured* it by
+dispatching real GitHub Actions runs and reading per-step timings. This is the
+"proven, not inferred" step — and it produced one correction worth studying.
+
+### 5.1 The macOS 3× penalty is real (measured)
+
+We dispatched the flox suite on both runners and looked at the `provision (flox)` step:
+
+| | provision (flox) |
+| --- | ---: |
+| ubuntu cold | 36 s |
+| **macOS cold** | **114 s** (~3.2×) |
+
+3.2× in time, 3.0× in closure size. The prediction held. **This is the value of going to
+the real environment: a local VM was 5–6× too fast to trust for magnitude (it has a fast
+disk), but real CI confirmed the ratio.**
+
+### 5.2 The surprise: "warm ≈ cold" is a *bug*, not what we thought
+
+Earlier we *inferred* warm ≈ cold because "restoring a huge `/nix` is as slow as
+downloading it." **The logs proved that inference wrong** — and this is the most important
+teaching moment in the whole investigation:
+
+The warm run's log said `Cache not found for input keys: flox-warm-…-stable`. The cache
+wasn't slow to restore — **it was never there.** Looking at the *save* step from the
+previous run:
+
+```
+/usr/bin/tar: /nix/var/nix/db/reserved: Cannot open: Permission denied
+##[warning]Failed to save: "/usr/bin/tar" failed with exit code 2
+```
+
+`actions/cache` tries to `tar` the `/nix` store as the normal user, but Nix keeps some
+files **root-owned** (`db/reserved`, `gc.lock`). `tar` can't read them, errors out, and
+the whole cache save is abandoned. So **no warm cache is ever written** (on either OS), and
+every "warm" run silently re-does the full cold download.
+
+> Intern takeaway: this is why you *verify on the real system*. A clean, plausible
+> inference ("restore is slow") was simply false. The evidence — a one-line `Permission
+> denied` in a log — replaced a theory with a fact, and turned a vague "size symptom" into
+> a concrete, one-line-fixable bug (run the archive with `sudo`, or use a Nix-aware cache
+> action). **Plausible ≠ true. Go look.**
+
+### 5.3 The flame graphs (the literal Brendan-Gregg artifact)
+
+We captured a genuine cold `flox activate` in a fresh VM under two profilers at once:
+
+- **on-CPU** (`perf`): the biggest box by far is `cpuidle_idle_call` — **the CPU is
+  mostly doing nothing.** The only real work is `lzma_decode` (decompressing downloads).
+  *An idle-dominated CPU flame is the proof that CPU is not the bottleneck.* This is why we
+  didn't lead with a flame graph: for an I/O-bound job, the CPU flame is mostly empty.
+- **off-CPU** (eBPF `offcputime`): shows where threads *block*. The top blocker by a mile
+  is **`nix-daemon`** and its async download workers — blocked on network receive and disk
+  writes. That's the real "where the time goes."
+
+Put together, the two flames say: *download → decompress → write to disk, while the CPU
+waits.* Exactly the closure-size story, now visible as a picture.
+(SVGs: `experiment/profiling/results/flox-cold-activate.{on,off}cpu.svg`. Labeled
+"illustrative" because the VM's fast disk makes the *magnitude* non-CI-representative — but
+the *shape* of the bottleneck is the lesson.)
+
+## Part 6 — BROADER CONTEXT (why this matters)
 
 ### 4.1 What the changes impact
 

@@ -169,3 +169,34 @@ toolchain):
   macOS 136 s vs mise ~14 s), not local wall-clock.
 - Written up in `FINDINGS-perf.md` ("flox vs mise") + `THE_KNOWLEDGE.md` Part 4.
 - (npm commitlint excluded from VM footprint — node absent in VM; immaterial.)
+
+---
+
+## 2026-06-02 — CI timing run (measured) + flame graphs (by request)
+
+Dispatched `flox-mirror-suite` (ubuntu + macOS, cold + warm) on
+`experiment/flox-ci-timing`; read per-step timings from logs.
+
+**(1) macOS 3× penalty CONFIRMED on real CI.** `provision (flox)` step: ubuntu cold 36 s
+vs **macOS cold 114 s (~3.2×)** — matches the 3.0× closure-size ratio. (+Post cache-save
+11 s ubuntu / 30 s macOS.)
+
+**(2) "warm ≈ cold" root cause CORRECTED — it's a cache-SAVE bug, not slow restore.** My
+earlier inference (restore-untar ≈ download) was **wrong**. Logs show the `/nix` cache is
+**never saved**: `tar: /nix/var/nix/db/reserved: Cannot open: Permission denied` →
+`##[warning]Failed to save … exit code 2` → no `flox-warm-*` key (`gh cache list` empty) →
+every warm run is a cache **miss** (`Cache not found for input keys: flox-warm-…-stable`)
+→ re-downloads. Same failure on macOS (`gtar` on `gc.lock`/`db/reserved`/`userpool`).
+Concrete, fixable, cross-OS. Elevated to candidate #4 (was the disproven "size symptom").
+
+**(3) Flame graphs (illustrative, fresh Lima qemu VM, cold activate ~12 s).** Built a
+throwaway `floxflame` VM (factory-reset between shots for a genuine cold store, since flox
+roots the realized env so scoped delete can't re-cold in place — same blocker as before).
+- on-CPU (perf): `cpuidle_idle_call` dominates (CPU idle) + `lzma_decode`/`sha256`
+  (decompress/verify). An idle on-CPU flame = proof the bottleneck isn't CPU.
+- off-CPU (eBPF offcputime): `nix-daemon` + `tokio-runtime-w` block the most → I/O wait
+  (network recv + disk write/unpack). Bug found+fixed mid-capture: `offcputime -d` + SIGINT
+  aborts before flush → use a short `-d` window and let it finish (no signal).
+- Artifacts: `experiment/profiling/results/flox-cold-activate.{on,off}cpu.svg`.
+- Caveat: qemu VM is ~illustrative, not CI-magnitude (advisor's point); used to *see* the
+  on/off-CPU split, not to attribute CI wall-clock. The CI attribution comes from §4 above.

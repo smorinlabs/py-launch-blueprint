@@ -109,22 +109,61 @@ sysconfig` and on-the-fly C-extension builds keep working), pulling Clang + the 
 SDK into every consumer's runtime closure. On Linux the equivalent reference is just
 gcc/glibc — tiny by comparison.
 
-### 4. CI mechanism — why "warm ≈ cold" doesn't refute the size theory
+### 4. CI mechanism — MEASURED (dispatched runs, per-step timing)
 
-The prior experiment found flox CI warm ≈ cold (ubuntu 46.5 s cold / 47.6 s warm;
-macOS 135.8 / 129.0) — the opposite of the local signature (cold 8.45 s, warm 0.06 s).
-That looked like it might refute "download-bound." Reading the workflow
-(`.github/actions/provision-flox/action.yml`) resolves it: it **does** cache `/nix` +
-`~/.cache/flox` via `actions/cache@v4` (stable warm key) and then runs `flox activate`.
-So warm runs restore the store — but restoring + **untarring a 0.6–1.7 GB `/nix` (a
-huge count of small files)** costs about as much as downloading it cold. Both paths are
-**volume-bound**, so a smaller closure helps cold *and* warm. The local warm (0.06 s) is
-fast only because it skips the cache-restore step entirely (store already on disk).
+I dispatched `flox-mirror-suite` on both OSes (cold + warm) and read per-step timings
+from the logs. Two distinct findings, both now measured on real CI rather than inferred:
 
-*Still to confirm (the one open item):* that the CI warm ~47 s is actually spent in
-cache-restore/untar (not elsewhere). The committed results hold only per-run totals, not
-per-step times — a single CI run with step timing on the `Cache Nix store` vs `Warm the
-flox env` steps would upgrade this from inference to measurement.
+**(a) The macOS ~3× penalty is real and tracks closure size.** Per-step `provision (flox)`:
+
+| run | provision (flox) | Post (cache save) |
+| --- | ---: | ---: |
+| ubuntu cold | 36–39 s | 11 s |
+| ubuntu "warm" | 36 s | 11 s |
+| **macOS cold** | **114 s** | 30 s |
+
+macOS cold provision is **~3.2× ubuntu** (114 vs 36 s) — matching the 3.0× uncompressed
+closure ratio. Within `provision (flox)`, the `flox activate` (download + unpack) portion
+is ~54 s on macOS vs ~24 s on ubuntu (~2.25×, the closure-size effect), plus extra macOS
+flox/nix bootstrap overhead in install/verify.
+
+**(b) "warm ≈ cold" is a CACHE-SAVE BUG, not slow restore — a concrete, fixable defect.**
+The earlier inference (restore-untar ≈ download) was *wrong*. The logs show the warm
+`/nix` cache is **never saved**, so every "warm" run is a cache **miss** and re-downloads:
+
+```
+Post provision (flox):  /usr/bin/tar: /nix/var/nix/db/reserved: Cannot open: Permission denied
+                        ##[warning]Failed to save: "/usr/bin/tar" failed with exit code 2
+provision (flox):       Cache not found for input keys: flox-warm-Linux-<hash>-stable
+```
+
+`actions/cache` tars `/nix` as the unprivileged runner user, but parts of the Nix store
+db are **root-owned** (`/nix/var/nix/db/reserved`) → `tar` exits non-zero → the save is
+abandoned → no `flox-warm-*` key is ever stored (confirmed: `gh cache list` shows none).
+So warm ≈ cold because **the cache is effectively disabled**, every run pays full cold
+provisioning. This is independent of (and compounds with) the closure-size problem.
+
+**Cross-OS:** the same failure occurs on macOS (`gtar: /nix/var/nix/gc.lock`,
+`db/reserved`, `db/big-lock`, `userpool/*: Permission denied`) — so the warm cache is
+broken on both runners, not a Linux quirk.
+
+### 5. Flame graphs (measured, illustrative) — confirm I/O/unpack-bound
+
+A genuine cold `flox activate` in a fresh Lima VM (12 s; qemu, so ~illustrative not
+CI-magnitude) captured system-wide. Artifacts:
+`experiment/profiling/results/flox-cold-activate.{on,off}cpu.svg`.
+
+- **on-CPU** (`perf`): dominated by `cpuidle_idle_call` — the CPU is **mostly idle**. The
+  only real work is `lzma_decode` + `lzma_crc64` + `sha256_block_armv8` = **decompressing
+  and verifying** downloaded NARs. An idle-dominated on-CPU flame is itself the proof the
+  bottleneck is *not* CPU.
+- **off-CPU** (eBPF `offcputime`): the top blocking process by far is **`nix-daemon`**
+  (and `tokio-runtime-w`, its async fetch workers) — i.e. time is spent **blocked on I/O**
+  (network recv from the substituter + disk write/unpack into `/nix`).
+
+Together: cold provisioning is **download + decompress + write**, with the CPU idling on
+I/O — exactly what the closure-size analysis predicted, and why a CPU flame graph alone
+would have been the wrong tool.
 
 ## Ranked optimization candidates
 
@@ -147,18 +186,19 @@ flox env` steps would upgrade this from inference to measurement.
    build is larger/slower; if flox/nixpkgs is selecting it, switching to release trims
    the Linux closure too. Verify the lock's intent.
 
-4. **The warm cache "works" but barely helps — and that's a size symptom, not a cache
-   bug.** `/nix` *is* cached (§4), yet warm ≈ cold because restoring + untarring a large
-   `/nix` is itself ~as slow as a cold download. So #1 (shrink the closure) is what makes
-   warm cheap too; a `tar`-vs-`zstd` archive method or fewer/larger store paths is a
-   secondary lever. Confirm with per-step CI timing first.
+4. **Fix the broken `/nix` cache save (concrete CI bug, second-biggest lever).**
+   *What:* `actions/cache` can't `tar` root-owned Nix store files
+   (`/nix/var/nix/db/reserved`, `gc.lock`, …) → save fails → warm cache never exists →
+   **every run pays full cold cost** (§4b, both OSes). *Est. impact:* a working warm cache
+   makes repeat runs cheap (the experiment's `mise` warm is ~4–7 s). *Fix options:* run
+   the archive step with `sudo`; or exclude/`chmod` the root-owned lock/db files; or adopt
+   a Nix-aware cache action (`DeterminateSystems/magic-nix-cache`,
+   `nix-community/cache-nix-action`) that snapshots the store correctly. Independent of #1
+   and stacks with it: #1 shrinks each cold pay, #4 stops paying cold every time.
 
-5. **Confirmatory flame graph (the literal Brendan-Gregg layer).** On a *fresh* store
-   (the only way to a true cold — see "Limitations"), capture an off-CPU + on-CPU flame
-   of one cold `flox activate` to split the wall-clock across network-recv vs
-   zstd-decompress (CPU) vs `/nix` write/fsync (disk). This tells whether, after the
-   closure shrinks, the remaining cost is throughput-bound and where. Harness:
-   `profile-flox.sh --deep` in a freshly-recreated Lima VM.
+5. **[DONE] Flame graphs captured** — see §5. on-CPU idle-dominated + `lzma_decode`;
+   off-CPU dominated by `nix-daemon` blocked on I/O. Confirms I/O/unpack-bound; no further
+   action needed unless re-profiling after #1 to find the next constraint.
 
 ## flox vs mise — why mise avoids the tax
 
