@@ -14,7 +14,8 @@ runs:
     - name: Install Flox
       uses: flox/install-flox-action@v2
       with:
-        use-cache: ${{ inputs.use-cache }}
+        # bracket notation: `inputs.use-cache` would parse as subtraction (use - cache)
+        use-cache: ${{ inputs['use-cache'] }}
     - name: Cache Nix store
       uses: actions/cache@v4
       with:
