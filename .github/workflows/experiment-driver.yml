@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       sides:
-        description: subset of traditional,flox-mirror,flox-consolidated,mise-mirror,mise-consolidated
+        description: subset of traditional,flox-mirror,flox-consolidated,mise-mirror,mise-consolidated,flox-nocache-mirror,flox-nocache-consolidated
         type: string
         default: traditional,flox-mirror,flox-consolidated,mise-mirror,mise-consolidated
       oses:
@@ -79,6 +79,8 @@ jobs:
               flox-consolidated) wf="flox-consolidated" ;;
               mise-mirror) wf="mise-suite" ;;
               mise-consolidated) wf="mise-consolidated" ;;
+              flox-nocache-mirror) wf="flox-nocache-suite" ;;
+              flox-nocache-consolidated) wf="flox-nocache-consolidated" ;;
               *) echo "unknown side: $side" >&2; exit 1 ;;
             esac
             for os in "${OS_ARR[@]}"; do
