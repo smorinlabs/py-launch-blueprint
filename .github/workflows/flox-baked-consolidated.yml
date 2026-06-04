@@ -37,6 +37,9 @@ jobs:
         shell: bash
         run: |
           flox activate -d /opt/ci-env -- bash -euo pipefail -c '
+            # Container runs as root over a differently-owned workspace; the
+            # flox-provided git needs safe.directory or git-using checks fail 128.
+            git config --global --add safe.directory "$GITHUB_WORKSPACE"
             ruff check .
             ruff format --check .
             uv sync --group dev && uv run ty check py_launch_blueprint/
@@ -59,4 +62,4 @@ jobs:
       - uses: actions/checkout@v6
       - name: tests under one activation (baked)
         shell: bash
-        run: flox activate -d /opt/ci-env -- bash -c 'uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml'
+        run: flox activate -d /opt/ci-env -- bash -c 'git config --global --add safe.directory "$GITHUB_WORKSPACE" && uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml'
