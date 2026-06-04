@@ -186,9 +186,11 @@ strict_markers = true
 # ITM-015 — codespell. US English baseline (default builtin="clear,rare"); empty
 # ignore list — add terms only when intentional. Decided round 9.
 [tool.codespell]
-skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache,*.log,skill/optimization-workspace"
+skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,*.folded,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache,*.log,skill/optimization-workspace"
 # *.log + skill/optimization-workspace: optimizer logs contain LLM-truncated
 # text artifacts that aren't real typos; skip the whole tree.
+# *.folded: flame-graph fold-format stack traces (sibling of the already-skipped
+# *.svg renderings); mangled symbol fragments aren't real typos.
 ignore-words-list = "ans"
 # ans: variable name used in prompt-handling code; codespell wants to "fix"
 # it to "and". Whitelist to keep the short variable name.
