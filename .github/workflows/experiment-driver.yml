@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       sides:
-        description: comma-separated subset of traditional,flox-mirror,flox-consolidated
+        description: comma-separated subset of traditional,flox-mirror,flox-consolidated,mise-mirror,mise-consolidated,flox-nocache-mirror,flox-nocache-consolidated
         type: string
-        default: traditional,flox-mirror,flox-consolidated
+        default: traditional,flox-mirror,flox-consolidated,mise-mirror,mise-consolidated
       oses:
         description: comma-separated subset of ubuntu-latest,macos-latest
         type: string
@@ -54,7 +54,9 @@ jobs:
             before=$(gh run list --workflow="${wfname}.yml" --branch "$REF" \
               --event workflow_dispatch --limit 60 --json databaseId \
               -q '[.[].databaseId] | join(" ")')
-            gh workflow run "${wfname}.yml" --ref "$REF" -f os="$os" -f cache="$cache"
+            # 1>&2: `gh workflow run` prints the run URL to stdout; redirect it to
+            # stderr so it doesn't pollute this function's stdout (the returned id).
+            gh workflow run "${wfname}.yml" --ref "$REF" -f os="$os" -f cache="$cache" 1>&2
             for _ in $(seq 1 30); do
               sleep 6
               for id in $(gh run list --workflow="${wfname}.yml" --branch "$REF" \
@@ -75,6 +77,10 @@ jobs:
               traditional) wf="trad-suite" ;;
               flox-mirror) wf="flox-mirror-suite" ;;
               flox-consolidated) wf="flox-consolidated" ;;
+              mise-mirror) wf="mise-suite" ;;
+              mise-consolidated) wf="mise-consolidated" ;;
+              flox-nocache-mirror) wf="flox-nocache-suite" ;;
+              flox-nocache-consolidated) wf="flox-nocache-consolidated" ;;
               *) echo "unknown side: $side" >&2; exit 1 ;;
             esac
             for os in "${OS_ARR[@]}"; do
