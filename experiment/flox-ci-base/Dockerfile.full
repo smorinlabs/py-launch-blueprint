@@ -1,0 +1,54 @@
+# syntax=docker/dockerfile:1
+#
+# flox-ci-base FULL — bakes the repo's COMPLETE dev flox env (every check tool:
+# ruff, ty/uv, bandit, gitleaks, taplo, yamllint, codespell, commitlint, bun, ...)
+# so the consolidated check suite runs in-container with ZERO runtime provisioning.
+# Powers the `flox-baked` experiment side — the container-image equivalent of the
+# install-on-VM `flox-consolidated` side. See 2026-06-03-flox-ci-base-prd.md.
+#
+# Build context = repo root (needs the committed .flox env + pyproject/uv.lock):
+#   docker build -f experiment/flox-ci-base/Dockerfile.full -t flox-ci-base-full:latest .
+#
+# Minimal base by default (PRD §5.1: best-case, isolates true pre-bake value — the
+# control pays no pull cost, so a heavier base only handicaps the treatment).
+ARG BASE=ubuntu:24.04
+# faithful arm: --build-arg BASE=ghcr.io/catthehacker/ubuntu:act-24.04
+FROM ${BASE}
+
+# `uses:` steps (checkout) bypass the flox shell and need the base's system git.
+RUN command -v git >/dev/null 2>&1 || ( apt-get update && apt-get install -y --no-install-recommends \
+      git ca-certificates curl xz-utils && rm -rf /var/lib/apt/lists/* )
+# NO `USER` — GHA container jobs run as root for GITHUB_WORKSPACE.
+
+# Install Flox (pinned, arch-detected) from the stable channel.
+ARG TARGETARCH
+ARG FLOX_VER=1.12.2
+RUN set -eux; \
+    arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
+    case "$arch" in \
+      amd64) a=x86_64-linux ;; \
+      arm64) a=aarch64-linux ;; \
+      *) echo "unsupported arch: $arch" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL "https://downloads.flox.dev/by-env/stable/deb/flox-${FLOX_VER}.${a}.deb" -o /tmp/flox.deb; \
+    apt-get update; apt-get install -y /tmp/flox.deb; \
+    rm /tmp/flox.deb; rm -rf /var/lib/apt/lists/*; \
+    flox config --set disable_metrics true; \
+    flox --version
+
+# Bake the repo's COMPLETE committed dev env (env.json + lock + all check tools)
+# and realize its closure at build time — the full-suite provisioning, pre-baked.
+COPY .flox /opt/ci-env/.flox
+WORKDIR /opt/ci-env
+RUN flox activate -- true
+
+# Warm the uv cache the consolidated job uses (`uv sync --group dev`), exactly as
+# flox-consolidated does at runtime. commitlint et al. are Flox packages already
+# realized above, so no extra warming is needed.
+ENV UV_CACHE_DIR=/opt/uv-cache UV_LINK_MODE=copy UV_PYTHON_PREFERENCE=only-system
+COPY pyproject.toml uv.lock /tmp/warm/
+RUN cd /tmp/warm && flox activate -d /opt/ci-env -- sh -eux -c '\
+      uv sync --group dev --no-install-project; \
+    ' && rm -rf /tmp/warm
+
+WORKDIR /work

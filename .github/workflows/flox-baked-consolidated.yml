@@ -1,0 +1,62 @@
+name: flox-baked-consolidated
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        type: string
+        required: true
+      cache:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  packages: read
+
+# The container-image equivalent of flox-consolidated: the full dev flox env +
+# warm uv cache are BAKED into ghcr.io/smorinlabs/flox-ci-base-full, so there is
+# no runtime `provision` step — the only setup is the image pull (GHA's
+# "Initialize containers" step, counted as setup by collect.py). Linux-only
+# (container jobs are Linux-only); dispatch with os=ubuntu-latest. The `cache`
+# input is accepted for harness symmetry but unused (everything is baked).
+# Mirrors flox-consolidated's two jobs and check blocks exactly.
+
+jobs:
+  hygiene:
+    runs-on: ${{ inputs.os }}
+    container:
+      image: ghcr.io/smorinlabs/flox-ci-base-full:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: all hygiene checks under one activation (baked)
+        shell: bash
+        run: |
+          flox activate -d /opt/ci-env -- bash -euo pipefail -c '
+            ruff check .
+            ruff format --check .
+            uv sync --group dev && uv run ty check py_launch_blueprint/
+            taplo check "**/*.toml"
+            codespell --toml pyproject.toml
+            yamllint -c .yamllint .
+            bandit -r py_launch_blueprint/ -c pyproject.toml
+            gitleaks detect --source . --config .gitleaks.toml --no-banner
+            commitlint --from=HEAD~10 --to=HEAD
+          '
+
+  pytest:
+    runs-on: ${{ inputs.os }}
+    container:
+      image: ghcr.io/smorinlabs/flox-ci-base-full:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: tests under one activation (baked)
+        shell: bash
+        run: flox activate -d /opt/ci-env -- bash -c 'uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml'

@@ -3,7 +3,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
-SETUP_STEP_NAMES = ("provision (flox)", "provision (traditional)", "provision (mise)")
+SETUP_STEP_NAMES = (
+    "provision (flox)",
+    "provision (traditional)",
+    "provision (mise)",
+    # Container (baked) sides have no `provision` step — their setup is the image
+    # pull + container start, which GHA surfaces as the "Initialize containers"
+    # step in the jobs API. Counting it as setup keeps the baked row honest
+    # (the image pull is a treatment-only cost; see flox-ci-base PRD §7).
+    "Initialize containers",
+)
 
 
 def _parse_ts(value: str) -> datetime:
