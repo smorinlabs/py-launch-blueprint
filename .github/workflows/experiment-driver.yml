@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       sides:
-        description: comma-separated subset of traditional,flox-mirror,flox-consolidated,mise-mirror,mise-consolidated,flox-nocache-mirror,flox-nocache-consolidated
+        description: comma-separated subset of traditional,flox-mirror,flox-consolidated,mise-mirror,mise-consolidated,flox-nocache-mirror,flox-nocache-consolidated,flox-noaction-mirror,flox-noaction-consolidated
         type: string
         default: traditional,flox-mirror,flox-consolidated,mise-mirror,mise-consolidated
       oses:
@@ -81,6 +81,8 @@ jobs:
               mise-consolidated) wf="mise-consolidated" ;;
               flox-nocache-mirror) wf="flox-nocache-suite" ;;
               flox-nocache-consolidated) wf="flox-nocache-consolidated" ;;
+              flox-noaction-mirror) wf="flox-noaction-suite" ;;
+              flox-noaction-consolidated) wf="flox-noaction-consolidated" ;;
               *) echo "unknown side: $side" >&2; exit 1 ;;
             esac
             for os in "${OS_ARR[@]}"; do
