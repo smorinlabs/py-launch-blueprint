@@ -1,162 +1,290 @@
 {
-  "traditional|ubuntu-latest|cold": {
-    "n": 5,
-    "min": 15.0,
-    "max": 20.0,
-    "avg": 17.2,
-    "median": 17.0,
-    "stddev": 2.039607805437114
-  },
-  "traditional|ubuntu-latest|warm": {
-    "n": 5,
-    "min": 16.0,
-    "max": 19.0,
-    "avg": 17.2,
-    "median": 17.0,
-    "stddev": 1.1661903789690602
-  },
-  "flox-mirror|ubuntu-latest|cold": {
-    "n": 5,
-    "min": 60.0,
-    "max": 68.0,
-    "avg": 64.8,
-    "median": 64.0,
-    "stddev": 2.9933259094191533
-  },
-  "flox-mirror|ubuntu-latest|warm": {
-    "n": 5,
-    "min": 63.0,
-    "max": 67.0,
-    "avg": 64.6,
-    "median": 64.0,
-    "stddev": 1.3564659966250536
-  },
-  "flox-consolidated|ubuntu-latest|cold": {
-    "n": 5,
-    "min": 60.0,
-    "max": 71.0,
-    "avg": 64.8,
-    "median": 65.0,
-    "stddev": 3.7629775444453557
-  },
-  "flox-consolidated|ubuntu-latest|warm": {
-    "n": 5,
-    "min": 60.0,
-    "max": 65.0,
-    "avg": 62.8,
-    "median": 64.0,
-    "stddev": 2.3151673805580453
-  },
   "traditional|macos-latest|cold": {
     "n": 5,
-    "min": 35.0,
-    "max": 39.0,
-    "avg": 36.4,
-    "median": 36.0,
-    "stddev": 1.4966629547095767
+    "min": 38.0,
+    "max": 125.0,
+    "avg": 64.0,
+    "median": 55.0,
+    "stddev": 31.138400729645703
   },
   "traditional|macos-latest|warm": {
-    "n": 3,
-    "min": 34.0,
-    "max": 41.0,
-    "avg": 38.666666666666664,
-    "median": 41.0,
-    "stddev": 3.2998316455372216
-  },
-  "flox-mirror|macos-latest|cold": {
     "n": 5,
-    "min": 295.0,
-    "max": 331.0,
-    "avg": 318.4,
-    "median": 324.0,
-    "stddev": 13.514436725220921
-  },
-  "flox-mirror|macos-latest|warm": {
-    "n": 5,
-    "min": 292.0,
-    "max": 323.0,
-    "avg": 303.6,
-    "median": 302.0,
-    "stddev": 10.89219904335208
-  },
-  "flox-consolidated|macos-latest|cold": {
-    "n": 5,
-    "min": 169.0,
-    "max": 199.0,
-    "avg": 181.6,
-    "median": 173.0,
-    "stddev": 13.879481258317979
-  },
-  "flox-consolidated|macos-latest|warm": {
-    "n": 5,
-    "min": 132.0,
-    "max": 201.0,
-    "avg": 161.6,
-    "median": 158.0,
-    "stddev": 27.059933481071234
-  },
-  "mise-mirror|ubuntu-latest|cold": {
-    "n": 5,
-    "min": 28.0,
-    "max": 46.0,
-    "avg": 33.0,
-    "median": 30.0,
-    "stddev": 6.6332495807108
-  },
-  "mise-mirror|ubuntu-latest|warm": {
-    "n": 5,
-    "min": 19.0,
-    "max": 27.0,
-    "avg": 23.0,
-    "median": 24.0,
-    "stddev": 2.756809750418044
+    "min": 45.0,
+    "max": 55.0,
+    "avg": 49.0,
+    "median": 48.0,
+    "stddev": 3.4058772731852804
   },
   "mise-mirror|macos-latest|cold": {
-    "n": 5,
-    "min": 58.0,
-    "max": 71.0,
-    "avg": 63.0,
-    "median": 61.0,
-    "stddev": 4.857983120596447
+    "n": 4,
+    "min": 64.0,
+    "max": 79.0,
+    "avg": 68.75,
+    "median": 66.0,
+    "stddev": 6.015604707757983
   },
   "mise-mirror|macos-latest|warm": {
     "n": 5,
-    "min": 39.0,
-    "max": 49.0,
-    "avg": 43.6,
-    "median": 43.0,
-    "stddev": 3.878143885933063
-  },
-  "mise-consolidated|ubuntu-latest|cold": {
-    "n": 5,
-    "min": 25.0,
-    "max": 36.0,
-    "avg": 29.8,
-    "median": 29.0,
-    "stddev": 3.655133376499413
-  },
-  "mise-consolidated|ubuntu-latest|warm": {
-    "n": 5,
-    "min": 19.0,
-    "max": 30.0,
-    "avg": 23.2,
-    "median": 22.0,
-    "stddev": 3.9698866482558417
+    "min": 49.0,
+    "max": 65.0,
+    "avg": 55.8,
+    "median": 55.0,
+    "stddev": 5.74108003776293
   },
   "mise-consolidated|macos-latest|cold": {
     "n": 5,
-    "min": 30.0,
-    "max": 39.0,
-    "avg": 35.8,
-    "median": 36.0,
-    "stddev": 3.3105890714493698
+    "min": 34.0,
+    "max": 42.0,
+    "avg": 39.4,
+    "median": 41.0,
+    "stddev": 2.870540018881465
   },
   "mise-consolidated|macos-latest|warm": {
     "n": 5,
-    "min": 26.0,
-    "max": 35.0,
-    "avg": 30.6,
-    "median": 31.0,
-    "stddev": 3.6110940170535577
+    "min": 25.0,
+    "max": 33.0,
+    "avg": 29.8,
+    "median": 32.0,
+    "stddev": 3.1874754901018454
+  },
+  "flox-mirror|macos-latest|cold": {
+    "n": 2,
+    "min": 408.0,
+    "max": 424.0,
+    "avg": 416.0,
+    "median": 416.0,
+    "stddev": 8.0
+  },
+  "flox-mirror|macos-latest|warm": {
+    "n": 2,
+    "min": 384.0,
+    "max": 426.0,
+    "avg": 405.0,
+    "median": 405.0,
+    "stddev": 21.0
+  },
+  "flox-consolidated|macos-latest|cold": {
+    "n": 5,
+    "min": 159.0,
+    "max": 224.0,
+    "avg": 197.0,
+    "median": 204.0,
+    "stddev": 21.716353285024628
+  },
+  "flox-consolidated|macos-latest|warm": {
+    "n": 1,
+    "min": 202.0,
+    "max": 202.0,
+    "avg": 202.0,
+    "median": 202.0,
+    "stddev": 0.0
+  },
+  "flox-nocache-mirror|macos-latest|warm": {
+    "n": 5,
+    "min": 342.0,
+    "max": 404.0,
+    "avg": 384.6,
+    "median": 396.0,
+    "stddev": 22.676860452893386
+  },
+  "flox-nocache-consolidated|macos-latest|cold": {
+    "n": 5,
+    "min": 175.0,
+    "max": 210.0,
+    "avg": 195.6,
+    "median": 200.0,
+    "stddev": 13.215142829345432
+  },
+  "flox-nocache-consolidated|macos-latest|warm": {
+    "n": 5,
+    "min": 188.0,
+    "max": 216.0,
+    "avg": 200.8,
+    "median": 199.0,
+    "stddev": 11.124747188138704
+  },
+  "flox-noaction-mirror|macos-latest|cold": {
+    "n": 5,
+    "min": 336.0,
+    "max": 424.0,
+    "avg": 368.0,
+    "median": 366.0,
+    "stddev": 30.225816779700097
+  },
+  "flox-noaction-mirror|macos-latest|warm": {
+    "n": 5,
+    "min": 365.0,
+    "max": 413.0,
+    "avg": 393.0,
+    "median": 404.0,
+    "stddev": 19.256167843057455
+  },
+  "flox-noaction-consolidated|macos-latest|cold": {
+    "n": 5,
+    "min": 181.0,
+    "max": 196.0,
+    "avg": 191.6,
+    "median": 193.0,
+    "stddev": 5.535341001239219
+  },
+  "flox-noaction-consolidated|macos-latest|warm": {
+    "n": 5,
+    "min": 161.0,
+    "max": 209.0,
+    "avg": 183.2,
+    "median": 183.0,
+    "stddev": 16.642115250171777
+  },
+  "traditional|ubuntu-latest|cold": {
+    "n": 5,
+    "min": 18.0,
+    "max": 38.0,
+    "avg": 26.0,
+    "median": 22.0,
+    "stddev": 7.155417527999327
+  },
+  "traditional|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 20.0,
+    "max": 125.0,
+    "avg": 55.4,
+    "median": 48.0,
+    "stddev": 37.0113496106262
+  },
+  "flox-mirror|ubuntu-latest|cold": {
+    "n": 5,
+    "min": 64.0,
+    "max": 75.0,
+    "avg": 70.0,
+    "median": 69.0,
+    "stddev": 4.049691346263318
+  },
+  "flox-mirror|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 71.0,
+    "max": 78.0,
+    "avg": 74.0,
+    "median": 72.0,
+    "stddev": 3.286335345030997
+  },
+  "flox-consolidated|ubuntu-latest|cold": {
+    "n": 5,
+    "min": 65.0,
+    "max": 72.0,
+    "avg": 69.0,
+    "median": 70.0,
+    "stddev": 2.6076809620810595
+  },
+  "flox-consolidated|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 63.0,
+    "max": 66.0,
+    "avg": 64.4,
+    "median": 64.0,
+    "stddev": 1.019803902718557
+  },
+  "mise-mirror|ubuntu-latest|cold": {
+    "n": 5,
+    "min": 29.0,
+    "max": 32.0,
+    "avg": 30.2,
+    "median": 30.0,
+    "stddev": 1.1661903789690602
+  },
+  "mise-mirror|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 17.0,
+    "max": 115.0,
+    "avg": 44.6,
+    "median": 26.0,
+    "stddev": 36.39010854614204
+  },
+  "mise-consolidated|ubuntu-latest|cold": {
+    "n": 1,
+    "min": 25.0,
+    "max": 25.0,
+    "avg": 25.0,
+    "median": 25.0,
+    "stddev": 0.0
+  },
+  "mise-consolidated|ubuntu-latest|warm": {
+    "n": 4,
+    "min": 17.0,
+    "max": 31.0,
+    "avg": 23.75,
+    "median": 23.5,
+    "stddev": 4.968651728587948
+  },
+  "flox-nocache-mirror|ubuntu-latest|cold": {
+    "n": 5,
+    "min": 61.0,
+    "max": 66.0,
+    "avg": 63.6,
+    "median": 63.0,
+    "stddev": 1.7435595774162693
+  },
+  "flox-nocache-mirror|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 62.0,
+    "max": 69.0,
+    "avg": 64.8,
+    "median": 64.0,
+    "stddev": 2.4819347291981715
+  },
+  "flox-nocache-consolidated|ubuntu-latest|cold": {
+    "n": 5,
+    "min": 63.0,
+    "max": 69.0,
+    "avg": 65.6,
+    "median": 65.0,
+    "stddev": 2.1540659228538015
+  },
+  "flox-nocache-consolidated|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 61.0,
+    "max": 68.0,
+    "avg": 63.2,
+    "median": 62.0,
+    "stddev": 2.6381811916545836
+  },
+  "flox-noaction-mirror|ubuntu-latest|cold": {
+    "n": 3,
+    "min": 69.0,
+    "max": 71.0,
+    "avg": 70.0,
+    "median": 70.0,
+    "stddev": 0.816496580927726
+  },
+  "flox-noaction-consolidated|ubuntu-latest|cold": {
+    "n": 3,
+    "min": 66.0,
+    "max": 223.0,
+    "avg": 118.33333333333333,
+    "median": 66.0,
+    "stddev": 74.01050976419198
+  },
+  "flox-noaction-consolidated|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 67.0,
+    "max": 85.0,
+    "avg": 74.0,
+    "median": 71.0,
+    "stddev": 6.196773353931867
+  },
+  "flox-baked|ubuntu-latest|cold": {
+    "n": 5,
+    "min": 58.0,
+    "max": 74.0,
+    "avg": 65.8,
+    "median": 66.0,
+    "stddev": 5.3065996645686395
+  },
+  "flox-baked|ubuntu-latest|warm": {
+    "n": 5,
+    "min": 59.0,
+    "max": 71.0,
+    "avg": 62.8,
+    "median": 60.0,
+    "stddev": 4.445222154178574
   }
 }

@@ -1,0 +1,62 @@
+{
+  "traditional|ubuntu-latest|cold": [
+    26957962953
+  ],
+  "traditional|ubuntu-latest|warm": [
+    26958023301
+  ],
+  "flox-mirror|ubuntu-latest|cold": [
+    26958054073
+  ],
+  "flox-mirror|ubuntu-latest|warm": [
+    26958199548
+  ],
+  "flox-consolidated|ubuntu-latest|cold": [
+    26958272614
+  ],
+  "flox-consolidated|ubuntu-latest|warm": [
+    26958411517
+  ],
+  "mise-mirror|ubuntu-latest|cold": [
+    26958485572
+  ],
+  "mise-mirror|ubuntu-latest|warm": [
+    26958546904
+  ],
+  "mise-consolidated|ubuntu-latest|cold": [
+    26958577058
+  ],
+  "mise-consolidated|ubuntu-latest|warm": [
+    26958636327
+  ],
+  "flox-nocache-mirror|ubuntu-latest|cold": [
+    26958667289
+  ],
+  "flox-nocache-mirror|ubuntu-latest|warm": [
+    26958812957
+  ],
+  "flox-nocache-consolidated|ubuntu-latest|cold": [
+    26958881229
+  ],
+  "flox-nocache-consolidated|ubuntu-latest|warm": [
+    26959025990
+  ],
+  "flox-noaction-mirror|ubuntu-latest|cold": [
+    26959095548
+  ],
+  "flox-noaction-mirror|ubuntu-latest|warm": [
+    26959259782
+  ],
+  "flox-noaction-consolidated|ubuntu-latest|cold": [
+    26959338527
+  ],
+  "flox-noaction-consolidated|ubuntu-latest|warm": [
+    26959489410
+  ],
+  "flox-baked|ubuntu-latest|cold": [
+    26959564838
+  ],
+  "flox-baked|ubuntu-latest|warm": [
+    26959722501
+  ]
+}

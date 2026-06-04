@@ -1,0 +1,236 @@
+{
+  "traditional|macos-latest|cold": [
+    26965666580,
+    26965718921,
+    26965756330,
+    26965799797,
+    26965852444
+  ],
+  "traditional|macos-latest|warm": [
+    26965992201,
+    26966046838,
+    26966092949,
+    26966136517,
+    26966181424
+  ],
+  "mise-mirror|macos-latest|cold": [
+    26966230004,
+    26966327841,
+    26966403170,
+    26966469523
+  ],
+  "mise-mirror|macos-latest|warm": [
+    26966580608,
+    26966625032,
+    26966677752,
+    26966735143,
+    26966782870
+  ],
+  "mise-consolidated|macos-latest|cold": [
+    26966837694,
+    26966879733,
+    26966921079,
+    26966956957,
+    26966997054
+  ],
+  "mise-consolidated|macos-latest|warm": [
+    26967074211,
+    26967101748,
+    26967134421,
+    26967166894,
+    26967200432
+  ],
+  "flox-mirror|macos-latest|cold": [
+    26967227583,
+    26967607888
+  ],
+  "flox-mirror|macos-latest|warm": [
+    26967974309,
+    26968995243
+  ],
+  "flox-consolidated|macos-latest|cold": [
+    26969374281,
+    26969571137,
+    26969755096,
+    26969897460,
+    26970083189
+  ],
+  "flox-consolidated|macos-latest|warm": [
+    26970393461
+  ],
+  "flox-nocache-mirror|macos-latest|cold": [],
+  "flox-nocache-mirror|macos-latest|warm": [
+    26972132165,
+    26972428731,
+    26972770067,
+    26973116673,
+    26973475939
+  ],
+  "flox-nocache-consolidated|macos-latest|cold": [
+    26973801478,
+    26973985746,
+    26974148089,
+    26974326653,
+    26974478895
+  ],
+  "flox-nocache-consolidated|macos-latest|warm": [
+    26974804660,
+    26974969572,
+    26975139386,
+    26975334113,
+    26975505575
+  ],
+  "flox-noaction-mirror|macos-latest|cold": [
+    26975690329,
+    26976021253,
+    26976326473,
+    26976630223,
+    26977001538
+  ],
+  "flox-noaction-mirror|macos-latest|warm": [
+    26977611507,
+    26977966609,
+    26978281096,
+    26978632918,
+    26978965925
+  ],
+  "flox-noaction-consolidated|macos-latest|cold": [
+    26979324296,
+    26979491859,
+    26979664431,
+    26979833423,
+    26979989174
+  ],
+  "flox-noaction-consolidated|macos-latest|warm": [
+    26980300078,
+    26980473592,
+    26980611326,
+    26980765397,
+    26980898703
+  ],
+  "traditional|ubuntu-latest|cold": [
+    26965654423,
+    26965689927,
+    26965713436,
+    26965733325,
+    26965764951
+  ],
+  "traditional|ubuntu-latest|warm": [
+    26965817561,
+    26965852444,
+    26965969944,
+    26965992201,
+    26966046838
+  ],
+  "flox-mirror|ubuntu-latest|cold": [
+    26966092770,
+    26966162781,
+    26966223443,
+    26966292052,
+    26966361270
+  ],
+  "flox-mirror|ubuntu-latest|warm": [
+    26966500629,
+    26966571152,
+    26966633853,
+    26966704506,
+    26966771450
+  ],
+  "flox-consolidated|ubuntu-latest|cold": [
+    26966843632,
+    26966907617,
+    26966975372,
+    26967042697,
+    26967105937
+  ],
+  "flox-consolidated|ubuntu-latest|warm": [
+    26967238671,
+    26967301859,
+    26967365970,
+    26967424442,
+    26967485964
+  ],
+  "mise-mirror|ubuntu-latest|cold": [
+    26967547136,
+    26967579254,
+    26967611095,
+    26967642823,
+    26967674536
+  ],
+  "mise-mirror|ubuntu-latest|warm": [
+    26967729382,
+    26967835159,
+    26967881663,
+    26967902000,
+    26967928183
+  ],
+  "mise-consolidated|ubuntu-latest|cold": [
+    26967950674
+  ],
+  "mise-consolidated|ubuntu-latest|warm": [
+    26967977695,
+    26968996515,
+    26969023540,
+    26969044685
+  ],
+  "flox-nocache-mirror|ubuntu-latest|cold": [
+    26969069136,
+    26969130910,
+    26969187445,
+    26969248910,
+    26969309977
+  ],
+  "flox-nocache-mirror|ubuntu-latest|warm": [
+    26969430361,
+    26969492051,
+    26969550981,
+    26969618582,
+    26969680352
+  ],
+  "flox-nocache-consolidated|ubuntu-latest|cold": [
+    26969743616,
+    26969807139,
+    26969868171,
+    26969926749,
+    26969989179
+  ],
+  "flox-nocache-consolidated|ubuntu-latest|warm": [
+    26970112811,
+    26970171705,
+    26970235321,
+    26970293893,
+    26970353345
+  ],
+  "flox-noaction-mirror|ubuntu-latest|cold": [
+    26970413059,
+    26970478875,
+    26970542940
+  ],
+  "flox-noaction-mirror|ubuntu-latest|warm": [],
+  "flox-noaction-consolidated|ubuntu-latest|cold": [
+    26965333171,
+    26972129952,
+    26972192616
+  ],
+  "flox-noaction-consolidated|ubuntu-latest|warm": [
+    26972314479,
+    26972383317,
+    26972443180,
+    26972517967,
+    26972580880
+  ],
+  "flox-baked|ubuntu-latest|cold": [
+    26972644560,
+    26972711711,
+    26972769782,
+    26972830164,
+    26972884364
+  ],
+  "flox-baked|ubuntu-latest|warm": [
+    26973007304,
+    26973062561,
+    26973122235,
+    26973178777,
+    26973242820
+  ]
+}

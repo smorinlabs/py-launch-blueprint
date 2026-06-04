@@ -1,0 +1,127 @@
+{
+  "traditional|ubuntu-latest|cold": [
+    26965654423,
+    26965689927,
+    26965713436,
+    26965733325,
+    26965764951
+  ],
+  "traditional|ubuntu-latest|warm": [
+    26965817561,
+    26965852444,
+    26965969944,
+    26965992201,
+    26966046838
+  ],
+  "flox-mirror|ubuntu-latest|cold": [
+    26966092770,
+    26966162781,
+    26966223443,
+    26966292052,
+    26966361270
+  ],
+  "flox-mirror|ubuntu-latest|warm": [
+    26966500629,
+    26966571152,
+    26966633853,
+    26966704506,
+    26966771450
+  ],
+  "flox-consolidated|ubuntu-latest|cold": [
+    26966843632,
+    26966907617,
+    26966975372,
+    26967042697,
+    26967105937
+  ],
+  "flox-consolidated|ubuntu-latest|warm": [
+    26967238671,
+    26967301859,
+    26967365970,
+    26967424442,
+    26967485964
+  ],
+  "mise-mirror|ubuntu-latest|cold": [
+    26967547136,
+    26967579254,
+    26967611095,
+    26967642823,
+    26967674536
+  ],
+  "mise-mirror|ubuntu-latest|warm": [
+    26967729382,
+    26967835159,
+    26967881663,
+    26967902000,
+    26967928183
+  ],
+  "mise-consolidated|ubuntu-latest|cold": [
+    26967950674
+  ],
+  "mise-consolidated|ubuntu-latest|warm": [
+    26967977695,
+    26968996515,
+    26969023540,
+    26969044685
+  ],
+  "flox-nocache-mirror|ubuntu-latest|cold": [
+    26969069136,
+    26969130910,
+    26969187445,
+    26969248910,
+    26969309977
+  ],
+  "flox-nocache-mirror|ubuntu-latest|warm": [
+    26969430361,
+    26969492051,
+    26969550981,
+    26969618582,
+    26969680352
+  ],
+  "flox-nocache-consolidated|ubuntu-latest|cold": [
+    26969743616,
+    26969807139,
+    26969868171,
+    26969926749,
+    26969989179
+  ],
+  "flox-nocache-consolidated|ubuntu-latest|warm": [
+    26970112811,
+    26970171705,
+    26970235321,
+    26970293893,
+    26970353345
+  ],
+  "flox-noaction-mirror|ubuntu-latest|cold": [
+    26970413059,
+    26970478875,
+    26970542940
+  ],
+  "flox-noaction-mirror|ubuntu-latest|warm": [],
+  "flox-noaction-consolidated|ubuntu-latest|cold": [
+    26965333171,
+    26972129952,
+    26972192616
+  ],
+  "flox-noaction-consolidated|ubuntu-latest|warm": [
+    26972314479,
+    26972383317,
+    26972443180,
+    26972517967,
+    26972580880
+  ],
+  "flox-baked|ubuntu-latest|cold": [
+    26972644560,
+    26972711711,
+    26972769782,
+    26972830164,
+    26972884364
+  ],
+  "flox-baked|ubuntu-latest|warm": [
+    26973007304,
+    26973062561,
+    26973122235,
+    26973178777,
+    26973242820
+  ]
+}

@@ -17,6 +17,7 @@ import csv
 import json
 import subprocess
 import sys
+import time
 from dataclasses import asdict
 from pathlib import Path
 
@@ -51,9 +52,17 @@ def _tagged_from_fixture(path: Path) -> list[TaggedRun]:
     return out
 
 
-def _gh_json(args: list[str]) -> dict:
-    res = subprocess.run(["gh", *args], capture_output=True, text=True, check=True)
-    return json.loads(res.stdout)
+def _gh_json(args: list[str], retries: int = 4) -> dict:
+    # The GitHub API blips intermittently across the hundreds of calls a full
+    # run makes; retry transient failures so one blip doesn't abort the analysis.
+    last = ""
+    for attempt in range(retries):
+        res = subprocess.run(["gh", *args], capture_output=True, text=True)
+        if res.returncode == 0:
+            return json.loads(res.stdout)
+        last = res.stderr.strip()
+        time.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"gh {' '.join(args)} failed after {retries} tries: {last}")
 
 
 def _tagged_from_live(repo: str, run_ids: dict[str, list[int]]) -> list[TaggedRun]:

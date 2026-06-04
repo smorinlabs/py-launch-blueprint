@@ -13,6 +13,10 @@ flox (release binaries, no Nix build), and unlike flox **its warm cache actually
 (warm mise approaches traditional). Traditional wins on raw speed; flox wins on reliability;
 mise is the speed/single-source-of-truth compromise — and on **macOS, mise-consolidated
 matches/beats traditional** (−2% cold, **−21% warm**) while flox is 5–9× slower there.
+**v2 extension:** three more sides (`flox-nocache`, `flox-noaction`, `flox-baked`) confirm the
+flox cost is **irreducibly the Nix-store realization** — neither the CLI-binary cache, nor the
+GitHub Action wrapper, nor pre-baking the whole env into a container image moves it (the 1.5 GB
+image **pull ≈ the install it replaces**). See "Extension v2".
 
 ## Method
 
@@ -22,6 +26,10 @@ matches/beats traditional** (−2% cold, **−21% warm**) while flox is 5–9× 
     `mise` + `mise exec`, per-job vs once).
   - OS: `ubuntu-latest`, `macos-latest`. Cache: cold / warm (Nix store, mise install dir,
     uv/bun caches). All 5 sides ran the full matrix (reps=5, both OS).
+  - **v2 added 5 more flox sides** (`flox-nocache-{mirror,consolidated}`,
+    `flox-noaction-{mirror,consolidated}`, `flox-baked`) — re-run alongside the originals at
+    reps=5 for clean same-conditions comparison (`flox-baked` is ubuntu-only, container job).
+    See "Extension v2".
 - **10 checks measured:** ruff-check, ruff-format, ty, pytest, taplo, codespell, yamllint,
   bandit, gitleaks, commitlint. (`editorconfig` dropped — see caveats.)
 - A driver dispatches runs serially, **excludes failed reps** (never records bad samples);
@@ -134,6 +142,56 @@ provisioning** (install + activate + cache-save).
 7. **Consolidation's value depends on provisioning cost.** Decisive for flox (expensive
    install paid 10× vs 2×); neutral on ubuntu-mise; but on **macOS-mise it matters again**
    (consolidated 36s vs mirror 63s — macOS's higher per-job overhead rewards fewer jobs).
+
+## Extension v2 — isolating *where* the flox cost lives (nocache · noaction · baked)
+
+Three further sides probe whether any single lever explains flox's provisioning cost.
+Each changes exactly one variable vs. `flox`; all run the same 10 checks.
+
+- **`flox-nocache`** — `flox/install-flox-action` with `use-cache: false` (the flox **CLI-binary**
+  download is not cached; the Nix-store `actions/cache` is unchanged).
+- **`flox-noaction`** — flox installed by **direct package download** (pinned `.deb`/`.pkg`,
+  no GitHub Action), to isolate the Action wrapper.
+- **`flox-baked`** — the **container-image** equivalent of `flox-consolidated`: the whole dev
+  flox env + warm uv cache **baked into `ghcr.io/<owner>/flox-ci-base-full`**, run as a
+  container job. Its "setup" is the image **pull** (GHA's *Initialize containers* step, counted
+  as setup so the row stays honest). **Linux-only** (container jobs are Linux-only).
+
+setup/job (provisioning per job), cold / warm — consolidated rows:
+
+| side | ubuntu | macOS | isolates |
+| --- | ---: | ---: | --- |
+| flox (action + bin-cache) | 47.6 / 47.3 | 158 / 170 | baseline |
+| flox-nocache (action, no bin-cache) | 47.9 / 46.0 | 166 / 159 | flox CLI-binary cache |
+| flox-noaction (manual install) | ~47 / 55.0 | 151 / 146 | the GitHub Action wrapper |
+| flox-baked (container pull) | 46.3 / 46.3 | — (linux-only) | pre-baking the whole env |
+
+(`flox-noaction·ubuntu·cold·consolidated` had one 223s installer-retry outlier across n=3 →
+its 66s median run gives setup ~47s, hence "~47".)
+
+![Where the flox cost lives — every lever lands on the Nix-realization floor](results/summary_v2.png)
+
+**Finding — the flox cost is irreducibly the Nix-store realization.** Each lever moves setup
+by **~nothing**:
+
+- `flox → flox-nocache`: caching the flox **CLI binary** saves ~0 — the cost was never the
+  binary download.
+- `flox-nocache → flox-noaction`: installing flox **manually** vs. via the Action is within
+  noise — the Action wrapper is not the cost.
+- `flox-baked`: baking the **entire realized env** into an image **doesn't help** — the 1.5 GB
+  image **pull (~46s) ≈ the install it replaced**. Pre-baking *relocates* the cost (to a
+  treatment-only pull) but doesn't remove it; `net = setup_saved − pull_added ≈ 0`.
+
+Every approach must **materialize the Nix closure** (download + link the store, or pull the
+image that contains it) — that ~47s ubuntu / ~160s macOS is the floor, and the only thing worth
+attacking if flox-in-CI is to get faster. (`flox-baked` is a *consolidated*-shaped 2-job side,
+so it never pays the mirror's 10× tax — but neither does `flox-consolidated`.)
+
+**Reliability note:** flox-noaction's manual macOS `.pkg` postinstall flaked intermittently
+("error running scripts from the package"); one install retry made it reliable — a small but
+real robustness edge the GitHub Action has over rolling your own install. The **mirror** topology
+on macOS is itself flaky (10 parallel installs per run; any one failing excludes the whole run),
+which left some macOS-mirror cells at n=2–4 — a topology-reliability data point in its own right.
 
 ## Implication for ADR-12
 

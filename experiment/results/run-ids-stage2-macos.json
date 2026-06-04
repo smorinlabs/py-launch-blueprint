@@ -1,0 +1,54 @@
+{
+  "traditional|macos-latest|cold": [
+    26959898355
+  ],
+  "traditional|macos-latest|warm": [
+    26959998519
+  ],
+  "flox-mirror|macos-latest|cold": [
+    26960054101
+  ],
+  "flox-mirror|macos-latest|warm": [
+    26960857519
+  ],
+  "flox-consolidated|macos-latest|cold": [
+    26961241013
+  ],
+  "flox-consolidated|macos-latest|warm": [
+    26961667459
+  ],
+  "mise-mirror|macos-latest|cold": [
+    26961908769
+  ],
+  "mise-mirror|macos-latest|warm": [
+    26962040038
+  ],
+  "mise-consolidated|macos-latest|cold": [
+    26962097586
+  ],
+  "mise-consolidated|macos-latest|warm": [
+    26962179997
+  ],
+  "flox-nocache-mirror|macos-latest|cold": [
+    26962216643
+  ],
+  "flox-nocache-mirror|macos-latest|warm": [
+    26962960667
+  ],
+  "flox-nocache-consolidated|macos-latest|cold": [
+    26963336161
+  ],
+  "flox-nocache-consolidated|macos-latest|warm": [
+    26963706193
+  ],
+  "flox-noaction-mirror|macos-latest|cold": [],
+  "flox-noaction-mirror|macos-latest|warm": [
+    26964618085
+  ],
+  "flox-noaction-consolidated|macos-latest|cold": [
+    26964975171
+  ],
+  "flox-noaction-consolidated|macos-latest|warm": [
+    26965333171
+  ]
+}

@@ -219,6 +219,32 @@ simplicity + reliability *without* flox's tax** (~2× traditional on ubuntu, ≈
 macOS), so it is the recommended option if a single-source-of-truth toolchain manager is
 wanted in CI; plain traditional stays fastest in raw ubuntu terms.
 
+### v2 — isolating *where* the flox cost lives (2026-06-04)
+
+A follow-up re-ran the matrix (reps=5, both OS) with three further flox sides, each changing
+one variable vs. `flox`: **`flox-nocache`** (`install-flox-action` with `use-cache: false`),
+**`flox-noaction`** (manual pinned `.deb`/`.pkg` install, no Action), and **`flox-baked`**
+(the whole env baked into a container image — setup = the image pull; Linux-only).
+
+![Where the flox cost lives](../../experiment/results/summary_v2.png)
+
+| setup/job (consolidated) | ubuntu cold/warm | macOS cold/warm |
+| --- | ---: | ---: |
+| flox (action + bin-cache) | 48 / 47s | 158 / 170s |
+| flox-nocache (no bin-cache) | 48 / 46s | 166 / 159s |
+| flox-noaction (manual install) | ~47 / 55s | 151 / 146s |
+| flox-baked (container pull) | 46 / 46s | — (linux-only) |
+
+**Result: none of the three levers moves the cost.** The flox CLI-binary cache saves ~0
+(`flox`→`flox-nocache`); the GitHub Action wrapper adds ~0 (`flox-nocache`→`flox-noaction`);
+and **pre-baking the entire realized env into a container image doesn't help** — the 1.5 GB
+image **pull (~46s) ≈ the install it replaced** (`net = setup_saved − pull_added ≈ 0`). The
+flox cost is **irreducibly the Nix-store realization** (~47s ubuntu / ~160s macOS): every
+approach must materialize the closure, by install+realize or by image-pull. This *strengthens*
+the decision above — the 3.8–8.7× tax is not an artifact of the Action or a missing cache, and
+is not removable by containerization. (`flox-noaction`'s manual macOS `.pkg` install also
+flaked intermittently, needing a retry — a small robustness edge for the Action.)
+
 ## Status note
 
 `proposed` — this ADR records the analysis and decision space. The CI experiment settles the

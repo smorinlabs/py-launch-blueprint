@@ -1,0 +1,61 @@
+{
+  "traditional|macos-latest|cold": [
+    26965666580,
+    26965718921,
+    26965756330,
+    26965799797,
+    26965852444
+  ],
+  "traditional|macos-latest|warm": [
+    26965992201,
+    26966046838,
+    26966092949,
+    26966136517,
+    26966181424
+  ],
+  "mise-mirror|macos-latest|cold": [
+    26966230004,
+    26966327841,
+    26966403170,
+    26966469523
+  ],
+  "mise-mirror|macos-latest|warm": [
+    26966580608,
+    26966625032,
+    26966677752,
+    26966735143,
+    26966782870
+  ],
+  "mise-consolidated|macos-latest|cold": [
+    26966837694,
+    26966879733,
+    26966921079,
+    26966956957,
+    26966997054
+  ],
+  "mise-consolidated|macos-latest|warm": [
+    26967074211,
+    26967101748,
+    26967134421,
+    26967166894,
+    26967200432
+  ],
+  "flox-mirror|macos-latest|cold": [
+    26967227583,
+    26967607888
+  ],
+  "flox-mirror|macos-latest|warm": [
+    26967974309,
+    26968995243
+  ],
+  "flox-consolidated|macos-latest|cold": [
+    26969374281,
+    26969571137,
+    26969755096,
+    26969897460,
+    26970083189
+  ],
+  "flox-consolidated|macos-latest|warm": [
+    26970393461
+  ]
+}
