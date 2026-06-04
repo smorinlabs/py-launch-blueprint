@@ -31,7 +31,12 @@ runs:
             esac
             url="https://downloads.flox.dev/by-env/stable/osx/flox-${VER}.${a}.pkg"
             curl -fsSL "$url" -o /tmp/flox.pkg
-            sudo installer -pkg /tmp/flox.pkg -target /
+            # The flox .pkg postinstall flakes intermittently on macOS runners
+            # ("error running scripts from the package"); one retry makes the
+            # manual install reliable. (Flakiness is itself a noted finding —
+            # the GitHub Action handles this internally.)
+            sudo installer -pkg /tmp/flox.pkg -target / \
+              || { echo "flox .pkg install failed; retrying once" >&2; sleep 5; sudo installer -pkg /tmp/flox.pkg -target /; }
             ;;
           *)
             echo "unsupported runner.os: ${{ runner.os }}" >&2
