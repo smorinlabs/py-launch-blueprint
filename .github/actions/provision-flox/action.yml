@@ -4,11 +4,18 @@ inputs:
   cache:
     description: cold | warm
     required: true
+  use-cache:
+    description: pass-through to flox/install-flox-action (caches the flox CLI binary)
+    required: false
+    default: "true"
 runs:
   using: composite
   steps:
     - name: Install Flox
       uses: flox/install-flox-action@v2
+      with:
+        # bracket notation: `inputs.use-cache` would parse as subtraction (use - cache)
+        use-cache: ${{ inputs['use-cache'] }}
     - name: Cache Nix store
       uses: actions/cache@v4
       with:

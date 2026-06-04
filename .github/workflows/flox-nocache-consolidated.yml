@@ -1,4 +1,4 @@
-name: flox-consolidated
+name: flox-nocache-consolidated
 on:
   workflow_dispatch:
     inputs:
@@ -12,6 +12,9 @@ on:
 permissions:
   contents: read
 
+# Same as flox-consolidated, but flox/install-flox-action use-cache: "false"
+# (the flox CLI binary is NOT cached — A/B against flox-consolidated).
+
 jobs:
   hygiene:
     runs-on: ${{ inputs.os }}
@@ -23,6 +26,7 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+          use-cache: "false"
       - name: all hygiene checks under one activation
         shell: bash
         run: |
@@ -46,6 +50,7 @@ jobs:
         uses: ./.github/actions/provision-flox
         with:
           cache: ${{ inputs.cache }}
+          use-cache: "false"
       - name: tests under one activation
         shell: bash
         run: flox activate -- bash -c 'uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml'
