@@ -16,7 +16,11 @@ runs:
         VER=1.12.2
         case "${{ runner.os }}" in
           Linux)
-            url="https://downloads.flox.dev/by-env/stable/deb/flox-${VER}.x86_64-linux.deb"
+            case "$(uname -m)" in
+              aarch64 | arm64) a=aarch64-linux ;;
+              *) a=x86_64-linux ;;
+            esac
+            url="https://downloads.flox.dev/by-env/stable/deb/flox-${VER}.${a}.deb"
             curl -fsSL "$url" -o /tmp/flox.deb
             sudo apt-get install -y /tmp/flox.deb
             ;;
