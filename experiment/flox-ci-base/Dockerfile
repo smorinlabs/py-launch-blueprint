@@ -36,10 +36,16 @@ RUN set -eux; \
     flox config --set disable_metrics true; \
     flox --version
 
-# Realize the python+uv closure at build time (the setup-python + setup-uv replacement).
-COPY experiment/flox-ci-base/.flox /opt/ci-env/.flox
+# Build the flox env from the committed manifest: `flox init` generates env.json +
+# the default scaffold, `flox edit -f` applies our manifest (python312 + uv + vars)
+# and locks it, and `flox activate` realizes the closure at build time — the
+# setup-python + setup-uv replacement.
+COPY experiment/flox-ci-base/.flox/env/manifest.toml /tmp/ci-env-manifest.toml
+RUN flox init -d /opt/ci-env \
+ && flox edit -d /opt/ci-env -f /tmp/ci-env-manifest.toml \
+ && flox activate -d /opt/ci-env -- true \
+ && rm /tmp/ci-env-manifest.toml
 WORKDIR /opt/ci-env
-RUN flox activate -- true
 
 # Warm the uv cache exactly as the real `test` job does (`uv sync --group dev`).
 # --no-install-project: the project source isn't in the image, only its lock; the
@@ -47,7 +53,7 @@ RUN flox activate -- true
 # -> near-instant). Drop the throwaway venv so only the populated cache persists.
 ENV UV_CACHE_DIR=/opt/uv-cache UV_TOOL_DIR=/opt/uv-tools UV_LINK_MODE=copy UV_PYTHON_PREFERENCE=only-system
 COPY pyproject.toml uv.lock /tmp/warm/
-RUN cd /tmp/warm && flox activate -- sh -eux -c '\
+RUN cd /tmp/warm && flox activate -d /opt/ci-env -- sh -eux -c '\
       uv sync --group dev --no-install-project; \
       uv run --no-sync python -c "import pytest; print(\"pytest\", pytest.__version__)"; \
     ' && rm -rf /tmp/warm
