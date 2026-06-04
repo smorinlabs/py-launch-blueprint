@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.5](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.4...v1.1.5) (2026-06-04)
+
+
+### Bug Fixes
+
+* **contributors:** ignore release-please bot in render ([#351](https://github.com/smorinlabs/py-launch-blueprint/issues/351)) ([086bd2f](https://github.com/smorinlabs/py-launch-blueprint/commit/086bd2f4fa07751db38b52b21207434f69699109))
+* **contributors:** ignore release-please-smorinlabs[bot] in render ([28e8090](https://github.com/smorinlabs/py-launch-blueprint/commit/28e809095321bfd92f014d157e4bc1ab0042089e))
+
 ## [1.1.4](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.3...v1.1.4) (2026-06-04)
 
 
