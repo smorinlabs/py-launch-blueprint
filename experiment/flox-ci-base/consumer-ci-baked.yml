@@ -1,0 +1,33 @@
+# Reference consumer workflow (NOT wired into CI) — the treatment arm.
+# Mirrors py-launch-blueprint's real `test` job with all setup pre-baked into the
+# flox-ci-base image. Only `setup-uv` + `setup-python` + the cold `uv sync` are
+# removed vs. the real ci.yml `test` job; the test command is identical.
+# Control arm = the unmodified ci.yml `test` job (ubuntu legs).
+# Linux-only by design (PRD §4). See 2026-06-03-flox-ci-base-prd.md.
+name: CI (baked) — reference
+on: workflow_dispatch
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]            # mirrors real matrix (linux legs)
+        runner: [ubuntu-latest, ubuntu-24.04-arm]   # amd64 + arm64
+    runs-on: ${{ matrix.runner }}
+    container:
+      # P0 validates py3.12/amd64; pin by digest once published.
+      image: ghcr.io/smorinlabs/flox-ci-base:py${{ matrix.python-version }}
+    defaults:
+      run:
+        shell: flox activate -d /opt/ci-env -- bash --noprofile --norc -eo pipefail {0}
+    steps:
+      - uses: actions/checkout@v6                    # uses base system git
+      # Guard: prove the baked env is live before doing work.
+      - run: command -v uv && uv run --no-sync python --version && git rev-parse --is-inside-work-tree
+      - run: uv sync --group dev                     # warm cache -> near-instant
+      - run: uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml

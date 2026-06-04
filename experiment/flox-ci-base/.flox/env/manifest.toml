@@ -1,0 +1,21 @@
+version = 1
+
+# flox-ci-base P0 environment — the `setup-python` + `setup-uv` replacement.
+# Mirrors py-launch-blueprint's real `test` job (py3.12). One env per Python
+# version in the full matrix; P0 validates python312.
+# See docs/superpowers/specs/2026-06-03-flox-ci-base-prd.md.
+
+[install]
+python.pkg-path = "python312"
+uv.pkg-path     = "uv"
+
+[vars]
+UV_CACHE_DIR = "/opt/uv-cache"
+UV_TOOL_DIR  = "/opt/uv-tools"
+UV_LINK_MODE = "copy"
+# Force uv to use the Flox-provided python (the experiment's premise) rather than
+# downloading or managing its own interpreter.
+UV_PYTHON_PREFERENCE = "only-system"
+
+[options]
+systems = ["x86_64-linux", "aarch64-linux"]
