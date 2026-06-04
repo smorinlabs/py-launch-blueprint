@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.4](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.3...v1.1.4) (2026-06-04)
+
+
+### Bug Fixes
+
+* **ci:** bracket-notation for use-cache input; restore comma-separated doc (Copilot) ([0f939b1](https://github.com/smorinlabs/py-launch-blueprint/commit/0f939b1828d1a6c5cbda2508679f7b1bdc846e5d))
+* **driver:** robust run-id correlation and exclude failed reps ([5b0c9cc](https://github.com/smorinlabs/py-launch-blueprint/commit/5b0c9ccefbd2f0b6c25fc4ed3265809682910b99))
+
 ## [1.1.3](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.2...v1.1.3) (2026-05-29)
 
 
