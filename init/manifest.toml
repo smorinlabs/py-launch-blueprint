@@ -118,7 +118,7 @@ files   = [
 ]
 mode    = "structured"
 
-# package_name (text) — 90 occurrences in 33 files
+# package_name (text) — 93 occurrences in 34 files
 [[replace]]
 field   = "package_name"
 current = ["py_launch_blueprint"]
@@ -129,6 +129,7 @@ files   = [
   ".github/workflows/flox-consolidated.yml",   # 3x
   ".github/workflows/flox-nocache-consolidated.yml",   # 3x
   ".github/workflows/flox-noaction-consolidated.yml",   # 3x
+  ".github/workflows/flox-baked-consolidated.yml",   # 3x
   ".github/workflows/mise-consolidated.yml",   # 3x
   ".vscode/launch.json",   # 2x
   ".windsurfrules",   # 1x
