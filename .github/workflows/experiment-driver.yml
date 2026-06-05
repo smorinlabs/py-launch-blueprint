@@ -64,7 +64,24 @@ jobs:
                 -q '.[].databaseId'); do
                 case " ${before} " in
                   *" ${id} "*) ;;
-                  *) echo "${id}"; return 0 ;;
+                  *)
+                    # Verify the new run's runner OS matches the requested os. A
+                    # CONCURRENT driver dispatching the SAME workflow for another
+                    # OS would otherwise be captured here, misattributing its
+                    # timings to this cell (the cross-OS contamination bug). Poll
+                    # briefly for the runner label; treat unknown as a match.
+                    aos=""
+                    for _ in $(seq 1 12); do
+                      aos=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/jobs" \
+                        -q '.jobs[0].labels[0]' 2>/dev/null || true)
+                      [ -n "$aos" ] && break
+                      sleep 3
+                    done
+                    if [ -z "$aos" ] || [ "$aos" = "$os" ]; then
+                      echo "${id}"; return 0
+                    fi
+                    before="${before} ${id}"
+                    ;;
                 esac
               done
             done

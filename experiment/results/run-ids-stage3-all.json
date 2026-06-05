@@ -117,10 +117,7 @@
   ],
   "traditional|ubuntu-latest|warm": [
     26965817561,
-    26965852444,
-    26965969944,
-    26965992201,
-    26966046838
+    26965969944
   ],
   "flox-mirror|ubuntu-latest|cold": [
     26966092770,
@@ -208,7 +205,6 @@
   ],
   "flox-noaction-mirror|ubuntu-latest|warm": [],
   "flox-noaction-consolidated|ubuntu-latest|cold": [
-    26965333171,
     26972129952,
     26972192616
   ],
