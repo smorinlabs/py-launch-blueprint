@@ -1,0 +1,116 @@
+{
+  "traditional|ubuntu-latest|cold": [
+    26994745651
+  ],
+  "traditional|ubuntu-latest|warm": [
+    26994773989
+  ],
+  "flox-mirror|ubuntu-latest|cold": [
+    26994785550
+  ],
+  "flox-mirror|ubuntu-latest|warm": [
+    26994860694
+  ],
+  "flox-consolidated|ubuntu-latest|cold": [
+    26994902746
+  ],
+  "flox-consolidated|ubuntu-latest|warm": [
+    26994973315
+  ],
+  "mise-mirror|ubuntu-latest|cold": [
+    26995010266
+  ],
+  "mise-mirror|ubuntu-latest|warm": [
+    26995041940
+  ],
+  "mise-consolidated|ubuntu-latest|cold": [
+    26995052920
+  ],
+  "mise-consolidated|ubuntu-latest|warm": [
+    26995079802
+  ],
+  "flox-nocache-mirror|ubuntu-latest|cold": [
+    26995092731
+  ],
+  "flox-nocache-mirror|ubuntu-latest|warm": [
+    26995165828
+  ],
+  "flox-nocache-consolidated|ubuntu-latest|cold": [
+    26995202824
+  ],
+  "flox-nocache-consolidated|ubuntu-latest|warm": [
+    26995271404
+  ],
+  "flox-noaction-mirror|ubuntu-latest|cold": [
+    26995307720
+  ],
+  "flox-noaction-mirror|ubuntu-latest|warm": [
+    26995380487
+  ],
+  "flox-noaction-consolidated|ubuntu-latest|cold": [
+    26995418984
+  ],
+  "flox-noaction-consolidated|ubuntu-latest|warm": [
+    26995498483
+  ],
+  "flox-baked|ubuntu-latest|cold": [
+    26995539498
+  ],
+  "flox-baked|ubuntu-latest|warm": [
+    26995605032
+  ],
+  "traditional|macos-latest|cold": [
+    26996596764
+  ],
+  "traditional|macos-latest|warm": [
+    26996726519
+  ],
+  "flox-mirror|macos-latest|cold": [
+    26996749020
+  ],
+  "flox-mirror|macos-latest|warm": [
+    26997128612
+  ],
+  "flox-consolidated|macos-latest|cold": [
+    26997345968
+  ],
+  "flox-consolidated|macos-latest|warm": [
+    26997539180
+  ],
+  "mise-mirror|macos-latest|cold": [
+    26997625976
+  ],
+  "mise-mirror|macos-latest|warm": [
+    26997689953
+  ],
+  "mise-consolidated|macos-latest|cold": [
+    26997715995
+  ],
+  "mise-consolidated|macos-latest|warm": [
+    26997761222
+  ],
+  "flox-nocache-mirror|macos-latest|cold": [
+    26997777790
+  ],
+  "flox-nocache-mirror|macos-latest|warm": [
+    26998185015
+  ],
+  "flox-nocache-consolidated|macos-latest|cold": [
+    26998381002
+  ],
+  "flox-nocache-consolidated|macos-latest|warm": [
+    26998574280
+  ],
+  "flox-noaction-mirror|macos-latest|cold": [
+    26998679557
+  ],
+  "flox-noaction-mirror|macos-latest|warm": [
+    26999118159
+  ],
+  "flox-noaction-consolidated|macos-latest|cold": [
+    26999367226
+  ],
+  "flox-noaction-consolidated|macos-latest|warm": [
+    26999576934
+  ]
+}
