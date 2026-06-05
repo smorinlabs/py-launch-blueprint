@@ -152,6 +152,7 @@ max-line-length = 88
 "init/tests/**" = ["S101", "S105", "S106"]   # same exemption — pytest convention
 "init/**" = ["S603", "S607"]                  # init/ wraps gh/just/uv via subprocess; that's the point
 "experiment/analyze.py" = ["S603", "S607", "RUF001"]  # wraps `gh` via subprocess; × in report headers is intentional
+"experiment/last_run_totals.py" = ["S603", "S607"]  # wraps `gh` via subprocess (same as analyze.py)
 "skill/**" = ["S101"]                         # skill/ has illustrative example assertions in markdown
 # S101: assert statements removed under -O — security risk if assert is the only gate.
 # S105/S106: hardcoded password strings/variables in code.

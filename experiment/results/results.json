@@ -48,44 +48,52 @@
     "stddev": 3.1874754901018454
   },
   "flox-mirror|macos-latest|cold": {
-    "n": 2,
-    "min": 408.0,
+    "n": 3,
+    "min": 385.0,
     "max": 424.0,
-    "avg": 416.0,
-    "median": 416.0,
-    "stddev": 8.0
+    "avg": 405.6666666666667,
+    "median": 408.0,
+    "stddev": 16.006942938057293
   },
   "flox-mirror|macos-latest|warm": {
-    "n": 2,
-    "min": 384.0,
+    "n": 3,
+    "min": 358.0,
     "max": 426.0,
-    "avg": 405.0,
-    "median": 405.0,
-    "stddev": 21.0
+    "avg": 389.3333333333333,
+    "median": 384.0,
+    "stddev": 28.015868519267592
   },
   "flox-consolidated|macos-latest|cold": {
-    "n": 5,
+    "n": 6,
     "min": 159.0,
     "max": 224.0,
-    "avg": 197.0,
-    "median": 204.0,
-    "stddev": 21.716353285024628
+    "avg": 192.33333333333334,
+    "median": 197.5,
+    "stddev": 22.402876799395404
   },
   "flox-consolidated|macos-latest|warm": {
-    "n": 1,
-    "min": 202.0,
+    "n": 2,
+    "min": 185.0,
     "max": 202.0,
-    "avg": 202.0,
-    "median": 202.0,
+    "avg": 193.5,
+    "median": 193.5,
+    "stddev": 8.5
+  },
+  "flox-nocache-mirror|macos-latest|cold": {
+    "n": 1,
+    "min": 365.0,
+    "max": 365.0,
+    "avg": 365.0,
+    "median": 365.0,
     "stddev": 0.0
   },
   "flox-nocache-mirror|macos-latest|warm": {
-    "n": 5,
+    "n": 6,
     "min": 342.0,
     "max": 404.0,
-    "avg": 384.6,
-    "median": 396.0,
-    "stddev": 22.676860452893386
+    "avg": 382.5,
+    "median": 388.5,
+    "stddev": 21.226948281213986
   },
   "flox-nocache-consolidated|macos-latest|cold": {
     "n": 5,
@@ -136,20 +144,20 @@
     "stddev": 16.642115250171777
   },
   "traditional|ubuntu-latest|cold": {
-    "n": 5,
-    "min": 18.0,
+    "n": 6,
+    "min": 16.0,
     "max": 38.0,
-    "avg": 26.0,
+    "avg": 24.333333333333332,
     "median": 22.0,
-    "stddev": 7.155417527999327
+    "stddev": 7.520342781785652
   },
   "traditional|ubuntu-latest|warm": {
-    "n": 5,
+    "n": 3,
     "min": 20.0,
-    "max": 125.0,
-    "avg": 55.4,
-    "median": 48.0,
-    "stddev": 37.0113496106262
+    "max": 29.0,
+    "avg": 23.0,
+    "median": 20.0,
+    "stddev": 4.242640687119285
   },
   "flox-mirror|ubuntu-latest|cold": {
     "n": 5,
@@ -200,20 +208,20 @@
     "stddev": 36.39010854614204
   },
   "mise-consolidated|ubuntu-latest|cold": {
-    "n": 1,
-    "min": 25.0,
+    "n": 2,
+    "min": 24.0,
     "max": 25.0,
-    "avg": 25.0,
-    "median": 25.0,
-    "stddev": 0.0
+    "avg": 24.5,
+    "median": 24.5,
+    "stddev": 0.5
   },
   "mise-consolidated|ubuntu-latest|warm": {
-    "n": 4,
+    "n": 5,
     "min": 17.0,
     "max": 31.0,
-    "avg": 23.75,
-    "median": 23.5,
-    "stddev": 4.968651728587948
+    "avg": 22.8,
+    "median": 23.0,
+    "stddev": 4.833218389437829
   },
   "flox-nocache-mirror|ubuntu-latest|cold": {
     "n": 5,
@@ -248,28 +256,36 @@
     "stddev": 2.6381811916545836
   },
   "flox-noaction-mirror|ubuntu-latest|cold": {
-    "n": 3,
+    "n": 4,
     "min": 69.0,
     "max": 71.0,
-    "avg": 70.0,
-    "median": 70.0,
-    "stddev": 0.816496580927726
+    "avg": 70.25,
+    "median": 70.5,
+    "stddev": 0.82915619758885
+  },
+  "flox-noaction-mirror|ubuntu-latest|warm": {
+    "n": 1,
+    "min": 75.0,
+    "max": 75.0,
+    "avg": 75.0,
+    "median": 75.0,
+    "stddev": 0.0
   },
   "flox-noaction-consolidated|ubuntu-latest|cold": {
     "n": 3,
     "min": 66.0,
-    "max": 223.0,
-    "avg": 118.33333333333333,
+    "max": 69.0,
+    "avg": 67.0,
     "median": 66.0,
-    "stddev": 74.01050976419198
+    "stddev": 1.4142135623730951
   },
   "flox-noaction-consolidated|ubuntu-latest|warm": {
-    "n": 5,
-    "min": 67.0,
+    "n": 6,
+    "min": 66.0,
     "max": 85.0,
-    "avg": 74.0,
+    "avg": 72.66666666666667,
     "median": 71.0,
-    "stddev": 6.196773353931867
+    "stddev": 6.394442031083626
   },
   "flox-baked|ubuntu-latest|cold": {
     "n": 5,

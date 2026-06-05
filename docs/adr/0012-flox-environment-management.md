@@ -169,7 +169,7 @@ systems = ["aarch64-darwin", "x86_64-linux"]
   Makefile's "almost everyone has `make`" premise. This is the central tension.
 - Two activation models coexist during transition (`flox activate` vs. bare
   shell) until the scripts/Makefile are retired.
-- **CI is 3.8–8.7× slower** when provisioned via Flox (empirical — see below):
+- **CI is ~2.8–7.9× slower** when provisioned via Flox (empirical — see below):
   ~90–94% provisioning overhead. This hits migration step #7 (CI) specifically;
   local-dev/devcontainer activation (one `flox activate` per shell) is unaffected.
 
@@ -190,16 +190,17 @@ write-up, raw data, and figures: [`experiment/FINDINGS.md`](../../experiment/FIN
 
 ![CI provisioning: traditional vs mise vs flox](../../experiment/results/summary.png)
 
-**Result: Flox CI is 3.8–8.7× slower; mise is the middle ground (~2× on ubuntu, and on
-macOS `mise-consolidated` matches/beats traditional).**
+**Result: Flox CI is ~2.8–7.9× slower; mise is the middle ground (~1.0–1.3× on ubuntu, and on
+macOS `mise-consolidated` matches/beats traditional).** (Cleaned Stage-3 data; macOS-cold
+traditional baseline is noisy — see FINDINGS caveats.)
 
 | total run time (avg) | ubuntu cold/warm | macOS cold/warm |
 | --- | ---: | ---: |
-| traditional | 17 / 17s | 36 / 39s |
-| mise-consolidated | 30 / 23s | **36 / 31s** |
-| mise-mirror | 33 / 23s | 63 / 44s |
-| flox-consolidated | 65 / 63s | 182 / 162s |
-| flox-mirror | 65 / 65s | 318 / 304s |
+| traditional | 24 / 23s | 64 / 49s |
+| mise-consolidated | 25 / 23s | **39 / 30s** |
+| mise-mirror | 30 / 45s | 69 / 56s |
+| flox-consolidated | 69 / 64s | 192 / 194s |
+| flox-mirror | 70 / 74s | 406 / 389s |
 
 - **The checks run at the same speed on all three** — the cost is *provisioning*. Flox is
   **~90–94% provisioning** (install + activate + Nix-store cache-save); ~1358s/run for
@@ -213,7 +214,7 @@ macOS `mise-consolidated` matches/beats traditional).**
   runtime binary downloads flaked (`editorconfig` npm download ~45%, excluded).
 
 **Implication.** Buckets 1–3 (local dev + devcontainer) are unaffected — one activation per
-shell. For **CI (step #7)**: **Flox imposes a 3.8–8.7× tax** (Nix build, worst on macOS) —
+shell. For **CI (step #7)**: **Flox imposes a ~2.8–7.9× tax** (Nix build, worst on macOS) —
 not recommended as-is; consolidated-only if pursued. **mise delivers the single-manifest
 simplicity + reliability *without* flox's tax** (~2× traditional on ubuntu, ≈ traditional on
 macOS), so it is the recommended option if a single-source-of-truth toolchain manager is
@@ -230,9 +231,9 @@ one variable vs. `flox`: **`flox-nocache`** (`install-flox-action` with `use-cac
 
 | setup/job (consolidated) | ubuntu cold/warm | macOS cold/warm |
 | --- | ---: | ---: |
-| flox (action + bin-cache) | 48 / 47s | 158 / 170s |
+| flox (action + bin-cache) | 48 / 47s | 157 / 166s |
 | flox-nocache (no bin-cache) | 48 / 46s | 166 / 159s |
-| flox-noaction (manual install) | ~47 / 55s | 151 / 146s |
+| flox-noaction (manual install) | 50 / 55s | 151 / 146s |
 | flox-baked (container pull) | 46 / 46s | — (linux-only) |
 
 **Result: none of the three levers moves the cost.** The flox CLI-binary cache saves ~0
@@ -241,9 +242,16 @@ and **pre-baking the entire realized env into a container image doesn't help** �
 image **pull (~46s) ≈ the install it replaced** (`net = setup_saved − pull_added ≈ 0`). The
 flox cost is **irreducibly the Nix-store realization** (~47s ubuntu / ~160s macOS): every
 approach must materialize the closure, by install+realize or by image-pull. This *strengthens*
-the decision above — the 3.8–8.7× tax is not an artifact of the Action or a missing cache, and
-is not removable by containerization. (`flox-noaction`'s manual macOS `.pkg` install also
-flaked intermittently, needing a retry — a small robustness edge for the Action.)
+the decision above — the ~2.8–7.9× tax is not an artifact of the Action or a missing cache, and
+is not removable by containerization **on ubuntu**. (`flox-baked` is Linux-only, so the
+containerization result is **ubuntu-only** — untested on macOS, where the tax is largest.
+`flox-noaction`'s manual macOS `.pkg` install also flaked intermittently, needing a retry —
+a small robustness edge for the Action.)
+
+> Data provenance: an earlier cut had cross-OS run-ID contamination (concurrent ubuntu+macOS
+> dispatch); the driver now verifies runner OS, the 4 bad runs were purged, and affected cells
+> re-collected. The numbers above are the cleaned data (the fix lowered the ubuntu multiplier
+> from a stale 3.8× to ~2.9×). Per-cell n varies (some low-n macOS-mirror cells) — see FINDINGS.
 
 ## Status note
 

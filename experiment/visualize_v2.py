@@ -37,9 +37,9 @@ COLORS = {
 # flox-noaction ubuntu-cold uses the 66s median run (n=3 had one 223s installer-retry outlier).
 # flox-baked is ubuntu-only (None on macOS).
 SETUP = {
-    "flox": [47.6, 47.3, 158.4, 170.5],
+    "flox": [47.6, 47.3, 156.6, 165.5],
     "flox-nocache": [47.9, 46.0, 166.0, 159.3],
-    "flox-noaction": [47.0, 55.0, 150.6, 146.4],
+    "flox-noaction": [50.5, 54.5, 150.6, 146.4],
     "flox-baked": [46.3, 46.3, None, None],
 }
 

@@ -5,18 +5,23 @@
 backends), instead of the traditional per-tool installs (`setup-uv`, `setup-just`, `bunx`,
 release-download scripts), make GitHub Actions faster or slower? Informs ADR-12.
 
-**TL;DR:** **Flox is 3.8× slower on ubuntu and up to ~8.7× slower on macOS** — and it's
+**TL;DR:** **Flox is ~2.8–3.2× slower on ubuntu and ~3–7.9× slower on macOS** — and it's
 **~90–94% provisioning**: the actual checks run at the *same speed* across all sides
 (see root-cause); essentially all of flox's cost is install + activate + Nix-store cache-save.
-**mise lands in the middle** (~2× traditional on ubuntu) — ~3–4× cheaper provisioning than
+**mise lands in the middle** (~1.0–1.3× traditional on ubuntu) — ~4–5× cheaper provisioning than
 flox (release binaries, no Nix build), and unlike flox **its warm cache actually works**
-(warm mise approaches traditional). Traditional wins on raw speed; flox wins on reliability;
+(warm mise ≈ traditional). Traditional wins on raw speed; flox wins on reliability;
 mise is the speed/single-source-of-truth compromise — and on **macOS, mise-consolidated
-matches/beats traditional** (−2% cold, **−21% warm**) while flox is 5–9× slower there.
+matches/beats traditional** while flox is ~3–8× slower there.
 **v2 extension:** three more sides (`flox-nocache`, `flox-noaction`, `flox-baked`) confirm the
 flox cost is **irreducibly the Nix-store realization** — neither the CLI-binary cache, nor the
-GitHub Action wrapper, nor pre-baking the whole env into a container image moves it (the 1.5 GB
-image **pull ≈ the install it replaces**). See "Extension v2".
+GitHub Action wrapper, nor pre-baking the whole env into a container image moves it on ubuntu
+(the 1.5 GB image **pull ≈ the install it replaces**). See "Extension v2".
+**Data note (v3 audit):** an earlier cut suffered cross-OS run-ID contamination (concurrent
+ubuntu+macOS drivers polling the same workflow captured each other's runs). It has been fixed
+(the driver now verifies each run's runner OS), the 4 contaminated runs purged, and the
+affected cells re-collected — every number here is from the cleaned data. The fix lowered the
+ubuntu multiplier from a stale 3.8× to ~2.9× (clean traditional-ubuntu baseline ≈ 23–24s).
 
 ## Method
 
@@ -25,26 +30,32 @@ image **pull ≈ the install it replaces**). See "Extension v2".
     `flox activate`, per-job vs once), `mise-mirror`/`mise-consolidated` (whole env via
     `mise` + `mise exec`, per-job vs once).
   - OS: `ubuntu-latest`, `macos-latest`. Cache: cold / warm (Nix store, mise install dir,
-    uv/bun caches). All 5 sides ran the full matrix (reps=5, both OS).
+    uv/bun caches). Target reps=5 per cell, both OS.
   - **v2 added 5 more flox sides** (`flox-nocache-{mirror,consolidated}`,
-    `flox-noaction-{mirror,consolidated}`, `flox-baked`) — re-run alongside the originals at
-    reps=5 for clean same-conditions comparison (`flox-baked` is ubuntu-only, container job).
+    `flox-noaction-{mirror,consolidated}`, `flox-baked`) — re-run alongside the originals for a
+    clean same-conditions comparison (`flox-baked` is ubuntu-only, container job).
     See "Extension v2".
 - **10 checks measured:** ruff-check, ruff-format, ty, pytest, taplo, codespell, yamllint,
   bandit, gitleaks, commitlint. (`editorconfig` dropped — see caveats.)
-- A driver dispatches runs serially, **excludes failed reps** (never records bad samples);
-  `analyze.py` pulls run/job/step timings from the GitHub API.
-- Samples: n=5 per cell except `traditional·macOS·warm` (n=3, one transient failure).
+- A driver dispatches runs serially, **excludes failed reps** (never records bad samples — note
+  the survivorship caveat below); `analyze.py` pulls run/job/step timings from the GitHub API.
+- **Per-cell n varies** (target 5; the flaky macOS-mirror and manual-`.pkg` configs lose reps
+  to failed/excluded runs). Most cells are n=5; the lowest are n=1–3. The exact n is in the `n`
+  column of [`results/REPORT.md`](results/REPORT.md). The two formerly-empty cells
+  (`flox-nocache-mirror·macOS·cold`, `flox-noaction-mirror·ubuntu·warm`) were re-collected to
+  n=1. See Caveats for the full low-n list and the survivorship note.
 
 ## Results — total run time (avg seconds, Δ% vs traditional)
 
+Cleaned Stage-3 data (avg s; macOS-cold traditional baseline is noisy — see caveats):
+
 | side | ubuntu cold | ubuntu warm | macOS cold | macOS warm |
 | --- | ---: | ---: | ---: | ---: |
-| traditional | 17.2 | 17.2 | 36.4 | 38.7 |
-| mise-mirror | 33.0 (+92%) | 23.0 (+34%) | 63.0 (+73%) | 43.6 (+13%) |
-| mise-consolidated | 29.8 (+73%) | 23.2 (+35%) | **35.8 (−2%)** | **30.6 (−21%)** |
-| flox-mirror | 64.8 (+277%) | 64.6 (+276%) | 318.4 (+775%) | 303.6 (+685%) |
-| flox-consolidated | 64.8 (+277%) | 62.8 (+265%) | 181.6 (+399%) | 161.6 (+318%) |
+| traditional | 24.3 | 23.0 | 64.0 ⚠️ | 49.0 |
+| mise-mirror | 30.2 (+24%) | 44.6 (+94%) | 68.8 (+8%) | 55.8 (+14%) |
+| mise-consolidated | 24.5 (+1%) | 22.8 (−1%) | **39.4 (−38%)** | **29.8 (−39%)** |
+| flox-mirror | 70.0 (+188%) | 74.0 (+222%) | 405.7 (+534%) | 389.3 (+694%) |
+| flox-consolidated | 69.0 (+184%) | 64.4 (+180%) | 192.3 (+200%) | 193.5 (+295%) |
 
 ## Results — provisioning (setup) vs work
 
@@ -56,11 +67,11 @@ setup/job shown as cold / warm (ubuntu | macOS):
 
 | side | setup/job ubuntu | setup/job macOS | provisioning/run ubuntu | provisioning/run macOS |
 | --- | ---: | ---: | ---: | ---: |
-| traditional | 3.0 / 3.3 | 4.1 / 5.0 | 30 / 33 | 41 / 50 |
-| mise-mirror | 11.9 / **4.0** | 13.7 / **6.2** | 119 / 40 | 137 / 62 |
-| mise-consolidated | 11.7 / **4.6** | 14.1 / **7.3** | 23 / 9 | 28 / 15 |
-| flox-mirror | 46.5 / 47.6 | 135.8 / ~129 | 465 / 476 | **1358** / 1288 |
-| flox-consolidated | 49.3 / 48.3 | 150.6 / ~129 | 99 / 97 | 301 / 258 |
+| traditional | 3.3 / 3.4 | 5.5 / 5.2 | 33 / 34 | 55 / 52 |
+| mise-mirror | 10.9 / **4.9** | 13.7 / **6.2** | 109 / 49 | 137 / 62 |
+| mise-consolidated | 9.5 / **5.4** | 13.9 / **5.7** | 19 / 11 | 28 / 11 |
+| flox-mirror | 47.6 / 48.1 | 163.8 / 161.3 | 476 / 481 | **1638** / 1613 |
+| flox-consolidated | 47.6 / 47.3 | 156.6 / 165.5 | 95 / 95 | 313 / 331 |
 
 Two things stand out: **mise provisioning is OS-insensitive** (~12s ubuntu ≈ ~14s macOS —
 release binaries), where flox's balloons (~47s → ~136s, the Nix-store build). And **mise's
@@ -124,24 +135,25 @@ provisioning** (install + activate + cache-save).
 1. **The flox CI tax is provisioning, not the checks.** ~90–94% of each flox job is
    provisioning (install + activate + cache-save); the actual check `run` step is **equal to
    traditional** (e.g. ruff 1s, codespell 0s, ty ~2s — same both sides). See Root cause.
-2. **macOS is where Flox hurts most.** Per-job flox provisioning is ~130s on macOS vs ~47s
-   on ubuntu (Nix-on-macOS cold build + larger cache save), pushing flox-mirror to ~8.7×.
+2. **macOS is where Flox hurts most.** Per-job flox provisioning is ~157–165s on macOS vs ~47s
+   on ubuntu (Nix-on-macOS cold build + larger cache save), pushing flox-mirror to ~6–8×.
 3. **Consolidation is the decisive lever — where provisioning is costly.** mirror and
    consolidated have ~equal per-job setup, but mirror pays it 10× (1100s/run on macOS) vs
    consolidated ~2× (225s/run). Identical work, ~4.5× less provisioning. On ubuntu the two
    are equal because the per-job flox cost is small enough not to dominate.
-4. **Warm cache barely helps** (macOS setup 110→105s; ubuntu 38→39s). The
+4. **Warm cache barely helps** (macOS flox-consolidated setup ~157→166s — flat/worse; ubuntu
+   ~48→47s). The
    `flox/install-flox-action` + activation overhead dominates over the cacheable Nix store —
    the thing to fix if flox-in-CI is ever to be viable.
 5. **Reliability flips to Flox/mise.** Zero flox *and* mise failures; traditional's runtime
    binary downloads flake under load (the managed envs don't).
-6. **mise is the viable single-source-of-truth middle ground.** ~2× traditional on ubuntu,
-   but its provisioning is **OS-insensitive** (~12s ubuntu ≈ ~14s macOS — release binaries, no
-   build) and its **warm cache works** (~4–7s). On **macOS, mise-consolidated matches/beats
-   traditional** (−2% cold, −21% warm) and is **~5–9× faster than flox**.
+6. **mise is the viable single-source-of-truth middle ground.** ~1.0–1.3× traditional on ubuntu,
+   but its provisioning is **OS-insensitive** (~10s ubuntu ≈ ~14s macOS — release binaries, no
+   build) and its **warm cache works** (~5–6s). On **macOS, mise-consolidated matches/beats
+   traditional** and is **~5–10× faster than flox**.
 7. **Consolidation's value depends on provisioning cost.** Decisive for flox (expensive
    install paid 10× vs 2×); neutral on ubuntu-mise; but on **macOS-mise it matters again**
-   (consolidated 36s vs mirror 63s — macOS's higher per-job overhead rewards fewer jobs).
+   (consolidated ~39s vs mirror ~69s — macOS's higher per-job overhead rewards fewer jobs).
 
 ## Extension v2 — isolating *where* the flox cost lives (nocache · noaction · baked)
 
@@ -161,13 +173,15 @@ setup/job (provisioning per job), cold / warm — consolidated rows:
 
 | side | ubuntu | macOS | isolates |
 | --- | ---: | ---: | --- |
-| flox (action + bin-cache) | 47.6 / 47.3 | 158 / 170 | baseline |
+| flox (action + bin-cache) | 47.6 / 47.3 | 157 / 166 | baseline |
 | flox-nocache (action, no bin-cache) | 47.9 / 46.0 | 166 / 159 | flox CLI-binary cache |
-| flox-noaction (manual install) | ~47 / 55.0 | 151 / 146 | the GitHub Action wrapper |
-| flox-baked (container pull) | 46.3 / 46.3 | — (linux-only) | pre-baking the whole env |
+| flox-noaction (manual install) | 50.5 / 54.5 | 151 / 146 | the GitHub Action wrapper |
+| flox-baked (container pull) | 46.3 / 46.3 ⟂ | — (linux-only) | pre-baking the whole env |
 
-(`flox-noaction·ubuntu·cold·consolidated` had one 223s installer-retry outlier across n=3 →
-its 66s median run gives setup ~47s, hence "~47".)
+(⟂ `flox-baked` cold and warm are **identical by construction** — it has no Nix `actions/cache`
+step, so both just pull the image fresh; the cold/warm split is not a real axis for it.
+The earlier `flox-noaction·ubuntu·cold` "223s outlier" was actually a cross-OS-contaminated
+macOS run; after the v3 cleaning it is a clean ~50s, in line with the other flox variants.)
 
 ![Where the flox cost lives — every lever lands on the Nix-realization floor](results/summary_v2.png)
 
@@ -187,6 +201,12 @@ image that contains it) — that ~47s ubuntu / ~160s macOS is the floor, and the
 attacking if flox-in-CI is to get faster. (`flox-baked` is a *consolidated*-shaped 2-job side,
 so it never pays the mirror's 10× tax — but neither does `flox-consolidated`.)
 
+**Scope:** the binary-cache and Action-wrapper results hold on **both** OSes (flox-nocache /
+flox-noaction ran ubuntu+macOS). The **containerizing** result is **ubuntu-only** — container
+jobs are Linux-only, so `flox-baked` has **no macOS data**. "Pre-baking doesn't escape the cost"
+is established for ubuntu; on macOS (where the flox tax is largest) it is **untested** and the
+macOS install/pull tradeoff could differ.
+
 **Reliability note:** flox-noaction's manual macOS `.pkg` postinstall flaked intermittently
 ("error running scripts from the package"); one install retry made it reliable — a small but
 real robustness edge the GitHub Action has over rolling your own install. The **mirror** topology
@@ -197,12 +217,14 @@ which left some macOS-mirror cells at n=2–4 — a topology-reliability data po
 
 The maintenance win (one declarative manifest) and reliability are real for **both** flox and
 mise. The decision splits on CI speed:
-- **Flox** carries a **3.8–8.7× CI tax**, dominated by the Nix-store build (worst on macOS) —
-  a real simplicity/reliability **vs.** CI-speed tradeoff. If used in CI, consolidated-only.
-- **mise** delivers the single-manifest simplicity **without** flox's tax: ~2× traditional on
-  ubuntu and **≈ traditional on macOS** (consolidated). It's the recommended option if a
-  single-source-of-truth toolchain manager is wanted for CI; traditional stays fastest in raw
-  ubuntu terms. (Local-dev provisioning — one activation per shell — is a non-issue for any.)
+- **Flox** carries a **~2.8–7.9× CI tax** (~2.8–3.2× ubuntu, ~3–7.9× macOS), dominated by the
+  Nix-store build (worst on macOS) — a real simplicity/reliability **vs.** CI-speed tradeoff.
+  If used in CI, consolidated-only.
+- **mise** delivers the single-manifest simplicity **without** flox's tax: ~1.0–1.3× traditional
+  on ubuntu and **≈/better than traditional on macOS** (consolidated). It's the recommended
+  option if a single-source-of-truth toolchain manager is wanted for CI; traditional stays
+  fastest in raw ubuntu terms. (Local-dev provisioning — one activation per shell — is a
+  non-issue for any.)
 
 ## Caveats
 
@@ -212,5 +234,18 @@ mise. The decision splits on CI speed:
   on the flox side). Itself a reliability data point.
 - "Total run time" = GitHub's reported run wall-clock (parallel jobs for mirror/traditional;
   2 jobs for consolidated). Setup is per-job; `provisioning/run` sums it (billable view).
-- All 5 sides ran the full matrix (both OS, cold/warm, n=5); only `traditional·macOS·warm`
-  is n=3 (one transient). Single repo; GitHub-hosted runners; small n — treat ±10–20% as noise.
+- **Cross-OS contamination (found by audit, fixed).** Because ubuntu and macOS drivers ran
+  **concurrently** and the driver polled `gh run list` without an OS filter, 4 runs landed in
+  the wrong cell (3 macOS runs in `traditional·ubuntu·warm`, 1 in
+  `flox-noaction-consolidated·ubuntu·cold`). The driver now verifies each run's runner OS, the
+  4 runs were purged, and the affected cells re-collected. Numbers here are the cleaned data.
+- **Variable n / survivorship bias.** The driver records only **successful** runs, so the
+  flaky configs (macOS mirror — 10 parallel installs/run; manual `.pkg`) drop failed reps and
+  their averages are **optimistic lower bounds**. Lowest-n cells (see REPORT.md `n` column):
+  `flox-noaction-mirror·ubuntu·warm` and `flox-nocache-mirror·macOS·cold` (n=1),
+  `flox-consolidated·macOS·warm` and `mise-consolidated·ubuntu·cold` (n=2),
+  `flox-mirror·macOS·cold/warm`, `flox-noaction·ubuntu·cold`, `traditional·ubuntu·warm` (n=3).
+  Lean on the n=5 consolidated rows and the median column; treat low-n Δ% as directional.
+- **Noisy macOS baseline.** `traditional·macOS·cold` (avg 64s, median 55s, max 125s) carries a
+  runner-queue outlier, so macOS-cold Δ% against it is unstable — prefer the median.
+- Single repo; GitHub-hosted runners; small n — treat ±10–20% as noise.

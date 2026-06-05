@@ -34,20 +34,21 @@ COLORS = {
     "flox-consolidated": "#f0ad4e",
 }
 # total run time (avg s): [ubuntu_cold, ubuntu_warm, macos_cold, macos_warm]
+# Current cross-OS-cleaned Stage-3 run (reps up to 5; see REPORT.md for per-cell n).
 TOTAL = {
-    "traditional": [17.2, 17.2, 36.4, 38.7],
-    "mise-mirror": [33.0, 23.0, 63.0, 43.6],
-    "mise-consolidated": [29.8, 23.2, 35.8, 30.6],
-    "flox-mirror": [64.8, 64.6, 318.4, 303.6],
-    "flox-consolidated": [64.8, 62.8, 181.6, 161.6],
+    "traditional": [24.3, 23.0, 64.0, 49.0],
+    "mise-mirror": [30.2, 44.6, 68.8, 55.8],
+    "mise-consolidated": [24.5, 22.8, 39.4, 29.8],
+    "flox-mirror": [70.0, 74.0, 405.7, 389.3],
+    "flox-consolidated": [69.0, 64.4, 192.3, 193.5],
 }
 # provisioning setup/job (avg s): [ubuntu_cold, ubuntu_warm, macos_cold, macos_warm]
 SETUP = {
-    "traditional": [3.0, 3.3, 4.1, 5.0],
-    "mise-mirror": [11.9, 4.0, 13.7, 6.2],
-    "mise-consolidated": [11.7, 4.6, 14.1, 7.3],
-    "flox-mirror": [46.5, 47.6, 135.8, 129.0],
-    "flox-consolidated": [49.3, 48.3, 150.6, 129.0],
+    "traditional": [3.3, 3.4, 5.5, 5.2],
+    "mise-mirror": [10.9, 4.9, 13.7, 6.2],
+    "mise-consolidated": [9.5, 5.4, 13.9, 5.7],
+    "flox-mirror": [47.6, 48.1, 163.8, 161.3],
+    "flox-consolidated": [47.6, 47.3, 156.6, 165.5],
 }
 
 
@@ -88,13 +89,13 @@ def main(out: Path) -> int:
     _grouped(
         axes[0][0],
         {s: ([TOTAL[s][0], TOTAL[s][1]], ["cold", "warm"]) for s in SIDES},
-        "Total run time — ubuntu  (mise ~2x, flox ~3.8x traditional)",
+        "Total run time — ubuntu  (mise ~1.0-1.3x, flox ~2.8-3.2x traditional)",
         "seconds",
     )
     _grouped(
         axes[0][1],
         {s: ([TOTAL[s][2], TOTAL[s][3]], ["cold", "warm"]) for s in SIDES},
-        "Total run time — macOS  (mise-consolidated <= traditional; flox 5-9x)",
+        "Total run time — macOS  (mise-consolidated <= traditional; flox ~3-8x)",
         "seconds (log)",
         logy=True,
     )
