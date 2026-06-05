@@ -1,13 +1,26 @@
 version = 1
 
-# flox-ci-base P0 environment — the `setup-python` + `setup-uv` replacement.
-# Mirrors py-launch-blueprint's real `test` job (py3.12). One env per Python
-# version in the full matrix; P0 validates python312.
-# See docs/superpowers/specs/2026-06-03-flox-ci-base-prd.md.
+# flox-ci-base — the FULL dev toolchain, matching the repo's `.flox` env so the
+# baked image provisions the SAME 15 tools as the install-on-VM `flox` side (and
+# the equivalent toolchain the `mise` side declares). See
+# docs/superpowers/specs/2026-06-03-flox-ci-base-prd.md.
 
 [install]
-python.pkg-path = "python312"
-uv.pkg-path     = "uv"
+python.pkg-path               = "python312"
+uv.pkg-path                   = "uv"
+just.pkg-path                 = "just"
+bun.pkg-path                  = "bun"
+lefthook.pkg-path             = "lefthook"
+gitleaks.pkg-path             = "gitleaks"
+gh.pkg-path                   = "gh"
+taplo.pkg-path                = "taplo"
+ruff.pkg-path                 = "ruff"
+yamllint.pkg-path             = "yamllint"
+codespell.pkg-path            = "codespell"
+editorconfig-checker.pkg-path = "editorconfig-checker"
+bandit.pkg-path               = "bandit"
+commitlint.pkg-path           = "commitlint"
+gnumake.pkg-path              = "gnumake"
 
 [vars]
 UV_CACHE_DIR = "/opt/uv-cache"
@@ -18,4 +31,5 @@ UV_LINK_MODE = "copy"
 UV_PYTHON_PREFERENCE = "only-system"
 
 [options]
+# Linux only — this manifest backs a container image (container jobs are Linux-only).
 systems = ["x86_64-linux", "aarch64-linux"]
