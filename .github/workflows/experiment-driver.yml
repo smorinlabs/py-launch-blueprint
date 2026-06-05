@@ -70,9 +70,12 @@ jobs:
                     # OS would otherwise be captured here, misattributing its
                     # timings to this cell (the cross-OS contamination bug). Poll
                     # briefly for the runner label; treat unknown as a match.
+                    # `timeout` guards against gh hanging on an API blip (it has
+                    # no built-in request timeout) — an unguarded hang here would
+                    # stall the whole driver indefinitely.
                     aos=""
-                    for _ in $(seq 1 12); do
-                      aos=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/jobs" \
+                    for _ in $(seq 1 8); do
+                      aos=$(timeout 20 gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/jobs" \
                         -q '.jobs[0].labels[0]' 2>/dev/null || true)
                       [ -n "$aos" ] && break
                       sleep 3
