@@ -170,6 +170,9 @@ def main() -> int:
 
     report = (
         "# Flox vs Traditional CI — timing results\n\n"
+        "Appendix: [last-run workflow wall-clock totals](LAST_RUN_TOTALS.md) "
+        "records the final successful run per cell using GitHub's literal "
+        "`run_duration_ms`, including the `flox-baked` container runs.\n\n"
         "## Total run time (per side × os × cache)\n\n"
         + render_totals_table(totals, baseline_side="traditional")
         + "\n## Provisioning (setup) vs work — per job\n\n"

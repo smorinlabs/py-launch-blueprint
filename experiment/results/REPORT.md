@@ -1,5 +1,7 @@
 # Flox vs Traditional CI — timing results
 
+Appendix: [last-run workflow wall-clock totals](LAST_RUN_TOTALS.md) records the final successful run per cell using GitHub's literal `run_duration_ms`, including the `flox-baked` container runs.
+
 ## Total run time (per side × os × cache)
 
 | side | os | cache | n | min | max | avg | median | stddev | Δ% vs base |
