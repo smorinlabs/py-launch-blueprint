@@ -18,6 +18,10 @@ on:
         description: repetitions per cell
         type: string
         default: "5"
+      verify_os:
+        description: verify each dispatched run's runner OS (only needed for CONCURRENT cross-OS drivers; skip for single-OS runs to avoid per-dispatch label-poll overhead)
+        type: string
+        default: "true"
 
 permissions:
   actions: write
@@ -37,6 +41,7 @@ jobs:
           OSES: ${{ inputs.oses }}
           CACHES: ${{ inputs.caches }}
           REPS: ${{ inputs.reps }}
+          VERIFY_OS: ${{ inputs.verify_os }}
         shell: bash
         run: |
           set -euo pipefail
@@ -65,6 +70,11 @@ jobs:
                 case " ${before} " in
                   *" ${id} "*) ;;
                   *)
+                    # Single-OS run: no concurrent cross-OS driver to confuse us,
+                    # so skip the (slow, per-dispatch) label poll entirely.
+                    if [ "${VERIFY_OS:-true}" != "true" ]; then
+                      echo "${id}"; return 0
+                    fi
                     # Verify the new run's runner OS matches the requested os. A
                     # CONCURRENT driver dispatching the SAME workflow for another
                     # OS would otherwise be captured here, misattributing its
