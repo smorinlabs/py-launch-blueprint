@@ -38,7 +38,13 @@ Tick these off as you go. If you can't explain one in a sentence, re-read its se
 - [ ] Why "warm ≈ cold" turned out to be a *cache-save bug*, not slow restore
 - [ ] What the on-CPU vs off-CPU flame graphs show, and why "idle CPU" is the key clue
 
-**5. The broader context**
+**5. The CI fix decision (runner image vs mise)**
+- [ ] Why a prebaked runner image can eliminate the cost — and only on self-hosted/custom runners
+- [ ] Why prebaking works where `actions/cache` can't (image captures machine state)
+- [ ] What each option costs (infra+upkeep vs a second manifest + weaker reproducibility)
+- [ ] When to pick A (image), B (mise), or the hybrid
+
+**6. The broader context**
 - [ ] What changes this implies (the ranked fixes) and their expected impact
 - [ ] What the reusable harness gives the team going forward
 - [ ] The transferable lessons (silent failures, "don't assume CPU", scoping claims)
@@ -462,9 +468,79 @@ waits.* Exactly the closure-size story, now visible as a picture.
 "illustrative" because the VM's fast disk makes the *magnitude* non-CI-representative — but
 the *shape* of the bottleneck is the lesson.)
 
-## Part 6 — BROADER CONTEXT (why this matters)
+## Part 6 — THE CI FIX DECISION: prebaked runner image vs mise
 
-### 4.1 What the changes impact
+Once you accept that flox's cost is the price of its hermetic model (Part 4), there are
+exactly two ways to make CI fast — and they sit at **opposite ends**. One keeps flox and
+removes the cost with infrastructure; the other removes the cost by removing flox from CI.
+
+### 6.1 Option A — Prebake a runner image (keep flox)
+
+**What:** a self-hosted (or custom VM-image) runner with Nix baked in — so the machine
+boots with `/nix` already mounted, the `nix-daemon` already running, and (optionally) the
+toolchain closure already in the store.
+
+- **Only possible on self-hosted / custom-image runners** — *not* GitHub-hosted macOS,
+  where you can't supply an image (this is why our experiment paid the cost every job).
+- **Why it works where caching couldn't:** a VM image can snapshot **machine state** (the
+  APFS volume + `synthetic.conf` + the daemon) — exactly the thing `actions/cache` can't
+  tar (Finding 3). Prebaking is "caching at the image layer instead of the file layer."
+- **What it eliminates:** bake Nix → kills Finding 2 (~58 s install). Also bake the env's
+  closure → kills the activate download too → provisioning ≈ free.
+- **What it costs:** self-hosted Mac infrastructure ($ + ops); image upkeep (rebuild on
+  every Nix/flox/toolchain/macOS bump); **drift** (a baked closure that no longer matches
+  `manifest.lock` silently re-downloads); less ephemeral isolation; you own GC. The cost
+  moved from *per-job* to *per-image-build* — amortized, not erased.
+- **What you keep:** flox's full reproducibility and one definition shared with
+  local-dev / devcontainer.
+
+### 6.2 Option B — Use mise in CI (drop flox there)
+
+**What:** provision the CI toolchain with mise's release binaries — no Nix, no daemon, no
+machine state, just binaries unpacked into the workspace.
+
+- **Works on stock GitHub-hosted runners** — no infra.
+- **What it eliminates:** all three findings *structurally* — no closure to bloat
+  (Finding 1), no install/volume (Finding 2), and a small file-cache that actually
+  works (Finding 3).
+- **What it costs:** not bit-for-bit hermetic — reproducible at the **version + checksum**
+  level (lockfile), trusting upstream release artifacts and the runner's base libc; and a
+  *second* tool definition if you also use flox for local dev.
+- **Speed (from the experiment):** ~2× traditional on ubuntu; macOS-consolidated ≈
+  traditional — i.e. the macOS penalty disappears.
+
+### 6.3 Side by side
+
+| | Prebaked runner image (flox) | mise in CI |
+| --- | --- | --- |
+| Works on GitHub-hosted runners | **No** (self-hosted / custom image only) | **Yes** |
+| Kills install cost (Finding 2) | Yes (baked at image build) | Yes (none exists) |
+| Kills activate/download (Finding 1) | Yes, *if* closure also baked | Yes (small footprint) |
+| Warm cache (Finding 3) | N/A — warm by virtue of the image | Works natively (~4–7 s) |
+| Reproducibility | **Full** (Nix, bit-for-bit) | Version + checksum (not bit-for-bit) |
+| Ops burden | **High** (runner infra + image upkeep) | **Low** |
+| Reuses the local-dev definition | Yes (same flox env) | Separate manifest |
+
+### 6.4 How to choose
+
+- **Need bit-identical reproducibility AND one definition shared with local/devcontainer,
+  and you can run infrastructure** → **Option A**. (Teams that already self-host Mac
+  runners get this almost for free.)
+- **Just need a fast, reliable, single-manifest toolchain on hosted runners** → **Option B**.
+- **Hybrid (the pragmatic default, and where ADR-12 leans):** flox for **local dev /
+  devcontainer** — where the cost is paid once per shell and the reproducibility actually
+  pays off — and **mise (or traditional) for CI**, where there's no machine state to
+  provision. Best of both; the price is maintaining two manifests of the same toolchain.
+
+> Intern takeaway: both options are the same move — *stop being ephemeral about the
+> toolchain.* Option A persists machine state in an image; Option B makes the toolchain
+> need no machine state. A keeps flox's guarantee at the price of infra; B drops a
+> guarantee you probably don't need in CI for the price of a second manifest. There is no
+> "free" — only which cost you'd rather pay.
+
+## Part 7 — BROADER CONTEXT (why this matters)
+
+### 7.1 What the changes impact
 
 - **If the Python leak is fixed:** macOS flox CI could go from ~136 s to ~50 s
   provisioning — closing most of the macOS penalty and making flox far more viable as the
@@ -474,7 +550,7 @@ the *shape* of the bottleneck is the lesson.)
 - **The reusable harness** (`experiment/profiling/`) means the team can re-run this
   analysis after any toolchain change — performance findings don't rot.
 
-### 4.2 Transferable lessons (the real curriculum)
+### 7.2 Transferable lessons (the real curriculum)
 
 1. **Separate the costs.** "CI is slow" → is it provisioning or the checks? Don't
    optimize the part that isn't the problem.
@@ -489,4 +565,5 @@ the *shape* of the bottleneck is the lesson.)
 
 ---
 
-*Living doc — extended as remaining stages (the confirmatory cold flame graph) are run.*
+*Living doc. Covers: problem → root cause → mise comparison → real-CI verification +
+flame graphs → the CI fix decision (runner image vs mise) → broader context.*
