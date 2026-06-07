@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.6](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.5...v1.1.6) (2026-06-04)
+
+
+### Bug Fixes
+
+* **ci:** explicit ref input for flox-baked image build (checkout correct branch) ([aa65c98](https://github.com/smorinlabs/py-launch-blueprint/commit/aa65c984bea1f28628b58a93e413b6c45577bb2c))
+* **ci:** use github.repository_owner in flox-baked image ref (init drift) ([a4b07a5](https://github.com/smorinlabs/py-launch-blueprint/commit/a4b07a5308d55acfd2d789aec4d10f12306f01cd))
+* **contributors:** restore contributors-please markers in CONTRIBUTORS.md ([bb8afb9](https://github.com/smorinlabs/py-launch-blueprint/commit/bb8afb980cf8b908eee4aef27c22cc8126131748))
+* **contributors:** restore CONTRIBUTORS.md markers ([#356](https://github.com/smorinlabs/py-launch-blueprint/issues/356)) ([3402c51](https://github.com/smorinlabs/py-launch-blueprint/commit/3402c5158a3f9385f017550eaecbc1bfb7554254))
+
 ## [1.1.5](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.4...v1.1.5) (2026-06-04)
 
 
