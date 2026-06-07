@@ -237,12 +237,48 @@ def is_excluded(path: Path, root: Path = REPO_ROOT) -> bool:
 
 
 def iter_repo_files(root: Path = REPO_ROOT) -> list[Path]:
-    """All non-excluded files under `root`, sorted for deterministic output."""
-    out: list[Path] = []
-    for p in root.rglob("*"):
-        if not p.is_file():
+    """All non-excluded files under `root`, sorted for deterministic output.
+
+    Uses `git ls-files --cached --others --exclude-standard` so the scan
+    respects `.gitignore`. Falls back to filesystem walk if git is unavailable
+    (e.g. running on an unpacked tarball with no .git dir).
+    """
+    import subprocess
+
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(root),
+                "ls-files",
+                "--cached",
+                "--others",
+                "--exclude-standard",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        # Fall back to filesystem walk when git can't answer.
+        out: list[Path] = []
+        for p in root.rglob("*"):
+            if not p.is_file():
+                continue
+            if is_excluded(p, root):
+                continue
+            out.append(p)
+        return sorted(out)
+
+    paths: list[Path] = []
+    for line in result.stdout.splitlines():
+        if not line:
             continue
-        if is_excluded(p, root):
-            continue
-        out.append(p)
-    return sorted(out)
+        full = root / line
+        if not full.is_file():
+            continue  # `--others` can list symlinks to missing targets
+        if is_excluded(full, root):
+            continue  # belt-and-braces against tracked files in excluded dirs
+        paths.append(full)
+    return sorted(paths)
