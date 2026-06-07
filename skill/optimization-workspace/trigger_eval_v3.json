@@ -1,0 +1,82 @@
+[
+  {
+    "query": "Create a new Python repo for me. I'm building a CLI for parsing Slack export JSON files. Owner: 'datapipe-corp', name: 'slack-export-tools'.",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you make a repo for this python CLI I want to build? It's a tool for converting markdown tables to CSV. Personal account, repo name 'md2csv'.",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a new Python CLI for me — should be a fresh repo. Going to parse RSS feeds and dedupe entries. Call it 'feed-dedup'.",
+    "should_trigger": true
+  },
+  {
+    "query": "Spin up a new python project. I want to build a small REST API for serving model predictions. Name 'inference-gateway'.",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you create a UV project for me? Working title: 'pgvector-playground', owner 'alice-research'. I'll be experimenting with embedding databases.",
+    "should_trigger": true
+  },
+  {
+    "query": "Scaffold a new Python package — I want to wrap the OpenAI API with retry logic. Repo name 'oai-retry-wrapper', personal account.",
+    "should_trigger": true
+  },
+  {
+    "query": "Make me a fresh python repo, name 'tz-shifter'. It'll be a CLI for converting between time zones with DST handling.",
+    "should_trigger": true
+  },
+  {
+    "query": "ok let's create a new python project — small thing that monitors my Hue lights via the local bridge API. Personal account, 'hue-watcher'.",
+    "should_trigger": true
+  },
+  {
+    "query": "I need a new Python repo for processing CSV files into parquet. Should run as a CLI, name 'csv2parquet', under my org 'analytics-team'.",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me start a new python project — going to be a webhook receiver for github events that posts to slack. Name 'gh2slack', org 'platform'.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add a new Python module to my existing project for handling Redis caching. The project is in ~/projects/web-api and I want the module at app/cache.py.",
+    "should_trigger": false
+  },
+  {
+    "query": "Convert this Python script into a proper class structure with type hints. Currently it's all functions in main.py.",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the bug in my Python project's auth module — JWT validation is rejecting tokens that should be valid. The token contains an aud claim with a list of audiences.",
+    "should_trigger": false
+  },
+  {
+    "query": "What's the difference between Poetry and uv for Python dependency management? I'm trying to decide which to standardize on for our team.",
+    "should_trigger": false
+  },
+  {
+    "query": "Show me how to write a Python decorator that times function calls and emits the duration to stdout in microseconds.",
+    "should_trigger": false
+  },
+  {
+    "query": "Help me debug why my Python tests are failing. The test passes individually but fails when the whole pytest suite runs — looks like state is leaking between tests.",
+    "should_trigger": false
+  },
+  {
+    "query": "I'm building a Rust CLI, can you scaffold a Cargo project? It's going to be a TUI for monitoring kubernetes pods.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a new Node.js repo for me. Going to build a discord bot, name 'mod-helper', using TypeScript and bun.",
+    "should_trigger": false
+  },
+  {
+    "query": "Optimize this Python function for memory usage. It currently loads the whole CSV into memory; should stream row by row.",
+    "should_trigger": false
+  },
+  {
+    "query": "Run pytest in my Python project and tell me which tests are failing. Project is at ~/projects/analytics-cli.",
+    "should_trigger": false
+  }
+]

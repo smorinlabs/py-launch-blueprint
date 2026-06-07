@@ -1,0 +1,17 @@
+# gitleaks fingerprint allowlist (ITM-005).
+#
+# This file suppresses *specific findings* by fingerprint (one per line).
+# For *patterns* or *paths*, edit .gitleaks.toml (ITM-004) instead.
+#
+# How to add a fingerprint:
+#   1. Run gitleaks on the offending range:
+#      gitleaks detect --no-banner --redact
+#   2. Copy the printed `Fingerprint:` value below.
+#   3. Add a comment explaining what the finding is and why it's allowed.
+#
+# Format per entry:
+#   # <one-line rationale>
+#   <fingerprint-hash>
+#
+# Round-2 decision: file lands empty; populate as historical false-positives
+# accumulate. Decided round 2.

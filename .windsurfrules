@@ -1,0 +1,90 @@
+
+---
+description: Windsurf rules
+globs:
+---
+# Your rule content
+
+- @Justfile is used to configure @just commands and has all command to run the project
+- @Makefile is just used to bootstrap the project no new targets should be added there
+
+# Project Development Rules and Conventions
+
+## Development Environment
+
+### Package Management
+- **UV**: This project uses UV for package management and virtual environment creation
+- Python version: Requires Python 3.12 or higher
+
+### Build System
+- **Hatch**: Used as the build backend with hatchling and hatch-vcs plugins
+- Version management: Version is determined from VCS (Git) and managed by hatch-vcs
+
+## Development Workflow
+
+### Task Runner
+- **Just**: Used for command automation (see Justfile for available commands)
+  - `just install-dev`: Install package in editable mode with dev dependencies
+  - `just format`: Run code formatters (ruff)
+  - `just lint`: Run linters (ruff)
+  - `just typecheck`: Run type checking (mypy)
+  - `just test`: Run tests (pytest)
+  - `just check`: Run all checks (tests, lint, typecheck)
+  - `just docs`: Build documentation
+  - `just docs-dev`: Run documentation server with hot reloading
+
+### Code Quality Tools
+- **Ruff**: Used for linting and formatting
+  - PEP8 compliance
+  - Import sorting
+  - Code quality checks
+- **MyPy**: Static type checking with strict mode enabled
+- **Pre-commit**: Git hooks for code quality checks
+- **Pytest**: Testing framework with coverage reports
+
+## Documentation
+
+### Sphinx Documentation
+- **Sphinx**: Used for generating project documentation
+- Theme: Furo theme for modern documentation appearance
+- Extensions:
+  - sphinx.ext.autodoc: Auto-generating documentation from docstrings
+  - sphinx.ext.viewcode: Linking to source code
+  - sphinx.ext.napoleon: Parsing Google-style docstrings
+  - sphinx_autodoc_typehints: Type hints support
+  - myst_parser: Markdown support
+  - sphinx_copybutton: Copy button in code blocks
+- Documentation can be built using `just docs` command
+- Hot-reloading dev server available with `just docs-dev`
+
+## Dependencies
+
+### Core Dependencies
+- click: Command-line interface creation
+- questionary: Interactive command line interface
+- python-dotenv: Environment variable management
+- thefuzz with python-Levenshtein: Fuzzy string matching
+- pyperclip: Clipboard operations
+- requests: HTTP requests
+- rich: Rich text and formatting in terminal
+
+### Development Dependencies
+- pytest & pytest-cov: Testing with coverage
+- mypy: Static type checking
+- ruff: Linting and formatting
+- pre-commit: Pre-commit hooks
+- types-requests & types-Pygments: Type stubs
+- cogapp: Code generation
+
+### Documentation Dependencies
+- sphinx & extensions: Documentation generation
+- furo: Documentation theme
+- myst-parser: Markdown support
+- sphinx-copybutton: Copy button in code blocks
+- sphinx-autobuild: Auto-rebuilding documentation
+
+## Project Structure
+- Package name: py_launch_blueprint
+- Command name: py-projects
+- Documentation in /docs directory
+- Tests in /tests directory

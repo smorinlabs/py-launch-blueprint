@@ -1,0 +1,25 @@
+# ITM-059 - manual publish fallback template.
+# Decided round 11: keep emergency fallback even though ADR-07 trusted
+# publishing covers 99% of cases.
+#
+# To use:
+#   1. cp .pypirc.template ~/.pypirc
+#   2. Replace PLACEHOLDER values with real PyPI/TestPyPI API tokens
+#      (https://pypi.org/manage/account/token/).
+#   3. chmod 600 ~/.pypirc  (don't world-readable; tokens are credentials)
+#
+# .pypirc (without .template) is git-ignored (see ITM-080).
+
+[distutils]
+index-servers =
+    pypi
+    testpypi
+
+[pypi]
+username = __token__
+password = pypi-PLACEHOLDER_REPLACE_WITH_REAL_TOKEN
+
+[testpypi]
+repository = https://test.pypi.org/legacy/
+username = __token__
+password = pypi-PLACEHOLDER_REPLACE_WITH_REAL_TOKEN

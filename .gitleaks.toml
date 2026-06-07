@@ -1,0 +1,28 @@
+# ITM-004 — gitleaks config. Extends default rules (no narrowing). Decided round 2.
+title = "py-launch-blueprint gitleaks config"
+
+# Use upstream gitleaks default rule set as the foundation.
+[extend]
+useDefault = true
+
+# Global allowlist — narrow, path-scoped. Keep specific so real credentials
+# aren't hidden behind a broad pattern.
+[allowlist]
+description = "Documentation and Markdown prose"
+paths = [
+    # Documentation tree — README/CONTRIBUTING/etc. legitimately mention
+    # example tokens and shouldn't trigger global secret-pattern rules.
+    '''docs/.*''',
+    # Top-level Markdown prose — same rationale as docs/.
+    '''.*\.md$''',
+    # Issue/PR templates — example credentials in instructions are fine.
+    '''\.github/ISSUE_TEMPLATE/.*''',
+    '''\.github/PULL_REQUEST_TEMPLATE\.md''',
+]
+regexes = [
+    # AWS test-fixture placeholder (canonical AWS-docs example key).
+    # Used in unit tests and CONTRIBUTING examples to demo the hook itself.
+    '''AKIAIOSFODNN7EXAMPLE''',
+    # AWS secret-key test-fixture placeholder (canonical AWS-docs example).
+    '''wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY''',
+]

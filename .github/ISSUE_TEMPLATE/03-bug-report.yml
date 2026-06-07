@@ -1,0 +1,194 @@
+# Copyright (c) 2025, Steve Morin
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+name: Bug Report
+description: Report a bug in the open source project
+title: "[BUG]: "
+labels: ["bug", "needs-triage"]
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      ## Bug Report
+      Thanks for taking the time to report a bug! Our volunteer maintainers appreciate your help in improving this project.
+
+      Please provide as much detail as possible so volunteers can reproduce and fix the issue efficiently.
+
+- type: checkboxes
+  id: pre-filing-verification
+  attributes:
+    label: Pre-filing verification (ITM-075, round 21)
+    description: Please confirm before filing.
+    options:
+      - label: I'm running the latest version (or `main`) and can reproduce there.
+        required: true
+      - label: I searched existing issues and didn't find a duplicate.
+        required: true
+      - label: I ran `make hook-check` and the relevant `just` command, and pasted output below if applicable.
+        required: true
+
+- type: dropdown
+  id: severity
+  attributes:
+    label: Severity
+    description: How severe is this bug?
+    options:
+    - Breaking Bug (functionality doesn't work at all)
+    - Quality Issue (works but with problems/inconvenience)
+  validations:
+    required: true
+
+- type: dropdown
+  id: priority
+  attributes:
+    label: Priority
+    description: How urgent do you think this bug is?
+    options:
+    - Critical (prevents core functionality)
+    - High (significantly impacts usability)
+    - Medium (causes inconvenience)
+    - Low (minor issue)
+  validations:
+    required: true
+
+- type: textarea
+  id: steps-to-reproduce
+  attributes:
+    label: Steps to Reproduce
+    description: Clear steps to reproduce the bug
+    placeholder: |
+      1. Install the package with `pip install ...`
+      2. Run the command `...`
+      3. Try to access `...`
+      4. See error
+  validations:
+    required: true
+
+- type: textarea
+  id: expected-behavior
+  attributes:
+    label: Expected Behavior
+    description: What did you expect to happen?
+    placeholder: Describe what should have happened if there was no bug
+  validations:
+    required: true
+
+- type: textarea
+  id: actual-behavior
+  attributes:
+    label: Actual Behavior
+    description: What actually happened?
+    placeholder: Describe the bug behavior you observed
+  validations:
+    required: true
+
+- type: markdown
+  attributes:
+    value: |
+      ## System Information
+      Please run `just debug-info` and paste the output below. This command automatically collects relevant system information and copies it to your clipboard.
+
+      If the `debug-info` command doesn't work, please manually provide your OS, Python version, and tool versions.
+
+- type: textarea
+  id: system-info
+  attributes:
+    label: System Information
+    description: Paste the output of the `just debug-info` command here
+    placeholder: |
+      ## Debug Information
+
+      ### System Information
+      - Date: Sun Apr 27 10:15:22 PDT 2025
+      - OS: Darwin
+      - macOS Version: 15.4.1
+      - Kernel: 24.4.0
+      - Architecture: arm64
+
+      ### Development Tools
+      python: Python 3.12.7  # example — replace with actual `python --version` output
+      uv: uv 0.1.24
+      ruff: ruff 0.1.9
+      git: git version 2.43.0
+      just: just 1.21.0
+  validations:
+    required: true
+
+- type: textarea
+  id: screenshots
+  attributes:
+    label: Screenshots
+    description: If applicable, add screenshots to help explain your problem
+    placeholder: Drag and drop screenshots here
+  validations:
+    required: false
+
+- type: textarea
+  id: logs
+  attributes:
+    label: Logs
+    description: Please copy and paste any relevant log output
+    render: shell
+    placeholder: Paste any relevant logs here (error messages, stack traces, etc.)
+  validations:
+    required: false
+
+- type: textarea
+  id: possible-solution
+  attributes:
+    label: Possible Solution
+    description: If you have suggestions on how to fix this issue
+    placeholder: Optional ideas for how to resolve the bug (very helpful for volunteers!)
+  validations:
+    required: false
+
+- type: dropdown
+  id: contribution
+  attributes:
+    label: Contribution
+    description: Would you be willing to submit a PR to fix this issue?
+    options:
+    - Yes, I'd be willing to work on a fix
+    - No, I'm just reporting the issue
+  validations:
+    required: true
+
+- type: markdown
+  attributes:
+    value: |
+      ## Pre-submission Checklist
+      Please confirm that you have completed all of the following steps:
+
+      - I have checked for duplicate bug reports
+      - I have included all relevant information to reproduce the bug
+      - I have included the exact version information
+      - I have tested with the latest version to confirm the bug still exists
+      - I understand this project is maintained by volunteers who appreciate clear, complete bug reports
+
+- type: dropdown
+  id: pre-submission-confirmation
+  attributes:
+    label: Pre-submission Confirmation
+    description: I confirm that I have completed all the steps in the pre-submission checklist
+    options:
+    - "Yes"
+    - "No"
+  validations:
+    required: true

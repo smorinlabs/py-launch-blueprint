@@ -1,0 +1,114 @@
+# Publish workflow (ITM-048 hardening + ITM-049 build + ITM-050 TestPyPI +
+# ITM-051 PyPI). OIDC Trusted Publishing per ADR-07. Triggered on v* tags.
+
+name: publish
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {}
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false  # never cancel an in-flight publish
+
+jobs:
+  # ITM-049 - build job: verify tag reachable from main, build via uv,
+  # upload dist/ as artifact for downstream jobs.
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # needed for ancestor check
+
+      - name: Verify tag is reachable from main
+        run: |
+          set -euo pipefail
+          git fetch origin main:main
+          if ! git merge-base --is-ancestor "${GITHUB_SHA}" main; then
+            echo "FAIL: tag commit ${GITHUB_SHA} is not on main" >&2
+            exit 1
+          fi
+          echo "PASS: tag on main"
+
+      - name: Verify [project] version matches tag
+        # Uses runner's system python3 (tomllib is stdlib in py3.11+); no uv
+        # dependency needed since uv setup happens in the next step.
+        env:
+          GIT_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          TAG_VERSION="${GIT_TAG#v}"
+          PROJECT_VERSION=$(python3 -c \
+            "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          if [ "${TAG_VERSION}" != "${PROJECT_VERSION}" ]; then
+            echo "FAIL: tag ${TAG_VERSION} != pyproject ${PROJECT_VERSION}" >&2
+            exit 1
+          fi
+          echo "PASS: tag matches pyproject version (${TAG_VERSION})"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Build sdist + wheel
+        run: uv build
+
+      - name: Upload dist/ artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  # ITM-050 - publish-testpypi: OIDC Trusted Publishing to TestPyPI.
+  # TEMPORARILY DISABLED (for now): the whole publish-testpypi job is commented
+  # out so releases publish straight to PyPI, and publish-pypi depends directly
+  # on build (see below). To restore the TestPyPI smoke test, uncomment this job
+  # and change publish-pypi's `needs:` back to `publish-testpypi`.
+  # publish-testpypi:
+  #   name: publish-testpypi
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   environment: testpypi
+  #   permissions:
+  #     id-token: write  # Trusted Publishing only needs this
+  #   steps:
+  #     - name: Download dist/
+  #       uses: actions/download-artifact@v8
+  #       with:
+  #         name: dist
+  #         path: dist/
+  #     - name: Install uv
+  #       uses: astral-sh/setup-uv@v7
+  #     - name: Publish to TestPyPI
+  #       run: |
+  #         uv publish --trusted-publishing always \
+  #           --publish-url https://test.pypi.org/legacy/ \
+  #           --check-url https://test.pypi.org/simple/
+
+  # ITM-051 - publish-pypi: OIDC Trusted Publishing to PyPI.
+  # Depends directly on build while publish-testpypi is disabled (see above).
+  publish-pypi:
+    name: publish-pypi
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download dist/
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Publish to PyPI
+        run: uv publish --trusted-publishing always --check-url https://pypi.org/simple/

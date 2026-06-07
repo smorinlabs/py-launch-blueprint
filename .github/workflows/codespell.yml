@@ -1,0 +1,28 @@
+# ITM-017 - codespell CI job. Standalone (decided round 3).
+# Reads [tool.codespell] from pyproject.toml (ITM-015).
+
+name: codespell
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: codespell-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  codespell:
+    name: codespell
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Run codespell
+        run: uvx codespell --toml pyproject.toml

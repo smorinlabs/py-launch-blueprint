@@ -1,0 +1,171 @@
+# Copyright (c) 2025, Steve Morin
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[FEATURE]: "
+labels: ["enhancement", "feature-request"]
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      ## Feature Request
+      Thanks for taking the time to suggest a new feature!
+
+- type: dropdown
+  id: feature-type
+  attributes:
+    label: Feature Type
+    description: What type of feature is this?
+    options:
+    - New Functionality
+    - Enhancement to Existing Feature
+    - Performance Improvement
+    - UI/UX Improvement
+  validations:
+    required: true
+
+- type: dropdown
+  id: priority
+  attributes:
+    label: Priority/Impact
+    description: How important is this feature?
+    options:
+    - Critical (blocking work)
+    - High
+    - Medium
+    - Low
+  validations:
+    required: true
+
+- type: textarea
+  id: problem-statement
+  attributes:
+    label: Problem Statement
+    description: What problem does this solve?
+    placeholder: Clearly describe the problem or enhancement needed
+  validations:
+    required: true
+
+- type: dropdown
+  id: requires-proposal
+  attributes:
+    label: Requires Proposal
+    description: Does this feature require a detailed proposal?
+    options:
+    - Yes, detailed proposal needed
+    - No, straightforward implementation
+  validations:
+    required: true
+
+- type: textarea
+  id: proposed-solution
+  attributes:
+    label: Proposed Solution
+    description: How should this feature/enhancement work?
+    placeholder: |-
+      Describe your proposed implementation.
+      If it needs research, enter TBD (To Be Determined).
+      If the solution is long, break it into sub-tasks after submitting this issue.
+  validations:
+    required: true
+
+- type: dropdown
+  id: research-needed
+  attributes:
+    label: Research Needed
+    description: Is research required before implementation?
+    options:
+    - "Yes"
+    - "No"
+  validations:
+    required: true
+
+- type: textarea
+  id: research-details
+  attributes:
+    label: Research Details
+    description: "If you selected 'Yes' for Research Needed above, please describe what investigation is required"
+    placeholder: "Only fill this out if Research Needed is Yes"
+  validations:
+    required: false
+
+- type: markdown
+  attributes:
+    value: |
+      ## Acceptance Criteria
+      Please review all of the following criteria that must be met for this feature to be considered complete:
+
+      **Technical Requirements:**
+      - Testing is added to the pre-commit hook
+      - Testing is added to the CI/CD pipeline in the GitHub Actions
+      - Documentation is added and updated into the documentation in Sphinx
+      - There is appropriate unit test coverage
+      - Command has been added (if necessary)
+
+      **User Experience Requirements:**
+      - Feature is accessible on all supported platforms/devices
+      - System handles error cases gracefully with clear user feedback
+
+- type: dropdown
+  id: acceptance-criteria-confirmation
+  attributes:
+    label: Acceptance Criteria Confirmation
+    description: I understand and will implement all the acceptance criteria listed above
+    options:
+    - "Yes"
+    - "No"
+  validations:
+    required: true
+
+- type: textarea
+  id: alternatives
+  attributes:
+    label: Alternatives considered (ITM-076, round 21)
+    description: What other approaches have you considered? Why is the proposed solution preferable?
+    placeholder: |
+      Alternative A: …
+      Why not chosen: …
+  validations:
+    required: false
+
+- type: markdown
+  attributes:
+    value: |
+      ## Pre-submission Checklist
+      Please confirm that you have completed all of the following steps:
+
+      - I have performed a self-review of this request
+      - I have signed the CLA
+      - I have included or planned for documentation
+      - I have considered the technical feasibility
+      - I have checked for duplicate feature requests
+      - I have identified stakeholders who should be consulted
+
+- type: dropdown
+  id: pre-submission-confirmation
+  attributes:
+    label: Pre-submission Confirmation
+    description: I confirm that I have completed all the steps in the pre-submission checklist
+    options:
+    - "Yes"
+    - "No"
+  validations:
+    required: true

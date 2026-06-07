@@ -1,0 +1,11 @@
+---
+description: Custom rule cursor
+globs:
+alwaysApply: true
+---
+
+# Your rule content
+
+- read rules @.windsurfrules for base project dependencies
+- read rules ./doc-template.mdc for base project documentation
+- use rule doc-template

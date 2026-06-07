@@ -1,0 +1,58 @@
+# Copyright (c) 2025, Steve Morin
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+# .readthedocs.yaml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+# Required
+version: 2
+
+# Set the OS, Python version and other tools you might need
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.12"
+  jobs:
+    post_create_environment:
+    # Install uv
+    - pip install uv
+    # Display the uv version
+    - uv --version
+    # Sync docs group (PEP 735) — replaces the [project.optional-dependencies]
+    # `extra_requirements: [docs]` path that no longer exists post-ITM-063.
+    - uv sync --group docs
+
+# Build documentation in the docs/source directory with Sphinx
+sphinx:
+  configuration: docs/source/conf.py
+
+# Optionally declare the Python requirements required to build your docs.
+# Note: `extra_requirements` reads `[project.optional-dependencies]`; this
+# project migrated to PEP 735 `[dependency-groups]` (ITM-063), so RTD must
+# install docs deps via uv groups rather than pip extras.
+python:
+  install:
+  - method: pip
+    path: .
+
+formats:
+- pdf
+- epub
+- htmlzip

@@ -1,0 +1,23 @@
+name: provision-mise
+description: Install mise and the toolchain declared in mise.toml, with cache.
+inputs:
+  cache:
+    description: cold | warm
+    required: true
+runs:
+  using: composite
+  steps:
+    # Point mise at the experiment config (kept out of the repo root so a local
+    # mise install doesn't auto-load it and shadow the flox/uv setup). Set in
+    # GITHUB_ENV so the mise-action AND the later `mise exec` run steps use it.
+    - name: Point mise at experiment/mise.toml
+      shell: bash
+      run: echo "MISE_CONFIG_FILE=${GITHUB_WORKSPACE}/experiment/mise.toml" >> "$GITHUB_ENV"
+    # jdx/mise-action installs mise, runs `mise install` (reads MISE_CONFIG_FILE),
+    # and puts the tools on PATH. cache=true (warm) restores/saves mise's install
+    # dir; cache=false (cold) installs fresh every run.
+    - name: Install mise + tools
+      uses: jdx/mise-action@v2
+      with:
+        cache: ${{ inputs.cache == 'warm' }}
+        install: true

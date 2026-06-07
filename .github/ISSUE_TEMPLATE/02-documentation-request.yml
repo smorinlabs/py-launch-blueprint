@@ -1,0 +1,112 @@
+# Copyright (c) 2025, Steve Morin
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+name: Documentation Request
+description: Request new documentation or improvements to existing docs
+title: "[DOCS]: "
+labels: ["documentation"]
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      ## Documentation Request
+      Thanks for helping us improve our documentation! Clear documentation is crucial for our open-source project.
+
+- type: dropdown
+  id: doc-type
+  attributes:
+    label: Type of Documentation
+    description: What type of documentation request is this?
+    options:
+    - New Documentation (doesn't exist yet)
+    - Update Existing Documentation
+    - Fix Errors or Typos
+    - Reorganize Documentation Structure
+  validations:
+    required: true
+
+- type: input
+  id: doc-location
+  attributes:
+    label: Current Documentation Location
+    description: If updating existing docs, where are they located?
+    placeholder: e.g., URL or path to the documentation file
+  validations:
+    required: false
+
+- type: textarea
+  id: description
+  attributes:
+    label: Description of Need
+    description: Why is this documentation needed? What problem will it solve?
+    placeholder: Explain why this documentation is important and who will benefit from it
+  validations:
+    required: true
+
+- type: textarea
+  id: suggested-content
+  attributes:
+    label: Suggested Content
+    description: What information should be included in this documentation?
+    placeholder: Provide an outline or key points that should be covered
+  validations:
+    required: true
+
+- type: dropdown
+  id: contribution
+  attributes:
+    label: Contribution Willingness
+    description: Are you willing to help write or improve this documentation?
+    options:
+    - Yes, I'm willing to contribute
+    - No, I'm just making a request
+  validations:
+    required: true
+
+- type: input
+  id: contact
+  attributes:
+    label: Contact Information
+    description: If you're willing to contribute, how can we reach you? (Only if you selected "Yes" above)
+    placeholder: e.g., email, GitHub username, or other contact method
+  validations:
+    required: false
+
+- type: markdown
+  attributes:
+    value: |
+      ## Pre-submission Checklist
+      Please confirm that you have completed all of the following steps:
+
+      - I have searched for similar documentation requests
+      - I have checked that this documentation doesn't already exist
+      - I have provided clear details about what needs to be documented
+      - I understand this project is maintained by volunteers
+
+- type: dropdown
+  id: pre-submission-confirmation
+  attributes:
+    label: Pre-submission Confirmation
+    description: I confirm that I have completed all the steps in the pre-submission checklist
+    options:
+    - "Yes"
+    - "No"
+  validations:
+    required: true

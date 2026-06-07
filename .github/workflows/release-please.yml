@@ -1,0 +1,110 @@
+# Release-please workflow (ITM-052 + ITM-053 + ITM-054).
+# Opens release PR on push to main; sync-uv-lock keeps uv.lock current.
+# Per ADR-05. Auth uses one of two mechanisms that can BOTH open PRs and trigger
+# downstream workflows (publish.yml) — GITHUB_TOKEN is intentionally NOT used as
+# a fallback, since it never triggers downstream workflows and may be blocked
+# from opening PRs by org policy:
+#   1. GitHub App (preferred): set RELEASE_PLEASE_APP_ID + RELEASE_PLEASE_PRIVATE_KEY
+#      (App with Contents + Pull requests: write); both jobs mint an installation
+#      token from them.
+#   2. Fallback PAT: set RELEASE_PLEASE_APP_TOKEN (fine-grained PAT, Contents +
+#      Pull requests: write).
+# See RELEASE.md for setup. With neither configured, release-please fails fast.
+
+name: release-please
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false  # never cancel an in-flight release PR
+
+jobs:
+  release-please:
+    name: release-please
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      # Surfaced so the app-token step's `if:` can test it (secrets are not
+      # available directly in `if:` conditions). Empty unless the App is set up.
+      RP_APP_ID: ${{ secrets.RELEASE_PLEASE_APP_ID }}
+    outputs:
+      release_created: ${{ steps.rp.outputs.release_created }}
+      pr: ${{ steps.rp.outputs.pr }}
+    steps:
+      # Mint a GitHub App installation token when the App is configured, so the
+      # release PR/tag triggers downstream workflows. Skipped otherwise.
+      - name: Mint release-please app token
+        id: app-token
+        if: ${{ env.RP_APP_ID != '' }}
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RELEASE_PLEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_PRIVATE_KEY }}
+
+      - name: release-please
+        id: rp
+        uses: googleapis/release-please-action@v5.0.0
+        with:
+          # Minted App installation token (preferred) or the RELEASE_PLEASE_APP_TOKEN
+          # PAT — both open PRs and trigger downstream workflows. See RELEASE.md.
+          token: ${{ steps.app-token.outputs.token || secrets.RELEASE_PLEASE_APP_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # ITM-054 - sync-uv-lock job. Regenerates uv.lock after release-please bumps
+  # [project] version on the release PR. Contingent on ADR-08 (uv.lock tracked).
+  sync-uv-lock:
+    name: sync-uv-lock
+    needs: release-please
+    if: ${{ needs.release-please.outputs.pr != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      RP_APP_ID: ${{ secrets.RELEASE_PLEASE_APP_ID }}
+    steps:
+      # Mint a fresh installation token from the same App (a separate token —
+      # steps don't cross jobs) so the uv.lock sync commit pushed to the release
+      # PR branch also triggers its CI checks.
+      - name: Mint release-please app token
+        id: app-token
+        if: ${{ env.RP_APP_ID != '' }}
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RELEASE_PLEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_PRIVATE_KEY }}
+
+      - name: Checkout release PR branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ fromJson(needs.release-please.outputs.pr).headBranchName }}
+          token: ${{ steps.app-token.outputs.token || secrets.RELEASE_PLEASE_APP_TOKEN }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Regenerate uv.lock
+        run: uv lock
+
+      - name: Commit if changed
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          if ! git diff --quiet uv.lock; then
+            git add uv.lock
+            git commit -m "chore: sync uv.lock"
+            git push
+          else
+            echo "uv.lock already in sync"
+          fi
