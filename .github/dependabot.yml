@@ -1,0 +1,71 @@
+# Dependabot config (ITM-061 pip + ITM-062 actions + ITM-043 npm).
+# Per ADR-08: grouped updates, 5-day cooldown, template-shaped group names.
+# Schedule day: Monday (decided round 13).
+#
+# commit-message: shared by all ecosystems. Grouped updates already auto-prefix
+# `chore(deps):` (so they pass commitlint), but ungrouped updates default to
+# `Bump foo from x to y` which fails @commitlint/config-conventional. Setting
+# `prefix: chore` + `include: scope` makes EVERY dependabot commit conform —
+# `chore(deps): bump foo...` for prod deps, `chore(deps-dev): bump foo...` for
+# dev deps. Single source of truth; no commitlint-side exemptions needed.
+
+version: 2
+updates:
+  # ITM-061 - Python (pip) ecosystem.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 5
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "python"]
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    groups:
+      runtime:
+        patterns: ["click", "questionary", "python-dotenv", "thefuzz", "python-Levenshtein", "pyperclip", "requests", "rich"]
+      dev-tools:
+        patterns: ["pre-commit", "cogapp"]
+      lint-and-format:
+        patterns: ["ruff", "ty", "mypy", "types-*"]
+      test:
+        patterns: ["pytest*"]
+
+  # ITM-062 - GitHub Actions ecosystem.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 5
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "github-actions"]
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # ITM-043 - npm (Bun) ecosystem; commitlint deps only for now.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 5
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "npm"]
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    groups:
+      commitlint:
+        patterns: ["@commitlint/*"]

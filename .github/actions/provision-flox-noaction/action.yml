@@ -1,0 +1,60 @@
+name: provision-flox-noaction
+description: Install Flox via direct package download (no GitHub Action) and restore/save the Nix store cache.
+inputs:
+  cache:
+    description: cold | warm
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install Flox (no action — manual package install, pinned)
+      shell: bash
+      run: |
+        set -euo pipefail
+        # Pinned to current stable; matches what flox/install-flox-action installs
+        # today. BUMP before running if stable advances past this (see spec caveat).
+        VER=1.12.2
+        case "${{ runner.os }}" in
+          Linux)
+            case "$(uname -m)" in
+              aarch64 | arm64) a=aarch64-linux ;;
+              *) a=x86_64-linux ;;
+            esac
+            url="https://downloads.flox.dev/by-env/stable/deb/flox-${VER}.${a}.deb"
+            curl -fsSL "$url" -o /tmp/flox.deb
+            sudo apt-get install -y /tmp/flox.deb
+            ;;
+          macOS)
+            case "$(uname -m)" in
+              arm64 | aarch64) a=aarch64-darwin ;;
+              *) a=x86_64-darwin ;;
+            esac
+            url="https://downloads.flox.dev/by-env/stable/osx/flox-${VER}.${a}.pkg"
+            curl -fsSL "$url" -o /tmp/flox.pkg
+            sudo installer -pkg /tmp/flox.pkg -target /
+            ;;
+          *)
+            echo "unsupported runner.os: ${{ runner.os }}" >&2
+            exit 1
+            ;;
+        esac
+        # Match install-flox-action: avoid first-run metrics prompt/behavior in CI.
+        flox config --set disable_metrics true
+        flox --version
+    - name: Cache Nix store
+      uses: actions/cache@v4
+      with:
+        path: |
+          /nix
+          ~/.cache/flox
+        # Own namespace (flox-noaction-) so it is measured independently and cannot
+        # cross-hit the action sides' caches. cold -> unique key (guaranteed miss);
+        # warm -> stable key per lock+os.
+        key: >-
+          flox-noaction-${{ inputs.cache }}-${{ runner.os }}-${{ hashFiles('.flox/env/manifest.lock') }}-${{
+            inputs.cache == 'cold' && github.run_id || 'stable' }}
+        restore-keys: |
+          ${{ inputs.cache == 'warm' && format('flox-noaction-warm-{0}-{1}-stable', runner.os, hashFiles('.flox/env/manifest.lock')) || 'flox-never-restore' }}
+    - name: Warm the flox env
+      shell: bash
+      run: flox activate -- true

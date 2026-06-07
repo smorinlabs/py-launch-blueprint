@@ -1,0 +1,32 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "a58f62dd4fa9c37ad84146dd9e03e5ce938749b1",
+  "packages": {
+    ".": {
+      "release-type": "python",
+      "package-name": "py_launch_blueprint",
+      "include-component-in-tag": false,
+      "extra-files": [
+        {
+          "type": "toml",
+          "path": "pyproject.toml",
+          "jsonpath": "$.project.version"
+        }
+      ],
+      "changelog-sections": [
+        {"type": "feat",     "section": "Features"},
+        {"type": "fix",      "section": "Bug Fixes"},
+        {"type": "perf",     "section": "Performance Improvements"},
+        {"type": "refactor", "section": "Refactor"},
+        {"type": "revert",   "section": "Reverts"},
+        {"type": "deps",     "section": "Dependencies"},
+        {"type": "chore", "section": "Miscellaneous", "hidden": true},
+        {"type": "docs",  "section": "Documentation", "hidden": true},
+        {"type": "style", "section": "Styles",        "hidden": true},
+        {"type": "test",  "section": "Tests",         "hidden": true},
+        {"type": "ci",    "section": "CI",            "hidden": true},
+        {"type": "build", "section": "Build System",  "hidden": true}
+      ]
+    }
+  }
+}

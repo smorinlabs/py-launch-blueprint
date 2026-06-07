@@ -1,0 +1,42 @@
+# ITM-012 — yamllint config. Pairs with .yamlfmt (formatter); this is the linter.
+extends: default
+
+rules:
+  # Align with .yamlfmt's max line length (88 — Black/Ruff convention).
+  line-length:
+    max: 88
+    level: warning
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+
+  # GitHub Actions YAML uses on:/off:/yes:/no: as keys; don't flag as truthy.
+  truthy:
+    allowed-values: ["true", "false", "on", "off"]
+    check-keys: false
+
+  # Document-start (---) not required for the template's YAML files.
+  document-start: disable
+
+  # Comment indentation/spacing — explicit so GitHub Actions YAML lints predictably.
+  comments:
+    require-starting-space: true
+    min-spaces-from-content: 1
+
+  comments-indentation: enable
+
+ignore: |
+  .venv/
+  .git/
+  node_modules/
+  dist/
+  build/
+  docs/_build/
+  .ruff_cache/
+  .pytest_cache/
+  .mypy_cache/
+  .ty_cache/
+
+  .github/ISSUE_TEMPLATE/
+  .readthedocs.yaml
+
+  .github/workflows/update-contributors.yml

@@ -1,0 +1,384 @@
+name: _checks
+on:
+  workflow_call:
+    inputs:
+      provisioner:
+        type: string
+        required: true   # traditional | flox | mise
+      os:
+        type: string
+        required: true
+      cache:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+# NOTE: the `editorconfig` check was removed from this experiment. Its only
+# traditional path (npm editorconfig-checker) downloads a binary from GitHub at
+# runtime, which flaked (~45%: rate-limit + TAR_BAD_ARCHIVE) under the driver's
+# rapid dispatches — isolated to that one job. Excluded from all sides for fairness.
+#
+# Each job: checkout -> one provision step (gated by `provisioner`) -> run the
+# check. flox runs the bare tool under `flox activate --`; mise under `mise exec
+# --`; traditional uses uvx/bunx/uv-run as the repo does today.
+
+jobs:
+  ruff-check:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox' || inputs.provisioner == 'flox-nocache'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+          use-cache: ${{ inputs.provisioner == 'flox-nocache' && 'false' || 'true' }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox-noaction'
+        uses: ./.github/actions/provision-flox-noaction
+        with:
+          cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox | flox-nocache | flox-noaction) flox activate -- ruff check . ;;
+            mise) mise exec -- ruff check . ;;
+            *)    uvx ruff check . ;;
+          esac
+
+  ruff-format:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox' || inputs.provisioner == 'flox-nocache'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+          use-cache: ${{ inputs.provisioner == 'flox-nocache' && 'false' || 'true' }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox-noaction'
+        uses: ./.github/actions/provision-flox-noaction
+        with:
+          cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox | flox-nocache | flox-noaction) flox activate -- ruff format --check . ;;
+            mise) mise exec -- ruff format --check . ;;
+            *)    uvx ruff format --check . ;;
+          esac
+
+  ty:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox' || inputs.provisioner == 'flox-nocache'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+          use-cache: ${{ inputs.provisioner == 'flox-nocache' && 'false' || 'true' }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox-noaction'
+        uses: ./.github/actions/provision-flox-noaction
+        with:
+          cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          cmd='uv sync --group dev && uv run ty check py_launch_blueprint/'
+          case "${{ inputs.provisioner }}" in
+            flox | flox-nocache | flox-noaction) flox activate -- bash -c "$cmd" ;;
+            mise) mise exec -- bash -c "$cmd" ;;
+            *)    bash -c "$cmd" ;;
+          esac
+
+  pytest:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox' || inputs.provisioner == 'flox-nocache'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+          use-cache: ${{ inputs.provisioner == 'flox-nocache' && 'false' || 'true' }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox-noaction'
+        uses: ./.github/actions/provision-flox-noaction
+        with:
+          cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          cmd='uv sync --group dev && uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml'
+          case "${{ inputs.provisioner }}" in
+            flox | flox-nocache | flox-noaction) flox activate -- bash -c "$cmd" ;;
+            mise) mise exec -- bash -c "$cmd" ;;
+            *)    bash -c "$cmd" ;;
+          esac
+
+  taplo:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: just
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox' || inputs.provisioner == 'flox-nocache'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+          use-cache: ${{ inputs.provisioner == 'flox-nocache' && 'false' || 'true' }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox-noaction'
+        uses: ./.github/actions/provision-flox-noaction
+        with:
+          cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox | flox-nocache | flox-noaction) flox activate -- taplo check '**/*.toml' ;;
+            mise) mise exec -- taplo check '**/*.toml' ;;
+            *)    taplo check '**/*.toml' ;;
+          esac
+
+  codespell:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox' || inputs.provisioner == 'flox-nocache'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+          use-cache: ${{ inputs.provisioner == 'flox-nocache' && 'false' || 'true' }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox-noaction'
+        uses: ./.github/actions/provision-flox-noaction
+        with:
+          cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox | flox-nocache | flox-noaction) flox activate -- codespell --toml pyproject.toml ;;
+            mise) mise exec -- codespell --toml pyproject.toml ;;
+            *)    uvx codespell --toml pyproject.toml ;;
+          esac
+
+  yamllint:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox' || inputs.provisioner == 'flox-nocache'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+          use-cache: ${{ inputs.provisioner == 'flox-nocache' && 'false' || 'true' }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox-noaction'
+        uses: ./.github/actions/provision-flox-noaction
+        with:
+          cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox | flox-nocache | flox-noaction) flox activate -- yamllint -c .yamllint . ;;
+            mise) mise exec -- yamllint -c .yamllint . ;;
+            *)    uvx yamllint -c .yamllint . ;;
+          esac
+
+  bandit:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: uv
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox' || inputs.provisioner == 'flox-nocache'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+          use-cache: ${{ inputs.provisioner == 'flox-nocache' && 'false' || 'true' }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox-noaction'
+        uses: ./.github/actions/provision-flox-noaction
+        with:
+          cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox | flox-nocache | flox-noaction) flox activate -- bandit -r py_launch_blueprint/ -c pyproject.toml ;;
+            mise) mise exec -- bandit -r py_launch_blueprint/ -c pyproject.toml ;;
+            *)    uvx bandit -r py_launch_blueprint/ -c pyproject.toml ;;
+          esac
+
+  gitleaks:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: gitleaks
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox' || inputs.provisioner == 'flox-nocache'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+          use-cache: ${{ inputs.provisioner == 'flox-nocache' && 'false' || 'true' }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox-noaction'
+        uses: ./.github/actions/provision-flox-noaction
+        with:
+          cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox | flox-nocache | flox-noaction) flox activate -- gitleaks detect --source . --config .gitleaks.toml --no-banner ;;
+            mise) mise exec -- gitleaks detect --source . --config .gitleaks.toml --no-banner ;;
+            *)    gitleaks detect --source . --config .gitleaks.toml --no-banner ;;
+          esac
+
+  commitlint:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: provision (traditional)
+        if: inputs.provisioner == 'traditional'
+        uses: ./.github/actions/provision-traditional
+        with:
+          tools: bun
+          cache: ${{ inputs.cache }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox' || inputs.provisioner == 'flox-nocache'
+        uses: ./.github/actions/provision-flox
+        with:
+          cache: ${{ inputs.cache }}
+          use-cache: ${{ inputs.provisioner == 'flox-nocache' && 'false' || 'true' }}
+      - name: provision (flox)
+        if: inputs.provisioner == 'flox-noaction'
+        uses: ./.github/actions/provision-flox-noaction
+        with:
+          cache: ${{ inputs.cache }}
+      - name: provision (mise)
+        if: inputs.provisioner == 'mise'
+        uses: ./.github/actions/provision-mise
+        with:
+          cache: ${{ inputs.cache }}
+      - name: run
+        shell: bash
+        run: |
+          case "${{ inputs.provisioner }}" in
+            flox | flox-nocache | flox-noaction) flox activate -- commitlint --from=HEAD~10 --to=HEAD ;;
+            # mise's isolated commitlint can't see @commitlint/config-conventional
+            # (a repo devDep); bun (from mise) installs it, then mise commitlint runs.
+            mise) mise exec -- bash -c 'bun install && commitlint --from=HEAD~10 --to=HEAD' ;;
+            *)    bunx --bun commitlint --from=HEAD~10 --to=HEAD ;;
+          esac

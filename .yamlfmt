@@ -1,0 +1,31 @@
+# .yamlfmt configuration file
+# Place this in your project root as: .yamlfmt
+formatter:
+  # Basic formatting
+  type: basic
+  indent: 2
+  include_document_start: false
+  line_ending: lf
+
+  # Preserve line breaks and handle arrays nicely
+  retain_line_breaks_single: true
+  indentless_arrays: true
+
+  # Handle whitespace
+  trim_trailing_whitespace: true
+  pad_line_comments: 2
+
+  # Line length (match your yamllint config)
+  max_width: 160
+
+# Paths to include/exclude
+paths:
+  include: ["**/*.yml", "**/*.yaml"]
+  exclude:
+    - ".venv/**"
+    - "node_modules/**"
+    - ".git/**"
+    - "__pycache__/**"
+    - "*.egg-info/**"
+    - "dist/**"
+    - "build/**"

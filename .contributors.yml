@@ -1,0 +1,61 @@
+# yamllint disable rule:line-length
+# yaml-language-server: $schema=https://raw.githubusercontent.com/smorinlabs/contributors-please/main/schemas/config.schema.json
+# yamllint enable rule:line-length
+
+classifier: path
+output_file: CONTRIBUTORS.md
+state_file: .contributors.jsonl
+in_place: true
+in_place_marker_start: "<!-- contributors-please:start -->"
+in_place_marker_end: "<!-- contributors-please:end -->"
+entry_template: "- [{{name}}]({{profile}}) - {{title}} ({{commits}} commits)"
+columns_per_row: 1
+sort: contributions
+min_contributions: 1
+ignore:
+  - Copilot
+  - claude
+  - github-actions[bot]
+  - dependabot[bot]
+  - release-please-smorinlabs[bot]
+
+classification:
+  categories:
+    - id: docs
+      label: Documentation Contributor
+      paths:
+        - "docs/**"
+        - "*.md"
+        - ".github/**"
+    - id: quality
+      label: Quality Contributor
+      paths:
+        - "tests/**"
+        - "scripts/check-*"
+        - ".gitleaks.toml"
+  default:
+    id: code
+    label: Code Contributor
+  combinations:
+    - id: project
+      label: Project Contributor
+      when: [docs, quality, code]
+  multi_category_resolution: priority
+
+identity_map:
+  - login: smorin
+    emails:
+      - steve.morin@gmail.com
+  - login: habeshaethiopia
+    emails:
+      - adanemoges6@gmail.com
+      - adman19940805@gmail.com
+  - login: Tatianah3
+    emails:
+      - tatihe3@gmail.com
+  - login: gdev19
+    emails:
+      - ashkhen09300@gmail.com
+  - login: py-craft
+    emails:
+      - valoyan2@gmail.com
