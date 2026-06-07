@@ -52,6 +52,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
+      id-token: write  # OIDC for tokenless Codecov upload (public repo)
     strategy:
       fail-fast: false  # see all failures, not just the first (round-3)
       matrix:
@@ -70,10 +71,11 @@ jobs:
         run: uv run pytest -m "" --cov=py_launch_blueprint --cov-report=xml
       - name: Upload coverage to Codecov
         # Single matrix combo uploads (avoids 4x duplicate reports).
+        # use_oidc: tokenless upload (public repo). Requires `id-token: write`.
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         uses: codecov/codecov-action@v6
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: coverage.xml
           flags: unittests
           fail_ci_if_error: false
