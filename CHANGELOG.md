@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.7](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.6...v1.1.7) (2026-06-07)
+
+
+### Bug Fixes
+
+* **contributors:** restore well-formed CONTRIBUTORS.md ([7cd28b7](https://github.com/smorinlabs/py-launch-blueprint/commit/7cd28b7f13a0e98de38150cc0b914c7475755241))
+* **contributors:** restore well-formed CONTRIBUTORS.md ([#361](https://github.com/smorinlabs/py-launch-blueprint/issues/361)) ([82b4a17](https://github.com/smorinlabs/py-launch-blueprint/commit/82b4a177d7c13c81d10d6c02440aade86424ac08))
+
 ## [1.1.6](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.5...v1.1.6) (2026-06-04)
 
 
