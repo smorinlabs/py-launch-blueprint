@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -42,7 +43,20 @@ from common import MODES  # noqa: E402 — SSOT; re-exported for legacy imports
 
 
 def _git(*args: str, cwd: Path) -> subprocess.CompletedProcess:
-    """Run git with a sandboxed identity (no global config side-effects)."""
+    """Run git with a sandboxed identity (no global config side-effects).
+
+    Refuses to run outside tempfile.gettempdir() to prevent the
+    'fixture-commit-on-real-repo' failure class: every _git() call must
+    target a path under the system temp dir (i.e., a pytest tmp_path).
+    """
+    tmp_root = Path(tempfile.gettempdir()).resolve()
+    cwd_resolved = cwd.resolve()
+    if not str(cwd_resolved).startswith(str(tmp_root)):
+        raise RuntimeError(
+            f"refusing to run sandboxed _git() outside the system temp dir; "
+            f"cwd={cwd_resolved}, tmp_root={tmp_root}. "
+            f"This guard prevents the fixture-commit-on-real-repo failure class."
+        )
     env_args = [
         "-c",
         "user.email=test@example.com",
