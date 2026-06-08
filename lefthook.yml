@@ -9,10 +9,15 @@
 min_version: 1.13.0  # ITM-021 installer floor
 
 # ITM-040 — commitlint commit-msg step. Decided round 7.
+# Use the full package name `@commitlint/cli`, not bare `commitlint`. On a cold
+# bun cache, `bunx --bun commitlint` is ambiguous (the bin and an unrelated
+# mise shim share the name), and bun falls through to PATH where the mise
+# shim wins and fails with "No version is set for shim: commitlint". Naming
+# the scoped package up-front forces bun to resolve via npm before PATH.
 commit-msg:
   commands:
     commitlint:
-      run: bunx --bun commitlint --edit {1}
+      run: bunx --bun @commitlint/cli --edit {1}
 
 # Pre-commit stage — per-tool steps land via downstream ITMs.
 pre-commit:
@@ -22,10 +27,14 @@ pre-commit:
     gitleaks:
       run: scripts/check-gitleaks.sh --staged
     # ITM-010 — editorconfig-checker staged-only (decided round 9).
+    # Use uvx (PyPI wheel bundles the Go binary) instead of the npm wrapper.
+    # The npm wrapper downloads the binary at runtime and flakes with
+    # TAR_BAD_ARCHIVE — same issue documented in .github/workflows/_checks.yml.
+    # Note: the Go binary uses single-dash flags (-config, not --config).
     editorconfig-checker:
       run: >-
-        bunx --bun editorconfig-checker
-        --config .editorconfig-checker.json
+        uvx --from editorconfig-checker ec
+        -config .editorconfig-checker.json
         {staged_files}
     # ITM-013 — yamllint staged YAML only (decided round 2).
     yamllint:
@@ -70,5 +79,18 @@ pre-push:
     # `--override-ini=addopts=` because the project default excludes
     # slow/live markers — init tests aren't marked so they need explicit
     # override to run consistently regardless of marker config drift.
+    #
+    # `env -u GIT_*` scrubs pre-push environment variables that git sets
+    # before running the hook. The init/tests fixtures spawn `git commit`
+    # in pytest tmp dirs; inherited `GIT_DIR` makes those subprocesses
+    # operate on the OUTER worktree instead of the tmp dir — which both
+    # makes tests fail (no commit happens in tmp -> guard.sh sees no repo)
+    # AND can author a "Test Fixture <test@example.com>" commit against the
+    # real blueprint repo (the 152-file-deletion class — see commit feb0938).
+    # Scrubbing the env before pytest starts covers `_git()`, `guard.sh`,
+    # and `init.py` subprocesses uniformly.
     init-tests:
-      run: uv run pytest init/tests/ --override-ini="addopts=" -q
+      run: >-
+        env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE
+        -u GIT_OBJECT_DIRECTORY -u GIT_COMMON_DIR -u GIT_PREFIX
+        uv run pytest init/tests/ --override-ini="addopts=" -q
