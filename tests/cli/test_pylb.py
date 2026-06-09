@@ -280,3 +280,57 @@ def test_config_set_refuses_corrupt_file(runner, tmp_path, monkeypatch):
     )
     assert result.exit_code != 0
     assert cfg.read_text() == before  # nothing destroyed
+
+
+# -- phase 2: output-file, format-from-config, color precedence ------------
+
+
+def test_output_file_redirects_results(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    cfg = tmp_path / "plbp_config.toml"
+    out = tmp_path / "result.json"
+    result = runner.invoke(
+        cli,
+        ["config", "path", "--config", str(cfg), "--json", "--output-file", str(out)],
+    )
+    assert result.exit_code == 0
+    assert result.stdout == ""  # results went to the file, not stdout
+    payload = json.loads(out.read_text())
+    assert payload["path"] == str(cfg)
+
+
+def test_output_format_resolves_from_config(runner, tmp_path, monkeypatch):
+    # R7: config supplies the format when no flag/env does.
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    monkeypatch.delenv("PLBP_OUTPUT", raising=False)
+    cfg = tmp_path / "plbp_config.toml"
+    cfg.write_text('[output]\nformat = "json"\n')
+    result = runner.invoke(cli, ["config", "path", "--config", str(cfg)])
+    assert result.exit_code == 0
+    payload = json.loads(result.output)  # JSON without passing --json
+    assert payload["exists"] is True
+
+
+def test_output_flag_beats_config_format(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    cfg = tmp_path / "plbp_config.toml"
+    cfg.write_text('[output]\nformat = "json"\n')
+    result = runner.invoke(
+        cli, ["config", "path", "--config", str(cfg), "-o", "markdown"]
+    )
+    assert result.exit_code == 0
+    assert "| Config path |" in result.output  # markdown, not JSON
+
+
+def test_color_precedence_resolution(monkeypatch):
+    from py_launch_blueprint.cli.context import _resolve_color
+
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    assert _resolve_color(False, "auto") == "auto"
+    assert _resolve_color(False, "always") == "always"
+    # config "always" is overridden by NO_COLOR env (R5.5)...
+    monkeypatch.setenv("NO_COLOR", "1")
+    assert _resolve_color(False, "always") == "never"
+    # ...and the --no-color flag overrides everything.
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    assert _resolve_color(True, "always") == "never"

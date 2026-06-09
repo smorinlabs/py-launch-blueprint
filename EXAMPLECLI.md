@@ -140,11 +140,12 @@ human text, JSON, or Markdown.
 
 | Flag | Purpose |
 |------|---------|
-| `-o, --output [text\|json\|markdown]` | output format (default `text`) |
+| `-o, --output [text\|json\|markdown]` | output format (default `text`; env `PLBP_OUTPUT`; config `output.format`) |
 | `--json` | shorthand for `--output json` |
+| `--output-file PATH` | write results to a file instead of stdout (format still set by `--output`) |
 | `-v, --verbose` | increase log verbosity (`-vv` for debug) |
 | `-q, --quiet` | suppress non-essential stderr |
-| `--no-color` | disable ANSI color |
+| `--no-color` | force color off (`NO_COLOR` env and config `output.color` also honored) |
 | `--config PATH` | path to a TOML config file (overrides discovery; env `PLBP_CONFIG`) |
 | `--token TEXT` | Py token (overrides `$PLBP_TOKEN`; never stored on disk) |
 | `--no-input` | never prompt; fail instead (scripts/CI) |
@@ -153,9 +154,14 @@ human text, JSON, or Markdown.
 
 ## Output contract
 
-- **Results** → stdout (pipe-safe). **Logs, messages, errors** → stderr.
+- **Results** → stdout (pipe-safe), or the `--output-file` path when given.
+  **Logs, messages, errors** → stderr, always.
 - In `--json` mode, stdout is clean parseable JSON; errors become a structured
   `{"error": {"code", "name", "message"}}` object on stderr.
+- Format never auto-switches on TTY: piped output formats the same as
+  interactive output unless `-o`/`PLBP_OUTPUT`/config says otherwise.
+- Color: auto-detected from the TTY; `--no-color` > `NO_COLOR` env >
+  `output.color` config (`auto`/`always`/`never`) > auto-detect.
 
 ## Usage
 

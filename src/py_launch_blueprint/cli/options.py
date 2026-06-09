@@ -55,6 +55,13 @@ _GLOBAL_OPTIONS: list[Callable[[Any], Any]] = [
         help="Shorthand for --output json.",
     ),
     click.option(
+        "--output-file",
+        "output_file",
+        type=click.Path(dir_okay=False, writable=True),
+        default=None,
+        help="Write results to a file instead of stdout (format set by --output).",
+    ),
+    click.option(
         "-v", "--verbose", count=True, help="Increase log verbosity (-vv for debug)."
     ),
     click.option(
@@ -88,6 +95,7 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
         *args: Any,
         output_mode: str | None,
         json_mode: bool,
+        output_file: str | None,
         verbose: int,
         quiet: bool,
         no_color: bool,
@@ -99,6 +107,7 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
         app = AppContext.create(
             output_mode=output_mode,
             json_mode=json_mode,
+            output_file=output_file,
             verbose=verbose,
             quiet=quiet,
             no_color=no_color,
