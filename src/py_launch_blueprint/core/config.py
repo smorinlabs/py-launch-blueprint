@@ -17,123 +17,145 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Configuration loading: a TOML file in an XDG-compliant location.
+"""Configuration loading: layered TOML files in XDG-compliant locations.
 
-The config file defaults to ``$XDG_CONFIG_HOME/pylb/pylb_config.toml`` (see
-``core.paths``). Its format is TOML::
+Discovery (each layer overrides the previous), per the conventions spec:
 
-    # ~/.config/pylb/pylb_config.toml
-    token = "your_token_here"
+1. system  — ``$XDG_CONFIG_DIRS/plbp/plbp_config.toml`` (default ``/etc/xdg``)
+2. user    — ``$XDG_CONFIG_HOME/plbp/plbp_config.toml`` (default ``~/.config``)
+3. project — ``./plbp_config.toml`` (or ``./.plbp_config.toml``)
 
-    # (an [auth] table is also accepted, for forward-compatibility)
-    # [auth]
-    # token = "your_token_here"
+``--config PATH`` (env ``PLBP_CONFIG``) overrides discovery entirely. Settings
+are validated against :mod:`core.settings` (the ``[output]`` / ``[logging]``
+tables).
 
-Precedence (highest wins):
-
-1. explicit override (e.g. the ``--token`` flag)
-2. environment variable (``PY_TOKEN``)
-3. the TOML config file
-
-This module only *loads* configuration; it never prints.
+Secrets are **never** stored in the config file (R8): the token resolves from
+``--token`` then ``$PLBP_TOKEN`` only — never from a file. This module only
+*loads* and *writes* configuration; it never prints.
 """
 
 import os
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import tomli_w
 
 from py_launch_blueprint.core import paths
+from py_launch_blueprint.core.settings import (
+    Settings,
+    coerce_value,
+    parse_key,
+    settings_from_layers,
+)
 
-TOKEN_ENV_VAR = "PY_TOKEN"  # noqa: S105 — env var name, not a secret value
+TOKEN_ENV_VAR = "PLBP_TOKEN"  # noqa: S105 — env var name, not a secret value
 
 
 @dataclass
 class Config:
     """Resolved runtime configuration."""
 
+    #: Auth token, from ``--token`` or ``$PLBP_TOKEN`` only (never a file).
     token: str | None = None
-    #: Where the token was resolved from ("flag", "env", "file", or None).
+    #: Where the token came from ("flag", "env", or None).
     source: str | None = None
-    #: The config file path that was consulted (whether or not it existed).
+    #: Validated, layered settings (the ``[output]`` / ``[logging]`` tables).
+    settings: Settings = field(default_factory=Settings)
+    #: The writable (user, or ``--config``) config file path.
     config_path: Path | None = None
+    #: Config files that existed and were merged, lowest precedence first.
+    loaded_paths: list[Path] = field(default_factory=list)
 
 
 def get_config_dir() -> Path:
-    """Return the per-user config directory (``$XDG_CONFIG_HOME/pylb``)."""
+    """Return the per-user config directory (``$XDG_CONFIG_HOME/plbp``)."""
     return paths.config_dir()
 
 
 def get_default_config_path() -> Path:
-    """Return the default TOML config file path (``…/pylb/pylb_config.toml``)."""
+    """Return the default (user) TOML config path (``…/plbp/plbp_config.toml``)."""
     return paths.config_file()
 
 
-def _read_toml_token(path: Path) -> str | None:
-    """Extract a token from a TOML config file (top-level or ``[auth]``)."""
+def _read_toml(path: Path) -> dict[str, Any]:
+    """Parse a TOML file to a dict; missing/invalid files read as empty."""
     try:
-        data = tomllib.loads(path.read_text(encoding="utf-8"))
+        return tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, tomllib.TOMLDecodeError):
-        return None
-    token = data.get("token")
-    if token is None and isinstance(data.get("auth"), dict):
-        token = data["auth"].get("token")
-    return token if isinstance(token, str) else None
+        return {}
+
+
+def _discovery_paths(config_file: str | None) -> tuple[Path, list[Path]]:
+    """Return ``(write_target, layer_paths)`` lowest precedence first.
+
+    ``--config`` collapses discovery to that single file; otherwise the
+    system → user → project layers apply.
+    """
+    if config_file:
+        target = Path(config_file)
+        return target, [target]
+    target = paths.config_file()
+    layers = [
+        *reversed(paths.system_config_files()),  # system (lowest first)
+        target,  # user
+        paths.project_config_file(),  # project (highest)
+    ]
+    return target, layers
 
 
 def load_config(
     config_file: str | None = None,
     token_override: str | None = None,
 ) -> Config:
-    """Resolve configuration from flag, environment, then the TOML file.
+    """Resolve settings (layered files) and the token (flag/env only)."""
+    target, layer_paths = _discovery_paths(config_file)
+    settings = settings_from_layers([_read_toml(p) for p in layer_paths])
 
-    Args:
-        config_file: Optional explicit path to a TOML config file. Falls back
-            to the default XDG location when omitted.
-        token_override: Optional token supplied directly (e.g. ``--token``),
-            taking precedence over all other sources.
-
-    Returns:
-        A :class:`Config`. ``token`` may be ``None`` if nothing provided one;
-        callers that require a token should raise ``AuthError`` themselves.
-    """
-    config_path = Path(config_file) if config_file else get_default_config_path()
-
-    # 1. explicit override
+    token: str | None = None
+    source: str | None = None
     if token_override:
-        return Config(token=token_override, source="flag", config_path=config_path)
+        token, source = token_override, "flag"
+    else:
+        env_token = os.getenv(TOKEN_ENV_VAR)
+        if env_token:
+            token, source = env_token, "env"
 
-    # 2. environment variable
-    env_token = os.getenv(TOKEN_ENV_VAR)
-    if env_token:
-        return Config(token=env_token, source="env", config_path=config_path)
-
-    # 3. TOML config file (only if present; missing file is not an error here)
-    if config_path.exists():
-        file_token = _read_toml_token(config_path)
-        if file_token:
-            return Config(token=file_token, source="file", config_path=config_path)
-
-    return Config(token=None, source=None, config_path=config_path)
+    return Config(
+        token=token,
+        source=source,
+        settings=settings,
+        config_path=target,
+        loaded_paths=[p for p in layer_paths if p.exists()],
+    )
 
 
-def save_token(config_path: Path, token: str) -> Path:
-    """Write ``token`` into the TOML config file, preserving other keys.
+def get_file_value(config_path: Path, dotted_key: str) -> Any:
+    """Return the value of ``section.key`` as stored in ``config_path``, or None."""
+    section, key = parse_key(dotted_key)
+    table = _read_toml(config_path).get(section)
+    if isinstance(table, dict) and key in table:
+        return table[key]
+    return None
 
-    Creates the parent directory (0700) and restricts the file to 0600 — it
-    holds a secret. Returns the path written.
+
+def set_config_value(config_path: Path, dotted_key: str, raw_value: str) -> Any:
+    """Validate + write one ``section.key`` into the TOML file, preserving rest.
+
+    Returns the coerced value. Raises :class:`ConfigError` for unknown keys or
+    invalid values (secrets are not part of the schema, so cannot be set here).
     """
-    data: dict[str, Any] = {}
-    if config_path.exists():
-        try:
-            data = dict(tomllib.loads(config_path.read_text(encoding="utf-8")))
-        except tomllib.TOMLDecodeError:
-            data = {}
-    data["token"] = token
+    section, key = parse_key(dotted_key)
+    value = coerce_value(section, key, raw_value)
+
+    data = _read_toml(config_path)
+    table = data.get(section)
+    if not isinstance(table, dict):
+        table = {}
+    table[key] = value
+    data[section] = table
+
     config_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     config_path.write_text(tomli_w.dumps(data), encoding="utf-8")
-    config_path.chmod(0o600)
-    return config_path
+    return value

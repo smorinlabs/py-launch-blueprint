@@ -17,7 +17,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""The output contract: render any result as human / JSON / Markdown.
+"""The output contract: render any result as text / JSON / Markdown.
 
 Rules (per clig.dev):
 
@@ -41,7 +41,7 @@ from py_launch_blueprint.core.models import CLIResult
 class OutputMode(StrEnum):
     """Supported output formats. Every command honors all three."""
 
-    HUMAN = "human"
+    TEXT = "text"
     JSON = "json"
     MARKDOWN = "markdown"
 
@@ -64,9 +64,9 @@ class Renderer:
         elif self.mode is OutputMode.MARKDOWN:
             click.echo(self._to_markdown(result))
         else:
-            self._render_human(result)
+            self._render_text(result)
 
-    def _render_human(self, result: CLIResult) -> None:
+    def _render_text(self, result: CLIResult) -> None:
         columns = result.table_columns()
         if not columns or not result.table_rows():
             note = result.human_note()

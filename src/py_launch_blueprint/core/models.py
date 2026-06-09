@@ -120,7 +120,7 @@ class DoctorCheck(BaseModel):
 
 
 class DoctorReport(CLIResult):
-    """Aggregated diagnostics for `pylb doctor`."""
+    """Aggregated diagnostics for `plbp doctor`."""
 
     checks: list[DoctorCheck]
 

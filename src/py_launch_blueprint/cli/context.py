@@ -92,9 +92,13 @@ class AppContext:
 
 
 def _resolve_mode(output_mode: str | None, json_mode: bool) -> OutputMode:
-    """``--json`` wins; otherwise use ``--output`` or default to human."""
+    """``--json`` wins; otherwise use ``--output`` or default to text.
+
+    Format never auto-switches on TTY (R3.3): a piped run formats the same as
+    an interactive one unless ``--output`` says otherwise.
+    """
     if json_mode:
         return OutputMode.JSON
     if output_mode:
         return OutputMode(output_mode)
-    return OutputMode.HUMAN
+    return OutputMode.TEXT

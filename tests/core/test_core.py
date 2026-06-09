@@ -3,6 +3,8 @@
 import logging
 from pathlib import Path
 
+import pytest
+
 from py_launch_blueprint.core import (
     Config,
     ConfigPath,
@@ -11,8 +13,14 @@ from py_launch_blueprint.core import (
     load_config,
     paths,
 )
-from py_launch_blueprint.core.config import TOKEN_ENV_VAR
+from py_launch_blueprint.core.config import (
+    TOKEN_ENV_VAR,
+    get_file_value,
+    set_config_value,
+)
+from py_launch_blueprint.core.errors import ConfigError
 from py_launch_blueprint.core.logging import LogFormat, configure_logging, get_logger
+from py_launch_blueprint.core.settings import writable_keys
 
 
 def test_project_list_renders_rows():
@@ -52,38 +60,73 @@ def test_load_config_flag_wins(monkeypatch):
     assert cfg.source == "flag"
 
 
-def test_load_config_env_over_file(tmp_path, monkeypatch):
-    cfg_file = tmp_path / "pylb_config.toml"
-    cfg_file.write_text('token = "file_token"\n')
-    monkeypatch.setenv(TOKEN_ENV_VAR, "env_token")
-    cfg = load_config(config_file=str(cfg_file))
-    assert cfg.token == "env_token"
-    assert cfg.source == "env"
-
-
-def test_load_config_file_fallback_toml(tmp_path, monkeypatch):
-    cfg_file = tmp_path / "pylb_config.toml"
+def test_token_never_read_from_file(tmp_path, monkeypatch):
+    # R8: a token in the config file is ignored — secrets are flag/env only.
+    cfg_file = tmp_path / "plbp_config.toml"
     cfg_file.write_text('token = "file_token"\n')
     monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
     cfg = load_config(config_file=str(cfg_file))
-    assert cfg.token == "file_token"
-    assert cfg.source == "file"
-
-
-def test_load_config_file_fallback_auth_table(tmp_path, monkeypatch):
-    cfg_file = tmp_path / "pylb_config.toml"
-    cfg_file.write_text('[auth]\ntoken = "table_token"\n')
-    monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
-    cfg = load_config(config_file=str(cfg_file))
-    assert cfg.token == "table_token"
+    assert cfg.token is None
+    assert cfg.source is None
 
 
 def test_load_config_missing(monkeypatch):
     monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
-    cfg = load_config(config_file="/nonexistent/path/.env")
+    cfg = load_config(config_file="/nonexistent/path/plbp_config.toml")
     assert isinstance(cfg, Config)
     assert cfg.token is None
     assert cfg.source is None
+
+
+def test_settings_parsed_from_file(tmp_path, monkeypatch):
+    monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
+    cfg_file = tmp_path / "plbp_config.toml"
+    cfg_file.write_text('[output]\ncolor = "always"\n[logging]\nlevel = "info"\n')
+    cfg = load_config(config_file=str(cfg_file))
+    assert cfg.settings.output.color == "always"
+    assert cfg.settings.logging.level == "info"
+    assert cfg.settings.output.format == "text"  # default for unset keys
+
+
+def test_settings_defaults_when_no_file(monkeypatch):
+    monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
+    cfg = load_config(config_file="/nonexistent/plbp_config.toml")
+    assert cfg.settings.output.format == "text"
+    assert cfg.settings.output.color == "auto"
+    assert cfg.settings.logging.level == "warning"
+
+
+def test_set_config_value_writes_nested_table(tmp_path):
+    cfg_file = tmp_path / "plbp_config.toml"
+    set_config_value(cfg_file, "logging.level", "info")
+    set_config_value(cfg_file, "output.color", "always")
+    assert get_file_value(cfg_file, "logging.level") == "info"
+    assert get_file_value(cfg_file, "output.color") == "always"
+    # Re-loading reflects the written values.
+    cfg = load_config(config_file=str(cfg_file))
+    assert cfg.settings.logging.level == "info"
+    assert cfg.settings.output.color == "always"
+
+
+def test_set_config_value_rejects_unknown_key(tmp_path):
+    cfg_file = tmp_path / "plbp_config.toml"
+    with pytest.raises(ConfigError):
+        set_config_value(cfg_file, "logging.nope", "x")
+    with pytest.raises(ConfigError):
+        set_config_value(cfg_file, "token", "secret")  # secrets not settable
+
+
+def test_set_config_value_rejects_invalid_value(tmp_path):
+    cfg_file = tmp_path / "plbp_config.toml"
+    with pytest.raises(ConfigError):
+        set_config_value(cfg_file, "output.color", "rainbow")
+
+
+def test_writable_keys_excludes_secrets():
+    keys = writable_keys()
+    assert "output.color" in keys
+    assert "logging.file_level" in keys
+    assert "token" not in keys
 
 
 def test_logging_configures_without_error():
@@ -98,17 +141,17 @@ def test_logging_configures_without_error():
 
 def test_config_file_naming_under_xdg(tmp_path, monkeypatch):
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
-    assert paths.config_file() == tmp_path / "pylb" / "pylb_config.toml"
+    assert paths.config_file() == tmp_path / "plbp" / "plbp_config.toml"
 
 
 def test_database_file_naming_under_xdg(tmp_path, monkeypatch):
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
-    assert paths.database_file() == tmp_path / "pylb" / "pylb_db.db"
+    assert paths.database_file() == tmp_path / "plbp" / "plbp_db.db"
 
 
 def test_state_file_naming_under_xdg(tmp_path, monkeypatch):
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
-    assert paths.state_file("history") == tmp_path / "pylb" / "pylb_history.log"
+    assert paths.state_file("history") == tmp_path / "plbp" / "plbp_history.log"
 
 
 def test_xdg_default_when_unset(monkeypatch):

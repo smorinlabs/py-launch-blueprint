@@ -115,10 +115,10 @@ py-projects --version
 
 ---
 
-# `pylb` — noun-verb CLI (new)
+# `plbp` — noun-verb CLI (new)
 
-`pylb` is the gh-style entry point for this project. Commands follow a
-`pylb <noun> <verb>` shape and share one set of global flags, one output
+`plbp` is the gh-style entry point for this project. Commands follow a
+`plbp <noun> <verb>` shape and share one set of global flags, one output
 contract, and structured logging out of the box. The legacy `py-projects`
 command above is preserved for back-compat.
 
@@ -140,13 +140,13 @@ human text, JSON, or Markdown.
 
 | Flag | Purpose |
 |------|---------|
-| `-o, --output [human\|json\|markdown]` | output format (default `human`) |
+| `-o, --output [text\|json\|markdown]` | output format (default `text`) |
 | `--json` | shorthand for `--output json` |
 | `-v, --verbose` | increase log verbosity (`-vv` for debug) |
 | `-q, --quiet` | suppress non-essential stderr |
 | `--no-color` | disable ANSI color |
-| `--config PATH` | path to a `.env` config file |
-| `--token TEXT` | Py token (overrides env and config file) |
+| `--config PATH` | path to a TOML config file (overrides discovery; env `PLBP_CONFIG`) |
+| `--token TEXT` | Py token (overrides `$PLBP_TOKEN`; never stored on disk) |
 | `--no-input` | never prompt; fail instead (scripts/CI) |
 | `-V, --version` | version + Python + platform (root) |
 | `-h, --help` | help at every level |
@@ -161,25 +161,27 @@ human text, JSON, or Markdown.
 
 ```bash
 # Projects (noun) → list / get (verbs)
-pylb projects list
-pylb projects list --workspace "My Workspace" --json
-pylb projects list -o markdown
-pylb projects get 12345
+plbp projects list
+plbp projects list --workspace "My Workspace" --json
+plbp projects list -o markdown
+plbp projects get 12345
 
-# Config (no network required)
-pylb config path
-pylb config get token --json
-pylb config set token <TOKEN>            # writes pylb_config.toml (0600)
-pylb config set token <TOKEN> --dry-run  # show what would change, write nothing
-pylb config set token <TOKEN> --yes      # skip the overwrite confirmation
+# Config — set/get non-secret keys by dotted path (no network required)
+plbp config path
+plbp config get output.color
+plbp config set logging.level info               # writes [logging] level
+plbp config set output.color always --dry-run    # preview, write nothing
+plbp config set logging.file_level debug --yes   # skip the overwrite prompt
+# the token is NEVER stored in config — pass --token or set $PLBP_TOKEN
+plbp config get token --json                     # masked; resolves from flag/env
 
 # Diagnose setup (Python/platform, config file, token). Exits non-zero on errors.
-pylb doctor
-pylb doctor --json
+plbp doctor
+plbp doctor --json
 
 # Shell completion
-pylb completion bash >> ~/.bashrc
-eval "$(pylb completion zsh)"
+plbp completion bash >> ~/.bashrc
+eval "$(plbp completion zsh)"
 ```
 
 Mutating commands (e.g. `config set`) share a safety pattern: `--dry-run`
@@ -189,26 +191,32 @@ prompting).
 
 ## Configuration file (TOML, XDG)
 
-`pylb` reads a TOML config file from an XDG-compliant location, namespaced
+`plbp` reads a TOML config file from an XDG-compliant location, namespaced
 under the app and named so its purpose is obvious:
 
 ```
-~/.config/pylb/pylb_config.toml          # $XDG_CONFIG_HOME/pylb/pylb_config.toml
+~/.config/plbp/plbp_config.toml          # $XDG_CONFIG_HOME/plbp/plbp_config.toml
 ```
 
 ```toml
-# pylb_config.toml
-token = "your_token_here"
-# or, equivalently:
-# [auth]
-# token = "your_token_here"
+# plbp_config.toml — non-secret settings only, organized into tables
+[output]
+format = "text"   # text | json | markdown
+color  = "auto"   # auto | always | never
+
+[logging]
+level = "warning" # console level
 ```
 
-Token precedence: `--token` > `PY_TOKEN` env var > config file. Run
-`pylb config path` to see the resolved location. The same XDG convention
-applies to other file kinds the app may create (resolved in `core/paths.py`):
-data → `$XDG_DATA_HOME/pylb/pylb_db.db`, state/logs →
-`$XDG_STATE_HOME/pylb/pylb_<name>.log`, cache → `$XDG_CACHE_HOME/pylb/`.
+Config is discovered in layers, each overriding the previous: system
+(`$XDG_CONFIG_DIRS`) → user (`$XDG_CONFIG_HOME`) → project
+(`./plbp_config.toml`); `--config` overrides discovery entirely. Per-setting
+precedence: flag → env (`PLBP_*`) → project → user → system → default.
+
+Secrets are **never** stored here — the token resolves from `--token` or
+`$PLBP_TOKEN` only. The same XDG convention applies to other file kinds
+(resolved in `core/paths.py`): data → `$XDG_DATA_HOME/plbp/plbp_db.db`,
+state/logs → `$XDG_STATE_HOME/plbp/plbp.log`, cache → `$XDG_CACHE_HOME/plbp/`.
 
 ## Structured logging
 
