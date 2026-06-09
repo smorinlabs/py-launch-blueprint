@@ -212,7 +212,7 @@ files   = [
 ]
 mode    = "structured"
 
-# repo_name (text) — 164 occurrences in 23 files
+# repo_name (text) — 167 occurrences in 24 files
 [[replace]]
 field   = "repo_name"
 current = ["py-launch-blueprint"]
@@ -227,6 +227,7 @@ files   = [
   "EXAMPLECLI.md",   # 7x
   "Justfile",   # 1x
   "README.md",   # 17x
+  "docs/design/0001-plbp-cli-conventions.md",   # 3x
   "docs/source/_templates/base.html",   # 1x
   "docs/source/conf.py",   # 3x
   "docs/source/contributing/index.md",   # 1x
