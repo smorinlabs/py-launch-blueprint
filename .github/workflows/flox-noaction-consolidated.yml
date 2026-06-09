@@ -32,11 +32,11 @@ jobs:
           flox activate -- bash -euo pipefail -c '
             ruff check .
             ruff format --check .
-            uv sync --group dev && uv run ty check py_launch_blueprint/
+            uv sync --group dev && uv run ty check src/py_launch_blueprint/
             taplo check "**/*.toml"
             codespell --toml pyproject.toml
             yamllint -c .yamllint .
-            bandit -r py_launch_blueprint/ -c pyproject.toml
+            bandit -r src/py_launch_blueprint/ -c pyproject.toml
             gitleaks detect --source . --config .gitleaks.toml --no-banner
             commitlint --from=HEAD~10 --to=HEAD
           '

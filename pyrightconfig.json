@@ -1,6 +1,6 @@
 // pyrightconfig.json
 {
-    "include": ["py_launch_blueprint", "tests"],
+    "include": ["src/py_launch_blueprint", "tests"],
     "exclude": ["**/node_modules", "**/__pycache__"],
     "defineConstant": {
       "DEBUG": true

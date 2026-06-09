@@ -112,3 +112,106 @@ py-projects --version
 - 3: API error
 - 4: Input/Output error
 - 5: User interrupt
+
+---
+
+# `pylb` — noun-verb CLI (new)
+
+`pylb` is the gh-style entry point for this project. Commands follow a
+`pylb <noun> <verb>` shape and share one set of global flags, one output
+contract, and structured logging out of the box. The legacy `py-projects`
+command above is preserved for back-compat.
+
+## Architecture
+
+The package is split into three layers under `src/py_launch_blueprint/`:
+
+| Layer | Path | Role |
+|-------|------|------|
+| Library (`core`) | `core/` | Pure logic + Pydantic models. No printing. Reused by every front-end. |
+| CLI (`cli`) | `cli/` | Thin presentation: formats `core` results. One module per noun in `cli/commands/`. |
+| Web (`web`) | `web/` | Reserved stub for a future FastAPI service (behind the `web` extra). |
+
+The result of every command is a Pydantic model in `core/models.py` — that
+model *is* the JSON representation, and the renderer turns the same object into
+human text, JSON, or Markdown.
+
+## Global flags (on every command)
+
+| Flag | Purpose |
+|------|---------|
+| `-o, --output [human\|json\|markdown]` | output format (default `human`) |
+| `--json` | shorthand for `--output json` |
+| `-v, --verbose` | increase log verbosity (`-vv` for debug) |
+| `-q, --quiet` | suppress non-essential stderr |
+| `--no-color` | disable ANSI color |
+| `--config PATH` | path to a `.env` config file |
+| `--token TEXT` | Py token (overrides env and config file) |
+| `--no-input` | never prompt; fail instead (scripts/CI) |
+| `-V, --version` | version + Python + platform (root) |
+| `-h, --help` | help at every level |
+
+## Output contract
+
+- **Results** → stdout (pipe-safe). **Logs, messages, errors** → stderr.
+- In `--json` mode, stdout is clean parseable JSON; errors become a structured
+  `{"error": {"code", "name", "message"}}` object on stderr.
+
+## Usage
+
+```bash
+# Projects (noun) → list / get (verbs)
+pylb projects list
+pylb projects list --workspace "My Workspace" --json
+pylb projects list -o markdown
+pylb projects get 12345
+
+# Config (no network required)
+pylb config path
+pylb config get token --json
+pylb config set token <TOKEN>            # writes pylb_config.toml (0600)
+pylb config set token <TOKEN> --dry-run  # show what would change, write nothing
+pylb config set token <TOKEN> --yes      # skip the overwrite confirmation
+
+# Diagnose setup (Python/platform, config file, token). Exits non-zero on errors.
+pylb doctor
+pylb doctor --json
+
+# Shell completion
+pylb completion bash >> ~/.bashrc
+eval "$(pylb completion zsh)"
+```
+
+Mutating commands (e.g. `config set`) share a safety pattern: `--dry-run`
+previews the change, an overwrite prompts for confirmation on stderr, and
+`--yes` / `--no-input` make it non-interactive (the latter refuses rather than
+prompting).
+
+## Configuration file (TOML, XDG)
+
+`pylb` reads a TOML config file from an XDG-compliant location, namespaced
+under the app and named so its purpose is obvious:
+
+```
+~/.config/pylb/pylb_config.toml          # $XDG_CONFIG_HOME/pylb/pylb_config.toml
+```
+
+```toml
+# pylb_config.toml
+token = "your_token_here"
+# or, equivalently:
+# [auth]
+# token = "your_token_here"
+```
+
+Token precedence: `--token` > `PY_TOKEN` env var > config file. Run
+`pylb config path` to see the resolved location. The same XDG convention
+applies to other file kinds the app may create (resolved in `core/paths.py`):
+data → `$XDG_DATA_HOME/pylb/pylb_db.db`, state/logs →
+`$XDG_STATE_HOME/pylb/pylb_<name>.log`, cache → `$XDG_CACHE_HOME/pylb/`.
+
+## Structured logging
+
+Logging uses [`structlog`](https://www.structlog.org/): human-friendly colored
+output on a TTY, one-JSON-object-per-line when piped or in CI. All logs go to
+stderr. Configure verbosity with `-v`/`-vv`/`-q`.

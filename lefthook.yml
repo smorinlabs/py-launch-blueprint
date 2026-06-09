@@ -63,7 +63,7 @@ pre-push:
     # ITM-032 — bandit (security linting) at pre-push (round-3 decision:
     # pre-push, not pre-commit, since full-tree scan is too slow per commit).
     bandit:
-      run: uvx bandit -r py_launch_blueprint/ -c pyproject.toml
+      run: uvx bandit -r src/py_launch_blueprint/ -c pyproject.toml
     # Init-system integrity — these are the checks the blueprint-guard
     # CI workflow runs. Caught locally at pre-push, they prevent the
     # "push → CI fails → push again" cycle that PR #319 went through.

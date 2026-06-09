@@ -41,6 +41,9 @@ classifiers = [
 ]
 dependencies = [
   "click>=8.1.0",
+  "pydantic>=2.0.0",            # structured result models (the JSON representation)
+  "structlog>=24.1.0",         # structured logging (human-friendly TTY / JSON otherwise)
+  "tomli-w>=1.0.0",            # writing the TOML config file (`config set`)
   "questionary>=2.0.0",
   "python-dotenv>=1.0.0",
   "thefuzz>=0.19.0",
@@ -48,6 +51,15 @@ dependencies = [
   "pyperclip>=1.8.0",
   "requests>=2.31.0",
   "rich>=13.0.0",
+]
+
+# Single-distribution + extras strategy. The library (core/) and CLI always
+# install; the future web service ships behind the `web` extra:
+#   uv sync --extra web   /   pip install py-launch-blueprint[web]
+[project.optional-dependencies]
+web = [
+  "fastapi>=0.110.0",
+  "uvicorn[standard]>=0.29.0",
 ]
 
 # ITM-063 — PEP 735 dependency-groups (round-13 decision). Replaces
@@ -78,6 +90,9 @@ docs = [
 
 
 [project.scripts]
+# Noun-verb CLI (gh-style): pylb <noun> <verb>
+pylb = "py_launch_blueprint.cli.main:cli"
+# Back-compat: original single-command entry point (preserved).
 py-projects = "py_launch_blueprint.projects:main"
 
 # ITM-072 — package metadata URLs (round 19).
@@ -98,7 +113,8 @@ build-backend = "uv_build"
 # module-root = "" so uv_build doesn't expect src/py_launch_blueprint/.
 [tool.uv.build-backend]
 module-name = "py_launch_blueprint"
-module-root = ""
+# src/ layout (Decision 1) — package now lives at src/py_launch_blueprint/.
+module-root = "src"
 
 [tool.ruff]
 # ITM-018 reconciled config (round-2). Merge: template's stricter rule
@@ -141,7 +157,7 @@ exclude = [
   "build",
   "dist",
   "docs/source/conf.py",
-  "py_launch_blueprint/_version.py",
+  "src/py_launch_blueprint/_version.py",
 ]
 # Per-file-ignores
 [tool.ruff.lint.pycodestyle]
