@@ -41,9 +41,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _engine import Answers, apply, build_plan
 from common import (
-    BLUEPRINT_IDENTITY,
     INIT_DIR,
     MARKER_PATH,
+    PROMPTED_IDENTITY_FIELDS,
     REPO_ROOT,
     ValidationError,
     load_manifest,
@@ -132,16 +132,24 @@ def derive_command_name(repo_name: str) -> str:
     return repo_name.lower()
 
 
+def derive_app_name(package_name: str) -> str:
+    # The app short name (modern CLI command, env prefix, XDG namespace)
+    # defaults to the package name — identifier-safe and never equal to the
+    # kebab-case command_name unless the user forces a collision.
+    return package_name
+
+
 def load_answers_from_file(path: Path) -> Answers:
     raw = tomllib.loads(path.read_text(encoding="utf-8"))
     section = raw.get("answers", raw)
-    missing = [k for k in BLUEPRINT_IDENTITY if k not in section]
+    missing = [k for k in PROMPTED_IDENTITY_FIELDS if k not in section]
     if missing:
         raise ValueError(f"--config file is missing answers for: {missing}")
     return Answers(
         package_name=section["package_name"],
         repo_name=section["repo_name"],
         command_name=section["command_name"],
+        app_name=section["app_name"],
         author=section["author"],
         email=section["email"],
         owner=section["owner"],
@@ -166,7 +174,7 @@ def collect_answers_interactive() -> Answers:
         return ans.strip()
 
     print(
-        "\nblueprint init — answer 6 questions to re-brand this project.\n"
+        "\nblueprint init — answer 7 questions to re-brand this project.\n"
         "(Defaults are inferred from origin + git config; press Enter to accept.)\n"
     )
     repo_name = _ask("repo name (kebab-case)", "repo_name")
@@ -180,6 +188,11 @@ def collect_answers_interactive() -> Answers:
         "command_name",
         derive=lambda: derive_command_name(repo_name),
     )
+    app_name = _ask(
+        "app short name (snake_case; modern CLI command + env prefix)",
+        "app_name",
+        derive=lambda: derive_app_name(package_name),
+    )
     owner = _ask("GitHub owner (user or org)", "owner")
     author = _ask("author name", "author")
     email = _ask("author email", "email")
@@ -187,6 +200,7 @@ def collect_answers_interactive() -> Answers:
         package_name=package_name,
         repo_name=repo_name,
         command_name=command_name,
+        app_name=app_name,
         author=author,
         email=email,
         owner=owner,

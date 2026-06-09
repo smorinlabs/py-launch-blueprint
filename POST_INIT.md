@@ -185,8 +185,9 @@ just check                      # format + lint + typecheck + test
 
 For the bundled CLI example (not repo infrastructure):
 
-- **API token** — provide via `--token`, the `PY_TOKEN` env var, or
-  `pylb config set token <TOKEN>` (writes the XDG config file at mode `0600`).
+- **API token** — provide via `--token` or the `PLBP_TOKEN` env var (it is
+  never stored in the config file; non-secret settings use
+  `plbp config set <section>.<key> <value>`).
 - **Manual publish fallback** — `cp .pypirc.template ~/.pypirc`, fill in PyPI
   tokens, `chmod 600 ~/.pypirc` (only needed if OIDC publishing is unavailable).
 

@@ -19,7 +19,7 @@ description: |
   "scaffold a Python project", "start a new Python project", "I want a
   fresh Python repo", "spin up a python repo for X", "create a UV project".
   When confirmed, handles: precondition checks (gh, uv), identity
-  collection (repo name, owner, package, CLI command, author/email,
+  collection (repo name, owner, package, CLI command, app name, author/email,
   visibility), `gh repo create --template` from py-launch-blueprint,
   `just init` rebrand with dry-run preview, initial commit + push,
   optional post-init for publishing/Codecov/RTD.
@@ -150,13 +150,18 @@ than collecting everything and failing at the end.
 | Target directory | `$PWD/<repo-name>` | must not exist OR be empty |
 | Python package name | `<repo-name>` with `-` → `_` | `^[a-z][a-z0-9_]*$` (Python identifier) |
 | CLI command name | `<repo-name>` | `^[a-z][a-z0-9-]*$` |
+| App short name | `<package_name>` | `^[a-z][a-z0-9_]*$`; must differ from CLI command name |
 | Author name | `git config user.name` | non-empty |
 | Author email | `git config user.email` | `^[^@\s]+@[^@\s]+\.[^@\s]+$` |
 
 The two name conventions matter and are independent: PyPI distribution
 names use kebab-case (`my-project`), Python import names use snake_case
 (`my_project`), and the CLI command name is a separate decision (often
-shorter — `mycli` rather than `my-project`).
+shorter — `mycli` rather than `my-project`). The app short name is the
+modern noun-verb CLI's command and namespace: it becomes the command itself,
+the `<APP>_*` env-var prefix (uppercased), and the XDG dir/file names
+(`~/.config/<app>/<app>_config.toml`) — which is why it must be
+identifier-safe (no hyphens) and distinct from the legacy CLI command name.
 
 ### Step 3 — Show what's about to happen
 
@@ -168,6 +173,7 @@ About to create:
   Local clone:   <target-dir>
   Package name:  <package_name>
   CLI command:   <command_name>
+  App name:      <app_name>  (modern CLI + <APP_NAME>_* env prefix)
   Author:        <author> <<email>>
 
 Proceed? [Y/n]
@@ -204,12 +210,13 @@ Write to `<target-dir>/answers.toml`. The schema matches
 package_name = "<package_name>"
 repo_name = "<repo_name>"
 command_name = "<command_name>"
+app_name = "<app_name>"
 author = "<author>"
 email = "<email>"
 owner = "<owner>"
 ```
 
-All six keys are required. The init engine will use these to compute the
+All seven keys are required. The init engine will use these to compute the
 replace/rename operations.
 
 ### Step 6 — Preview the rebrand
