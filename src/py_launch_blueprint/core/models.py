@@ -109,3 +109,29 @@ class ConfigPath(CLIResult):
 
     def table_rows(self) -> list[list[str]]:
         return [[self.path, "yes" if self.exists else "no"]]
+
+
+class DoctorCheck(BaseModel):
+    """One diagnostic check result."""
+
+    name: str
+    status: str  # "ok" | "warn" | "error"
+    detail: str
+
+
+class DoctorReport(CLIResult):
+    """Aggregated diagnostics for `pylb doctor`."""
+
+    checks: list[DoctorCheck]
+
+    def table_title(self) -> str | None:
+        return "Diagnostics"
+
+    def table_columns(self) -> list[str]:
+        return ["Check", "Status", "Detail"]
+
+    def table_rows(self) -> list[list[str]]:
+        return [[c.name, c.status, c.detail] for c in self.checks]
+
+    def has_error(self) -> bool:
+        return any(c.status == "error" for c in self.checks)

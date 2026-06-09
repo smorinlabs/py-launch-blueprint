@@ -26,7 +26,13 @@ never imports from them. Keeping side-effect-free logic in one place is what
 makes a single result object renderable as human text, JSON, or Markdown.
 """
 
-from py_launch_blueprint.core.config import Config, get_config_dir, load_config
+from py_launch_blueprint.core.config import (
+    Config,
+    get_config_dir,
+    load_config,
+    save_token,
+)
+from py_launch_blueprint.core.diagnostics import run_diagnostics
 from py_launch_blueprint.core.errors import (
     APIError,
     AuthError,
@@ -38,6 +44,8 @@ from py_launch_blueprint.core.models import (
     CLIResult,
     ConfigPath,
     ConfigValue,
+    DoctorCheck,
+    DoctorReport,
     Project,
     ProjectList,
 )
@@ -50,10 +58,14 @@ __all__ = [
     "ConfigError",
     "ConfigPath",
     "ConfigValue",
+    "DoctorCheck",
+    "DoctorReport",
     "ExitCode",
     "Project",
     "ProjectList",
     "PyError",
     "get_config_dir",
     "load_config",
+    "run_diagnostics",
+    "save_token",
 ]

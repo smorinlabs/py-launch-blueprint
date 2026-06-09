@@ -169,11 +169,23 @@ pylb projects get 12345
 # Config (no network required)
 pylb config path
 pylb config get token --json
+pylb config set token <TOKEN>            # writes pylb_config.toml (0600)
+pylb config set token <TOKEN> --dry-run  # show what would change, write nothing
+pylb config set token <TOKEN> --yes      # skip the overwrite confirmation
+
+# Diagnose setup (Python/platform, config file, token). Exits non-zero on errors.
+pylb doctor
+pylb doctor --json
 
 # Shell completion
 pylb completion bash >> ~/.bashrc
 eval "$(pylb completion zsh)"
 ```
+
+Mutating commands (e.g. `config set`) share a safety pattern: `--dry-run`
+previews the change, an overwrite prompts for confirmation on stderr, and
+`--yes` / `--no-input` make it non-interactive (the latter refuses rather than
+prompting).
 
 ## Configuration file (TOML, XDG)
 

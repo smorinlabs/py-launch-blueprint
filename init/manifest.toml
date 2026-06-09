@@ -48,6 +48,7 @@ files   = [
   "src/py_launch_blueprint/core/errors.py",   # 1x
   "src/py_launch_blueprint/core/logging.py",   # 1x
   "src/py_launch_blueprint/core/models.py",   # 1x
+  "src/py_launch_blueprint/core/diagnostics.py",   # 1x
   "src/py_launch_blueprint/core/paths.py",   # 1x
   "src/py_launch_blueprint/core/services/__init__.py",   # 1x
   "src/py_launch_blueprint/core/services/projects.py",   # 1x
@@ -171,6 +172,7 @@ files   = [
   "lefthook.yml",   # 1x
   "src/py_launch_blueprint/__init__.py",   # 1x
   "src/py_launch_blueprint/cli/__init__.py",   # 1x
+  "src/py_launch_blueprint/core/diagnostics.py",   # 1x
   "src/py_launch_blueprint/cli/commands/__init__.py",   # 1x
   "src/py_launch_blueprint/cli/commands/config.py",   # 1x
   "src/py_launch_blueprint/cli/commands/projects.py",   # 1x

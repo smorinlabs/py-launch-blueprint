@@ -33,7 +33,7 @@ import click
 
 from py_launch_blueprint.cli.context import AppContext
 from py_launch_blueprint.cli.output import OutputMode
-from py_launch_blueprint.core.errors import ExitCode, PyError
+from py_launch_blueprint.core.errors import ConfigError, ExitCode, PyError
 
 _OUTPUT_CHOICES = [mode.value for mode in OutputMode]
 
@@ -122,3 +122,47 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
     for option in reversed(_GLOBAL_OPTIONS):
         decorated = option(decorated)
     return cast(F, decorated)
+
+
+# Safety options for mutating commands (create/delete/set). Unlike the global
+# options, these add no wrapper — the command just receives `dry_run` and
+# `assume_yes` as parameters.
+_MUTATION_OPTIONS: list[Callable[[Any], Any]] = [
+    click.option(
+        "--dry-run",
+        "dry_run",
+        is_flag=True,
+        help="Show what would change; write nothing.",
+    ),
+    click.option(
+        "-y",
+        "--yes",
+        "assume_yes",
+        is_flag=True,
+        help="Skip confirmation prompts (for scripts/CI).",
+    ),
+]
+
+
+def mutation_options[F: Callable[..., Any]](func: F) -> F:
+    """Attach ``--dry-run`` and ``-y/--yes`` to a mutating command."""
+    decorated: Any = func
+    for option in reversed(_MUTATION_OPTIONS):
+        decorated = option(decorated)
+    return cast(F, decorated)
+
+
+def confirm(app: AppContext, prompt: str, *, assume_yes: bool) -> bool:
+    """Gate a destructive action; return True to proceed.
+
+    ``--yes`` proceeds unconditionally; ``--no-input`` refuses (it cannot
+    prompt); otherwise ask on **stderr** so stdout stays clean for piping.
+    """
+    if assume_yes:
+        return True
+    if app.no_input:
+        raise ConfigError(
+            f"refusing to proceed without confirmation (--no-input); "
+            f"pass --yes to: {prompt}"
+        )
+    return click.confirm(prompt, default=False, err=True)

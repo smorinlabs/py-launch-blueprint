@@ -131,3 +131,72 @@ def test_config_get_token_masked(runner):
     payload = json.loads(result.output)
     assert payload["value"] == "****cret"
     assert payload["source"] == "flag"
+
+
+# -- doctor ---------------------------------------------------------------
+
+
+def test_doctor_human(runner, monkeypatch):
+    monkeypatch.delenv("PY_TOKEN", raising=False)
+    result = runner.invoke(cli, ["doctor", "--config", "/nope/pylb_config.toml"])
+    assert result.exit_code == 0  # missing token is a warn, not an error
+    assert "python" in result.output
+    assert "config-file" in result.output
+
+
+def test_doctor_json(runner, monkeypatch):
+    monkeypatch.delenv("PY_TOKEN", raising=False)
+    result = runner.invoke(
+        cli, ["doctor", "--config", "/nope/pylb_config.toml", "--json"]
+    )
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    names = {c["name"] for c in payload["checks"]}
+    assert {"python", "platform", "config-file", "token"} <= names
+
+
+# -- config set (mutating: dry-run + confirmation) ------------------------
+
+
+def test_config_set_writes_toml(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PY_TOKEN", raising=False)
+    cfg = tmp_path / "pylb_config.toml"
+    result = runner.invoke(
+        cli, ["config", "set", "token", "secrettoken", "--config", str(cfg)]
+    )
+    assert result.exit_code == 0
+    assert cfg.exists()
+    assert 'token = "secrettoken"' in cfg.read_text()
+    assert "secrettoken" not in result.output  # value is masked in output
+
+
+def test_config_set_dry_run_writes_nothing(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PY_TOKEN", raising=False)
+    cfg = tmp_path / "pylb_config.toml"
+    result = runner.invoke(
+        cli, ["config", "set", "token", "x", "--config", str(cfg), "--dry-run"]
+    )
+    assert result.exit_code == 0
+    assert not cfg.exists()
+
+
+def test_config_set_overwrite_refused_with_no_input(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PY_TOKEN", raising=False)
+    cfg = tmp_path / "pylb_config.toml"
+    cfg.write_text('token = "old"\n')
+    result = runner.invoke(
+        cli, ["config", "set", "token", "new", "--config", str(cfg), "--no-input"]
+    )
+    assert result.exit_code == 1  # ExitCode.CONFIG — refused without --yes
+    assert cfg.read_text() == 'token = "old"\n'  # unchanged
+
+
+def test_config_set_overwrite_with_yes(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PY_TOKEN", raising=False)
+    cfg = tmp_path / "pylb_config.toml"
+    cfg.write_text('token = "old"\n')
+    result = runner.invoke(
+        cli, ["config", "set", "token", "newtoken", "--config", str(cfg), "--yes"]
+    )
+    assert result.exit_code == 0
+    assert 'token = "newtoken"' in cfg.read_text()

@@ -32,6 +32,10 @@ from click.shell_completion import get_completion_class
 
 from py_launch_blueprint import __version__
 from py_launch_blueprint.cli.commands import COMMAND_GROUPS
+from py_launch_blueprint.cli.context import AppContext
+from py_launch_blueprint.cli.options import global_options
+from py_launch_blueprint.core.diagnostics import run_diagnostics
+from py_launch_blueprint.core.errors import ExitCode
 
 _COMPLETE_VAR = "_PYLB_COMPLETE"
 _PROG_NAME = "pylb"
@@ -83,6 +87,20 @@ def completion(shell: str) -> None:
         raise click.ClickException(f"Unsupported shell: {shell}")
     comp: Any = comp_cls(cli, {}, _PROG_NAME, _COMPLETE_VAR)
     click.echo(comp.source())
+
+
+@cli.command(name="doctor")
+@global_options
+def doctor(app: AppContext) -> None:
+    """Diagnose configuration and environment.
+
+    Reports Python/platform, the resolved config file, and token status.
+    Exits non-zero if any check is an error (useful in CI). Honors -o/--json.
+    """
+    report = run_diagnostics(app.config)
+    app.renderer.render(report)
+    if report.has_error():
+        raise SystemExit(int(ExitCode.CONFIG))
 
 
 for _group in COMMAND_GROUPS:

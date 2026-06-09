@@ -42,6 +42,9 @@ import os
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
+
+import tomli_w
 
 from py_launch_blueprint.core import paths
 
@@ -115,3 +118,22 @@ def load_config(
             return Config(token=file_token, source="file", config_path=config_path)
 
     return Config(token=None, source=None, config_path=config_path)
+
+
+def save_token(config_path: Path, token: str) -> Path:
+    """Write ``token`` into the TOML config file, preserving other keys.
+
+    Creates the parent directory (0700) and restricts the file to 0600 — it
+    holds a secret. Returns the path written.
+    """
+    data: dict[str, Any] = {}
+    if config_path.exists():
+        try:
+            data = dict(tomllib.loads(config_path.read_text(encoding="utf-8")))
+        except tomllib.TOMLDecodeError:
+            data = {}
+    data["token"] = token
+    config_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    config_path.write_text(tomli_w.dumps(data), encoding="utf-8")
+    config_path.chmod(0o600)
+    return config_path
