@@ -192,6 +192,100 @@ For the bundled CLI example (not repo infrastructure):
 
 ---
 
+## 3. Settings to verify & set — one by one
+
+Go through these in order. Each item names its **type** (repo setting · secret ·
+environment · external service · file), a **Check** (how to see the current
+state — `gh` CLI where one exists, otherwise the UI path), and **Set** (how to
+apply the target). Skip any feature you dropped in [§1](#1-decisions--features-to-include-or-drop).
+Replace `<owner>/<repo>` throughout; `gh` must be authenticated with repo admin.
+
+### 3.1 Code scanning — if keeping CodeQL
+
+- [ ] **CodeQL default setup must be OFF** · *repo setting* — advanced
+      `codeql.yml` is rejected at SARIF upload if default setup is also enabled.
+  - Check: `gh api /repos/<owner>/<repo>/code-scanning/default-setup --jq .state` → want `not-configured`
+  - Set (if it returns `configured`): `gh api --method PATCH /repos/<owner>/<repo>/code-scanning/default-setup -f state=not-configured`
+
+### 3.2 Actions permissions
+
+- [ ] **Actions enabled** · *repo setting*
+  - Check/Set: Settings → Actions → General → "Allow all actions and reusable workflows".
+- [ ] **Allow Actions to create & approve PRs** · *repo setting* — release-please
+      and Dependabot open PRs.
+  - Check: `gh api /repos/<owner>/<repo>/actions/permissions/workflow --jq '{perm: .default_workflow_permissions, approve: .can_approve_pull_request_reviews}'`
+  - Set: `gh api --method PUT /repos/<owner>/<repo>/actions/permissions/workflow -F default_workflow_permissions=write -F can_approve_pull_request_reviews=true`
+
+### 3.3 Secrets
+
+List what's present with `gh secret list -R <owner>/<repo>`, then set each one
+you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
+
+- [ ] **`RELEASE_PLEASE_APP_ID` + `RELEASE_PLEASE_PRIVATE_KEY`** (or the
+      `RELEASE_PLEASE_APP_TOKEN` PAT) · *secret* — if keeping release-please.
+  - Set: `gh secret set RELEASE_PLEASE_APP_ID …` / `… RELEASE_PLEASE_PRIVATE_KEY < key.pem`
+- [ ] **`CONTRIBUTORS_PLEASE_APP_ID` + `_PRIVATE_KEY` + `_PAT`** · *secret* — if
+      keeping contributors automation.
+- [ ] **`SAFETY_API_KEY`** · *environment secret* — if keeping the manual scan;
+      scope it to the `security-review` environment:
+      `gh secret set SAFETY_API_KEY --env security-review`
+- [ ] **`CODECOV_TOKEN`** · *secret* — **private repos only** (public repos use
+      tokenless OIDC).
+
+### 3.4 Environments
+
+- [ ] **`pypi` (and `testpypi`) exist** · *environment* — if publishing.
+  - Check: `gh api /repos/<owner>/<repo>/environments --jq '.environments[].name'`
+  - Set: `init/setup-github-environments.sh <owner>/<repo>`
+- [ ] **`security-review` exists** · *environment* — if keeping the manual scan
+      (created implicitly when you add its env secret, or via the script).
+
+### 3.5 Dependabot & vulnerability settings
+
+- [ ] **Dependabot alerts** · *repo setting*
+  - Set: `gh api --method PUT /repos/<owner>/<repo>/vulnerability-alerts`
+- [ ] **Dependabot security updates** · *repo setting*
+  - Set: `gh api --method PUT /repos/<owner>/<repo>/automated-security-fixes`
+- [ ] **Dependabot version updates** · *file + setting* — driven by
+      `.github/dependabot.yml`; just ensure Dependabot is enabled for the repo.
+- [ ] **Private vulnerability reporting** · *repo setting* — referenced by
+      `SECURITY.md`.
+  - Set: `gh api --method PUT /repos/<owner>/<repo>/private-vulnerability-reporting`
+- [ ] **Secret scanning + push protection** · *repo setting (optional)* — GitHub
+      native, complements TruffleHog/gitleaks. Settings → Code security.
+
+### 3.6 Branch protection
+
+- [ ] **Protect `main`** · *repo setting* — require PR review + status checks.
+  - Check: `gh api /repos/<owner>/<repo>/branches/main/protection --jq '.required_pull_request_reviews, .required_status_checks.contexts' 2>/dev/null || echo "unprotected"`
+  - Set: add a rule in Settings → Branches (or `gh api --method PUT …/branches/main/protection` with a JSON body). Required-check contexts should match the names on a PR's checks (e.g. `ci`, `commitlint`, `analyze (python)`, `trufflehog`, `yamllint`).
+
+### 3.7 External services (UI / no `gh` check)
+
+- [ ] **PyPI trusted publisher** · *external* — pypi.org → project → Publishing →
+      add GitHub Actions publisher: this repo, `publish.yml`, env `pypi` (repeat
+      on test.pypi.org for `testpypi`).
+- [ ] **Codecov** · *external* — add the repo at codecov.io.
+- [ ] **Read the Docs** · *external* — import the project at readthedocs.org.
+      (Verify the webhook landed: `gh api /repos/<owner>/<repo>/hooks --jq '.[].config.url'`.)
+- [ ] **release-please GitHub App** · *external* — install on the repo/org (or use the PAT).
+- [ ] **contributors-please GitHub App** · *external* — install + set the §3.3 secrets.
+- [ ] **CLA assistant** · *external* — connect the repo at cla-assistant.io and
+      point it at your agreement (only if keeping the `license/cla` gate).
+
+### 3.8 Repo metadata & merge strategy
+
+- [ ] **Funding handle** · *file* — set `github:` in `.github/FUNDING.yml` or delete it.
+- [ ] **Merge strategy** · *repo setting* — squash with a conventional title pairs
+      well with commitlint + release-please.
+  - Set: `gh api --method PATCH /repos/<owner>/<repo> -F allow_squash_merge=true -F allow_merge_commit=false -F allow_rebase_merge=false -F delete_branch_on_merge=true`
+
+### 3.9 Local (per clone)
+
+- [ ] Toolchain + hooks installed and env synced — see [§2.5](#25-local-development-setup-per-clone).
+
+---
+
 ## Quick start (typical public OSS project)
 
 1. `just init` → rebrand identity.
