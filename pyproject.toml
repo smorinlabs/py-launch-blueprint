@@ -156,7 +156,7 @@ exclude = [
   "build",
   "dist",
   "docs/source/conf.py",
-  "py_launch_blueprint/_version.py",
+  "src/py_launch_blueprint/_version.py",
 ]
 # Per-file-ignores
 [tool.ruff.lint.pycodestyle]

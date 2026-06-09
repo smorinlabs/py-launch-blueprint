@@ -33,8 +33,25 @@ files   = [
   "LICENSE",   # 1x
   "docs/source/_templates/base.html",   # 1x
   "docs/source/conf.py",   # 2x
-  "py_launch_blueprint/__init__.py",   # 1x
-  "py_launch_blueprint/projects.py",   # 1x
+  "src/py_launch_blueprint/__init__.py",   # 1x
+  "src/py_launch_blueprint/cli/__init__.py",   # 1x
+  "src/py_launch_blueprint/cli/commands/__init__.py",   # 1x
+  "src/py_launch_blueprint/cli/commands/config.py",   # 1x
+  "src/py_launch_blueprint/cli/commands/projects.py",   # 1x
+  "src/py_launch_blueprint/cli/context.py",   # 1x
+  "src/py_launch_blueprint/cli/exit_codes.py",   # 1x
+  "src/py_launch_blueprint/cli/main.py",   # 1x
+  "src/py_launch_blueprint/cli/options.py",   # 1x
+  "src/py_launch_blueprint/cli/output.py",   # 1x
+  "src/py_launch_blueprint/core/__init__.py",   # 1x
+  "src/py_launch_blueprint/core/config.py",   # 1x
+  "src/py_launch_blueprint/core/errors.py",   # 1x
+  "src/py_launch_blueprint/core/logging.py",   # 1x
+  "src/py_launch_blueprint/core/models.py",   # 1x
+  "src/py_launch_blueprint/core/services/__init__.py",   # 1x
+  "src/py_launch_blueprint/core/services/projects.py",   # 1x
+  "src/py_launch_blueprint/projects.py",   # 1x
+  "src/py_launch_blueprint/web/__init__.py",   # 1x
   "tests/__init__.py",   # 1x
   "tests/test_api.py",   # 1x
   "tests/test_cli.py",   # 1x
@@ -136,6 +153,7 @@ files   = [
   "AGENTS.md",   # 1x
   "CHANGELOG.md",   # 2x
   "CLAUDE.md",   # 3x
+  "EXAMPLECLI.md",   # 2x
   "Justfile",   # 2x
   "README.md",   # 1x
   "docs/source/conf.py",   # 1x
@@ -150,13 +168,33 @@ files   = [
   "docs/source/tools/github_actions.md",   # 2x
   "docs/source/tutorials/full_project_setup.md",   # 3x
   "lefthook.yml",   # 1x
-  "py_launch_blueprint/__init__.py",   # 1x
-  "py_launch_blueprint/projects.py",   # 1x
+  "src/py_launch_blueprint/__init__.py",   # 1x
+  "src/py_launch_blueprint/cli/__init__.py",   # 1x
+  "src/py_launch_blueprint/cli/commands/__init__.py",   # 1x
+  "src/py_launch_blueprint/cli/commands/config.py",   # 1x
+  "src/py_launch_blueprint/cli/commands/projects.py",   # 1x
+  "src/py_launch_blueprint/cli/context.py",   # 1x
+  "src/py_launch_blueprint/cli/exit_codes.py",   # 1x
+  "src/py_launch_blueprint/cli/main.py",   # 1x
+  "src/py_launch_blueprint/cli/options.py",   # 1x
+  "src/py_launch_blueprint/cli/output.py",   # 1x
+  "src/py_launch_blueprint/core/__init__.py",   # 1x
+  "src/py_launch_blueprint/core/config.py",   # 1x
+  "src/py_launch_blueprint/core/errors.py",   # 1x
+  "src/py_launch_blueprint/core/logging.py",   # 1x
+  "src/py_launch_blueprint/core/models.py",   # 1x
+  "src/py_launch_blueprint/core/services/__init__.py",   # 1x
+  "src/py_launch_blueprint/core/services/projects.py",   # 1x
+  "src/py_launch_blueprint/projects.py",   # 1x
+  "src/py_launch_blueprint/web/__init__.py",   # 1x
   "pyrightconfig.json",   # 1x
   "release-please-config.json",   # 1x
+  "tests/cli/test_pylb.py",   # 3x
+  "tests/core/test_core.py",   # 3x
   "tests/test_api.py",   # 1x
   "tests/test_cli.py",   # 10x
   "tests/test_config.py",   # 1x
+  "tests/test_output.py",   # 1x
   "tests/test_version_consistency.py",   # 2x
 ]
 mode    = "text"
@@ -219,8 +257,8 @@ from = "assets/images/logos/py_launch_blueprint_logo_100x100.png"
 to   = "assets/images/logos/{package_name}_logo_100x100.png"
 
 [[rename]]
-from = "py_launch_blueprint"
-to   = "{package_name}"
+from = "src/py_launch_blueprint"
+to   = "src/{package_name}"
 
 [[remove]]
 path   = ".github/workflows/blueprint-guard.yml"
