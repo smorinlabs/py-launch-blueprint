@@ -44,7 +44,7 @@ jobs:
       - name: Sync dev env (ty needs project deps on the python path)
         run: uv sync --group dev
       - name: ty check
-        run: uv run ty check py_launch_blueprint/
+        run: uv run ty check src/py_launch_blueprint/
 
   # ITM-030 - test matrix: ubuntu + macOS x py3.12/3.13 (decided round 3).
   test:

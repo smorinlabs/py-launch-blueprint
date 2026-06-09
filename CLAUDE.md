@@ -2,9 +2,9 @@
 
 ## Project Commands
 - Setup: `just setup` or `uv sync --group dev` (PEP 735; per ITM-063)
-- Format: `just format` or `uvx ruff format py_launch_blueprint/`
-- Lint: `just lint` or `uvx ruff check py_launch_blueprint/`
-- Type check: `just typecheck` or `uv run ty check py_launch_blueprint/` (ITM-026 / ADR-03; ty must be in dev deps)
+- Format: `just format` or `uvx ruff format src/py_launch_blueprint/`
+- Lint: `just lint` or `uvx ruff check src/py_launch_blueprint/`
+- Type check: `just typecheck` or `uv run ty check src/py_launch_blueprint/` (ITM-026 / ADR-03; ty must be in dev deps)
 - Test all: `just test` or `pytest` (default skips `slow`/`live` markers per ITM-046)
 - Test single: `pytest tests/test_file.py::test_name`
 - All checks: `just check`

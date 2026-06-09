@@ -166,6 +166,23 @@ def check_marker_matches_state() -> Finding:
     )
 
 
+def _module_root(py_path: Path) -> str:
+    """Read ``[tool.uv.build-backend].module-root`` from pyproject (default '').
+
+    Lets the package-dir check honor a src/ layout (module-root = "src")
+    without hardcoding the location.
+    """
+    if not py_path.exists():
+        return ""
+    try:
+        data = tomllib.loads(py_path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError):
+        return ""
+    bb = data.get("tool", {}).get("uv", {}).get("build-backend", {})
+    root = bb.get("module-root", "")
+    return root if isinstance(root, str) else ""
+
+
 def check_internal_consistency() -> list[Finding]:
     """Justfile/pyproject/conf.py/LICENSE all agree on package, command, year, owner."""
     findings: list[Finding] = []
@@ -198,18 +215,22 @@ def check_internal_consistency() -> list[Finding]:
         findings.append(Finding("consistency/package-name", "pass", f"{py_name}"))
 
     if just_pkg:
-        pkg_dir = REPO_ROOT / just_pkg
+        # Honor the build backend's module-root so src/ layout resolves
+        # to src/<pkg>/ instead of <pkg>/ at the repo root.
+        module_root = _module_root(py_path)
+        rel = f"{module_root}/{just_pkg}" if module_root else just_pkg
+        pkg_dir = REPO_ROOT / rel
         if not pkg_dir.is_dir():
             findings.append(
                 Finding(
                     "consistency/package-dir",
                     "error",
-                    f"package directory {just_pkg}/ does not exist",
+                    f"package directory {rel}/ does not exist",
                 )
             )
         else:
             findings.append(
-                Finding("consistency/package-dir", "pass", f"{just_pkg}/ exists")
+                Finding("consistency/package-dir", "pass", f"{rel}/ exists")
             )
 
     if just_cmd:

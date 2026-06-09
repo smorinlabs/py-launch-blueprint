@@ -1,5 +1,8 @@
 # Set project-wide variables
 py_package_name := "py_launch_blueprint"
+# Filesystem path to the package (src/ layout). Module name stays
+# `py_package_name`; tooling that takes a *path* uses this.
+py_package_path := "src/" + py_package_name
 repo_name := "py-launch-blueprint"
 command_name := "py-projects"
 contributors_owner := "smorinlabs"
@@ -158,9 +161,9 @@ install-taplo:
 @format:
     echo "Running formatters..."
     echo "  ruff format"
-    uvx --with-editable . ruff format {{py_package_name}}/
+    uvx --with-editable . ruff format {{py_package_path}}/
     echo "  ruff isort"
-    uvx --with-editable . ruff check --select I --fix {{py_package_name}}/
+    uvx --with-editable . ruff check --select I --fix {{py_package_path}}/
 
 alias f := format
 
@@ -183,7 +186,7 @@ alias ct := check-toml
 @lint:
     echo "Running linter..."
     echo "  ruff"
-    uvx --with-editable . ruff check {{py_package_name}}/
+    uvx --with-editable . ruff check {{py_package_path}}/
 
 alias l := lint
 
@@ -192,7 +195,7 @@ alias l := lint
 @typecheck:
     echo "Running type checker..."
     echo "  ty (ITM-026, per ADR-03)"
-    uv run ty check {{py_package_name}}/
+    uv run ty check {{py_package_path}}/
 
 alias tc := typecheck
 
@@ -338,7 +341,7 @@ debug-info:
     rm -rf build
     rm -rf *.egg-info
     rm -rf .venv
-    rm -rf {{py_package_name}}/__pycache__/
+    rm -rf {{py_package_path}}/__pycache__/
 
 # Install Sphinx and any necessary extensions
 [group('docs'), group('install')]

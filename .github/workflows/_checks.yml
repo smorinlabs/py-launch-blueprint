@@ -124,7 +124,7 @@ jobs:
       - name: run
         shell: bash
         run: |
-          cmd='uv sync --group dev && uv run ty check py_launch_blueprint/'
+          cmd='uv sync --group dev && uv run ty check src/py_launch_blueprint/'
           case "${{ inputs.provisioner }}" in
             flox | flox-nocache | flox-noaction) flox activate -- bash -c "$cmd" ;;
             mise) mise exec -- bash -c "$cmd" ;;
@@ -302,9 +302,9 @@ jobs:
         shell: bash
         run: |
           case "${{ inputs.provisioner }}" in
-            flox | flox-nocache | flox-noaction) flox activate -- bandit -r py_launch_blueprint/ -c pyproject.toml ;;
-            mise) mise exec -- bandit -r py_launch_blueprint/ -c pyproject.toml ;;
-            *)    uvx bandit -r py_launch_blueprint/ -c pyproject.toml ;;
+            flox | flox-nocache | flox-noaction) flox activate -- bandit -r src/py_launch_blueprint/ -c pyproject.toml ;;
+            mise) mise exec -- bandit -r src/py_launch_blueprint/ -c pyproject.toml ;;
+            *)    uvx bandit -r src/py_launch_blueprint/ -c pyproject.toml ;;
           esac
 
   gitleaks:
