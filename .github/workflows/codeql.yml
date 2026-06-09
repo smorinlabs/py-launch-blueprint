@@ -1,6 +1,11 @@
 # CodeQL static analysis (ITM-034 hardening + ITM-035 analyze job updates).
 # Python-only matrix (decided round 5: no JS even with bun.lock).
 # Scheduled weekly Sunday 04:00 UTC (decided round 5).
+#
+# Advanced setup: this workflow + .github/codeql/codeql-config.yml ARE the
+# CodeQL config. The repo's "default setup" (Settings > Code security) must
+# stay disabled, or the SARIF upload is rejected with a configuration error.
+# See SECURITY.md > Code Scanning Setup. This applies to every fork too.
 
 name: CodeQL
 
