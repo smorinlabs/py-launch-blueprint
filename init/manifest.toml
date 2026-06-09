@@ -138,7 +138,7 @@ files   = [
 ]
 mode    = "structured"
 
-# package_name (text) — 94 occurrences in 35 files
+# package_name (text) — 95 occurrences in 36 files
 [[replace]]
 field   = "package_name"
 current = ["py_launch_blueprint"]
@@ -196,6 +196,7 @@ files   = [
   "release-please-config.json",   # 1x
   "tests/cli/test_pylb.py",   # 3x
   "tests/core/test_core.py",   # 3x
+  "tests/core/test_logging.py",   # 1x
   "tests/test_api.py",   # 1x
   "tests/test_cli.py",   # 10x
   "tests/test_config.py",   # 1x

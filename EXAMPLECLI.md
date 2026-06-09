@@ -143,8 +143,10 @@ human text, JSON, or Markdown.
 | `-o, --output [text\|json\|markdown]` | output format (default `text`; env `PLBP_OUTPUT`; config `output.format`) |
 | `--json` | shorthand for `--output json` |
 | `--output-file PATH` | write results to a file instead of stdout (format still set by `--output`) |
-| `-v, --verbose` | increase log verbosity (`-vv` for debug) |
-| `-q, --quiet` | suppress non-essential stderr |
+| `-v, --verbose` | raise console log level (`-v` info, `-vv` debug) |
+| `-q, --quiet` | lower console log level to error |
+| `--log-level LEVEL` | explicit console level, overrides `-v`/`-q` (env `PLBP_LOG_LEVEL`) |
+| `--log-file [PATH]` | enable rotating file logging; bare flag uses the XDG state path (env `PLBP_LOG_FILE`) |
 | `--no-color` | force color off (`NO_COLOR` env and config `output.color` also honored) |
 | `--config PATH` | path to a TOML config file (overrides discovery; env `PLBP_CONFIG`) |
 | `--token TEXT` | Py token (overrides `$PLBP_TOKEN`; never stored on disk) |
@@ -224,8 +226,32 @@ Secrets are **never** stored here — the token resolves from `--token` or
 (resolved in `core/paths.py`): data → `$XDG_DATA_HOME/plbp/plbp_db.db`,
 state/logs → `$XDG_STATE_HOME/plbp/plbp.log`, cache → `$XDG_CACHE_HOME/plbp/`.
 
-## Structured logging
+## Structured logging (dual sink)
 
-Logging uses [`structlog`](https://www.structlog.org/): human-friendly colored
-output on a TTY, one-JSON-object-per-line when piped or in CI. All logs go to
-stderr. Configure verbosity with `-v`/`-vv`/`-q`.
+Logging uses [`structlog`](https://www.structlog.org/) rendered through stdlib
+handlers, giving two independent sinks:
+
+- **Console (stderr, always on)** — human-friendly colored output on a TTY,
+  one-JSON-object-per-line when piped or in CI. Level: `WARNING` by default;
+  `-v` info, `-vv` debug, `-q` error, `--log-level` explicit override
+  (also `PLBP_LOG_LEVEL` / config `logging.level`).
+- **Rotating file (off by default)** — enabled by `--log-file [PATH]`,
+  `$PLBP_LOG_FILE`, or config `logging.file`. Bare `--log-file` writes to
+  `$XDG_STATE_HOME/plbp/plbp.log` (logs are *state*, not config). Rotates at
+  10 MB x 5 backups. Its level (`logging.file_level`, default `debug`) and
+  format (`logging.format`: `text` or `json` JSONL; env `PLBP_LOG_FORMAT`)
+  are independent of the console.
+
+When both sinks are active they attach to the same logger: the logger floor is
+the most verbose sink and each handler filters independently — e.g. a quiet
+console at `warning` while the file captures full `debug` detail.
+
+```bash
+plbp doctor -vv                          # debug detail on stderr
+plbp doctor --log-file                   # + JSONL/text file under XDG state
+plbp doctor --log-file /tmp/run.log --log-level error   # quiet console, full file
+plbp config set logging.file_level info --yes           # tune the file sink
+```
+
+Results on stdout are never mixed with logs — `plbp ... --json | jq` stays
+safe at any verbosity.

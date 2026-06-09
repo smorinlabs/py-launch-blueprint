@@ -27,10 +27,21 @@ commands that don't need a token (e.g. ``config path``) never trigger lookup.
 import logging
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 from py_launch_blueprint.cli.output import OutputMode, Renderer
+from py_launch_blueprint.core import paths
 from py_launch_blueprint.core.config import Config, load_config
-from py_launch_blueprint.core.logging import LogFormat, configure_logging
+from py_launch_blueprint.core.logging import (
+    LOG_LEVELS,
+    LogFormat,
+    configure_logging,
+    get_logger,
+)
+from py_launch_blueprint.core.settings import LoggingSettings
+
+#: flag_value sentinel for `--log-file` used without a PATH (R11.2).
+LOG_FILE_DEFAULT_SENTINEL = "__PLBP_LOG_FILE_DEFAULT__"
 
 
 @dataclass
@@ -59,12 +70,14 @@ class AppContext:
         no_input: bool,
         token: str | None,
         output_file: str | None = None,
+        log_level: str | None = None,
+        log_file: str | None = None,
     ) -> "AppContext":
         """Build the context from raw global-option values.
 
         Config is loaded eagerly (it never raises on missing/invalid files)
-        because output format and color resolve from it when no flag/env says
-        otherwise (R7 precedence: flag → env → config → default).
+        because output format, color, and logging resolve from it when no
+        flag/env says otherwise (R7 precedence: flag → env → config → default).
         """
         config = load_config(config_file=config_file, token_override=token)
         settings = config.settings
@@ -77,16 +90,22 @@ class AppContext:
         for warning in config.warnings:
             renderer.message(f"[yellow]warning:[/yellow] {warning}")
 
-        # Verbosity → log level: default WARNING, -v INFO, -vv DEBUG, -q ERROR.
-        if quiet:
-            level = logging.ERROR
-        elif verbose >= 2:
-            level = logging.DEBUG
-        elif verbose == 1:
-            level = logging.INFO
-        else:
-            level = logging.WARNING
-        configure_logging(level=level, fmt=LogFormat.AUTO)
+        file_path = _resolve_log_file(log_file, settings.logging)
+        configure_logging(
+            level=_resolve_console_level(
+                log_level, verbose, quiet, settings.logging.level
+            ),
+            fmt=LogFormat.AUTO,
+            file_path=file_path,
+            file_level=LOG_LEVELS[settings.logging.file_level],
+            file_format=os.environ.get("PLBP_LOG_FORMAT") or settings.logging.format,
+        )
+        get_logger(__name__).debug(
+            "invocation context ready",
+            output_mode=str(mode),
+            color=color,
+            log_file=str(file_path) if file_path else None,
+        )
 
         return cls(
             renderer=renderer,
@@ -130,3 +149,35 @@ def _resolve_color(no_color_flag: bool, config_color: str) -> str:
     if os.environ.get("NO_COLOR"):
         return "never"
     return config_color  # "auto" | "always" | "never"
+
+
+def _resolve_console_level(
+    log_level: str | None, verbose: int, quiet: bool, config_level: str
+) -> int:
+    """Console level: --log-level (or env) > -q/-v > config > WARNING (R10)."""
+    if log_level:
+        return LOG_LEVELS[log_level]
+    if quiet:
+        return logging.ERROR
+    if verbose >= 2:
+        return logging.DEBUG
+    if verbose == 1:
+        return logging.INFO
+    return LOG_LEVELS[config_level]
+
+
+def _resolve_log_file(
+    log_file: str | None, logging_settings: LoggingSettings
+) -> Path | None:
+    """File sink path: flag/env > config ``logging.file`` > off (R11.1/R11.2).
+
+    ``--log-file`` with no PATH (or an empty env value treated as a bare
+    enable) selects the default XDG state location.
+    """
+    if log_file == LOG_FILE_DEFAULT_SENTINEL:
+        return paths.log_file()
+    if log_file:
+        return Path(log_file).expanduser()
+    if logging_settings.file:
+        return Path(logging_settings.file).expanduser()
+    return None
