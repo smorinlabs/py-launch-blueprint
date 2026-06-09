@@ -1,13 +1,19 @@
-# ITM-036 - CodeQL config (minimal baseline; round-5 decision).
-# Establishes the convention; no query-suite or path overrides yet.
-# Expand carefully if/when noise tuning is needed.
+# ITM-036 - CodeQL config (advanced setup; THIS file is the CodeQL config).
+# NOTE: the repo's "default setup" (Settings > Code security > Code scanning)
+# must stay DISABLED, or this workflow's upload fails with a configuration
+# error. See SECURITY.md > Code Scanning Setup. Applies to forks too.
 
 name: "py-launch-blueprint codeql"
 
-# Uncomment to broaden ruleset (round-5 explicitly rejected this for now):
-# queries:
-#   - uses: security-extended
+# security-extended adds security queries on top of the default code-scanning
+# suite (more taint-tracking / CWE coverage). Higher recall for some extra
+# findings. Supersedes the round-5 "default suite only" decision.
+queries:
+  - uses: security-extended
 
-# Uncomment to exclude paths (round-5 explicitly rejected this for now):
-# paths-ignore:
-#   - tests/**
+# Scan shipped code only: test fixtures and docs config carry intentional
+# patterns that are noise for a security scan (tests also covered by Bandit's
+# exclude_dirs). init/ stays scanned — it wraps subprocesses and is real code.
+paths-ignore:
+  - tests/**
+  - docs/**
