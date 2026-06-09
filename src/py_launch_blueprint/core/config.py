@@ -17,23 +17,33 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Configuration loading with a documented precedence order.
+"""Configuration loading: a TOML file in an XDG-compliant location.
+
+The config file defaults to ``$XDG_CONFIG_HOME/pylb/pylb_config.toml`` (see
+``core.paths``). Its format is TOML::
+
+    # ~/.config/pylb/pylb_config.toml
+    token = "your_token_here"
+
+    # (an [auth] table is also accepted, for forward-compatibility)
+    # [auth]
+    # token = "your_token_here"
 
 Precedence (highest wins):
 
 1. explicit override (e.g. the ``--token`` flag)
 2. environment variable (``PY_TOKEN``)
-3. config file (``~/.config/py-cli/.env`` by default, or ``--config PATH``)
+3. the TOML config file
 
-This module only *loads* configuration; it never prints. The CLI decides how
-to report a missing token (see ``cli/commands``).
+This module only *loads* configuration; it never prints.
 """
 
 import os
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-from dotenv import dotenv_values
+from py_launch_blueprint.core import paths
 
 TOKEN_ENV_VAR = "PY_TOKEN"  # noqa: S105 — env var name, not a secret value
 
@@ -50,28 +60,36 @@ class Config:
 
 
 def get_config_dir() -> Path:
-    """Return the per-user configuration directory (cross-platform)."""
-    if os.name == "nt":  # Windows
-        base_path = Path(os.environ.get("USERPROFILE", str(Path.home())))
-    else:  # Unix-like
-        base_path = Path.home()
-    return base_path / ".config" / "py-cli"
+    """Return the per-user config directory (``$XDG_CONFIG_HOME/pylb``)."""
+    return paths.config_dir()
 
 
 def get_default_config_path() -> Path:
-    """Return the default ``.env`` config file location."""
-    return get_config_dir() / ".env"
+    """Return the default TOML config file path (``…/pylb/pylb_config.toml``)."""
+    return paths.config_file()
+
+
+def _read_toml_token(path: Path) -> str | None:
+    """Extract a token from a TOML config file (top-level or ``[auth]``)."""
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError):
+        return None
+    token = data.get("token")
+    if token is None and isinstance(data.get("auth"), dict):
+        token = data["auth"].get("token")
+    return token if isinstance(token, str) else None
 
 
 def load_config(
     config_file: str | None = None,
     token_override: str | None = None,
 ) -> Config:
-    """Resolve configuration from flag, environment, then file.
+    """Resolve configuration from flag, environment, then the TOML file.
 
     Args:
-        config_file: Optional explicit path to a ``.env`` file. Falls back to
-            the default location when omitted.
+        config_file: Optional explicit path to a TOML config file. Falls back
+            to the default XDG location when omitted.
         token_override: Optional token supplied directly (e.g. ``--token``),
             taking precedence over all other sources.
 
@@ -90,10 +108,9 @@ def load_config(
     if env_token:
         return Config(token=env_token, source="env", config_path=config_path)
 
-    # 3. config file (only if present; missing file is not an error here)
+    # 3. TOML config file (only if present; missing file is not an error here)
     if config_path.exists():
-        file_values = dotenv_values(config_path)
-        file_token = file_values.get(TOKEN_ENV_VAR)
+        file_token = _read_toml_token(config_path)
         if file_token:
             return Config(token=file_token, source="file", config_path=config_path)
 

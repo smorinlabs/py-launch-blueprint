@@ -175,6 +175,29 @@ pylb completion bash >> ~/.bashrc
 eval "$(pylb completion zsh)"
 ```
 
+## Configuration file (TOML, XDG)
+
+`pylb` reads a TOML config file from an XDG-compliant location, namespaced
+under the app and named so its purpose is obvious:
+
+```
+~/.config/pylb/pylb_config.toml          # $XDG_CONFIG_HOME/pylb/pylb_config.toml
+```
+
+```toml
+# pylb_config.toml
+token = "your_token_here"
+# or, equivalently:
+# [auth]
+# token = "your_token_here"
+```
+
+Token precedence: `--token` > `PY_TOKEN` env var > config file. Run
+`pylb config path` to see the resolved location. The same XDG convention
+applies to other file kinds the app may create (resolved in `core/paths.py`):
+data → `$XDG_DATA_HOME/pylb/pylb_db.db`, state/logs →
+`$XDG_STATE_HOME/pylb/pylb_<name>.log`, cache → `$XDG_CACHE_HOME/pylb/`.
+
 ## Structured logging
 
 Logging uses [`structlog`](https://www.structlog.org/): human-friendly colored

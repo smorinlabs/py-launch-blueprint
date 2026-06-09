@@ -48,6 +48,7 @@ files   = [
   "src/py_launch_blueprint/core/errors.py",   # 1x
   "src/py_launch_blueprint/core/logging.py",   # 1x
   "src/py_launch_blueprint/core/models.py",   # 1x
+  "src/py_launch_blueprint/core/paths.py",   # 1x
   "src/py_launch_blueprint/core/services/__init__.py",   # 1x
   "src/py_launch_blueprint/core/services/projects.py",   # 1x
   "src/py_launch_blueprint/projects.py",   # 1x
@@ -237,6 +238,7 @@ files   = [
   "docs/source/tools/justfiles.md",   # 1x
   "docs/source/tutorials/full_project_setup.md",   # 2x
   "package.json",   # 2x
+  "src/py_launch_blueprint/web/__init__.py",   # 1x
 ]
 mode    = "text"
 

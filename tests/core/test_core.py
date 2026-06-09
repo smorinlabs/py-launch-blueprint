@@ -1,6 +1,7 @@
 """Tests for the core library layer (pure, no CLI)."""
 
 import logging
+from pathlib import Path
 
 from py_launch_blueprint.core import (
     Config,
@@ -8,6 +9,7 @@ from py_launch_blueprint.core import (
     Project,
     ProjectList,
     load_config,
+    paths,
 )
 from py_launch_blueprint.core.config import TOKEN_ENV_VAR
 from py_launch_blueprint.core.logging import LogFormat, configure_logging, get_logger
@@ -51,21 +53,29 @@ def test_load_config_flag_wins(monkeypatch):
 
 
 def test_load_config_env_over_file(tmp_path, monkeypatch):
-    env_file = tmp_path / ".env"
-    env_file.write_text(f"{TOKEN_ENV_VAR}=file_token")
+    cfg_file = tmp_path / "pylb_config.toml"
+    cfg_file.write_text('token = "file_token"\n')
     monkeypatch.setenv(TOKEN_ENV_VAR, "env_token")
-    cfg = load_config(config_file=str(env_file))
+    cfg = load_config(config_file=str(cfg_file))
     assert cfg.token == "env_token"
     assert cfg.source == "env"
 
 
-def test_load_config_file_fallback(tmp_path, monkeypatch):
-    env_file = tmp_path / ".env"
-    env_file.write_text(f"{TOKEN_ENV_VAR}=file_token")
+def test_load_config_file_fallback_toml(tmp_path, monkeypatch):
+    cfg_file = tmp_path / "pylb_config.toml"
+    cfg_file.write_text('token = "file_token"\n')
     monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
-    cfg = load_config(config_file=str(env_file))
+    cfg = load_config(config_file=str(cfg_file))
     assert cfg.token == "file_token"
     assert cfg.source == "file"
+
+
+def test_load_config_file_fallback_auth_table(tmp_path, monkeypatch):
+    cfg_file = tmp_path / "pylb_config.toml"
+    cfg_file.write_text('[auth]\ntoken = "table_token"\n')
+    monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
+    cfg = load_config(config_file=str(cfg_file))
+    assert cfg.token == "table_token"
 
 
 def test_load_config_missing(monkeypatch):
@@ -81,3 +91,32 @@ def test_logging_configures_without_error():
     log = get_logger("test")
     # Should not raise; bound logger supports structured kwargs.
     log.info("hello", key="value")
+
+
+# -- XDG paths -----------------------------------------------------------
+
+
+def test_config_file_naming_under_xdg(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    assert paths.config_file() == tmp_path / "pylb" / "pylb_config.toml"
+
+
+def test_database_file_naming_under_xdg(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
+    assert paths.database_file() == tmp_path / "pylb" / "pylb_db.db"
+
+
+def test_state_file_naming_under_xdg(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    assert paths.state_file("history") == tmp_path / "pylb" / "pylb_history.log"
+
+
+def test_xdg_default_when_unset(monkeypatch):
+    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
+    assert paths.config_home() == Path.home() / ".config"
+
+
+def test_xdg_relative_value_ignored(monkeypatch):
+    # Spec: a non-absolute XDG value must be ignored in favor of the default.
+    monkeypatch.setenv("XDG_CONFIG_HOME", "relative/not/absolute")
+    assert paths.config_home() == Path.home() / ".config"
