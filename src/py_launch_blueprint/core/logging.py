@@ -47,6 +47,13 @@ import structlog
 from structlog.contextvars import bind_contextvars, clear_contextvars
 from structlog.typing import Processor
 
+from py_launch_blueprint.core.paths import APP_NAME
+
+# Marker attribute stamped on the handlers we install, so teardown only removes
+# our own (not a host process's or pytest's). Derived from the single APP_NAME
+# source — an internal, non-greppable flag that tracks a rename automatically.
+_OWNED_FLAG = f"_{APP_NAME}_owned"
+
 __all__ = [
     "LOG_LEVELS",
     "LogFormat",
@@ -152,10 +159,10 @@ def configure_logging(
     # Only remove handlers WE installed: closing foreign handlers would
     # break a host process (or pytest's caplog) that embeds this CLI.
     for handler in root.handlers[:]:
-        if getattr(handler, "_plbp_owned", False):
+        if getattr(handler, _OWNED_FLAG, False):
             root.removeHandler(handler)
             handler.close()
-    console_handler._plbp_owned = True  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+    setattr(console_handler, _OWNED_FLAG, True)
     root.addHandler(console_handler)
     floor = level
 
@@ -182,7 +189,7 @@ def configure_logging(
                 foreign_pre_chain=shared,
             )
         )
-        file_handler._plbp_owned = True  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        setattr(file_handler, _OWNED_FLAG, True)
         root.addHandler(file_handler)
         floor = min(level, file_level)
 

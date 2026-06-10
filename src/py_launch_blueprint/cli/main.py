@@ -36,8 +36,12 @@ from py_launch_blueprint.cli.context import AppContext
 from py_launch_blueprint.cli.options import global_options
 from py_launch_blueprint.core.diagnostics import run_diagnostics
 from py_launch_blueprint.core.errors import ExitCode
+from py_launch_blueprint.core.paths import APP_NAME
 
-_COMPLETE_VAR = "_PLBP_COMPLETE"
+# Derived from the single APP_NAME source (core/paths.py) — not greppable
+# user-facing literals, so they track a rename automatically. The env-var
+# prefix and the click completion var are both APP_NAME-shaped.
+_COMPLETE_VAR = f"_{APP_NAME.upper()}_COMPLETE"
 _PROG_NAME = "plbp"
 
 
@@ -55,10 +59,10 @@ def _print_version(ctx: click.Context, _param: click.Parameter, value: bool) -> 
     name=_PROG_NAME,
     context_settings={
         "help_option_names": ["-h", "--help"],
-        # Every option also resolves from a PLBP_* env var (R1.2). The shared
-        # global options set explicit flat names (PLBP_OUTPUT, PLBP_CONFIG);
-        # this prefix is the catch-all for any others.
-        "auto_envvar_prefix": "PLBP",
+        # Every option also resolves from a <APP_NAME>_* env var (R1.2). The
+        # shared global options set explicit flat names (PLBP_OUTPUT,
+        # PLBP_CONFIG); this prefix is the catch-all for any others.
+        "auto_envvar_prefix": APP_NAME.upper(),
     },
 )
 @click.option(
