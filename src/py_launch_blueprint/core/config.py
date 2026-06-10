@@ -43,6 +43,7 @@ from typing import Any
 import tomli_w
 
 from py_launch_blueprint.core import paths
+from py_launch_blueprint.core.errors import ConfigError
 from py_launch_blueprint.core.settings import (
     Settings,
     coerce_value,
@@ -67,6 +68,9 @@ class Config:
     config_path: Path | None = None
     #: Config files that existed and were merged, lowest precedence first.
     loaded_paths: list[Path] = field(default_factory=list)
+    #: Non-fatal problems found while loading (invalid values dropped,
+    #: unparseable discovered layers skipped). The CLI logs these to stderr.
+    warnings: list[str] = field(default_factory=list)
 
 
 def get_config_dir() -> Path:
@@ -85,6 +89,34 @@ def _read_toml(path: Path) -> dict[str, Any]:
         return tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, tomllib.TOMLDecodeError):
         return {}
+
+
+def _read_layer(path: Path) -> tuple[dict[str, Any], str | None]:
+    """Tolerantly read one discovered layer, reporting (data, warning)."""
+    if not path.exists():
+        return {}, None
+    try:
+        return tomllib.loads(path.read_text(encoding="utf-8")), None
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        return {}, f"ignoring unreadable config file {path}: {exc}"
+
+
+def _read_explicit(path: Path) -> dict[str, Any]:
+    """Read an explicitly named config file (``--config``/``$PLBP_CONFIG``).
+
+    A *missing* file is fine — it is a valid target for ``config set`` and
+    fresh setups. But a file that exists and cannot be parsed is a user error
+    that must not be silently ignored (R6.4: the flag overrides discovery, so
+    nothing else would supply the settings the user thinks they wrote).
+    """
+    if not path.exists():
+        return {}
+    try:
+        return tomllib.loads(path.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError as exc:
+        raise ConfigError(f"invalid TOML in config file {path}: {exc}") from exc
+    except OSError as exc:
+        raise ConfigError(f"cannot read config file {path}: {exc}") from exc
 
 
 def _discovery_paths(config_file: str | None) -> tuple[Path, list[Path]]:
@@ -109,9 +141,26 @@ def load_config(
     config_file: str | None = None,
     token_override: str | None = None,
 ) -> Config:
-    """Resolve settings (layered files) and the token (flag/env only)."""
+    """Resolve settings (layered files) and the token (flag/env only).
+
+    Tolerant by design — with one exception: an *explicit* ``--config`` file
+    that exists but cannot be parsed raises :class:`ConfigError`. Discovered
+    layers and invalid values degrade to warnings (see ``Config.warnings``).
+    """
     target, layer_paths = _discovery_paths(config_file)
-    settings = settings_from_layers([_read_toml(p) for p in layer_paths])
+
+    warnings: list[str] = []
+    layers: list[dict[str, Any]] = []
+    if config_file:
+        layers.append(_read_explicit(target))  # may raise ConfigError
+    else:
+        for p in layer_paths:
+            data, warning = _read_layer(p)
+            layers.append(data)
+            if warning:
+                warnings.append(warning)
+    settings, value_warnings = settings_from_layers(layers)
+    warnings.extend(value_warnings)
 
     token: str | None = None
     source: str | None = None
@@ -128,6 +177,7 @@ def load_config(
         settings=settings,
         config_path=target,
         loaded_paths=[p for p in layer_paths if p.exists()],
+        warnings=warnings,
     )
 
 
@@ -143,13 +193,24 @@ def get_file_value(config_path: Path, dotted_key: str) -> Any:
 def set_config_value(config_path: Path, dotted_key: str, raw_value: str) -> Any:
     """Validate + write one ``section.key`` into the TOML file, preserving rest.
 
-    Returns the coerced value. Raises :class:`ConfigError` for unknown keys or
-    invalid values (secrets are not part of the schema, so cannot be set here).
+    Returns the coerced value. Raises :class:`ConfigError` for unknown keys,
+    invalid values (secrets are not part of the schema, so cannot be set
+    here), or an existing file that cannot be parsed — never silently
+    rewrite a corrupt file, which would destroy whatever the user had in it.
     """
     section, key = parse_key(dotted_key)
     value = coerce_value(section, key, raw_value)
 
-    data = _read_toml(config_path)
+    if config_path.exists():
+        try:
+            data = tomllib.loads(config_path.read_text(encoding="utf-8"))
+        except (OSError, tomllib.TOMLDecodeError) as exc:
+            raise ConfigError(
+                f"refusing to modify {config_path}: existing file cannot be "
+                f"parsed ({exc}). Fix or remove it first."
+            ) from exc
+    else:
+        data = {}
     table = data.get(section)
     if not isinstance(table, dict):
         table = {}
@@ -158,4 +219,7 @@ def set_config_value(config_path: Path, dotted_key: str, raw_value: str) -> Any:
 
     config_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     config_path.write_text(tomli_w.dumps(data), encoding="utf-8")
+    # Restrict to the owner: users habitually put sensitive things in CLI
+    # config files even though the schema holds no secrets.
+    config_path.chmod(0o600)
     return value

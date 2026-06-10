@@ -163,3 +163,50 @@ def test_xdg_relative_value_ignored(monkeypatch):
     # Spec: a non-absolute XDG value must be ignored in favor of the default.
     monkeypatch.setenv("XDG_CONFIG_HOME", "relative/not/absolute")
     assert paths.config_home() == Path.home() / ".config"
+
+
+# -- config robustness (review findings) -----------------------------------
+
+
+def test_invalid_value_warns_and_defaults(tmp_path, monkeypatch):
+    # An invalid setting value must never brick loading: dropped + warned.
+    monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
+    cfg_file = tmp_path / "plbp_config.toml"
+    cfg_file.write_text('[output]\ncolor = "yes"\nformat = "json"\n')
+    cfg = load_config(config_file=str(cfg_file))
+    assert cfg.settings.output.color == "auto"  # invalid value -> default
+    assert cfg.settings.output.format == "json"  # valid sibling survives
+    assert any("output.color" in w for w in cfg.warnings)
+
+
+def test_explicit_config_invalid_toml_raises(tmp_path, monkeypatch):
+    # --config naming an unparseable file is a loud user error (not ignored).
+    monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
+    cfg_file = tmp_path / "plbp_config.toml"
+    cfg_file.write_text('[output\ncolor = "always"\n')  # unclosed table
+    with pytest.raises(ConfigError):
+        load_config(config_file=str(cfg_file))
+
+
+def test_explicit_config_missing_is_tolerated(tmp_path, monkeypatch):
+    # A missing explicit file stays fine: it's the target `config set` creates.
+    monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
+    cfg = load_config(config_file=str(tmp_path / "nope.toml"))
+    assert cfg.settings.output.format == "text"
+    assert cfg.warnings == []
+
+
+def test_set_config_value_refuses_corrupt_file(tmp_path):
+    # Never silently rewrite a corrupt config (would destroy user settings).
+    cfg_file = tmp_path / "plbp_config.toml"
+    cfg_file.write_text('[output\ncolor = "always"\n')  # corrupt
+    before = cfg_file.read_text()
+    with pytest.raises(ConfigError):
+        set_config_value(cfg_file, "logging.level", "info")
+    assert cfg_file.read_text() == before  # untouched
+
+
+def test_set_config_value_restricts_permissions(tmp_path):
+    cfg_file = tmp_path / "plbp_config.toml"
+    set_config_value(cfg_file, "output.color", "never")
+    assert (cfg_file.stat().st_mode & 0o777) == 0o600

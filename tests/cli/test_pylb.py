@@ -251,3 +251,32 @@ def test_config_set_env_var_resolution(runner, tmp_path, monkeypatch):
     # PLBP_OUTPUT=json → output is parseable JSON without passing --json.
     payload = json.loads(result.output)
     assert payload["value"] == "info"
+
+
+# -- config robustness (review findings) -----------------------------------
+
+
+def test_invalid_config_value_does_not_crash_commands(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    cfg = tmp_path / "plbp_config.toml"
+    cfg.write_text('[output]\ncolor = "yes"\n')  # invalid value
+    result = runner.invoke(cli, ["config", "path", "--config", str(cfg)])
+    assert result.exit_code == 0  # command works on defaults
+    # ...and config set can still repair the bad value:
+    result = runner.invoke(
+        cli, ["config", "set", "output.color", "auto", "--config", str(cfg), "--yes"]
+    )
+    assert result.exit_code == 0
+    assert 'color = "auto"' in cfg.read_text()
+
+
+def test_config_set_refuses_corrupt_file(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    cfg = tmp_path / "plbp_config.toml"
+    cfg.write_text('[output\ncolor = "always"\n')  # TOML syntax error
+    before = cfg.read_text()
+    result = runner.invoke(
+        cli, ["config", "set", "logging.level", "info", "--config", str(cfg)]
+    )
+    assert result.exit_code != 0
+    assert cfg.read_text() == before  # nothing destroyed

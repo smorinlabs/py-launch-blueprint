@@ -123,12 +123,42 @@ def _allowed_hint(model: type[BaseModel], key: str) -> str | None:
     return None
 
 
-def settings_from_layers(layers: list[dict[str, Any]]) -> Settings:
-    """Merge config dicts (lowest precedence first) and validate into Settings."""
+def settings_from_layers(
+    layers: list[dict[str, Any]],
+) -> tuple[Settings, list[str]]:
+    """Merge config dicts (lowest precedence first) and validate into Settings.
+
+    Invalid values are **dropped with a warning** rather than raised: config
+    must never brick the CLI — the user needs ``config set``/``config path``
+    working in order to repair the file. Returns ``(settings, warnings)``.
+    """
     merged: dict[str, dict[str, Any]] = {}
     for layer in layers:
         for section in _SECTIONS:
             table = layer.get(section)
             if isinstance(table, dict):
                 merged.setdefault(section, {}).update(table)
-    return Settings.model_validate(merged)
+
+    warnings: list[str] = []
+    try:
+        return Settings.model_validate(merged), warnings
+    except ValidationError as exc:
+        for err in exc.errors():
+            loc = err["loc"][:2]
+            if len(loc) == 2 and loc[0] in merged:
+                section, key = str(loc[0]), str(loc[1])
+                bad = merged[section].pop(key, None)
+                hint = (
+                    _allowed_hint(_SECTIONS[section], key)
+                    if (key in _SECTIONS[section].model_fields)
+                    else None
+                )
+                suffix = f" (allowed: {hint})" if hint else ""
+                warnings.append(
+                    f"ignoring invalid config value {section}.{key} = {bad!r}{suffix}"
+                )
+    try:
+        return Settings.model_validate(merged), warnings
+    except ValidationError:  # pragma: no cover — defensive double-fault
+        warnings.append("config could not be validated; using built-in defaults")
+        return Settings(), warnings
