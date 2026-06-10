@@ -475,3 +475,23 @@ def test_log_format_env_case_insensitive(runner, tmp_path, monkeypatch):
     assert result.exit_code == 0
     line = log.read_text().strip().splitlines()[0]
     json.loads(line)  # JSONL, not text: the env value was normalized
+
+
+def test_config_get_reports_default_source(runner, tmp_path, monkeypatch):
+    # A built-in default must not claim a config file provided it.
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    cfg = tmp_path / "plbp_config.toml"  # does not exist
+    result = runner.invoke(
+        cli, ["config", "get", "logging.level", "--config", str(cfg), "--json"]
+    )
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload["value"] == "warning"
+    assert payload["source"] == "default"
+    # ...and a file-provided value still reports "config".
+    cfg.write_text('[logging]\nlevel = "info"\n')
+    result = runner.invoke(
+        cli, ["config", "get", "logging.level", "--config", str(cfg), "--json"]
+    )
+    payload = json.loads(result.output)
+    assert payload["source"] == "config"

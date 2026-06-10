@@ -190,36 +190,50 @@ def get_file_value(config_path: Path, dotted_key: str) -> Any:
     return None
 
 
+def read_config_for_write(config_path: Path) -> dict[str, Any]:
+    """Read a config file that is about to be modified.
+
+    Missing files read as ``{}`` (a valid ``config set`` target). A file that
+    exists but cannot be parsed raises :class:`ConfigError` — never silently
+    rewrite a corrupt file, which would destroy whatever the user had in it.
+    """
+    if not config_path.exists():
+        return {}
+    try:
+        return tomllib.loads(config_path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        raise ConfigError(
+            f"refusing to modify {config_path}: existing file cannot be "
+            f"parsed ({exc}). Fix or remove it first."
+        ) from exc
+
+
+def write_config_data(config_path: Path, data: dict[str, Any]) -> None:
+    """Write a config dict as TOML, creating the parent dir (0700).
+
+    The file is restricted to the owner (0600): users habitually put
+    sensitive things in CLI config files even though the schema holds no
+    secrets.
+    """
+    config_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    config_path.write_text(tomli_w.dumps(data), encoding="utf-8")
+    config_path.chmod(0o600)
+
+
 def set_config_value(config_path: Path, dotted_key: str, raw_value: str) -> Any:
     """Validate + write one ``section.key`` into the TOML file, preserving rest.
 
     Returns the coerced value. Raises :class:`ConfigError` for unknown keys,
     invalid values (secrets are not part of the schema, so cannot be set
-    here), or an existing file that cannot be parsed — never silently
-    rewrite a corrupt file, which would destroy whatever the user had in it.
+    here), or a corrupt existing file (see :func:`read_config_for_write`).
     """
     section, key = parse_key(dotted_key)
     value = coerce_value(section, key, raw_value)
-
-    if config_path.exists():
-        try:
-            data = tomllib.loads(config_path.read_text(encoding="utf-8"))
-        except (OSError, tomllib.TOMLDecodeError) as exc:
-            raise ConfigError(
-                f"refusing to modify {config_path}: existing file cannot be "
-                f"parsed ({exc}). Fix or remove it first."
-            ) from exc
-    else:
-        data = {}
+    data = read_config_for_write(config_path)
     table = data.get(section)
     if not isinstance(table, dict):
         table = {}
     table[key] = value
     data[section] = table
-
-    config_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    config_path.write_text(tomli_w.dumps(data), encoding="utf-8")
-    # Restrict to the owner: users habitually put sensitive things in CLI
-    # config files even though the schema holds no secrets.
-    config_path.chmod(0o600)
+    write_config_data(config_path, data)
     return value

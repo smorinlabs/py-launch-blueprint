@@ -30,8 +30,8 @@ from py_launch_blueprint.cli.context import AppContext
 from py_launch_blueprint.cli.options import confirm, global_options, mutation_options
 from py_launch_blueprint.core.config import (
     get_default_config_path,
-    get_file_value,
-    set_config_value,
+    read_config_for_write,
+    write_config_data,
 )
 from py_launch_blueprint.core.errors import ExitCode
 from py_launch_blueprint.core.models import ConfigPath, ConfigValue
@@ -76,8 +76,13 @@ def config_get(app: AppContext, key: str) -> None:
         app.renderer.render(ConfigValue(key=key, value=value, source=cfg.source))
         return
     section, name = parse_key(key)
-    resolved = getattr(getattr(cfg.settings, section), name)
-    app.renderer.render(ConfigValue(key=key, value=str(resolved), source="config"))
+    table = getattr(cfg.settings, section)
+    resolved = getattr(table, name)
+    # model_fields_set tracks keys a config layer actually supplied — anything
+    # else is the schema default, and claiming "config" for it sends users
+    # hunting for a file that doesn't set it.
+    source = "config" if name in table.model_fields_set else "default"
+    app.renderer.render(ConfigValue(key=key, value=str(resolved), source=source))
 
 
 @config_group.command(name="set")
@@ -107,7 +112,13 @@ def config_set(
         app.renderer.render(ConfigValue(key=key, value=str(coerced), source="dry-run"))
         return
 
-    existing = get_file_value(path, key)
+    # One read serves both the overwrite check and the write — the value
+    # shown in the prompt is the value the write preserves around.
+    data = read_config_for_write(path)  # ConfigError if existing+corrupt
+    table = data.get(section)
+    if not isinstance(table, dict):
+        table = {}
+    existing = table.get(name)
     if (
         existing is not None
         and existing != coerced
@@ -120,7 +131,9 @@ def config_set(
         app.renderer.message("Aborted.")
         raise SystemExit(int(ExitCode.INTERRUPT))
 
-    set_config_value(path, key, value)
+    table[name] = coerced
+    data[section] = table
+    write_config_data(path, data)
     app.renderer.message(f"Set {key} = {coerced} in {path}")
     app.renderer.render(ConfigValue(key=key, value=str(coerced), source="file"))
 
