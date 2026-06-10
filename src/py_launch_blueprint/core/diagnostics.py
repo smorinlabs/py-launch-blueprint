@@ -17,7 +17,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Environment/setup diagnostics for `pylb doctor`.
+"""Environment/setup diagnostics for `plbp doctor`.
 
 Pure logic: takes a resolved :class:`Config` and inspects the runtime, never
 printing. The CLI renders the returned :class:`DoctorReport`.
@@ -72,8 +72,8 @@ def run_diagnostics(config: Config) -> DoctorReport:
                 name="token",
                 status="warn",
                 detail=(
-                    f"not set (use --token, ${TOKEN_ENV_VAR}, "
-                    "or `pylb config set token`)"
+                    f"not set (supply via --token or ${TOKEN_ENV_VAR}; "
+                    "never stored in config)"
                 ),
             )
         )

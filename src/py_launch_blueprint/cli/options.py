@@ -20,7 +20,7 @@
 """The ``@global_options`` decorator — one set of flags on every command.
 
 Stacking these per-command (rather than only on the root group) lets users put
-flags after the verb, gh-style: ``pylb projects list --json``. The decorator
+flags after the verb, gh-style: ``plbp projects list --json``. The decorator
 consumes the global values, builds an :class:`AppContext`, and passes it as the
 first argument to the wrapped command.
 """
@@ -45,7 +45,8 @@ _GLOBAL_OPTIONS: list[Callable[[Any], Any]] = [
         "output_mode",
         type=click.Choice(_OUTPUT_CHOICES),
         default=None,
-        help="Output format. [default: human]",
+        envvar="PLBP_OUTPUT",
+        help="Output format. [default: text]",
     ),
     click.option(
         "--json",
@@ -65,12 +66,13 @@ _GLOBAL_OPTIONS: list[Callable[[Any], Any]] = [
         "config_file",
         type=click.Path(dir_okay=False),
         default=None,
-        help="Path to a .env config file.",
+        envvar="PLBP_CONFIG",
+        help="Path to a TOML config file (overrides layered discovery).",
     ),
     click.option(
         "--token",
         default=None,
-        help="Py Personal Access Token (overrides env and config file).",
+        help="Py Personal Access Token (overrides $PLBP_TOKEN). Never stored.",
     ),
     click.option(
         "--no-input", is_flag=True, help="Never prompt; fail instead (for scripts/CI)."

@@ -29,8 +29,9 @@ makes a single result object renderable as human text, JSON, or Markdown.
 from py_launch_blueprint.core.config import (
     Config,
     get_config_dir,
+    get_default_config_path,
     load_config,
-    save_token,
+    set_config_value,
 )
 from py_launch_blueprint.core.diagnostics import run_diagnostics
 from py_launch_blueprint.core.errors import (
@@ -49,6 +50,13 @@ from py_launch_blueprint.core.models import (
     Project,
     ProjectList,
 )
+from py_launch_blueprint.core.settings import (
+    LoggingSettings,
+    OutputSettings,
+    Settings,
+    parse_key,
+    writable_keys,
+)
 
 __all__ = [
     "APIError",
@@ -61,11 +69,17 @@ __all__ = [
     "DoctorCheck",
     "DoctorReport",
     "ExitCode",
+    "LoggingSettings",
+    "OutputSettings",
     "Project",
     "ProjectList",
     "PyError",
+    "Settings",
     "get_config_dir",
+    "get_default_config_path",
     "load_config",
+    "parse_key",
     "run_diagnostics",
-    "save_token",
+    "set_config_value",
+    "writable_keys",
 ]

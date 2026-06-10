@@ -90,8 +90,8 @@ docs = [
 
 
 [project.scripts]
-# Noun-verb CLI (gh-style): pylb <noun> <verb>
-pylb = "py_launch_blueprint.cli.main:cli"
+# Noun-verb CLI (gh-style): plbp <noun> <verb>
+plbp = "py_launch_blueprint.cli.main:cli"
 # Back-compat: original single-command entry point (preserved).
 py-projects = "py_launch_blueprint.projects:main"
 

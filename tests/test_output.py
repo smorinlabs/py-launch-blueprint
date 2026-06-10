@@ -1,4 +1,4 @@
-"""Tests for the output renderer contract (human / JSON / Markdown)."""
+"""Tests for the output renderer contract (text / JSON / Markdown)."""
 
 import json
 
@@ -25,14 +25,14 @@ def test_markdown_mode_emits_table(capsys):
     assert "| Alpha | WS | 1 |" in out
 
 
-def test_human_mode_writes_to_stdout(capsys):
-    Renderer(OutputMode.HUMAN, no_color=True).render(_result())
+def test_text_mode_writes_to_stdout(capsys):
+    Renderer(OutputMode.TEXT, no_color=True).render(_result())
     out = capsys.readouterr().out
     assert "Alpha" in out
 
 
 def test_message_goes_to_stderr_not_stdout(capsys):
-    Renderer(OutputMode.HUMAN, no_color=True).message("hello")
+    Renderer(OutputMode.TEXT, no_color=True).message("hello")
     captured = capsys.readouterr()
     assert "hello" in captured.err
     assert captured.out == ""

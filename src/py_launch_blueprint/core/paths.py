@@ -27,14 +27,14 @@ Follows the `XDG Base Directory Specification
 * ``$XDG_STATE_HOME``  (default ``~/.local/state``) — logs/history (recoverable)
 * ``$XDG_CACHE_HOME``  (default ``~/.cache``)       — regenerable cache
 
-Everything is namespaced under one per-app directory (``<XDG>/pylb/``), and
+Everything is namespaced under one per-app directory (``<XDG>/plbp/``), and
 files are named ``<app>_<kind>.<ext>`` so a stray file on disk announces both
 its owner and its purpose:
 
-    ~/.config/pylb/pylb_config.toml
-    ~/.local/share/pylb/pylb_db.db
-    ~/.local/state/pylb/pylb_history.log
-    ~/.cache/pylb/
+    ~/.config/plbp/plbp_config.toml
+    ~/.local/share/plbp/plbp_db.db
+    ~/.local/state/plbp/plbp.log
+    ~/.cache/plbp/
 
 Spec edge cases handled: an XDG variable that is unset, empty, or holds a
 *relative* path is ignored in favor of the default (the spec mandates absolute
@@ -45,7 +45,7 @@ import os
 from pathlib import Path
 
 #: The CLI/binary name — also the XDG namespace and the filename prefix.
-APP_NAME = "pylb"
+APP_NAME = "plbp"
 
 
 def _xdg_base(env_var: str, default: Path) -> Path:
@@ -67,6 +67,17 @@ def _home() -> Path:
 
 def config_home() -> Path:
     return _xdg_base("XDG_CONFIG_HOME", _home() / ".config")
+
+
+def config_dirs() -> list[Path]:
+    """System config dirs from ``$XDG_CONFIG_DIRS`` (default ``/etc/xdg``).
+
+    Returned highest-precedence first, matching the spec (earlier entries in
+    ``XDG_CONFIG_DIRS`` win). Empty/relative entries are ignored.
+    """
+    raw = os.environ.get("XDG_CONFIG_DIRS", "")
+    dirs = [Path(p) for p in raw.split(os.pathsep) if p and Path(p).is_absolute()]
+    return dirs or [Path("/etc/xdg")]
 
 
 def data_home() -> Path:
@@ -103,18 +114,41 @@ def cache_dir() -> Path:
 # -- intent-revealing filenames: <app>_<kind>.<ext> -----------------------
 
 
+CONFIG_FILENAME = f"{APP_NAME}_config.toml"
+
+
 def config_file() -> Path:
-    """Default config file: ``<config>/pylb/pylb_config.toml``."""
-    return config_dir() / f"{APP_NAME}_config.toml"
+    """Default (user) config file: ``<config>/plbp/plbp_config.toml``."""
+    return config_dir() / CONFIG_FILENAME
+
+
+def system_config_files() -> list[Path]:
+    """System config files, lowest-precedence layer (``<dir>/plbp/...``)."""
+    return [d / APP_NAME / CONFIG_FILENAME for d in config_dirs()]
+
+
+def project_config_file(start: Path | None = None) -> Path:
+    """Project-local config file in ``start`` (cwd): ``./plbp_config.toml``.
+
+    The dotfile form ``./.plbp_config.toml`` is preferred when it exists.
+    """
+    base = start or Path.cwd()
+    dotfile = base / f".{CONFIG_FILENAME}"
+    return dotfile if dotfile.exists() else base / CONFIG_FILENAME
+
+
+def log_file() -> Path:
+    """Default log file (state): ``<state>/plbp/plbp.log``."""
+    return state_dir() / f"{APP_NAME}.log"
 
 
 def database_file(name: str = "db", ext: str = "db") -> Path:
-    """Default database file: ``<data>/pylb/pylb_db.db``."""
+    """Default database file: ``<data>/plbp/plbp_db.db``."""
     return data_dir() / f"{APP_NAME}_{name}.{ext}"
 
 
 def state_file(name: str, ext: str = "log") -> Path:
-    """A state file (logs/history): ``<state>/pylb/pylb_<name>.<ext>``."""
+    """A state file (logs/history): ``<state>/plbp/plbp_<name>.<ext>``."""
     return state_dir() / f"{APP_NAME}_{name}.{ext}"
 
 

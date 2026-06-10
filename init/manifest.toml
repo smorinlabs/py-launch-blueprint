@@ -16,7 +16,7 @@ files   = [
 ]
 mode    = "structured"
 
-# author (text) — 19 occurrences in 18 files
+# author (text) — 20 occurrences in 19 files
 [[replace]]
 field   = "author"
 current = ["Steve Morin"]
@@ -52,6 +52,7 @@ files   = [
   "src/py_launch_blueprint/core/paths.py",   # 1x
   "src/py_launch_blueprint/core/services/__init__.py",   # 1x
   "src/py_launch_blueprint/core/services/projects.py",   # 1x
+  "src/py_launch_blueprint/core/settings.py",   # 1x
   "src/py_launch_blueprint/projects.py",   # 1x
   "src/py_launch_blueprint/web/__init__.py",   # 1x
   "tests/__init__.py",   # 1x
@@ -137,7 +138,7 @@ files   = [
 ]
 mode    = "structured"
 
-# package_name (text) — 93 occurrences in 34 files
+# package_name (text) — 94 occurrences in 35 files
 [[replace]]
 field   = "package_name"
 current = ["py_launch_blueprint"]
@@ -188,6 +189,7 @@ files   = [
   "src/py_launch_blueprint/core/models.py",   # 1x
   "src/py_launch_blueprint/core/services/__init__.py",   # 1x
   "src/py_launch_blueprint/core/services/projects.py",   # 1x
+  "src/py_launch_blueprint/core/settings.py",   # 1x
   "src/py_launch_blueprint/projects.py",   # 1x
   "src/py_launch_blueprint/web/__init__.py",   # 1x
   "pyrightconfig.json",   # 1x

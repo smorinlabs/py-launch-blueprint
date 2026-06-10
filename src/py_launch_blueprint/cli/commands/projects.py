@@ -17,7 +17,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""``pylb projects`` — list and inspect Py projects.
+"""``plbp projects`` — list and inspect Py projects.
 
 Reference noun: shows the full best-practice shape (global flags, structured
 result → renderer, early validation, typed errors → exit codes).
@@ -42,8 +42,8 @@ def _service(app: AppContext) -> ProjectsService:
     token = app.config.token
     if not token:
         raise AuthError(
-            "No Py token found. Set PY_TOKEN, pass --token, or add it to your "
-            "config file (see `pylb config path`)."
+            "No Py token found. Supply it via --token or the $PLBP_TOKEN "
+            "environment variable (never stored in the config file)."
         )
     return ProjectsService(token)
 
@@ -62,9 +62,9 @@ def list_projects(app: AppContext, workspace: str | None, limit: int) -> None:
     """List projects, optionally filtered by workspace.
 
     Examples:
-        pylb projects list
-        pylb projects list --workspace "My Workspace" --json
-        pylb projects list -o markdown
+        plbp projects list
+        plbp projects list --workspace "My Workspace" --json
+        plbp projects list -o markdown
     """
     projects = _service(app).list_projects(workspace=workspace, limit=limit)
     app.renderer.render(ProjectList(projects=projects))
@@ -77,8 +77,8 @@ def get_project(app: AppContext, project_id: str) -> None:
     """Fetch a single project by its ID.
 
     Examples:
-        pylb projects get 12345
-        pylb projects get 12345 --json
+        plbp projects get 12345
+        plbp projects get 12345 --json
     """
     project = _service(app).get_project(project_id)
     app.renderer.render(ProjectList(projects=[project]))
