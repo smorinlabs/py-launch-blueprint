@@ -28,7 +28,7 @@ setup in [§2](#2-checks--configuration).
 ### CI / quality gates (recommended: keep all)
 
 - [ ] **Core CI** (lint, format, type-check, tests, coverage) — *Default: on.*
-      Files: `.github/workflows/ci.yml`, `_checks.yml`. Removing this removes the
+      Files: `.github/workflows/ci.yml`. Removing this removes the
       point of the template; keep it.
 - [ ] **Pre-commit/-push hooks** (lefthook: commitlint, gitleaks, formatting) —
       *Default: on.* File: `lefthook.yml`. Remove the file to disable local hooks.
@@ -88,11 +88,6 @@ setup in [§2](#2-checks--configuration).
 
 ### Template-only machinery (recommended: remove for a real project)
 
-- [ ] **Experiment / benchmarking harness** — the template's own tooling-matrix
-      experiments, not part of a downstream app. Files:
-      `.github/workflows/{flox-*,mise-*,trad-suite,experiment-driver}.yml`,
-      `.github/actions/provision-*`. `just init` removes most blueprint-only
-      pieces; delete any that remain.
 - [ ] **Blueprint guard** — *Default: removed by `just init`.* File:
       `.github/workflows/blueprint-guard.yml`. It is blueprint-only.
 
