@@ -73,7 +73,7 @@ files   = [
 ]
 mode    = "structured"
 
-# app_name (text) — 146 occurrences in 16 files
+# app_name (text) — 176 occurrences in 18 files
 # NOTE: 4-char token — safe for text mode because "plbp" was invented to be
 # substring-disjoint from real words and every other identity value.
 [[replace]]
@@ -81,6 +81,8 @@ field   = "app_name"
 current = ["plbp"]
 files   = [
   "EXAMPLECLI.md",   # 36x
+  "docs/design/0001-plbp-cli-conventions.md",   # 28x
+  "docs/design/README.md",   # 2x
   "POST_INIT.md",   # 1x
   "src/py_launch_blueprint/cli/commands/__init__.py",   # 1x
   "src/py_launch_blueprint/cli/commands/config.py",   # 9x
@@ -99,7 +101,7 @@ files   = [
 ]
 mode    = "text"
 
-# app_name_upper (text) — 80 occurrences in 11 files
+# app_name_upper (text) — 106 occurrences in 12 files
 # Derived identity (app_name.upper()): the PLBP_* env prefix and the
 # _PLBP_COMPLETE completion var. Never prompted; init derives it.
 [[replace]]
@@ -107,6 +109,7 @@ field   = "app_name_upper"
 current = ["PLBP"]
 files   = [
   "EXAMPLECLI.md",   # 12x
+  "docs/design/0001-plbp-cli-conventions.md",   # 26x
   "POST_INIT.md",   # 1x
   "src/py_launch_blueprint/cli/commands/config.py",   # 2x
   "src/py_launch_blueprint/cli/commands/projects.py",   # 1x
@@ -272,7 +275,7 @@ files   = [
 ]
 mode    = "structured"
 
-# repo_name (text) — 164 occurrences in 23 files
+# repo_name (text) — 167 occurrences in 24 files
 [[replace]]
 field   = "repo_name"
 current = ["py-launch-blueprint"]
@@ -287,6 +290,7 @@ files   = [
   "EXAMPLECLI.md",   # 7x
   "Justfile",   # 1x
   "README.md",   # 17x
+  "docs/design/0001-plbp-cli-conventions.md",   # 3x
   "docs/source/_templates/base.html",   # 1x
   "docs/source/conf.py",   # 3x
   "docs/source/contributing/index.md",   # 1x
@@ -319,6 +323,10 @@ to   = "assets/images/logos/{package_name}_logo_150x150.png"
 [[rename]]
 from = "assets/images/logos/py_launch_blueprint_logo_100x100.png"
 to   = "assets/images/logos/{package_name}_logo_100x100.png"
+
+[[rename]]
+from = "docs/design/0001-plbp-cli-conventions.md"
+to   = "docs/design/0001-{app_name}-cli-conventions.md"
 
 [[rename]]
 from = "src/py_launch_blueprint"
