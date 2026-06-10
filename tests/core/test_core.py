@@ -180,7 +180,7 @@ def test_invalid_value_warns_and_defaults(tmp_path, monkeypatch):
 
 
 def test_explicit_config_invalid_toml_raises(tmp_path, monkeypatch):
-    # --config naming an unparseable file is a loud user error (not ignored).
+    # --config naming an unparsable file is a loud user error (not ignored).
     monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
     cfg_file = tmp_path / "plbp_config.toml"
     cfg_file.write_text('[output\ncolor = "always"\n')  # unclosed table

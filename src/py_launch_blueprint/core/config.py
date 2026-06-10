@@ -69,7 +69,7 @@ class Config:
     #: Config files that existed and were merged, lowest precedence first.
     loaded_paths: list[Path] = field(default_factory=list)
     #: Non-fatal problems found while loading (invalid values dropped,
-    #: unparseable discovered layers skipped). The CLI logs these to stderr.
+    #: unparsable discovered layers skipped). The CLI logs these to stderr.
     warnings: list[str] = field(default_factory=list)
 
 
