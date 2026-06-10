@@ -20,8 +20,9 @@ file by hand — see Conventions.
 
 ## Projects
 
-_No projects captured yet. Use `project-add` to capture the first idea — it
-reserves the next `P##` and writes the stub in one atomic commit._
+| ID  | St    | Project                                                                 |
+|-----|-------|------------------------------------------------------------------------|
+| P01 | `[ ]` | [Init app-name rebrand robustness](projects/P01-init-rebrand-robustness.md) — per-field drift coverage (B) + derive non-contract internals (C) |
 
 ## Conventions
 
