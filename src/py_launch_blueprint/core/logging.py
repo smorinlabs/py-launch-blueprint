@@ -17,31 +17,38 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Structured logging, configured once and shared by every front-end.
+"""Structured logging: a console sink plus an optional rotating file sink.
 
-We use `structlog <https://www.structlog.org/>`_ (see the proposal notes for
-why over loguru / python-json-logger). Logs always go to **stderr** so that
-machine-readable results on stdout stay clean and pipe-safe.
+structlog renders the events; stdlib ``logging`` handlers own the sinks, which
+is what makes the dual-sink behavior (R11.6) work: both handlers attach to the
+root logger, the logger floor is the most verbose sink, and each handler
+filters independently — e.g. console at WARNING while the file gets DEBUG.
 
-Two render modes:
+* **Console sink** (stderr, always on): human-friendly colored output on a
+  TTY, JSON lines otherwise (CI/containers). Level from ``-v``/``-q``/
+  ``--log-level`` (default WARNING).
+* **File sink** (off by default): enabled by ``--log-file``/``$PLBP_LOG_FILE``
+  or config ``logging.file``; rotates at 10 MB x 5 backups; has its own level
+  (default DEBUG) and format (``text`` or ``json`` JSONL).
 
-* ``LogFormat.CONSOLE`` — colorized, human-friendly (default on a TTY).
-* ``LogFormat.JSON`` — one JSON object per line (default when stderr is not a
-  TTY, e.g. in CI / containers / when piped), ideal for log shippers.
-
-Call :func:`configure_logging` once at startup, then ``get_logger(__name__)``
-anywhere. Use ``bind_contextvars`` to attach request/command-scoped context.
+Logs always go to **stderr** (never stdout) so machine-readable results stay
+pipe-safe. Call :func:`configure_logging` once at startup, then
+``get_logger(__name__)`` anywhere; ``bind_contextvars`` attaches
+command-scoped context.
 """
 
 import logging
 import sys
 from enum import StrEnum
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 import structlog
 from structlog.contextvars import bind_contextvars, clear_contextvars
 from structlog.typing import Processor
 
 __all__ = [
+    "LOG_LEVELS",
     "LogFormat",
     "bind_contextvars",
     "clear_contextvars",
@@ -49,9 +56,22 @@ __all__ = [
     "get_logger",
 ]
 
+#: CLI/config level names -> stdlib levels (spec R10.4 / R11.4 vocabulary).
+LOG_LEVELS: dict[str, int] = {
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+    "critical": logging.CRITICAL,
+}
+
+#: File sink rotation policy (R11.3): 10 MB per file, 5 backups.
+ROTATE_MAX_BYTES = 10 * 1024 * 1024
+ROTATE_BACKUP_COUNT = 5
+
 
 class LogFormat(StrEnum):
-    """How log lines are rendered."""
+    """How console log lines are rendered."""
 
     AUTO = "auto"
     CONSOLE = "console"
@@ -65,40 +85,109 @@ def _resolve_format(fmt: LogFormat) -> LogFormat:
     return LogFormat.CONSOLE if sys.stderr.isatty() else LogFormat.JSON
 
 
-def configure_logging(
-    level: int = logging.WARNING,
-    fmt: LogFormat = LogFormat.AUTO,
-) -> None:
-    """Configure structlog for the whole process.
-
-    Args:
-        level: Standard logging level (e.g. ``logging.INFO``). Map CLI
-            verbosity to this: default WARNING, ``-v`` INFO, ``-vv`` DEBUG.
-        fmt: Render mode; ``AUTO`` picks console vs JSON from the TTY state.
-    """
-    resolved = _resolve_format(fmt)
-
-    shared: list[Processor] = [
+def _shared_processors() -> list[Processor]:
+    return [
         structlog.contextvars.merge_contextvars,
-        structlog.processors.add_log_level,
+        structlog.stdlib.add_log_level,
         structlog.processors.StackInfoRenderer(),
+        # Render exc_info into the event so tracebacks survive JSON output
+        # (ConsoleRenderer formats the resulting "exception" field; without
+        # this, JSONRenderer emits a bare `"exc_info": true` and the
+        # traceback is lost from exactly the logs meant for machines).
+        structlog.processors.format_exc_info,
         structlog.processors.TimeStamper(fmt="iso", utc=True),
     ]
 
-    renderer: Processor
-    if resolved is LogFormat.JSON:
-        shared.append(structlog.processors.format_exc_info)
-        renderer = structlog.processors.JSONRenderer()
-    else:
-        renderer = structlog.dev.ConsoleRenderer(colors=sys.stderr.isatty())
+
+def configure_logging(
+    level: int = logging.WARNING,
+    fmt: LogFormat = LogFormat.AUTO,
+    file_path: Path | None = None,
+    file_level: int = logging.DEBUG,
+    file_format: str = "text",
+) -> None:
+    """Configure the console sink and (optionally) the rotating file sink.
+
+    Args:
+        level: Console (stderr) level — default WARNING, ``-v`` INFO,
+            ``-vv`` DEBUG, ``-q`` ERROR, ``--log-level`` explicit.
+        fmt: Console render mode; ``AUTO`` picks console vs JSON from the TTY.
+        file_path: Enables the file sink when set (R11.1). The parent
+            directory is created (0700) if needed.
+        file_level: File sink level, independent of the console (R11.4).
+        file_format: ``"json"`` for JSONL or ``"text"`` for the file (R11.5).
+
+    Idempotent: reconfiguring replaces previous handlers (safe in tests and
+    repeated invocations).
+    """
+    shared = _shared_processors()
 
     structlog.configure(
-        processors=[*shared, renderer],
-        wrapper_class=structlog.make_filtering_bound_logger(level),
-        # WriteLoggerFactory writes atomically to stderr (avoids interleaving).
-        logger_factory=structlog.WriteLoggerFactory(file=sys.stderr),
-        cache_logger_on_first_use=True,
+        processors=[*shared, structlog.stdlib.ProcessorFormatter.wrap_for_formatter],
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=False,  # stays reconfigurable
     )
+
+    resolved = _resolve_format(fmt)
+    console_renderer: Processor
+    if resolved is LogFormat.JSON:
+        console_renderer = structlog.processors.JSONRenderer()
+    else:
+        console_renderer = structlog.dev.ConsoleRenderer(colors=sys.stderr.isatty())
+
+    console_handler = logging.StreamHandler(sys.stderr)
+    console_handler.setLevel(level)
+    console_handler.setFormatter(
+        structlog.stdlib.ProcessorFormatter(
+            processors=[
+                structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                console_renderer,
+            ],
+            foreign_pre_chain=shared,
+        )
+    )
+
+    root = logging.getLogger()
+    # Only remove handlers WE installed: closing foreign handlers would
+    # break a host process (or pytest's caplog) that embeds this CLI.
+    for handler in root.handlers[:]:
+        if getattr(handler, "_plbp_owned", False):
+            root.removeHandler(handler)
+            handler.close()
+    console_handler._plbp_owned = True  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+    root.addHandler(console_handler)
+    floor = level
+
+    if file_path is not None:
+        file_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        file_renderer: Processor
+        if file_format == "json":
+            file_renderer = structlog.processors.JSONRenderer()
+        else:
+            file_renderer = structlog.dev.ConsoleRenderer(colors=False)
+        file_handler = RotatingFileHandler(
+            file_path,
+            maxBytes=ROTATE_MAX_BYTES,
+            backupCount=ROTATE_BACKUP_COUNT,
+            encoding="utf-8",
+        )
+        file_handler.setLevel(file_level)
+        file_handler.setFormatter(
+            structlog.stdlib.ProcessorFormatter(
+                processors=[
+                    structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                    file_renderer,
+                ],
+                foreign_pre_chain=shared,
+            )
+        )
+        file_handler._plbp_owned = True  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        root.addHandler(file_handler)
+        floor = min(level, file_level)
+
+    # R11.6: the logger floor is the most verbose sink; handlers filter.
+    root.setLevel(floor)
 
 
 def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:

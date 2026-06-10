@@ -31,7 +31,7 @@ from typing import Any, cast
 
 import click
 
-from py_launch_blueprint.cli.context import AppContext
+from py_launch_blueprint.cli.context import LOG_FILE_DEFAULT_SENTINEL, AppContext
 from py_launch_blueprint.cli.output import OutputMode, Renderer
 from py_launch_blueprint.core.errors import ConfigError, ExitCode, PyError
 
@@ -66,6 +66,23 @@ _GLOBAL_OPTIONS: list[Callable[[Any], Any]] = [
     ),
     click.option(
         "-q", "--quiet", is_flag=True, help="Suppress non-essential stderr output."
+    ),
+    click.option(
+        "--log-level",
+        "log_level",
+        type=click.Choice(["debug", "info", "warning", "error", "critical"]),
+        default=None,
+        envvar="PLBP_LOG_LEVEL",
+        help="Explicit console log level (overrides -v/-q).",
+    ),
+    click.option(
+        "--log-file",
+        "log_file",
+        is_flag=False,
+        flag_value=LOG_FILE_DEFAULT_SENTINEL,
+        default=None,
+        envvar="PLBP_LOG_FILE",
+        help="Enable rotating file logging (PATH optional; default: XDG state).",
     ),
     click.option("--no-color", is_flag=True, help="Disable colored output."),
     click.option(
@@ -110,6 +127,8 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
         output_file: str | None,
         verbose: int,
         quiet: bool,
+        log_level: str | None,
+        log_file: str | None,
         no_color: bool,
         config_file: str | None,
         token: str | None,
@@ -126,6 +145,8 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
                 output_file=output_file,
                 verbose=verbose,
                 quiet=quiet,
+                log_level=log_level,
+                log_file=log_file,
                 no_color=no_color,
                 config_file=config_file,
                 token=token,

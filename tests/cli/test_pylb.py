@@ -369,3 +369,109 @@ def test_invalid_config_value_warns_on_stderr(runner, tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert "warning:" in result.output
     assert "output.color" in result.output
+
+
+# -- phase 3: logging flags + file sink -------------------------------------
+
+
+def test_log_file_flag_with_path(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    log = tmp_path / "run.log"
+    result = runner.invoke(
+        cli,
+        [
+            "config",
+            "path",
+            "--config",
+            str(tmp_path / "c.toml"),
+            "--log-file",
+            str(log),
+        ],
+    )
+    assert result.exit_code == 0
+    assert log.exists()  # file sink was wired up
+
+
+def test_log_file_flag_defaults_to_xdg_state(runner, tmp_path, monkeypatch):
+    # R11.2: bare --log-file uses $XDG_STATE_HOME/plbp/plbp.log.
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    result = runner.invoke(
+        cli,
+        ["config", "path", "--config", str(tmp_path / "c.toml"), "--log-file"],
+    )
+    assert result.exit_code == 0
+    assert (tmp_path / "plbp" / "plbp.log").exists()
+
+
+def test_log_file_from_config(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    monkeypatch.delenv("PLBP_LOG_FILE", raising=False)
+    log = tmp_path / "cfg.log"
+    cfg = tmp_path / "plbp_config.toml"
+    cfg.write_text(f'[logging]\nfile = "{log}"\n')
+    result = runner.invoke(cli, ["config", "path", "--config", str(cfg)])
+    assert result.exit_code == 0
+    assert log.exists()
+
+
+def test_console_level_precedence():
+    import logging as stdlib_logging
+
+    from py_launch_blueprint.cli.context import _resolve_console_level
+
+    # --log-level beats everything, including -q (R10.4 explicit override).
+    assert _resolve_console_level("debug", 0, True, "warning") == stdlib_logging.DEBUG
+    # -q then -vv then -v...
+    assert _resolve_console_level(None, 0, True, "warning") == stdlib_logging.ERROR
+    assert _resolve_console_level(None, 2, False, "warning") == stdlib_logging.DEBUG
+    assert _resolve_console_level(None, 1, False, "warning") == stdlib_logging.INFO
+    # ...then the config value, then the WARNING default baked into config.
+    assert _resolve_console_level(None, 0, False, "info") == stdlib_logging.INFO
+    assert _resolve_console_level(None, 0, False, "warning") == stdlib_logging.WARNING
+
+
+# -- logging env contracts (review findings) --------------------------------
+
+
+def test_log_file_env_empty_enables_default(runner, tmp_path, monkeypatch):
+    # R12: PRESENCE of PLBP_LOG_FILE enables the sink; empty value means
+    # the default XDG state location.
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    monkeypatch.setenv("PLBP_LOG_FILE", "")
+    result = runner.invoke(
+        cli, ["config", "path", "--config", str(tmp_path / "c.toml")]
+    )
+    assert result.exit_code == 0
+    assert (tmp_path / "plbp" / "plbp.log").exists()
+
+
+def test_log_format_env_invalid_value_rejected(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    monkeypatch.setenv("PLBP_LOG_FORMAT", "yaml")
+    result = runner.invoke(
+        cli, ["config", "path", "--config", str(tmp_path / "c.toml")]
+    )
+    assert result.exit_code == 1  # ConfigError via the create() boundary
+    assert "PLBP_LOG_FORMAT" in result.output
+
+
+def test_log_format_env_case_insensitive(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    monkeypatch.setenv("PLBP_LOG_FORMAT", "JSON")
+    log = tmp_path / "x.log"
+    result = runner.invoke(
+        cli,
+        [
+            "config",
+            "path",
+            "--config",
+            str(tmp_path / "c.toml"),
+            "--log-file",
+            str(log),
+        ],
+    )
+    assert result.exit_code == 0
+    line = log.read_text().strip().splitlines()[0]
+    json.loads(line)  # JSONL, not text: the env value was normalized
