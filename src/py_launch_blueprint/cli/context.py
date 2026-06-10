@@ -71,6 +71,11 @@ class AppContext:
 
         mode = _resolve_mode(output_mode, json_mode, settings.output.format)
         color = _resolve_color(no_color, settings.output.color)
+        renderer = Renderer(mode=mode, color=color, output_file=output_file)
+        # Non-fatal load problems (invalid values dropped, unreadable
+        # discovered layers) are surfaced on stderr, never swallowed.
+        for warning in config.warnings:
+            renderer.message(f"[yellow]warning:[/yellow] {warning}")
 
         # Verbosity → log level: default WARNING, -v INFO, -vv DEBUG, -q ERROR.
         if quiet:
@@ -84,7 +89,7 @@ class AppContext:
         configure_logging(level=level, fmt=LogFormat.AUTO)
 
         return cls(
-            renderer=Renderer(mode=mode, color=color, output_file=output_file),
+            renderer=renderer,
             output_mode=mode,
             config_file=config_file,
             token=token,

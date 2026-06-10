@@ -334,3 +334,38 @@ def test_color_precedence_resolution(monkeypatch):
     # ...and the --no-color flag overrides everything.
     monkeypatch.delenv("NO_COLOR", raising=False)
     assert _resolve_color(True, "always") == "never"
+
+
+# -- context-build error boundary (review finding) --------------------------
+
+
+def test_corrupt_explicit_config_renders_clean_error(runner, tmp_path, monkeypatch):
+    # Errors raised while building the context (eager config load) must be
+    # rendered, not tracebacked.
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    cfg = tmp_path / "plbp_config.toml"
+    cfg.write_text("[output\n")  # TOML syntax error in an EXPLICIT --config
+    result = runner.invoke(cli, ["config", "path", "--config", str(cfg)])
+    assert result.exit_code == 1  # ExitCode.CONFIG
+    assert "Traceback" not in result.output
+    assert "invalid TOML" in result.output
+
+
+def test_corrupt_explicit_config_json_error_envelope(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    cfg = tmp_path / "plbp_config.toml"
+    cfg.write_text("[output\n")
+    result = runner.invoke(cli, ["config", "path", "--config", str(cfg), "--json"])
+    assert result.exit_code == 1
+    payload = json.loads(result.output)  # structured even pre-context
+    assert payload["error"]["name"] == "CONFIG"
+
+
+def test_invalid_config_value_warns_on_stderr(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    cfg = tmp_path / "plbp_config.toml"
+    cfg.write_text('[output]\ncolor = "yes"\n')
+    result = runner.invoke(cli, ["config", "path", "--config", str(cfg)])
+    assert result.exit_code == 0
+    assert "warning:" in result.output
+    assert "output.color" in result.output

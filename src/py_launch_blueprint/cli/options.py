@@ -32,7 +32,7 @@ from typing import Any, cast
 import click
 
 from py_launch_blueprint.cli.context import AppContext
-from py_launch_blueprint.cli.output import OutputMode
+from py_launch_blueprint.cli.output import OutputMode, Renderer
 from py_launch_blueprint.core.errors import ConfigError, ExitCode, PyError
 
 _OUTPUT_CHOICES = [mode.value for mode in OutputMode]
@@ -87,6 +87,18 @@ _GLOBAL_OPTIONS: list[Callable[[Any], Any]] = [
 ]
 
 
+def _fallback_renderer(
+    output_mode: str | None, json_mode: bool, no_color: bool
+) -> Renderer:
+    """Minimal renderer for errors raised *while building* the context.
+
+    Resolved from flags only — the config that would refine format/color is
+    exactly what failed to load.
+    """
+    mode = OutputMode.JSON if json_mode else OutputMode(output_mode or "text")
+    return Renderer(mode=mode, color="never" if no_color else "auto")
+
+
 def global_options[F: Callable[..., Any]](func: F) -> F:
     """Attach the global options and inject an ``AppContext`` first arg."""
 
@@ -104,17 +116,31 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
         no_input: bool,
         **kwargs: Any,
     ) -> Any:
-        app = AppContext.create(
-            output_mode=output_mode,
-            json_mode=json_mode,
-            output_file=output_file,
-            verbose=verbose,
-            quiet=quiet,
-            no_color=no_color,
-            config_file=config_file,
-            token=token,
-            no_input=no_input,
-        )
+        # create() does real work now (config load, logging setup), so its
+        # failures must be rendered, not tracebacked. Errors here are
+        # configuration-shaped by construction -> ExitCode.CONFIG.
+        try:
+            app = AppContext.create(
+                output_mode=output_mode,
+                json_mode=json_mode,
+                output_file=output_file,
+                verbose=verbose,
+                quiet=quiet,
+                no_color=no_color,
+                config_file=config_file,
+                token=token,
+                no_input=no_input,
+            )
+        except PyError as exc:
+            _fallback_renderer(output_mode, json_mode, no_color).error(
+                exc.message, exc.exit_code
+            )
+            raise SystemExit(int(exc.exit_code)) from exc
+        except Exception as exc:
+            _fallback_renderer(output_mode, json_mode, no_color).error(
+                str(exc), ExitCode.CONFIG
+            )
+            raise SystemExit(int(ExitCode.CONFIG)) from exc
         try:
             return func(app, *args, **kwargs)
         except PyError as exc:
