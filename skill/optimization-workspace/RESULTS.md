@@ -104,11 +104,7 @@ uses OAuth, not raw API keys). The manual 6-iteration loop above
 substitutes; results across two strategic axes suggest the optimizer
 would have plateaued at the same structural ceiling.
 
-## Files
-
-- `trigger_eval.json` — original 20-query eval set (template-centric)
-- `trigger_eval_v2.json` — broader Python-creation phrasings
-- `trigger_eval_v3.json` — Python-creation + "repo" phrasings
-- `eval_v3.json` — full per-query results for V3
-- `optimizer.log` — log from the failed `run_loop.py` invocation (shows
-  Iteration 1 baseline metrics matching what `run_eval.py` showed)
+The raw eval sets (`trigger_eval*.json`, `eval_v3.json`) and the
+`run_loop.py` log were one-off run artifacts and are not kept; the metrics
+table above is the durable record, and the chosen trigger wording lives in
+`SKILL.md`.
