@@ -109,7 +109,7 @@ files = [
 ]
 mode = "text"
 
-# app_name_upper (text) — 123 occurrences in 15 files
+# app_name_upper (text) — 124 occurrences in 16 files
 # Derived identity (app_name.upper()): the PLBP_* env prefix and the
 # _PLBP_COMPLETE completion var. Never prompted; init derives it.
 [[replace]]
@@ -120,6 +120,7 @@ files = [
   "docs/design/0001-plbp-cli-conventions.md",         # 26x
   "docs/adr/0001-app-short-name-plbp.md",             # 2x
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
+  "docs/source/index.md",                             # 1x
   "POST_INIT.md",                                     # 1x
   "src/py_launch_blueprint/cli/commands/config.py",   # 2x
   "src/py_launch_blueprint/cli/commands/projects.py", # 1x
