@@ -19,7 +19,7 @@ description: |
   "scaffold a Python project", "start a new Python project", "I want a
   fresh Python repo", "spin up a python repo for X", "create a UV project".
   When confirmed, handles: precondition checks (gh, uv), identity
-  collection (repo name, owner, package, CLI command, app name, author/email,
+  collection (repo name, owner, package, app short name, author/email,
   visibility), `gh repo create --template` from py-launch-blueprint,
   `just init` rebrand with dry-run preview, initial commit + push,
   optional post-init for publishing/Codecov/RTD.
