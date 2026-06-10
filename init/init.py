@@ -132,11 +132,16 @@ def derive_command_name(repo_name: str) -> str:
     return repo_name.lower()
 
 
-def derive_app_name(package_name: str) -> str:
+def derive_app_name(package_name: str, command_name: str) -> str:
     # The app short name (modern CLI command, env prefix, XDG namespace)
-    # defaults to the package name — identifier-safe and never equal to the
-    # kebab-case command_name unless the user forces a collision.
-    return package_name
+    # defaults to the package name. For hyphen-less repo names all three
+    # defaults coincide (repo == package == command), and app_name must
+    # differ from command_name (both become [project.scripts] keys) — so
+    # fall back to a suffixed form rather than offering a default that is
+    # guaranteed to fail validation after the last prompt.
+    if package_name != command_name:
+        return package_name
+    return f"{package_name}_cli"
 
 
 def load_answers_from_file(path: Path) -> Answers:
@@ -191,7 +196,7 @@ def collect_answers_interactive() -> Answers:
     app_name = _ask(
         "app short name (snake_case; modern CLI command + env prefix)",
         "app_name",
-        derive=lambda: derive_app_name(package_name),
+        derive=lambda: derive_app_name(package_name, command_name),
     )
     owner = _ask("GitHub owner (user or org)", "owner")
     author = _ask("author name", "author")

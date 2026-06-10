@@ -150,7 +150,7 @@ than collecting everything and failing at the end.
 | Target directory | `$PWD/<repo-name>` | must not exist OR be empty |
 | Python package name | `<repo-name>` with `-` → `_` | `^[a-z][a-z0-9_]*$` (Python identifier) |
 | CLI command name | `<repo-name>` | `^[a-z][a-z0-9-]*$` |
-| App short name | `<package_name>` | `^[a-z][a-z0-9_]*$`; must differ from CLI command name |
+| App short name | `<package_name>`, or `<package_name>_cli` when that equals the CLI command name | `^[a-z][a-z0-9_]*$`; must differ from CLI command name |
 | Author name | `git config user.name` | non-empty |
 | Author email | `git config user.email` | `^[^@\s]+@[^@\s]+\.[^@\s]+$` |
 

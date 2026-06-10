@@ -132,3 +132,27 @@ def test_app_name_rejects_hyphens() -> None:
     with pytest.raises(ValidationError):
         validate_app_name("my-app")  # MY-APP is not a valid env prefix
     assert validate_app_name("my_app") == "my_app"
+
+
+def test_derived_app_name_default_never_collides() -> None:
+    # Review finding: for hyphen-less repos all defaults coincide; the
+    # offered app_name default must still pass validation.
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from init import derive_app_name, derive_command_name, derive_package_name
+
+    for repo in ("myproj", "acme-widget", "tool"):
+        package = derive_package_name(repo)
+        command = derive_command_name(repo)
+        app = derive_app_name(package, command)
+        answers = Answers(
+            package_name=package,
+            repo_name=repo,
+            command_name=command,
+            app_name=app,
+            author="Jane",
+            email="j@example.com",
+            owner="acmecorp",
+        )
+        answers.validate()  # must not raise for the offered defaults
