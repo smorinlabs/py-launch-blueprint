@@ -1,6 +1,6 @@
 # P01 — Init app-name rebrand robustness
 
-- **Status:** `[~]` in progress — B + C implemented, PR open
+- **Status:** `[x]` completed — B + C merged (#389)
 - **Captured:** 2026-06-10
 - **Scope:** init rebrand system (`init/`), CLI internals (`src/py_launch_blueprint/`)
 
@@ -84,8 +84,8 @@ engine*, not name derivation.
       from `APP_NAME` (the owner-marker trap is gone; the one remaining uppercase
       token is the user-facing `*_LOG_FILE` env var named in a docstring).
 - [x] User-facing env-var literals unchanged and still greppable.
-- [ ] Full rebrand integration still reports `no-identity-leak: ok` (pending the
-      CI integration run on this PR).
+- [x] Full rebrand integration reports `no-identity-leak: ok` (CI-confirmed:
+      the clone_reinit / integration-ok jobs passed on #389).
 
 ## References
 
