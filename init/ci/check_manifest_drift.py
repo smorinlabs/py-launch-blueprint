@@ -100,7 +100,9 @@ def main() -> int:
             leftover[path] = missing
 
     if not leftover:
-        print("manifest-drift: ok — every identity value is covered under its own field.")
+        print(
+            "manifest-drift: ok — every identity value is covered under its own field."
+        )
         return 0
 
     print(

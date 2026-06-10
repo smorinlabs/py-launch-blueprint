@@ -66,7 +66,10 @@ def test_fully_covered_file_has_no_leak() -> None:
 
 def test_value_absent_from_file_is_not_flagged() -> None:
     # No coverage for PLBP at all, but the file doesn't contain it → no leak.
-    assert drift.uncovered_values("just plbp here", _p("a.py"), {"plbp": {_p("a.py")}}) == []
+    assert (
+        drift.uncovered_values("just plbp here", _p("a.py"), {"plbp": {_p("a.py")}})
+        == []
+    )
 
 
 def test_committed_manifest_is_per_field_clean() -> None:
