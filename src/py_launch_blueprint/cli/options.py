@@ -34,6 +34,7 @@ import click
 from py_launch_blueprint.cli.context import LOG_FILE_DEFAULT_SENTINEL, AppContext
 from py_launch_blueprint.cli.output import OutputMode, Renderer
 from py_launch_blueprint.core.errors import ConfigError, ExitCode, PyError
+from py_launch_blueprint.core.logging import LOG_LEVELS
 
 _OUTPUT_CHOICES = [mode.value for mode in OutputMode]
 
@@ -70,7 +71,7 @@ _GLOBAL_OPTIONS: list[Callable[[Any], Any]] = [
     click.option(
         "--log-level",
         "log_level",
-        type=click.Choice(["debug", "info", "warning", "error", "critical"]),
+        type=click.Choice(list(LOG_LEVELS)),
         default=None,
         envvar="PLBP_LOG_LEVEL",
         help="Explicit console log level (overrides -v/-q).",

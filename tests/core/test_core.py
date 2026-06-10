@@ -210,3 +210,39 @@ def test_set_config_value_restricts_permissions(tmp_path):
     cfg_file = tmp_path / "plbp_config.toml"
     set_config_value(cfg_file, "output.color", "never")
     assert (cfg_file.stat().st_mode & 0o777) == 0o600
+
+
+# -- vocabulary single-sourcing guards (review findings) ---------------------
+
+
+def test_log_level_vocabularies_stay_in_sync():
+    # The settings Literal and LOG_LEVELS must agree; the click choices
+    # derive from LOG_LEVELS directly.
+    from typing import get_args
+
+    from py_launch_blueprint.core.logging import LOG_LEVELS
+    from py_launch_blueprint.core.settings import LoggingSettings
+
+    literal = get_args(LoggingSettings.model_fields["level"].annotation)
+    assert tuple(LOG_LEVELS) == literal
+    file_literal = get_args(LoggingSettings.model_fields["file_level"].annotation)
+    assert tuple(LOG_LEVELS) == file_literal
+
+
+def test_output_format_vocabularies_stay_in_sync():
+    from typing import get_args
+
+    from py_launch_blueprint.cli.output import OutputMode
+    from py_launch_blueprint.core.settings import OutputSettings
+
+    literal = get_args(OutputSettings.model_fields["format"].annotation)
+    assert tuple(m.value for m in OutputMode) == literal
+
+
+def test_write_leaves_no_temp_files(tmp_path):
+    # Atomic write: only the config file remains after a set.
+    cfg_file = tmp_path / "plbp_config.toml"
+    set_config_value(cfg_file, "output.color", "never")
+    set_config_value(cfg_file, "logging.level", "info")
+    assert [p.name for p in tmp_path.iterdir()] == ["plbp_config.toml"]
+    assert (cfg_file.stat().st_mode & 0o777) == 0o600
