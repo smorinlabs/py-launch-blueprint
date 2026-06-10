@@ -32,6 +32,7 @@ from pathlib import Path
 from py_launch_blueprint.cli.output import OutputMode, Renderer
 from py_launch_blueprint.core import paths
 from py_launch_blueprint.core.config import Config, load_config
+from py_launch_blueprint.core.errors import ConfigError
 from py_launch_blueprint.core.logging import (
     LOG_LEVELS,
     LogFormat,
@@ -98,7 +99,7 @@ class AppContext:
             fmt=LogFormat.AUTO,
             file_path=file_path,
             file_level=LOG_LEVELS[settings.logging.file_level],
-            file_format=os.environ.get("PLBP_LOG_FORMAT") or settings.logging.format,
+            file_format=_resolve_log_format(settings.logging.format),
         )
         get_logger(__name__).debug(
             "invocation context ready",
@@ -171,9 +172,13 @@ def _resolve_log_file(
 ) -> Path | None:
     """File sink path: flag/env > config ``logging.file`` > off (R11.1/R11.2).
 
-    ``--log-file`` with no PATH (or an empty env value treated as a bare
-    enable) selects the default XDG state location.
+    Bare ``--log-file`` (no PATH) selects the default XDG state location.
+    R12 says *presence* of ``$PLBP_LOG_FILE`` enables the sink, but click
+    treats an empty env value as unset — so check the environment directly:
+    ``PLBP_LOG_FILE=`` (set, empty) also enables the default location.
     """
+    if log_file is None and "PLBP_LOG_FILE" in os.environ:
+        log_file = os.environ["PLBP_LOG_FILE"] or LOG_FILE_DEFAULT_SENTINEL
     if log_file == LOG_FILE_DEFAULT_SENTINEL:
         return paths.log_file()
     if log_file:
@@ -181,3 +186,18 @@ def _resolve_log_file(
     if logging_settings.file:
         return Path(logging_settings.file).expanduser()
     return None
+
+
+def _resolve_log_format(config_format: str) -> str:
+    """File sink format: $PLBP_LOG_FORMAT > config ``logging.format``.
+
+    The env value is validated like every other knob — a typo must not
+    silently fall back to text.
+    """
+    raw = os.environ.get("PLBP_LOG_FORMAT")
+    if raw is None or raw == "":
+        return config_format
+    normalized = raw.strip().lower()
+    if normalized not in ("text", "json"):
+        raise ConfigError(f"invalid PLBP_LOG_FORMAT: {raw!r} (allowed: text, json)")
+    return normalized

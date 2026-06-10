@@ -90,6 +90,11 @@ def _shared_processors() -> list[Processor]:
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
         structlog.processors.StackInfoRenderer(),
+        # Render exc_info into the event so tracebacks survive JSON output
+        # (ConsoleRenderer formats the resulting "exception" field; without
+        # this, JSONRenderer emits a bare `"exc_info": true` and the
+        # traceback is lost from exactly the logs meant for machines).
+        structlog.processors.format_exc_info,
         structlog.processors.TimeStamper(fmt="iso", utc=True),
     ]
 
@@ -144,9 +149,13 @@ def configure_logging(
     )
 
     root = logging.getLogger()
-    for handler in root.handlers[:]:  # close before removing (open log files)
-        root.removeHandler(handler)
-        handler.close()
+    # Only remove handlers WE installed: closing foreign handlers would
+    # break a host process (or pytest's caplog) that embeds this CLI.
+    for handler in root.handlers[:]:
+        if getattr(handler, "_plbp_owned", False):
+            root.removeHandler(handler)
+            handler.close()
+    console_handler._plbp_owned = True  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
     root.addHandler(console_handler)
     floor = level
 
@@ -173,6 +182,7 @@ def configure_logging(
                 foreign_pre_chain=shared,
             )
         )
+        file_handler._plbp_owned = True  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
         root.addHandler(file_handler)
         floor = min(level, file_level)
 

@@ -429,3 +429,49 @@ def test_console_level_precedence():
     # ...then the config value, then the WARNING default baked into config.
     assert _resolve_console_level(None, 0, False, "info") == stdlib_logging.INFO
     assert _resolve_console_level(None, 0, False, "warning") == stdlib_logging.WARNING
+
+
+# -- logging env contracts (review findings) --------------------------------
+
+
+def test_log_file_env_empty_enables_default(runner, tmp_path, monkeypatch):
+    # R12: PRESENCE of PLBP_LOG_FILE enables the sink; empty value means
+    # the default XDG state location.
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    monkeypatch.setenv("PLBP_LOG_FILE", "")
+    result = runner.invoke(
+        cli, ["config", "path", "--config", str(tmp_path / "c.toml")]
+    )
+    assert result.exit_code == 0
+    assert (tmp_path / "plbp" / "plbp.log").exists()
+
+
+def test_log_format_env_invalid_value_rejected(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    monkeypatch.setenv("PLBP_LOG_FORMAT", "yaml")
+    result = runner.invoke(
+        cli, ["config", "path", "--config", str(tmp_path / "c.toml")]
+    )
+    assert result.exit_code == 1  # ConfigError via the create() boundary
+    assert "PLBP_LOG_FORMAT" in result.output
+
+
+def test_log_format_env_case_insensitive(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    monkeypatch.setenv("PLBP_LOG_FORMAT", "JSON")
+    log = tmp_path / "x.log"
+    result = runner.invoke(
+        cli,
+        [
+            "config",
+            "path",
+            "--config",
+            str(tmp_path / "c.toml"),
+            "--log-file",
+            str(log),
+        ],
+    )
+    assert result.exit_code == 0
+    line = log.read_text().strip().splitlines()[0]
+    json.loads(line)  # JSONL, not text: the env value was normalized

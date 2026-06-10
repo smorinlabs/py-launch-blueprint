@@ -4,8 +4,6 @@ import json
 import logging
 from logging.handlers import RotatingFileHandler
 
-import pytest
-
 from py_launch_blueprint.core.logging import (
     LOG_LEVELS,
     ROTATE_BACKUP_COUNT,
@@ -16,21 +14,11 @@ from py_launch_blueprint.core.logging import (
 )
 
 
-@pytest.fixture(autouse=True)
-def _reset_root_logger():
-    """Leave the root logger clean for other tests."""
-    yield
-    root = logging.getLogger()
-    for handler in root.handlers[:]:
-        root.removeHandler(handler)
-        handler.close()
-    root.setLevel(logging.WARNING)
-
-
 def test_console_only_by_default(capsys):
     configure_logging(level=logging.WARNING, fmt=LogFormat.JSON)
     root = logging.getLogger()
-    assert len(root.handlers) == 1  # no file sink unless asked for (R9.3)
+    owned = [h for h in root.handlers if getattr(h, "_plbp_owned", False)]
+    assert len(owned) == 1  # no file sink unless asked for (R9.3)
     get_logger("t").warning("warned")
     assert "warned" in capsys.readouterr().err
 
@@ -96,3 +84,33 @@ def test_file_sink_creates_parent_dirs(tmp_path):
 
 def test_level_vocabulary_matches_spec():
     assert set(LOG_LEVELS) == {"debug", "info", "warning", "error", "critical"}
+
+
+def test_json_logs_carry_tracebacks(tmp_path):
+    # format_exc_info must render exception text into JSON output.
+    log_path = tmp_path / "plbp.log"
+    configure_logging(file_path=log_path, file_format="json")
+    try:
+        raise ValueError("boom-for-logs")
+    except ValueError:
+        get_logger("t").exception("failed")
+    line = log_path.read_text().strip().splitlines()[0]
+    payload = json.loads(line)
+    assert "boom-for-logs" in payload.get("exception", "")
+    assert "Traceback" in payload.get("exception", "")
+
+
+def test_foreign_root_handlers_survive_reconfigure():
+    # We must never close/remove handlers we don't own (host apps, caplog).
+    foreign = logging.NullHandler()
+    root = logging.getLogger()
+    root.addHandler(foreign)
+    try:
+        configure_logging(level=logging.WARNING, fmt=LogFormat.JSON)
+        assert foreign in root.handlers
+        configure_logging(level=logging.INFO, fmt=LogFormat.JSON)
+        assert foreign in root.handlers  # survives repeated reconfigure
+        owned = [h for h in root.handlers if getattr(h, "_plbp_owned", False)]
+        assert len(owned) == 1  # ...while our own handlers don't accumulate
+    finally:
+        root.removeHandler(foreign)
