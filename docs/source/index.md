@@ -189,83 +189,50 @@ pip install -e ".[dev]"  # Install with development dependencies
 
 #### Direct Usage
 
-You can also run the script directly:
+After installing, the CLI is available as `plbp`:
 
 ```bash
-python projects.py --help
+plbp --help
 ```
 
 ### Configuration
 
-The tool supports multiple ways to provide your Py Personal Access Token (PAT), in order of precedence:
+`plbp` reads settings from a layered TOML config (system → user → project),
+with per-setting precedence `flag → env (PLBP_*) → project → user → system →
+default`. Secrets are never stored in config — the API token resolves from
+`--token` or `$PLBP_TOKEN` only.
 
-1. Command-line argument: `--token`
-2. Environment variable: `PY_TOKEN`
-3. Configuration file: `~/.config/py-launch-blueprint/.env`
-
-#### Setting Up Configuration File
-
-1. Create the config directory:
 ```bash
-mkdir -p ~/.config/py-launch-blueprint
-```
+# show the resolved config file path
+plbp config path
 
-2. Create `.env` file:
-```bash
-echo "PY_TOKEN=your_token_here" > ~/.config/py-launch-blueprint/.env
-```
-
-3. Set proper permissions:
-```bash
-chmod 600 ~/.config/py-launch-blueprint/.env
+# read / write non-secret keys by dotted path (no network needed)
+plbp config get output.color
+plbp config set output.format json
 ```
 
 ### Usage
 
-#### Basic Usage
-
 ```bash
-# Search for projects
-py-projects
+# Projects (noun) → list / get (verbs)
+plbp projects list
+plbp projects list --workspace "My Workspace"
+plbp projects list --limit 50
+plbp projects get 12345
 
-# Filter by workspace
-py-projects --workspace "My Workspace"
+# JSON output (pipe-safe; logs stay on stderr)
+plbp projects list --json
 
-# Limit results
-py-projects --limit 50
+# Diagnose setup (Python / platform, config file, token)
+plbp doctor
+
+# Help and version
+plbp --help
+plbp --version
 ```
 
-#### Output Formats
-
-```bash
-# JSON output
-py-projects --format json
-
-# CSV output
-py-projects --format csv
-
-# Copy to clipboard
-py-projects --copy
-
-# Save to file
-py-projects --output projects.txt
-```
-
-#### Additional Options
-
-```bash
-# Show verbose output
-py-projects --verbose
-
-# Disable colors
-py-projects --no-color
-
-# Show help
-py-projects --help
-
-# Show version
-py-projects --version
-```
+For the full flag reference, output contract, and logging model, see
+[EXAMPLECLI.md](https://github.com/smorinlabs/py-launch-blueprint/blob/main/EXAMPLECLI.md).
 
 ### Error Codes
 

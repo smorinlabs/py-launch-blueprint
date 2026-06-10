@@ -19,7 +19,7 @@ just run [cmd] [args]
 ```
 
 #### Arguments
-- `cmd`: The command to run (default: `py-projects`).
+- `cmd`: The command to run (default: `plbp`).
 - `args`: Arguments to pass to the command.
 
 ---

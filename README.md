@@ -46,7 +46,7 @@ bun install              # commitlint deps
 just check               # full quality pipeline
 ```
 
-Install as a tool: `uvx --from py-launch-blueprint py-projects` (uvx needs `--from` because the distribution name differs from the console-script name) or `pip install py-launch-blueprint && py-projects`.
+Install as a tool: `uvx --from py-launch-blueprint plbp` (uvx needs `--from` because the distribution name differs from the console-script name) or `pip install py-launch-blueprint && plbp`.
 
 See [AGENTS.md](AGENTS.md) for the canonical command set, [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the daily workflow, and [RELEASE.md](RELEASE.md) for the release flow.
 

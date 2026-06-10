@@ -34,10 +34,10 @@ uvx  --with-editable . mypy py_launch_blueprint/
 uvx --with-editable . pytest
 
 # Run tests with coverage
-uvx --with pytest-cov --with-editable . pytest --cov=py_launch_blueprint.projects --cov-report=term-missing
+uvx --with pytest-cov --with-editable . pytest --cov=py_launch_blueprint --cov-report=term-missing
 
 # Run command
-uvx --with-editable .  --from py_launch_blueprint py-projects
+uvx --with-editable .  --from py_launch_blueprint plbp
 ```
 
 ### (Optional) Pre-Commit Hooks with uv
@@ -66,10 +66,10 @@ pip install --editable ".[dev]"
 ruff format py_launch_blueprint/
 ruff check py_launch_blueprint/
 mypy py_launch_blueprint/
-pytest --cov=py_launch_blueprint.projects --cov-report=term-missing
+pytest --cov=py_launch_blueprint --cov-report=term-missing
 
 # Check the installed package cli tool version
-py-projects --version
+plbp --version
 ```
 
 ### (Optional) Pre-Commit Hooks with pip

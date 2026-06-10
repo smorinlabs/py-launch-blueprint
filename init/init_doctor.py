@@ -201,7 +201,7 @@ def check_internal_consistency() -> list[Finding]:
 
     py_name = _scrape(py_path, r'^name\s*=\s*"([^"]+)"')
     just_pkg = _scrape(just_path, r'^py_package_name\s*:=\s*"([^"]+)"')
-    just_cmd = _scrape(just_path, r'^command_name\s*:=\s*"([^"]+)"')
+    just_cmd = _scrape(just_path, r'^app_name\s*:=\s*"([^"]+)"')
 
     if py_name and just_pkg and py_name != just_pkg:
         findings.append(
@@ -242,7 +242,7 @@ def check_internal_consistency() -> list[Finding]:
                 Finding(
                     "consistency/cli-command",
                     "error",
-                    f"Justfile command_name={just_cmd!r} not found in [project.scripts]",
+                    f"Justfile app_name={just_cmd!r} not found in [project.scripts]",
                 )
             )
 

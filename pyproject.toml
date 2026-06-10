@@ -24,7 +24,7 @@ version = "1.1.7"
 description = "CLI tools for interacting with Py, including project search functionality"
 readme = "README.md"
 requires-python = ">=3.12"
-license = "MIT"  # PEP 639 license expression (ITM-070, round-19).
+license = "MIT" # PEP 639 license expression (ITM-070, round-19).
 authors = [{ name = "Steve Morin", email = "steve.morin@gmail.com" }]
 classifiers = [
   # ITM-070 — round-19. py3.12+ only (per ITM-033 floor); MIT classifier
@@ -41,14 +41,10 @@ classifiers = [
 ]
 dependencies = [
   "click>=8.1.0",
-  "pydantic>=2.0.0",            # structured result models (the JSON representation)
-  "structlog>=24.1.0",         # structured logging (human-friendly TTY / JSON otherwise)
-  "tomli-w>=1.0.0",            # writing the TOML config file (`config set`)
+  "pydantic>=2.0.0",    # structured result models (the JSON representation)
+  "structlog>=24.1.0",  # structured logging (human-friendly TTY / JSON otherwise)
+  "tomli-w>=1.0.0",     # writing the TOML config file (`config set`)
   "questionary>=2.0.0",
-  "python-dotenv>=1.0.0",
-  "thefuzz>=0.19.0",
-  "python-Levenshtein>=0.21.0", # For better performance with thefuzz
-  "pyperclip>=1.8.0",
   "requests>=2.31.0",
   "rich>=13.0.0",
 ]
@@ -57,10 +53,7 @@ dependencies = [
 # install; the future web service ships behind the `web` extra:
 #   uv sync --extra web   /   pip install py-launch-blueprint[web]
 [project.optional-dependencies]
-web = [
-  "fastapi>=0.110.0",
-  "uvicorn[standard]>=0.29.0",
-]
+web = ["fastapi>=0.110.0", "uvicorn[standard]>=0.29.0"]
 
 # ITM-063 — PEP 735 dependency-groups (round-13 decision). Replaces
 # [project.optional-dependencies] dev+docs. Install via `uv sync --group <name>`.
@@ -69,7 +62,7 @@ dev = [
   "pytest>=7.0.0",
   "pytest-cov>=4.1.0",
   "mypy>=1.0.0",
-  "ty>=0.0.1a16",  # per ADR-03 (pre-1.0; bump as needed)
+  "ty>=0.0.1a16",      # per ADR-03 (pre-1.0; bump as needed)
   "ruff>=0.1.0",
   "types-requests",
   "types-Pygments",
@@ -92,8 +85,6 @@ docs = [
 [project.scripts]
 # Noun-verb CLI (gh-style): plbp <noun> <verb>
 plbp = "py_launch_blueprint.cli.main:cli"
-# Back-compat: original single-command entry point (preserved).
-py-projects = "py_launch_blueprint.projects:main"
 
 # ITM-072 — package metadata URLs (round 19).
 [project.urls]
@@ -141,8 +132,8 @@ lint.select = [
 # template-applicable subset adopted (B904/B007 omitted — source-specific
 # patterns that don't apply here).
 lint.ignore = [
-  "E501",  # line too long (formatter owns this)
-  "W293",  # whitespace on blank line (formatter owns trim_trailing)
+  "E501", # line too long (formatter owns this)
+  "W293", # whitespace on blank line (formatter owns trim_trailing)
 ]
 
 # Allow autofix behavior for specific rules
@@ -163,11 +154,14 @@ exclude = [
 [tool.ruff.lint.pycodestyle]
 max-line-length = 88
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]             # Ignore unused imports in __init__.py files
+"__init__.py" = ["F401"] # Ignore unused imports in __init__.py files
 "tests/*" = ["S101", "S105", "S106"] # Ignore assert statements in tests
-"init/tests/**" = ["S101", "S105", "S106"]   # same exemption — pytest convention
-"init/**" = ["S603", "S607"]                  # init/ wraps gh/just/uv via subprocess; that's the point
-"skill/**" = ["S101"]                         # skill/ has illustrative example assertions in markdown
+"init/tests/**" = ["S101", "S105", "S106"] # same exemption — pytest convention
+"init/**" = [
+  "S603",
+  "S607",
+] # init/ wraps gh/just/uv via subprocess; that's the point
+"skill/**" = ["S101"] # skill/ has illustrative example assertions in markdown
 # S101: assert statements removed under -O — security risk if assert is the only gate.
 # S105/S106: hardcoded password strings/variables in code.
 # S603/S607: subprocess module use + partial-path executables — init/ tooling wraps gh/just/uv intentionally.
@@ -183,7 +177,7 @@ line-ending = "auto"
 # (pytest convention) — exclude_dirs covers tests/.
 [tool.bandit]
 exclude_dirs = ["tests", "init/tests", ".venv", "build", "dist"]
-skips = []  # No global skips; add with rationale only.
+skips = []                                                       # No global skips; add with rationale only.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -191,10 +185,7 @@ python_files = ["test_*.py"]
 # Marker taxonomy (ITM-046, round-9 decision).
 # `live` = requires external services; `slow` = takes >1s.
 # Default `addopts` excludes both — run full suite with `pytest -m ""`.
-markers = [
-    "live: requires external services",
-    "slow: takes >1s",
-]
+markers = ["live: requires external services", "slow: takes >1s"]
 addopts = "-m 'not live and not slow'"
 strict_markers = true
 

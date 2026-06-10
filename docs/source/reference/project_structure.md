@@ -12,7 +12,7 @@ py-launch-blueprint/
 ├── docs/                           # Documentation files
 ├── Justfile                        # Just task runner configuration
 ├── Makefile                        # Makefile for building the project
-├── py_launch_blueprint/            # Source code for the project
+├── src/py_launch_blueprint/        # Source code for the project
 └── tests/                          # Test files
 ```
 
@@ -36,16 +36,15 @@ py-launch-blueprint/
 │   │   ├── reference/              # Technical references
 │   │   └── contributing/           # Contribution guidelines
 │   └── build/                      # Built documentation files
-├── py_launch_blueprint/            # Source code for the project
+├── src/py_launch_blueprint/        # Source code for the project
 │   ├── __init__.py                 # Package initialization
-│   ├── _version.py                 # Version information
-│   └── projects.py                 # Main project module
+│   ├── cli/                        # Click CLI (thin presentation layer)
+│   ├── core/                       # Library: logic + Pydantic models
+│   └── web/                        # Reserved stub for a future web service
 ├── tests/                          # Test files
 │   ├── __init__.py                 # Test package initialization
-│   ├── test_api.py                 # API tests
-│   ├── test_cli.py                 # CLI tests
-│   ├── test_config.py              # Configuration tests
-│   └── test_projects.py            # Project module tests
+│   ├── cli/                        # CLI tests
+│   └── core/                       # Library tests
 ├── .gitignore                      # Git ignore file
 ├── .pre-commit-config.yaml         # Pre-commit hooks configuration
 ├── .python-version                 # Python version file
@@ -74,10 +73,11 @@ py-launch-blueprint/
 ├── Justfile                        # Just task runner configuration
 ├── Makefile                        # Makefile for building the project
 ├── PULL_REQUEST_TEMPLATE.md        # Pull request template
-├── py_launch_blueprint/            # Source code for the project
+├── src/py_launch_blueprint/        # Source code for the project
 │   ├── __init__.py                 # Package initialization
-│   ├── _version.py                 # Version information
-│   └── projects.py                 # Main project module
+│   ├── cli/                        # Click CLI (thin presentation layer)
+│   ├── core/                       # Library: logic + Pydantic models
+│   └── web/                        # Reserved stub for a future web service
 ├── pyproject.toml                  # Project configuration file
 ├── cog.toml                        # Cog configuration file
 ├── CONTRIBUTORS.md                 # Project contributors
@@ -86,10 +86,8 @@ py-launch-blueprint/
 ├── SECURITY.md                     # Security policy
 └── tests/                          # Test files
     ├── __init__.py                 # Test package initialization
-    ├── test_api.py                 # API tests
-    ├── test_cli.py                 # CLI tests
-    ├── test_config.py              # Configuration tests
-    └── test_projects.py            # Project module tests
+    ├── cli/                        # CLI tests
+    └── core/                       # Library tests
 ```
 
 ## Directory Descriptions

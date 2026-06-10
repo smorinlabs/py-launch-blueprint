@@ -43,7 +43,6 @@ def is_bootstrap_path(path: Path) -> bool:
 BLUEPRINT_IDENTITY: dict[str, str] = {
     "package_name": "py_launch_blueprint",
     "repo_name": "py-launch-blueprint",
-    "command_name": "py-projects",
     "app_name": "plbp",
     "app_name_upper": "PLBP",
     "author": "Steve Morin",
@@ -100,7 +99,6 @@ def origin_matches_blueprint(url: str) -> bool:
 
 PYTHON_IDENTIFIER_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 REPO_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
-COMMAND_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 GITHUB_OWNER_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?$", re.IGNORECASE)
 # Must start AND end with alphanumeric (GitHub rejects trailing hyphens).
 # 1-39 chars total; the middle 0-37 chars may include hyphens.
@@ -125,15 +123,6 @@ def validate_repo_name(name: str) -> str:
         raise ValidationError(
             f"repo name must be lowercase alphanumeric + hyphens "
             f"(matching {REPO_NAME_RE.pattern}): {name!r}"
-        )
-    return name
-
-
-def validate_command_name(name: str) -> str:
-    if not COMMAND_NAME_RE.fullmatch(name):
-        raise ValidationError(
-            f"CLI command name must be lowercase alphanumeric + hyphens "
-            f"(matching {COMMAND_NAME_RE.pattern}): {name!r}"
         )
     return name
 
@@ -169,7 +158,6 @@ def validate_app_name(name: str) -> str:
 VALIDATORS = {
     "package_name": validate_package_name,
     "repo_name": validate_repo_name,
-    "command_name": validate_command_name,
     "app_name": validate_app_name,
     "owner": validate_owner,
     "email": validate_email,

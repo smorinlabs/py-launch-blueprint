@@ -172,8 +172,7 @@ About to create:
   GitHub repo:   <owner>/<repo-name>  (<visibility>)
   Local clone:   <target-dir>
   Package name:  <package_name>
-  CLI command:   <command_name>
-  App name:      <app_name>  (modern CLI + <APP_NAME>_* env prefix)
+  App name:      <app_name>  (CLI command + <APP_NAME>_* env prefix)
   Author:        <author> <<email>>
 
 Proceed? [Y/n]
@@ -209,14 +208,13 @@ Write to `<target-dir>/answers.toml`. The schema matches
 [answers]
 package_name = "<package_name>"
 repo_name = "<repo_name>"
-command_name = "<command_name>"
 app_name = "<app_name>"
 author = "<author>"
 email = "<email>"
 owner = "<owner>"
 ```
 
-All seven keys are required. The init engine will use these to compute the
+All six keys are required. The init engine will use these to compute the
 replace/rename operations.
 
 ### Step 6 — Preview the rebrand

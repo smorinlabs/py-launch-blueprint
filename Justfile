@@ -4,7 +4,7 @@ py_package_name := "py_launch_blueprint"
 # `py_package_name`; tooling that takes a *path* uses this.
 py_package_path := "src/" + py_package_name
 repo_name := "py-launch-blueprint"
-command_name := "py-projects"
+app_name := "plbp"
 contributors_owner := "smorinlabs"
 contributors_package := "contributors-please@1"
 args := " "
@@ -226,7 +226,7 @@ alias ca := check
 
 # Run package command.
 [group('run'), group('quick start')]
-@run cmd=command_name *args=args:
+@run cmd=app_name *args=args:
     uvx --with-editable . {{cmd}} {{args}}
 
 # Blueprint setup guard — Tier 2 (hard block on the risk subset).
@@ -276,7 +276,7 @@ alias hooks := hooks-run
 
 # Check installed package version
 [group('releases'), group('utilities')]
-@version cmd=command_name:
+@version cmd=app_name:
     {{cmd}} --version
 
 # Collect system and environment information for debugging
@@ -318,7 +318,7 @@ debug-info:
     echo "ruff: $(uvx ruff --version)"
     if command -v git >/dev/null 2>&1; then echo "git: $(git --version)"; else echo "git: Not Found"; fi
     if command -v just >/dev/null 2>&1; then echo "just: $(just --version)"; else echo "just: Not Found"; fi
-    echo "CLI Version:{{command_name}}: $(uvx --with-editable . {{command_name}} --version 2>/dev/null || echo 'Not Found or Error')"
+    echo "CLI Version:{{app_name}}: $(uvx --with-editable . {{app_name}} --version 2>/dev/null || echo 'Not Found or Error')"
     echo "Project Version: $(uvx --with-editable . python -c 'import {{py_package_name}}; print({{py_package_name}}.__version__)' 2>/dev/null || echo 'Version Not Found')"
 
     echo ""

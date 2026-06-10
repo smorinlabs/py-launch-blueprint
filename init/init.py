@@ -127,21 +127,10 @@ def derive_package_name(repo_name: str) -> str:
     return repo_name.replace("-", "_").lower()
 
 
-def derive_command_name(repo_name: str) -> str:
-    # CLI command defaults to repo_name (kebab); user may override.
-    return repo_name.lower()
-
-
-def derive_app_name(package_name: str, command_name: str) -> str:
-    # The app short name (modern CLI command, env prefix, XDG namespace)
-    # defaults to the package name. For hyphen-less repo names all three
-    # defaults coincide (repo == package == command), and app_name must
-    # differ from command_name (both become [project.scripts] keys) — so
-    # fall back to a suffixed form rather than offering a default that is
-    # guaranteed to fail validation after the last prompt.
-    if package_name != command_name:
-        return package_name
-    return f"{package_name}_cli"
+def derive_app_name(package_name: str) -> str:
+    # The app short name (the CLI command, env prefix, XDG namespace) defaults
+    # to the package name; the user may override at the prompt.
+    return package_name
 
 
 def load_answers_from_file(path: Path) -> Answers:
@@ -153,7 +142,6 @@ def load_answers_from_file(path: Path) -> Answers:
     return Answers(
         package_name=section["package_name"],
         repo_name=section["repo_name"],
-        command_name=section["command_name"],
         app_name=section["app_name"],
         author=section["author"],
         email=section["email"],
@@ -179,7 +167,7 @@ def collect_answers_interactive() -> Answers:
         return ans.strip()
 
     print(
-        "\nblueprint init — answer 7 questions to re-brand this project.\n"
+        "\nblueprint init — answer 6 questions to re-brand this project.\n"
         "(Defaults are inferred from origin + git config; press Enter to accept.)\n"
     )
     repo_name = _ask("repo name (kebab-case)", "repo_name")
@@ -188,15 +176,10 @@ def collect_answers_interactive() -> Answers:
         "package_name",
         derive=lambda: derive_package_name(repo_name),
     )
-    command_name = _ask(
-        "CLI command name (kebab-case)",
-        "command_name",
-        derive=lambda: derive_command_name(repo_name),
-    )
     app_name = _ask(
-        "app short name (snake_case; modern CLI command + env prefix)",
+        "app short name (snake_case; CLI command + env prefix)",
         "app_name",
-        derive=lambda: derive_app_name(package_name, command_name),
+        derive=lambda: derive_app_name(package_name),
     )
     owner = _ask("GitHub owner (user or org)", "owner")
     author = _ask("author name", "author")
@@ -204,7 +187,6 @@ def collect_answers_interactive() -> Answers:
     return Answers(
         package_name=package_name,
         repo_name=repo_name,
-        command_name=command_name,
         app_name=app_name,
         author=author,
         email=email,

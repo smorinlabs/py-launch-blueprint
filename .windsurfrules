@@ -61,10 +61,10 @@ globs:
 
 ### Core Dependencies
 - click: Command-line interface creation
+- pydantic: Structured result models (the JSON representation)
+- structlog: Structured logging
+- tomli-w: Writing the TOML config file
 - questionary: Interactive command line interface
-- python-dotenv: Environment variable management
-- thefuzz with python-Levenshtein: Fuzzy string matching
-- pyperclip: Clipboard operations
 - requests: HTTP requests
 - rich: Rich text and formatting in terminal
 
@@ -85,6 +85,6 @@ globs:
 
 ## Project Structure
 - Package name: py_launch_blueprint
-- Command name: py-projects
+- Command name: plbp
 - Documentation in /docs directory
 - Tests in /tests directory

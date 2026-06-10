@@ -17,8 +17,9 @@ command, the uppercased env-var prefix, the XDG namespace
 ## Decision
 
 Rename to `plbp`/`PLBP_*` everywhere, as a **hard rename** — no `pylb`
-back-compat alias. The legacy single-command example (`py-projects`) keeps
-its own name and `PY_TOKEN` for back-compat; it is a separate entry point.
+back-compat alias. (At the time of this decision the legacy single-command
+entry point `py-projects` was retained under its own name and `PY_TOKEN`; it
+was **removed in a later cleanup**, leaving `plbp` as the sole console script.)
 
 ## Consequences
 

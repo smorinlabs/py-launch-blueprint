@@ -46,7 +46,6 @@ date    = "2026-05-25"
 [answers]
 package_name = "my_project"
 repo_name = "my-project"
-command_name = "my-cli"
 author = "Test User"
 email = "test@example.com"
 owner = "newowner"

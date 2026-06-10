@@ -5,15 +5,17 @@
             "name": "Python: Launch Main",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/py_launch_blueprint/projects.py",
+            "program": "${workspaceFolder}/src/py_launch_blueprint/cli/main.py",
             "console": "integratedTerminal"
         },
         {
             "name": "Python: Launch Main (With Args)",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/py_launch_blueprint/projects.py",
+            "program": "${workspaceFolder}/src/py_launch_blueprint/cli/main.py",
             "args": [
+                "projects",
+                "list",
                 "--workspace",
                 "test",
                 "--limit",
