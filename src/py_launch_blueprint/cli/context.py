@@ -25,6 +25,7 @@ commands that don't need a token (e.g. ``config path``) never trigger lookup.
 """
 
 import logging
+import os
 from dataclasses import dataclass
 
 from py_launch_blueprint.cli.output import OutputMode, Renderer
@@ -57,9 +58,24 @@ class AppContext:
         config_file: str | None,
         no_input: bool,
         token: str | None,
+        output_file: str | None = None,
     ) -> "AppContext":
-        """Build the context from raw global-option values."""
-        mode = _resolve_mode(output_mode, json_mode)
+        """Build the context from raw global-option values.
+
+        Config is loaded eagerly (it never raises on missing/invalid files)
+        because output format and color resolve from it when no flag/env says
+        otherwise (R7 precedence: flag → env → config → default).
+        """
+        config = load_config(config_file=config_file, token_override=token)
+        settings = config.settings
+
+        mode = _resolve_mode(output_mode, json_mode, settings.output.format)
+        color = _resolve_color(no_color, settings.output.color)
+        renderer = Renderer(mode=mode, color=color, output_file=output_file)
+        # Non-fatal load problems (invalid values dropped, unreadable
+        # discovered layers) are surfaced on stderr, never swallowed.
+        for warning in config.warnings:
+            renderer.message(f"[yellow]warning:[/yellow] {warning}")
 
         # Verbosity → log level: default WARNING, -v INFO, -vv DEBUG, -q ERROR.
         if quiet:
@@ -73,17 +89,18 @@ class AppContext:
         configure_logging(level=level, fmt=LogFormat.AUTO)
 
         return cls(
-            renderer=Renderer(mode=mode, no_color=no_color),
+            renderer=renderer,
             output_mode=mode,
             config_file=config_file,
             token=token,
             no_input=no_input,
             verbose=verbose,
+            _config=config,
         )
 
     @property
     def config(self) -> Config:
-        """Lazily resolve and cache configuration."""
+        """Return the resolved configuration (loaded in :meth:`create`)."""
         if self._config is None:
             self._config = load_config(
                 config_file=self.config_file, token_override=self.token
@@ -91,14 +108,25 @@ class AppContext:
         return self._config
 
 
-def _resolve_mode(output_mode: str | None, json_mode: bool) -> OutputMode:
-    """``--json`` wins; otherwise use ``--output`` or default to text.
+def _resolve_mode(
+    output_mode: str | None, json_mode: bool, config_format: str = "text"
+) -> OutputMode:
+    """``--json`` wins; then ``--output`` (flag or PLBP_OUTPUT); then config.
 
     Format never auto-switches on TTY (R3.3): a piped run formats the same as
-    an interactive one unless ``--output`` says otherwise.
+    an interactive one unless something explicitly says otherwise.
     """
     if json_mode:
         return OutputMode.JSON
     if output_mode:
         return OutputMode(output_mode)
-    return OutputMode.TEXT
+    return OutputMode(config_format)
+
+
+def _resolve_color(no_color_flag: bool, config_color: str) -> str:
+    """R5.5 precedence: --no-color flag > NO_COLOR env > config > auto."""
+    if no_color_flag:
+        return "never"
+    if os.environ.get("NO_COLOR"):
+        return "never"
+    return config_color  # "auto" | "always" | "never"

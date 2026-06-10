@@ -53,3 +53,56 @@ def test_error_json_is_structured_on_stderr(capsys):
     assert payload["error"]["name"] == "CONFIG"
     assert payload["error"]["message"] == "boom"
     assert captured.out == ""  # stdout stays clean for piping
+
+
+# -- --output-file (R4: destination, independent of format) ----------------
+
+
+def test_output_file_json(tmp_path, capsys):
+    target = tmp_path / "out.json"
+    Renderer(OutputMode.JSON, output_file=str(target)).render(_result())
+    assert capsys.readouterr().out == ""  # nothing on stdout
+    payload = json.loads(target.read_text())
+    assert payload["projects"][0]["name"] == "Alpha"
+
+
+def test_output_file_markdown(tmp_path, capsys):
+    target = tmp_path / "out.md"
+    Renderer(OutputMode.MARKDOWN, output_file=str(target)).render(_result())
+    assert capsys.readouterr().out == ""
+    assert "| Alpha | WS | 1 |" in target.read_text()
+
+
+def test_output_file_text_has_no_ansi(tmp_path):
+    target = tmp_path / "out.txt"
+    Renderer(OutputMode.TEXT, output_file=str(target)).render(_result())
+    body = target.read_text()
+    assert "Alpha" in body
+    assert "\x1b[" not in body  # a file is not a TTY: no escape codes
+
+
+def test_output_file_messages_still_on_stderr(tmp_path, capsys):
+    renderer = Renderer(OutputMode.TEXT, output_file=str(tmp_path / "o.txt"))
+    renderer.message("working...")
+    captured = capsys.readouterr()
+    assert "working" in captured.err
+    assert captured.out == ""
+
+
+# -- color modes (R5) -------------------------------------------------------
+
+
+def test_color_never_disables_color():
+    renderer = Renderer(OutputMode.TEXT, color="never")
+    assert renderer.out.no_color is True
+
+
+def test_color_always_forces_terminal():
+    renderer = Renderer(OutputMode.TEXT, color="always")
+    assert renderer.out.is_terminal is True
+
+
+def test_no_color_kwarg_backcompat_maps_to_never():
+    renderer = Renderer(OutputMode.TEXT, no_color=True)
+    assert renderer.color == "never"
+    assert renderer.out.no_color is True
