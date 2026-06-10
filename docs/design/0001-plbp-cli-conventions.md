@@ -1,15 +1,18 @@
 # `plbp` CLI Conventions — Requirements
 
-- **Status:** Proposed
+- **Status:** Implemented (PRs #378–#380; naming per [ADR 0001](../adr/0001-app-short-name-plbp.md))
 - **Type:** Design / requirements spec
 - **Created:** 2026-06-09
-- **Applies to:** the py-launch-blueprint CLI (currently shipped as `pylb`)
+- **Applies to:** the py-launch-blueprint CLI (`plbp`)
 
-> **Implementation note.** This spec uses the app short name **`plbp`** and env
-> prefix **`PLBP`**, whereas the CLI merged so far ships as **`pylb`** with a
-> `PY_TOKEN` env var. Reconciling the names (rename to `plbp` / `PLBP_*`, or keep
-> `pylb` and adapt this spec) is the first thing to settle when implementing —
-> see Appendix D. The requirements below are the normative target either way.
+> **Deviations from this spec, all deliberate:**
+> 1. **R3.2** — a third output format, `markdown`, is kept in addition to
+>    `text`/`json` ([ADR 0003](../adr/0003-keep-markdown-output-mode.md)).
+> 2. **R6/R7 strictness** — invalid config *values* degrade to warnings
+>    rather than errors so the CLI can always repair its own config; an
+>    unparsable explicit `--config` file is a hard error
+>    ([ADR 0004](../adr/0004-config-errors-degrade-to-warnings.md)).
+> 3. Secrets policy implemented per **R8** ([ADR 0002](../adr/0002-no-secrets-in-config-file.md)).
 
 Scope: output, color, configuration (TOML), and logging conventions for the
 `py-launch-blueprint` CLI. App short name: **`plbp`**. Environment variable

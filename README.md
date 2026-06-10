@@ -50,7 +50,7 @@ Install as a tool: `uvx --from py-launch-blueprint py-projects` (uvx needs `--fr
 
 See [AGENTS.md](AGENTS.md) for the canonical command set, [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the daily workflow, and [RELEASE.md](RELEASE.md) for the release flow.
 
-**Starting a new project from this template?** If you use Claude Code or any agent that reads `AGENTS.md`, just say *"create a new Python project from py-launch-blueprint"* — the [`skill/`](skill/SKILL.md) skill will walk you through `gh repo create --template`, identity collection, `just init` rebrand with preview, and an optional handoff to `just post-init` for publishing/Codecov/ReadTheDocs setup. For humans without an agent: the skill is also a copy-pasteable runbook.
+**Starting a new project from this template?** If you use Claude Code or any agent that reads `AGENTS.md`, just say *"create a new Python project from py-launch-blueprint"* — the [`skill/`](skill/SKILL.md) skill will walk you through `gh repo create --template`, identity collection, `just init` rebrand with preview, and an optional handoff to `just post-init` for publishing/Codecov/ReadTheDocs setup. For humans without an agent: the skill is also a copy-pasteable runbook. After init, work through [`POST_INIT.md`](POST_INIT.md) — the checklist of decisions, secrets, and repo settings to configure. Internal engineering docs (ADRs, design specs, research) live under [`docs/`](docs/README.md).
 
 ### 🎯 Perfect For
 Teams and professionals needing maintainable, type-safe Python projects following best practices.
