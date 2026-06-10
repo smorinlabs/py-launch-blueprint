@@ -12,8 +12,7 @@ py-launch-blueprint/
 ├── docs/                           # Documentation files
 ├── Justfile                        # Just task runner configuration
 ├── Makefile                        # Makefile for building the project
-├── src/py_launch_blueprint/        # Source code for the project
-└── tests/                          # Test files
+└── src/py_launch_blueprint/        # Source code for the project
 ```
 
 Detailed version of the project structure:
@@ -100,13 +99,13 @@ Contains GitHub-specific configuration files, including GitHub Actions workflows
 
 Contains all documentation files, including Sphinx source files, static assets, and built documentation.
 
-### py_launch_blueprint/
+### src/py_launch_blueprint/
 
-Contains the source code for the project, including the main project module and version information.
+Contains the source code for the project, organized into the `cli/`, `core/`, and `web/` layers.
 
 ### tests/
 
-Contains test files for the project, including API tests, CLI tests, and configuration tests.
+Contains test files for the project, organized under `tests/cli/` and `tests/core/`.
 
 ### .gitignore
 

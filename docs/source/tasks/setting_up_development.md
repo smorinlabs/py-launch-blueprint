@@ -37,7 +37,7 @@ uvx --with-editable . pytest
 uvx --with pytest-cov --with-editable . pytest --cov=py_launch_blueprint --cov-report=term-missing
 
 # Run command
-uvx --with-editable .  --from py_launch_blueprint plbp
+uvx --from . plbp
 ```
 
 ### (Optional) Pre-Commit Hooks with uv
