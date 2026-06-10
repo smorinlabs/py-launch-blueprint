@@ -29,7 +29,7 @@ pre-commit:
     # ITM-010 — editorconfig-checker staged-only (decided round 9).
     # Use uvx (PyPI wheel bundles the Go binary) instead of the npm wrapper.
     # The npm wrapper downloads the binary at runtime and flakes with
-    # TAR_BAD_ARCHIVE — same issue documented in .github/workflows/_checks.yml.
+    # TAR_BAD_ARCHIVE (the npm wrapper downloads the binary at runtime, which flakes).
     # Note: the Go binary uses single-dash flags (-config, not --config).
     editorconfig-checker:
       run: >-
