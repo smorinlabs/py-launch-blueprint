@@ -155,7 +155,7 @@ pass "built $wheel"
 
 log "L2: CLI smoke (install wheel into ephemeral env, run --version)"
 # uvx --from <wheel> <cli> runs the wheel's console_script in an isolated env.
-cli_out="$(uvx --from "$wheel" acme --version 2>&1 || true)"
+cli_out="$(uvx --from "$wheel" widget --version 2>&1 || true)"
 printf '%s\n' "$cli_out" | grep -qE '[0-9]+\.[0-9]+\.[0-9]+' \
     || fail "CLI did not report a version; got: $cli_out"
 pass "CLI works: $cli_out"

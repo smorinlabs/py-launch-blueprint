@@ -37,13 +37,12 @@ Inventory of `github.com/smorinlabs/py-launch-blueprint` (fetched and verified):
   |---|---:|---:|
   | `py_launch_blueprint` (dist + import name) | 83 | 29 |
   | `py-launch-blueprint` (repo name) | 72 | 25 |
-  | `py-projects` (CLI command) | 31 | 10 |
   | `Steve Morin` (author) | 25 | 23 |
   | `steve.morin@gmail.com` (author email) | 3 | 3 |
   | `smorinlabs` (GitHub owner) | 33 | 15 |
 
 - **The Justfile already centralizes three of them** as variables at the top
-  (`py_package_name`, `repo_name`, `command_name`) — but the other ~56 files hardcode the
+  (`py_package_name`, `repo_name`, `app_name`) — but the other ~56 files hardcode the
   literal strings, so variable substitution alone is insufficient.
 - **Pre-existing inconsistency in the blueprint itself** (exactly what `init-doctor`
   should catch): the copyright year is `2025` in `pyproject.toml` and `docs/source/conf.py`
@@ -245,7 +244,7 @@ any error (CI-usable).
   recipe in the Tier-2 subset declares the `_guard` dependency (shares
   `ci/check_guard_wiring.py`).
 - Internal consistency — Justfile `py_package_name` == `pyproject.toml [project].name`
-  == package dir name; `[project.scripts]` command == Justfile `command_name`; copyright
+  == package dir name; `[project.scripts]` command == Justfile `app_name`; copyright
   year and owner consistent across `LICENSE` / `pyproject.toml` / `conf.py`.
 
 **Environment checks:**
@@ -335,7 +334,7 @@ Write `init/README.md`.
   `docs/source/github-templates.md`) when populating `[[remove]]`.
 - **Lockfiles** — `uv.lock` and `bun.lock` embed the project name; `init` must regenerate
   them (`uv lock`), never hand-edit. Already in the Phase-2 finalize step.
-- **`[project.scripts]` entry point** — `py_launch_blueprint.projects:main`: the
-  `py_launch_blueprint` segment changes with the package rename; `projects:main` stays.
+- **`[project.scripts]` entry point** — `py_launch_blueprint.cli.main:cli`: the
+  `py_launch_blueprint` segment changes with the package rename; `cli.main:cli` stays.
 - **The "Py" pseudo-placeholder** in the description / `__init__.py` docstring is treated
   as the free-text *description* field, not a distinct token.

@@ -25,7 +25,7 @@ uvx ruff format py_launch_blueprint/       # Format code
 uvx ruff check py_launch_blueprint/        # Run linter
 uvx --with-editable . mypy py_launch_blueprint/  # Type check
 uvx --with-editable . pytest               # Run tests
-uvx --with pytest-cov --with-editable . pytest --cov=py_launch_blueprint.projects --cov-report=term-missing  # Test coverage
+uvx --with pytest-cov --with-editable . pytest --cov=py_launch_blueprint --cov-report=term-missing  # Test coverage
 ```
 
 ### Pre-Commit Hooks (Optional)
@@ -79,7 +79,7 @@ You can run development tools directly with pip:
 ruff format py_launch_blueprint/
 ruff check py_launch_blueprint/
 mypy py_launch_blueprint/
-pytest --cov=py_launch_blueprint.projects --cov-report=term-missing
+pytest --cov=py_launch_blueprint --cov-report=term-missing
 ```
 
 

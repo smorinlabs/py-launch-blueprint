@@ -32,7 +32,6 @@ from common import (
     Manifest,
     RemoveOp,
     RenameOp,
-    ValidationError,
 )
 
 
@@ -46,7 +45,6 @@ class Answers:
 
     package_name: str
     repo_name: str
-    command_name: str
     app_name: str
     author: str
     email: str
@@ -56,7 +54,6 @@ class Answers:
         return {
             "package_name": self.package_name,
             "repo_name": self.repo_name,
-            "command_name": self.command_name,
             "app_name": self.app_name,
             "app_name_upper": self.app_name.upper(),
             "author": self.author,
@@ -70,13 +67,6 @@ class Answers:
             if validator is None:
                 continue
             validator(v)
-        # Both names become [project.scripts] keys; equal values would
-        # produce a duplicate TOML key (a broken pyproject).
-        if self.app_name == self.command_name:
-            raise ValidationError(
-                f"app_name and command_name must differ (both become console "
-                f"scripts): {self.app_name!r}"
-            )
 
 
 @dataclass

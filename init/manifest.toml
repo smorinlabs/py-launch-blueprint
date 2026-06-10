@@ -8,380 +8,351 @@
 
 # author (structured) — 3 occurrences in 2 files
 [[replace]]
-field   = "author"
+field = "author"
 current = ["Steve Morin"]
-files   = [
-  ".taplo.toml",   # 1x
-  "pyproject.toml",   # 2x
+files = [
+  ".taplo.toml",    # 1x
+  "pyproject.toml", # 2x
 ]
-mode    = "structured"
+mode = "structured"
 
-# author (text) — 20 occurrences in 19 files
+# author (text) — 36 occurrences in 35 files
 [[replace]]
-field   = "author"
+field = "author"
 current = ["Steve Morin"]
-files   = [
-  ".github/FUNDING.yml",   # 1x
-  ".github/ISSUE_TEMPLATE/01-feature-request.yml",   # 1x
-  ".github/ISSUE_TEMPLATE/02-documentation-request.yml",   # 1x
-  ".github/ISSUE_TEMPLATE/03-bug-report.yml",   # 1x
-  ".github/ISSUE_TEMPLATE/config.yml",   # 1x
-  ".github/workflows/dependency-review.yml",   # 1x
-  ".github/workflows/manual-pr-security-scan.yml",   # 1x
-  ".readthedocs.yaml",   # 1x
-  "CHANGELOG.md",   # 1x
-  "LICENSE",   # 1x
-  "docs/source/_templates/base.html",   # 1x
-  "docs/source/conf.py",   # 2x
-  "src/py_launch_blueprint/__init__.py",   # 1x
-  "src/py_launch_blueprint/cli/__init__.py",   # 1x
-  "src/py_launch_blueprint/cli/commands/__init__.py",   # 1x
-  "src/py_launch_blueprint/cli/commands/config.py",   # 1x
-  "src/py_launch_blueprint/cli/commands/projects.py",   # 1x
-  "src/py_launch_blueprint/cli/context.py",   # 1x
-  "src/py_launch_blueprint/cli/exit_codes.py",   # 1x
-  "src/py_launch_blueprint/cli/main.py",   # 1x
-  "src/py_launch_blueprint/cli/options.py",   # 1x
-  "src/py_launch_blueprint/cli/output.py",   # 1x
-  "src/py_launch_blueprint/core/__init__.py",   # 1x
-  "src/py_launch_blueprint/core/config.py",   # 1x
-  "src/py_launch_blueprint/core/errors.py",   # 1x
-  "src/py_launch_blueprint/core/logging.py",   # 1x
-  "src/py_launch_blueprint/core/models.py",   # 1x
-  "src/py_launch_blueprint/core/diagnostics.py",   # 1x
-  "src/py_launch_blueprint/core/paths.py",   # 1x
+files = [
+  ".github/FUNDING.yml",                                 # 1x
+  ".github/ISSUE_TEMPLATE/01-feature-request.yml",       # 1x
+  ".github/ISSUE_TEMPLATE/02-documentation-request.yml", # 1x
+  ".github/ISSUE_TEMPLATE/03-bug-report.yml",            # 1x
+  ".github/ISSUE_TEMPLATE/config.yml",                   # 1x
+  ".github/workflows/dependency-review.yml",             # 1x
+  ".github/workflows/manual-pr-security-scan.yml",       # 1x
+  ".readthedocs.yaml",                                   # 1x
+  "CHANGELOG.md",                                        # 1x
+  "LICENSE",                                             # 1x
+  "docs/source/_templates/base.html",                    # 1x
+  "docs/source/conf.py",                                 # 2x
+  "src/py_launch_blueprint/__init__.py",                 # 1x
+  "src/py_launch_blueprint/cli/__init__.py",             # 1x
+  "src/py_launch_blueprint/cli/commands/__init__.py",    # 1x
+  "src/py_launch_blueprint/cli/commands/config.py",      # 1x
+  "src/py_launch_blueprint/cli/commands/projects.py",    # 1x
+  "src/py_launch_blueprint/cli/context.py",              # 1x
+  "src/py_launch_blueprint/cli/exit_codes.py",           # 1x
+  "src/py_launch_blueprint/cli/main.py",                 # 1x
+  "src/py_launch_blueprint/cli/options.py",              # 1x
+  "src/py_launch_blueprint/cli/output.py",               # 1x
+  "src/py_launch_blueprint/core/__init__.py",            # 1x
+  "src/py_launch_blueprint/core/config.py",              # 1x
+  "src/py_launch_blueprint/core/errors.py",              # 1x
+  "src/py_launch_blueprint/core/logging.py",             # 1x
+  "src/py_launch_blueprint/core/models.py",              # 1x
+  "src/py_launch_blueprint/core/diagnostics.py",         # 1x
+  "src/py_launch_blueprint/core/paths.py",               # 1x
   "src/py_launch_blueprint/core/services/__init__.py",   # 1x
   "src/py_launch_blueprint/core/services/projects.py",   # 1x
-  "src/py_launch_blueprint/core/settings.py",   # 1x
-  "src/py_launch_blueprint/projects.py",   # 1x
-  "src/py_launch_blueprint/web/__init__.py",   # 1x
-  "tests/__init__.py",   # 1x
-  "tests/test_api.py",   # 1x
-  "tests/test_cli.py",   # 1x
-  "tests/test_config.py",   # 1x
-  "tests/test_version_consistency.py",   # 1x
+  "src/py_launch_blueprint/core/settings.py",            # 1x
+  "src/py_launch_blueprint/web/__init__.py",             # 1x
+  "tests/__init__.py",                                   # 1x
+  "tests/test_version_consistency.py",                   # 1x
 ]
-mode    = "text"
+mode = "text"
 
 # app_name (structured) — 2 occurrences in 1 files
 # (the modern CLI's [project.scripts] key + its comment)
 [[replace]]
-field   = "app_name"
+field = "app_name"
 current = ["plbp"]
-files   = [
-  "pyproject.toml",   # 2x
+files = [
+  "pyproject.toml", # 2x
 ]
-mode    = "structured"
+mode = "structured"
 
-# app_name (text) — 193 occurrences in 24 files
+# app_name (text) — 218 occurrences in 30 files
 # NOTE: 4-char token — safe for text mode because "plbp" was invented to be
 # substring-disjoint from real words and every other identity value.
 [[replace]]
-field   = "app_name"
+field = "app_name"
 current = ["plbp"]
-files   = [
-  "EXAMPLECLI.md",   # 36x
-  "docs/design/0001-plbp-cli-conventions.md",   # 28x
-  "docs/adr/0001-app-short-name-plbp.md",   # 4x
-  "docs/adr/0002-no-secrets-in-config-file.md",   # 1x
-  "docs/adr/0003-keep-markdown-output-mode.md",   # 1x
-  "docs/adr/0004-config-errors-degrade-to-warnings.md",   # 1x
-  "docs/adr/README.md",   # 2x
-  "docs/design/README.md",   # 2x
-  "POST_INIT.md",   # 1x
+files = [
+  ".windsurfrules",                                     # 1x
+  "EXAMPLECLI.md",                                      # 36x
+  "Justfile",                                           # 1x
+  "POST_INIT.md",                                       # 1x
+  "README.md",                                          # 2x
+  "docs/adr/0001-app-short-name-plbp.md",               # 5x
+  "docs/adr/0002-no-secrets-in-config-file.md",         # 1x
+  "docs/adr/0003-keep-markdown-output-mode.md",         # 1x
+  "docs/adr/0004-config-errors-degrade-to-warnings.md", # 1x
+  "docs/adr/README.md",                                 # 2x
+  "docs/design/0001-plbp-cli-conventions.md",           # 28x
+  "docs/design/README.md",                              # 2x
+  "docs/source/index.md",                               # 14x
+  "docs/source/reference/cli_reference.md",             # 1x
+  "docs/source/tasks/setting_up_development.md",        # 2x
+  "projects/P01-init-rebrand-robustness.md",            # 8x
   "src/py_launch_blueprint/cli/commands/__init__.py",   # 1x
-  "src/py_launch_blueprint/cli/commands/config.py",   # 9x
+  "src/py_launch_blueprint/cli/commands/config.py",     # 9x
   "src/py_launch_blueprint/cli/commands/projects.py",   # 6x
-  "src/py_launch_blueprint/cli/main.py",   # 6x
-  "src/py_launch_blueprint/cli/options.py",   # 1x
-  "src/py_launch_blueprint/core/config.py",   # 9x
-  "src/py_launch_blueprint/core/diagnostics.py",   # 1x
-  "src/py_launch_blueprint/core/logging.py",   # 3x
-  "src/py_launch_blueprint/core/models.py",   # 1x
-  "src/py_launch_blueprint/core/paths.py",   # 20x
-  "tests/cli/test_pylb.py",   # 26x
-  "tests/conftest.py",   # 1x
-  "tests/core/test_core.py",   # 17x
-  "tests/core/test_logging.py",   # 8x
-  "projects/P01-init-rebrand-robustness.md",   # 8x
+  "src/py_launch_blueprint/cli/main.py",                # 6x
+  "src/py_launch_blueprint/cli/options.py",             # 1x
+  "src/py_launch_blueprint/core/config.py",             # 9x
+  "src/py_launch_blueprint/core/diagnostics.py",        # 1x
+  "src/py_launch_blueprint/core/logging.py",            # 3x
+  "src/py_launch_blueprint/core/models.py",             # 1x
+  "src/py_launch_blueprint/core/paths.py",              # 20x
+  "tests/cli/test_pylb.py",                             # 27x
+  "tests/conftest.py",                                  # 1x
+  "tests/core/test_core.py",                            # 19x
+  "tests/core/test_logging.py",                         # 8x
 ]
-mode    = "text"
+mode = "text"
 
-# app_name_upper (text) — 123 occurrences in 15 files
+# app_name_upper (text) — 124 occurrences in 16 files
 # Derived identity (app_name.upper()): the PLBP_* env prefix and the
 # _PLBP_COMPLETE completion var. Never prompted; init derives it.
 [[replace]]
-field   = "app_name_upper"
+field = "app_name_upper"
 current = ["PLBP"]
-files   = [
-  "EXAMPLECLI.md",   # 12x
-  "docs/design/0001-plbp-cli-conventions.md",   # 26x
-  "docs/adr/0001-app-short-name-plbp.md",   # 2x
-  "docs/adr/0002-no-secrets-in-config-file.md",   # 3x
-  "POST_INIT.md",   # 1x
+files = [
+  "EXAMPLECLI.md",                                    # 12x
+  "docs/design/0001-plbp-cli-conventions.md",         # 26x
+  "docs/adr/0001-app-short-name-plbp.md",             # 2x
+  "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
+  "docs/source/index.md",                             # 1x
+  "POST_INIT.md",                                     # 1x
   "src/py_launch_blueprint/cli/commands/config.py",   # 2x
-  "src/py_launch_blueprint/cli/commands/projects.py",   # 1x
-  "src/py_launch_blueprint/cli/context.py",   # 9x
-  "src/py_launch_blueprint/cli/main.py",   # 5x
-  "src/py_launch_blueprint/cli/options.py",   # 5x
-  "src/py_launch_blueprint/core/config.py",   # 5x
-  "src/py_launch_blueprint/core/logging.py",   # 1x
-  "src/py_launch_blueprint/core/settings.py",   # 1x
-  "tests/cli/test_pylb.py",   # 38x
-  "projects/P01-init-rebrand-robustness.md",   # 12x
+  "src/py_launch_blueprint/cli/commands/projects.py", # 1x
+  "src/py_launch_blueprint/cli/context.py",           # 9x
+  "src/py_launch_blueprint/cli/main.py",              # 5x
+  "src/py_launch_blueprint/cli/options.py",           # 5x
+  "src/py_launch_blueprint/core/config.py",           # 5x
+  "src/py_launch_blueprint/core/logging.py",          # 1x
+  "src/py_launch_blueprint/core/settings.py",         # 1x
+  "tests/cli/test_pylb.py",                           # 38x
+  "projects/P01-init-rebrand-robustness.md",          # 12x
 ]
-mode    = "text"
-
-# command_name (structured) — 1 occurrences in 1 files
-[[replace]]
-field   = "command_name"
-current = ["py-projects"]
-files   = [
-  "pyproject.toml",   # 1x
-]
-mode    = "structured"
-
-# command_name (text) — 31 occurrences in 9 files
-[[replace]]
-field   = "command_name"
-current = ["py-projects"]
-files   = [
-  ".github/CONTRIBUTING.md",   # 1x
-  "docs/adr/0001-app-short-name-plbp.md",   # 1x
-  ".windsurfrules",   # 1x
-  "EXAMPLECLI.md",   # 11x
-  "Justfile",   # 1x
-  "README.md",   # 2x
-  "docs/source/index.md",   # 11x
-  "docs/source/reference/cli_reference.md",   # 1x
-  "docs/source/tasks/setting_up_development.md",   # 2x
-]
-mode    = "text"
+mode = "text"
 
 # email (structured) — 1 occurrences in 1 files
 [[replace]]
-field   = "email"
+field = "email"
 current = ["steve.morin@gmail.com"]
-files   = [
-  "pyproject.toml",   # 1x
+files = [
+  "pyproject.toml", # 1x
 ]
-mode    = "structured"
+mode = "structured"
 
 # owner (structured) — 4 occurrences in 1 files
 [[replace]]
-field   = "owner"
+field = "owner"
 current = ["smorinlabs"]
-files   = [
-  "pyproject.toml",   # 4x
+files = [
+  "pyproject.toml", # 4x
 ]
-mode    = "structured"
+mode = "structured"
 
-# owner (text) — 123 occurrences in 15 files
+# owner (text) — 122 occurrences in 14 files
 [[replace]]
-field   = "owner"
+field = "owner"
 current = ["smorinlabs"]
-files   = [
-  ".github/CONTRIBUTING.md",   # 1x
-  ".github/ISSUE_TEMPLATE/config.yml",   # 1x
-  "CHANGELOG.md",   # 96x
-  "EXAMPLECLI.md",   # 1x
-  "Justfile",   # 1x
-  "README.md",   # 5x
-  "docs/source/conf.py",   # 2x
-  "docs/source/contributing/index.md",   # 1x
-  "docs/source/index.md",   # 5x
-  "docs/source/reference/configuration_files.md",   # 4x
-  "docs/source/tasks/setting_up_development.md",   # 1x
-  "docs/source/tasks/type_checking_code.md",   # 2x
-  "docs/source/tools/github_actions.md",   # 1x
-  "docs/source/tools/justfiles.md",   # 1x
-  "docs/source/tutorials/full_project_setup.md",   # 1x
+files = [
+  ".github/CONTRIBUTING.md",                      # 1x
+  ".github/ISSUE_TEMPLATE/config.yml",            # 1x
+  "CHANGELOG.md",                                 # 96x
+  "Justfile",                                     # 1x
+  "README.md",                                    # 5x
+  "docs/source/conf.py",                          # 2x
+  "docs/source/contributing/index.md",            # 1x
+  "docs/source/index.md",                         # 5x
+  "docs/source/reference/configuration_files.md", # 4x
+  "docs/source/tasks/setting_up_development.md",  # 1x
+  "docs/source/tasks/type_checking_code.md",      # 2x
+  "docs/source/tools/github_actions.md",          # 1x
+  "docs/source/tools/justfiles.md",               # 1x
+  "docs/source/tutorials/full_project_setup.md",  # 1x
 ]
-mode    = "text"
+mode = "text"
 
 # package_name (structured) — 5 occurrences in 1 files
 [[replace]]
-field   = "package_name"
+field = "package_name"
 current = ["py_launch_blueprint"]
-files   = [
-  "pyproject.toml",   # 5x
+files = [
+  "pyproject.toml", # 5x
 ]
-mode    = "structured"
+mode = "structured"
 
-# package_name (text) — 149 occurrences in 51 files
+# package_name (text) — 136 occurrences in 47 files
 [[replace]]
-field   = "package_name"
+field = "package_name"
 current = ["py_launch_blueprint"]
-files   = [
-  ".github/workflows/bandit.yml",   # 1x
-  ".github/workflows/ci.yml",   # 2x
-  ".vscode/launch.json",   # 2x
-  ".windsurfrules",   # 1x
-  "AGENTS.md",   # 1x
-  "CLAUDE.md",   # 3x
-  "EXAMPLECLI.md",   # 1x
-  "Justfile",   # 2x
-  "README.md",   # 1x
-  "docs/source/conf.py",   # 3x
-  "docs/source/index.md",   # 1x
-  "docs/source/reference/project_structure.md",   # 4x
-  "docs/source/reference/versioning.md",   # 5x
-  "docs/source/tasks/debugging_configuration.md",   # 2x
-  "docs/source/tasks/managing_dependencies.md",   # 8x
-  "docs/source/tasks/setting_up_development.md",   # 10x
-  "docs/source/tasks/type_checking_code.md",   # 2x
-  "docs/source/tasks/using_ci_cd.md",   # 3x
-  "docs/source/tools/github_actions.md",   # 2x
-  "docs/source/tutorials/full_project_setup.md",   # 3x
-  "lefthook.yml",   # 1x
-  "src/py_launch_blueprint/__init__.py",   # 1x
-  "src/py_launch_blueprint/cli/__init__.py",   # 1x
-  "src/py_launch_blueprint/core/diagnostics.py",   # 3x
-  "src/py_launch_blueprint/cli/commands/__init__.py",   # 2x
-  "src/py_launch_blueprint/cli/commands/config.py",   # 6x
-  "src/py_launch_blueprint/cli/commands/projects.py",   # 5x
-  "src/py_launch_blueprint/cli/context.py",   # 6x
-  "src/py_launch_blueprint/cli/exit_codes.py",   # 1x
-  "src/py_launch_blueprint/cli/main.py",   # 6x
-  "src/py_launch_blueprint/cli/options.py",   # 4x
-  "src/py_launch_blueprint/cli/output.py",   # 2x
-  "src/py_launch_blueprint/core/__init__.py",   # 7x
-  "src/py_launch_blueprint/core/config.py",   # 3x
-  "src/py_launch_blueprint/core/errors.py",   # 1x
-  "src/py_launch_blueprint/core/services/__init__.py",   # 1x
-  "src/py_launch_blueprint/core/services/projects.py",   # 3x
-  "src/py_launch_blueprint/core/settings.py",   # 1x
-  "src/py_launch_blueprint/projects.py",   # 1x
-  "src/py_launch_blueprint/web/__init__.py",   # 1x
-  "pyrightconfig.json",   # 1x
-  "release-please-config.json",   # 1x
-  "tests/cli/test_pylb.py",   # 6x
-  "tests/core/test_core.py",   # 9x
-  "tests/core/test_logging.py",   # 1x
-  "tests/test_api.py",   # 1x
-  "tests/test_cli.py",   # 10x
-  "tests/test_config.py",   # 1x
-  "tests/test_output.py",   # 3x
-  "tests/test_version_consistency.py",   # 2x
-  "projects/P01-init-rebrand-robustness.md",   # 1x
+files = [
+  ".github/workflows/bandit.yml",                      # 1x
+  ".github/workflows/ci.yml",                          # 2x
+  ".vscode/launch.json",                               # 2x
+  ".windsurfrules",                                    # 1x
+  "AGENTS.md",                                         # 1x
+  "CLAUDE.md",                                         # 3x
+  "EXAMPLECLI.md",                                     # 1x
+  "Justfile",                                          # 2x
+  "README.md",                                         # 1x
+  "docs/source/conf.py",                               # 3x
+  "docs/source/index.md",                              # 1x
+  "docs/source/reference/project_structure.md",        # 4x
+  "docs/source/reference/versioning.md",               # 5x
+  "docs/source/tasks/debugging_configuration.md",      # 2x
+  "docs/source/tasks/managing_dependencies.md",        # 8x
+  "docs/source/tasks/setting_up_development.md",       # 10x
+  "docs/source/tasks/type_checking_code.md",           # 2x
+  "docs/source/tasks/using_ci_cd.md",                  # 3x
+  "docs/source/tools/github_actions.md",               # 2x
+  "docs/source/tutorials/full_project_setup.md",       # 3x
+  "lefthook.yml",                                      # 1x
+  "src/py_launch_blueprint/__init__.py",               # 1x
+  "src/py_launch_blueprint/cli/__init__.py",           # 1x
+  "src/py_launch_blueprint/core/diagnostics.py",       # 3x
+  "src/py_launch_blueprint/cli/commands/__init__.py",  # 2x
+  "src/py_launch_blueprint/cli/commands/config.py",    # 6x
+  "src/py_launch_blueprint/cli/commands/projects.py",  # 5x
+  "src/py_launch_blueprint/cli/context.py",            # 6x
+  "src/py_launch_blueprint/cli/exit_codes.py",         # 1x
+  "src/py_launch_blueprint/cli/main.py",               # 6x
+  "src/py_launch_blueprint/cli/options.py",            # 4x
+  "src/py_launch_blueprint/cli/output.py",             # 2x
+  "src/py_launch_blueprint/core/__init__.py",          # 7x
+  "src/py_launch_blueprint/core/config.py",            # 3x
+  "src/py_launch_blueprint/core/errors.py",            # 1x
+  "src/py_launch_blueprint/core/services/__init__.py", # 1x
+  "src/py_launch_blueprint/core/services/projects.py", # 3x
+  "src/py_launch_blueprint/core/settings.py",          # 1x
+  "src/py_launch_blueprint/web/__init__.py",           # 1x
+  "pyrightconfig.json",                                # 1x
+  "release-please-config.json",                        # 1x
+  "tests/cli/test_pylb.py",                            # 6x
+  "tests/core/test_core.py",                           # 9x
+  "tests/core/test_logging.py",                        # 1x
+  "tests/test_output.py",                              # 3x
+  "tests/test_version_consistency.py",                 # 2x
+  "projects/P01-init-rebrand-robustness.md",           # 1x
 ]
-mode    = "text"
+mode = "text"
 
 # repo_name (structured) — 6 occurrences in 2 files
 [[replace]]
-field   = "repo_name"
+field = "repo_name"
 current = ["py-launch-blueprint"]
-files   = [
-  ".gitleaks.toml",   # 1x
-  "pyproject.toml",   # 5x
+files = [
+  ".gitleaks.toml", # 1x
+  "pyproject.toml", # 5x
 ]
-mode    = "structured"
+mode = "structured"
 
-# repo_name (text) — 167 occurrences in 24 files
+# repo_name (text) — 161 occurrences in 24 files
 [[replace]]
-field   = "repo_name"
+field = "repo_name"
 current = ["py-launch-blueprint"]
-files   = [
-  ".devcontainer/devcontainer.json",   # 1x
-  ".github/CONTRIBUTING.md",   # 1x
-  ".github/ISSUE_TEMPLATE/config.yml",   # 1x
-  ".github/codeql/codeql-config.yml",   # 1x
-  ".github/workflows/blueprint-guard.yml",   # 1x
-  "AGENTS.md",   # 1x
-  "CHANGELOG.md",   # 96x
-  "EXAMPLECLI.md",   # 7x
-  "Justfile",   # 1x
-  "README.md",   # 17x
-  "docs/design/0001-plbp-cli-conventions.md",   # 3x
-  "docs/source/_templates/base.html",   # 1x
-  "docs/source/conf.py",   # 3x
-  "docs/source/contributing/index.md",   # 1x
-  "docs/source/index.md",   # 15x
-  "docs/source/reference/configuration_files.md",   # 4x
+files = [
+  ".devcontainer/devcontainer.json",              # 1x
+  ".github/CONTRIBUTING.md",                      # 1x
+  ".github/ISSUE_TEMPLATE/config.yml",            # 1x
+  ".github/codeql/codeql-config.yml",             # 1x
+  ".github/workflows/blueprint-guard.yml",        # 1x
+  "AGENTS.md",                                    # 1x
+  "CHANGELOG.md",                                 # 96x
+  "Justfile",                                     # 1x
+  "README.md",                                    # 17x
+  "docs/design/0001-plbp-cli-conventions.md",     # 3x
+  "docs/source/_templates/base.html",             # 1x
+  "docs/source/conf.py",                          # 3x
+  "docs/source/contributing/index.md",            # 1x
+  "docs/source/index.md",                         # 15x
+  "docs/source/reference/configuration_files.md", # 4x
   "docs/source/reference/project_structure.md",   # 2x
-  "docs/source/tasks/contributing_code.md",   # 2x
-  "docs/source/tasks/setting_up_development.md",   # 1x
-  "docs/source/tasks/type_checking_code.md",   # 2x
-  "docs/source/tools/github_actions.md",   # 1x
-  "docs/source/tools/justfiles.md",   # 1x
-  "docs/source/tutorials/full_project_setup.md",   # 2x
-  "package.json",   # 2x
-  "src/py_launch_blueprint/web/__init__.py",   # 1x
+  "docs/source/tasks/contributing_code.md",       # 2x
+  "docs/source/tasks/setting_up_development.md",  # 1x
+  "docs/source/tasks/type_checking_code.md",      # 2x
+  "docs/source/tools/github_actions.md",          # 1x
+  "docs/source/tools/justfiles.md",               # 1x
+  "docs/source/tutorials/full_project_setup.md",  # 2x
+  "package.json",                                 # 2x
+  "src/py_launch_blueprint/web/__init__.py",      # 1x
 ]
-mode    = "text"
+mode = "text"
 
 [[rename]]
 from = "assets/images/logos/py_launch_blueprint_logo_1024x1024.png"
-to   = "assets/images/logos/{package_name}_logo_1024x1024.png"
+to = "assets/images/logos/{package_name}_logo_1024x1024.png"
 
 [[rename]]
 from = "docs/source/_static/py_launch_blueprint_logo_100x100.png"
-to   = "docs/source/_static/{package_name}_logo_100x100.png"
+to = "docs/source/_static/{package_name}_logo_100x100.png"
 
 [[rename]]
 from = "assets/images/logos/py_launch_blueprint_logo_150x150.png"
-to   = "assets/images/logos/{package_name}_logo_150x150.png"
+to = "assets/images/logos/{package_name}_logo_150x150.png"
 
 [[rename]]
 from = "assets/images/logos/py_launch_blueprint_logo_100x100.png"
-to   = "assets/images/logos/{package_name}_logo_100x100.png"
+to = "assets/images/logos/{package_name}_logo_100x100.png"
 
 [[rename]]
 from = "docs/adr/0001-app-short-name-plbp.md"
-to   = "docs/adr/0001-app-short-name-{app_name}.md"
+to = "docs/adr/0001-app-short-name-{app_name}.md"
 
 [[rename]]
 from = "docs/design/0001-plbp-cli-conventions.md"
-to   = "docs/design/0001-{app_name}-cli-conventions.md"
+to = "docs/design/0001-{app_name}-cli-conventions.md"
 
 [[rename]]
 from = "src/py_launch_blueprint"
-to   = "src/{package_name}"
+to = "src/{package_name}"
 
 [[remove]]
-path   = ".github/workflows/blueprint-guard.yml"
+path = ".github/workflows/blueprint-guard.yml"
 reason = "guard CI is blueprint-only"
 
 [[remove]]
-path   = ".github/workflows/update-contributors.yml"
+path = ".github/workflows/update-contributors.yml"
 reason = "py-launch-blueprint contributors automation is project-specific"
 
 [[remove]]
-path   = ".contributors.yml"
+path = ".contributors.yml"
 reason = "py-launch-blueprint contributor config is project-specific"
 
 [[remove]]
-path   = ".contributors.jsonl"
+path = ".contributors.jsonl"
 reason = "py-launch-blueprint contributor state is project-specific"
 
 [[remove]]
-path   = "CONTRIBUTORS.md"
+path = "CONTRIBUTORS.md"
 reason = "py-launch-blueprint generated contributors file is project-specific"
 
 [[remove]]
-path   = "tests/test_contributors_render.py"
+path = "tests/test_contributors_render.py"
 reason = "py-launch-blueprint contributor-state regression is project-specific"
 
 [[remove]]
-path   = "tests/test_contributors_state.py"
+path = "tests/test_contributors_state.py"
 reason = "py-launch-blueprint contributor-state regression is project-specific"
 
 [[remove]]
-path   = "tests/test_contributors_workflow.py"
+path = "tests/test_contributors_workflow.py"
 reason = "py-launch-blueprint contributor-workflow regression is project-specific"
 
 [[remove]]
-path   = "tests/test_justfile.py"
+path = "tests/test_justfile.py"
 reason = "py-launch-blueprint contributor-recipe regression is project-specific"
 
 [[remove]]
-path   = "init/discover.py"
+path = "init/discover.py"
 reason = "Phase-0 one-off discovery script"
 
 [[regenerate]]
-path    = "uv.lock"
+path = "uv.lock"
 command = ["uv", "lock"]
 
 [[regenerate]]
-path    = "bun.lock"
+path = "bun.lock"
 command = ["bun", "install"]

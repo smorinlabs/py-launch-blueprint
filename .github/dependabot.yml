@@ -27,7 +27,7 @@ updates:
       include: "scope"
     groups:
       runtime:
-        patterns: ["click", "questionary", "python-dotenv", "thefuzz", "python-Levenshtein", "pyperclip", "requests", "rich"]
+        patterns: ["click", "pydantic", "structlog", "tomli-w", "questionary", "requests", "rich"]
       dev-tools:
         patterns: ["pre-commit", "cogapp"]
       lint-and-format:

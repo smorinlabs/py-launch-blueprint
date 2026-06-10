@@ -133,7 +133,7 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`, `do
 **Examples**:
 
 ```
-feat: add csv export to py-projects
+feat(projects): add workspace filter to list
 fix(cli): handle empty --fields list gracefully
 chore: bump ruff to 0.7.4
 ```
