@@ -58,6 +58,7 @@ def test_rename_templates_resolve_cleanly() -> None:
         package_name="acme_widget",
         repo_name="acme-widget",
         command_name="acme",
+        app_name="widget",
         author="Jane",
         email="j@example.com",
         owner="acmecorp",
@@ -74,6 +75,7 @@ def test_replacement_map_is_longest_first() -> None:
         package_name="a",
         repo_name="b",
         command_name="c",
+        app_name="x",
         author="d",
         email="e",
         owner="f",
@@ -89,3 +91,68 @@ def test_replacement_map_is_longest_first() -> None:
 def test_manifest_is_valid_toml() -> None:
     raw = MANIFEST_PATH.read_text(encoding="utf-8")
     tomllib.loads(raw)
+
+
+def test_app_name_identity_and_derived_upper() -> None:
+    answers = Answers(
+        package_name="acme_widget",
+        repo_name="acme-widget",
+        command_name="acme",
+        app_name="widget",
+        author="Jane",
+        email="j@example.com",
+        owner="acmecorp",
+    )
+    rep = _replacement_map(answers)
+    assert rep["plbp"] == "widget"
+    assert rep["PLBP"] == "WIDGET"  # derived, never prompted
+
+
+def test_app_name_must_differ_from_command_name() -> None:
+    import pytest
+    from common import ValidationError
+
+    answers = Answers(
+        package_name="acme_widget",
+        repo_name="acme-widget",
+        command_name="acme",
+        app_name="acme",  # would create a duplicate [project.scripts] key
+        author="Jane",
+        email="j@example.com",
+        owner="acmecorp",
+    )
+    with pytest.raises(ValidationError):
+        answers.validate()
+
+
+def test_app_name_rejects_hyphens() -> None:
+    import pytest
+    from common import ValidationError, validate_app_name
+
+    with pytest.raises(ValidationError):
+        validate_app_name("my-app")  # MY-APP is not a valid env prefix
+    assert validate_app_name("my_app") == "my_app"
+
+
+def test_derived_app_name_default_never_collides() -> None:
+    # Review finding: for hyphen-less repos all defaults coincide; the
+    # offered app_name default must still pass validation.
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from init import derive_app_name, derive_command_name, derive_package_name
+
+    for repo in ("myproj", "acme-widget", "tool"):
+        package = derive_package_name(repo)
+        command = derive_command_name(repo)
+        app = derive_app_name(package, command)
+        answers = Answers(
+            package_name=package,
+            repo_name=repo,
+            command_name=command,
+            app_name=app,
+            author="Jane",
+            email="j@example.com",
+            owner="acmecorp",
+        )
+        answers.validate()  # must not raise for the offered defaults

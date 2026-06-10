@@ -63,6 +63,63 @@ files   = [
 ]
 mode    = "text"
 
+# app_name (structured) — 2 occurrences in 1 files
+# (the modern CLI's [project.scripts] key + its comment)
+[[replace]]
+field   = "app_name"
+current = ["plbp"]
+files   = [
+  "pyproject.toml",   # 2x
+]
+mode    = "structured"
+
+# app_name (text) — 146 occurrences in 16 files
+# NOTE: 4-char token — safe for text mode because "plbp" was invented to be
+# substring-disjoint from real words and every other identity value.
+[[replace]]
+field   = "app_name"
+current = ["plbp"]
+files   = [
+  "EXAMPLECLI.md",   # 36x
+  "POST_INIT.md",   # 1x
+  "src/py_launch_blueprint/cli/commands/__init__.py",   # 1x
+  "src/py_launch_blueprint/cli/commands/config.py",   # 9x
+  "src/py_launch_blueprint/cli/commands/projects.py",   # 6x
+  "src/py_launch_blueprint/cli/main.py",   # 6x
+  "src/py_launch_blueprint/cli/options.py",   # 1x
+  "src/py_launch_blueprint/core/config.py",   # 9x
+  "src/py_launch_blueprint/core/diagnostics.py",   # 1x
+  "src/py_launch_blueprint/core/logging.py",   # 3x
+  "src/py_launch_blueprint/core/models.py",   # 1x
+  "src/py_launch_blueprint/core/paths.py",   # 20x
+  "tests/cli/test_pylb.py",   # 26x
+  "tests/conftest.py",   # 1x
+  "tests/core/test_core.py",   # 17x
+  "tests/core/test_logging.py",   # 8x
+]
+mode    = "text"
+
+# app_name_upper (text) — 80 occurrences in 11 files
+# Derived identity (app_name.upper()): the PLBP_* env prefix and the
+# _PLBP_COMPLETE completion var. Never prompted; init derives it.
+[[replace]]
+field   = "app_name_upper"
+current = ["PLBP"]
+files   = [
+  "EXAMPLECLI.md",   # 12x
+  "POST_INIT.md",   # 1x
+  "src/py_launch_blueprint/cli/commands/config.py",   # 2x
+  "src/py_launch_blueprint/cli/commands/projects.py",   # 1x
+  "src/py_launch_blueprint/cli/context.py",   # 9x
+  "src/py_launch_blueprint/cli/main.py",   # 5x
+  "src/py_launch_blueprint/cli/options.py",   # 5x
+  "src/py_launch_blueprint/core/config.py",   # 5x
+  "src/py_launch_blueprint/core/logging.py",   # 1x
+  "src/py_launch_blueprint/core/settings.py",   # 1x
+  "tests/cli/test_pylb.py",   # 38x
+]
+mode    = "text"
+
 # command_name (structured) — 1 occurrences in 1 files
 [[replace]]
 field   = "command_name"

@@ -8,9 +8,9 @@ no registered rewriter, the engine falls back to longest-first text replacement
 (see _engine.apply_replace_text).
 
 Why this table is mostly empty today: blueprint identity values are highly
-distinctive (`py_launch_blueprint`, `smorinlabs`, `py-projects` — nothing
-shorter than 9 characters and nothing that occurs incidentally in prose), so
-text mode is provably safe for the current manifest. Structured rewriters are
+distinctive (`py_launch_blueprint`, `smorinlabs`, `py-projects`, and the
+invented 4-char app token `plbp`/`PLBP` — nothing that occurs incidentally
+in prose), so text mode is provably safe for the current manifest. Structured rewriters are
 the seam to add when a file appears whose format or naming collides with text
 mode (e.g., a YAML key whose *name* contains an identity value, or a CHANGELOG
 historical entry that must NOT be rewritten).

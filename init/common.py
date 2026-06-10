@@ -44,10 +44,22 @@ BLUEPRINT_IDENTITY: dict[str, str] = {
     "package_name": "py_launch_blueprint",
     "repo_name": "py-launch-blueprint",
     "command_name": "py-projects",
+    "app_name": "plbp",
+    "app_name_upper": "PLBP",
     "author": "Steve Morin",
     "email": "steve.morin@gmail.com",
     "owner": "smorinlabs",
 }
+
+# Fields computed from another answer rather than asked / required in answers
+# files: app_name_upper = app_name.upper() (the PLBP_* env-var prefix and the
+# _PLBP_COMPLETE completion var). Everything else is prompted.
+DERIVED_IDENTITY_FIELDS: frozenset[str] = frozenset({"app_name_upper"})
+
+# The fields a user actually supplies (interactively or via --config).
+PROMPTED_IDENTITY_FIELDS: tuple[str, ...] = tuple(
+    k for k in BLUEPRINT_IDENTITY if k not in DERIVED_IDENTITY_FIELDS
+)
 
 BLUEPRINT_ORIGIN_OWNER_REPO: tuple[tuple[str, str], ...] = (
     ("smorinlabs", "py-launch-blueprint"),
@@ -141,10 +153,24 @@ def validate_email(value: str) -> str:
     return value
 
 
+def validate_app_name(name: str) -> str:
+    # The app short name becomes the CLI command, the XDG namespace, file
+    # name prefixes (<app>_config.toml), and — uppercased — the env-var
+    # prefix, so it must be identifier-safe (no hyphens: ACME-X is not a
+    # valid env var).
+    if not PYTHON_IDENTIFIER_RE.fullmatch(name):
+        raise ValidationError(
+            f"app name must be a valid lowercase Python identifier "
+            f"(matching {PYTHON_IDENTIFIER_RE.pattern}): {name!r}"
+        )
+    return name
+
+
 VALIDATORS = {
     "package_name": validate_package_name,
     "repo_name": validate_repo_name,
     "command_name": validate_command_name,
+    "app_name": validate_app_name,
     "owner": validate_owner,
     "email": validate_email,
 }
