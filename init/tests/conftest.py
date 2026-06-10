@@ -117,6 +117,7 @@ ANSWERS_TOML = """\
 package_name = "my_project"
 repo_name = "my-project"
 command_name = "my-cli"
+app_name = "myapp"
 author = "Test User"
 email = "test@example.com"
 owner = "newowner"

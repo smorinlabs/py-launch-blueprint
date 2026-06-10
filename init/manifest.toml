@@ -16,7 +16,7 @@ files   = [
 ]
 mode    = "structured"
 
-# author (text) — 19 occurrences in 18 files
+# author (text) — 20 occurrences in 19 files
 [[replace]]
 field   = "author"
 current = ["Steve Morin"]
@@ -52,6 +52,7 @@ files   = [
   "src/py_launch_blueprint/core/paths.py",   # 1x
   "src/py_launch_blueprint/core/services/__init__.py",   # 1x
   "src/py_launch_blueprint/core/services/projects.py",   # 1x
+  "src/py_launch_blueprint/core/settings.py",   # 1x
   "src/py_launch_blueprint/projects.py",   # 1x
   "src/py_launch_blueprint/web/__init__.py",   # 1x
   "tests/__init__.py",   # 1x
@@ -59,6 +60,63 @@ files   = [
   "tests/test_cli.py",   # 1x
   "tests/test_config.py",   # 1x
   "tests/test_version_consistency.py",   # 1x
+]
+mode    = "text"
+
+# app_name (structured) — 2 occurrences in 1 files
+# (the modern CLI's [project.scripts] key + its comment)
+[[replace]]
+field   = "app_name"
+current = ["plbp"]
+files   = [
+  "pyproject.toml",   # 2x
+]
+mode    = "structured"
+
+# app_name (text) — 146 occurrences in 16 files
+# NOTE: 4-char token — safe for text mode because "plbp" was invented to be
+# substring-disjoint from real words and every other identity value.
+[[replace]]
+field   = "app_name"
+current = ["plbp"]
+files   = [
+  "EXAMPLECLI.md",   # 36x
+  "POST_INIT.md",   # 1x
+  "src/py_launch_blueprint/cli/commands/__init__.py",   # 1x
+  "src/py_launch_blueprint/cli/commands/config.py",   # 9x
+  "src/py_launch_blueprint/cli/commands/projects.py",   # 6x
+  "src/py_launch_blueprint/cli/main.py",   # 6x
+  "src/py_launch_blueprint/cli/options.py",   # 1x
+  "src/py_launch_blueprint/core/config.py",   # 9x
+  "src/py_launch_blueprint/core/diagnostics.py",   # 1x
+  "src/py_launch_blueprint/core/logging.py",   # 3x
+  "src/py_launch_blueprint/core/models.py",   # 1x
+  "src/py_launch_blueprint/core/paths.py",   # 20x
+  "tests/cli/test_pylb.py",   # 26x
+  "tests/conftest.py",   # 1x
+  "tests/core/test_core.py",   # 17x
+  "tests/core/test_logging.py",   # 8x
+]
+mode    = "text"
+
+# app_name_upper (text) — 80 occurrences in 11 files
+# Derived identity (app_name.upper()): the PLBP_* env prefix and the
+# _PLBP_COMPLETE completion var. Never prompted; init derives it.
+[[replace]]
+field   = "app_name_upper"
+current = ["PLBP"]
+files   = [
+  "EXAMPLECLI.md",   # 12x
+  "POST_INIT.md",   # 1x
+  "src/py_launch_blueprint/cli/commands/config.py",   # 2x
+  "src/py_launch_blueprint/cli/commands/projects.py",   # 1x
+  "src/py_launch_blueprint/cli/context.py",   # 9x
+  "src/py_launch_blueprint/cli/main.py",   # 5x
+  "src/py_launch_blueprint/cli/options.py",   # 5x
+  "src/py_launch_blueprint/core/config.py",   # 5x
+  "src/py_launch_blueprint/core/logging.py",   # 1x
+  "src/py_launch_blueprint/core/settings.py",   # 1x
+  "tests/cli/test_pylb.py",   # 38x
 ]
 mode    = "text"
 
@@ -137,7 +195,7 @@ files   = [
 ]
 mode    = "structured"
 
-# package_name (text) — 93 occurrences in 34 files
+# package_name (text) — 95 occurrences in 36 files
 [[replace]]
 field   = "package_name"
 current = ["py_launch_blueprint"]
@@ -188,12 +246,14 @@ files   = [
   "src/py_launch_blueprint/core/models.py",   # 1x
   "src/py_launch_blueprint/core/services/__init__.py",   # 1x
   "src/py_launch_blueprint/core/services/projects.py",   # 1x
+  "src/py_launch_blueprint/core/settings.py",   # 1x
   "src/py_launch_blueprint/projects.py",   # 1x
   "src/py_launch_blueprint/web/__init__.py",   # 1x
   "pyrightconfig.json",   # 1x
   "release-please-config.json",   # 1x
   "tests/cli/test_pylb.py",   # 3x
   "tests/core/test_core.py",   # 3x
+  "tests/core/test_logging.py",   # 1x
   "tests/test_api.py",   # 1x
   "tests/test_cli.py",   # 10x
   "tests/test_config.py",   # 1x

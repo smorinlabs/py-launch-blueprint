@@ -1,6 +1,6 @@
 # Static answers used by the L1+L2 integration runner (run-mode.sh).
 # Values chosen to exercise every kind of identity rewrite without colliding
-# with any blueprint string — `acme_widget`/`acme-widget`/`acme` are all
+# with any blueprint string — `acme_widget`/`acme-widget`/`acme`/`widget` are all
 # substring-disjoint from the blueprint values, so a passing run cleanly
 # proves the rewriter doesn't double-substitute.
 
@@ -8,6 +8,7 @@
 package_name = "acme_widget"
 repo_name = "acme-widget"
 command_name = "acme"
+app_name = "widget"
 author = "Integration Test"
 email = "ci@example.invalid"
 owner = "acmecorp"

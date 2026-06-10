@@ -17,29 +17,33 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""``pylb config`` — inspect configuration (no network required).
+"""``plbp config`` — inspect and edit configuration (no network required).
 
-A second noun that exercises the same pattern without touching the API, so the
-template is clear with zero credentials.
+``config set``/``get`` operate on **dotted keys** into the config tables, e.g.
+``output.color`` or ``logging.level``. Secrets are never stored in the config
+file — the token comes from ``--token`` or ``$PLBP_TOKEN`` only.
 """
 
 import click
 
 from py_launch_blueprint.cli.context import AppContext
 from py_launch_blueprint.cli.options import confirm, global_options, mutation_options
-from py_launch_blueprint.core.config import get_default_config_path, save_token
+from py_launch_blueprint.core.config import (
+    get_default_config_path,
+    get_file_value,
+    set_config_value,
+)
 from py_launch_blueprint.core.errors import ExitCode
 from py_launch_blueprint.core.models import ConfigPath, ConfigValue
+from py_launch_blueprint.core.settings import coerce_value, parse_key, writable_keys
 
-#: Configuration keys this command knows how to surface.
-_KNOWN_KEYS = {"token"}
-#: Keys `config set` knows how to write.
-_WRITABLE_KEYS = {"token"}
+#: Keys `config get` can resolve: every settable key plus the read-only token.
+_GETTABLE_KEYS = sorted([*writable_keys(), "token"])
 
 
 @click.group(name="config")
 def config_group() -> None:
-    """Inspect CLI configuration."""
+    """Inspect and edit CLI configuration."""
 
 
 @config_group.command(name="path")
@@ -48,61 +52,77 @@ def config_path(app: AppContext) -> None:
     """Show the config file path and whether it exists.
 
     Examples:
-        pylb config path
-        pylb config path --json
+        plbp config path
+        plbp config path --json
     """
     path = app.config.config_path or get_default_config_path()
     app.renderer.render(ConfigPath(path=str(path), exists=path.exists()))
 
 
 @config_group.command(name="get")
-@click.argument("key", type=click.Choice(sorted(_KNOWN_KEYS)))
+@click.argument("key", type=click.Choice(_GETTABLE_KEYS))
 @global_options
 def config_get(app: AppContext, key: str) -> None:
-    """Show a resolved config value and which source provided it.
+    """Show a resolved config value and where it came from.
 
-    Secrets are masked. Examples:
-        pylb config get token
-        pylb config get token --json
+    The token is masked and resolves from flag/env only. Examples:
+        plbp config get output.color
+        plbp config get logging.level --json
+        plbp config get token
     """
     cfg = app.config
     if key == "token":
         value = _mask(cfg.token) if cfg.token else None
         app.renderer.render(ConfigValue(key=key, value=value, source=cfg.source))
+        return
+    section, name = parse_key(key)
+    resolved = getattr(getattr(cfg.settings, section), name)
+    app.renderer.render(ConfigValue(key=key, value=str(resolved), source="config"))
 
 
 @config_group.command(name="set")
-@click.argument("key", type=click.Choice(sorted(_WRITABLE_KEYS)))
+@click.argument("key", type=click.Choice(writable_keys()))
 @click.argument("value")
 @mutation_options
 @global_options
 def config_set(
     app: AppContext, key: str, value: str, dry_run: bool, assume_yes: bool
 ) -> None:
-    """Write a config value to the TOML config file.
+    """Write a non-secret config value to the TOML config file.
 
-    Prompts before overwriting an existing file unless --yes is given.
-    Examples:
-        pylb config set token abc123
-        pylb config set token abc123 --dry-run
-        pylb config set token abc123 --yes
+    KEY is a dotted path into the config tables. Examples:
+        plbp config set output.color always
+        plbp config set logging.level info
+        plbp config set logging.file_level debug --yes
+
+    Secrets are never stored here — supply the token via --token or
+    $PLBP_TOKEN. Prompts before overwriting an existing value unless --yes.
     """
     path = app.config.config_path or get_default_config_path()
+    section, name = parse_key(key)
+    coerced = coerce_value(section, name, value)  # validates up front
 
     if dry_run:
-        app.renderer.message(f"[dry-run] would write {key} to {path}")
-        app.renderer.render(ConfigValue(key=key, value=_mask(value), source="dry-run"))
+        app.renderer.message(f"[dry-run] would set {key} = {coerced} in {path}")
+        app.renderer.render(ConfigValue(key=key, value=str(coerced), source="dry-run"))
         return
 
-    if path.exists() and not confirm(
-        app, f"Overwrite existing config at {path}?", assume_yes=assume_yes
+    existing = get_file_value(path, key)
+    if (
+        existing is not None
+        and existing != coerced
+        and not confirm(
+            app,
+            f"Overwrite {key} ({existing} → {coerced}) in {path}?",
+            assume_yes=assume_yes,
+        )
     ):
         app.renderer.message("Aborted.")
         raise SystemExit(int(ExitCode.INTERRUPT))
 
-    save_token(path, value)
-    app.renderer.message(f"Wrote {key} to {path}")
-    app.renderer.render(ConfigValue(key=key, value=_mask(value), source="file"))
+    set_config_value(path, key, value)
+    app.renderer.message(f"Set {key} = {coerced} in {path}")
+    app.renderer.render(ConfigValue(key=key, value=str(coerced), source="file"))
 
 
 def _mask(secret: str) -> str:

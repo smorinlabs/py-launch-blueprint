@@ -20,7 +20,7 @@
 """The ``@global_options`` decorator — one set of flags on every command.
 
 Stacking these per-command (rather than only on the root group) lets users put
-flags after the verb, gh-style: ``pylb projects list --json``. The decorator
+flags after the verb, gh-style: ``plbp projects list --json``. The decorator
 consumes the global values, builds an :class:`AppContext`, and passes it as the
 first argument to the wrapped command.
 """
@@ -31,8 +31,8 @@ from typing import Any, cast
 
 import click
 
-from py_launch_blueprint.cli.context import AppContext
-from py_launch_blueprint.cli.output import OutputMode
+from py_launch_blueprint.cli.context import LOG_FILE_DEFAULT_SENTINEL, AppContext
+from py_launch_blueprint.cli.output import OutputMode, Renderer
 from py_launch_blueprint.core.errors import ConfigError, ExitCode, PyError
 
 _OUTPUT_CHOICES = [mode.value for mode in OutputMode]
@@ -45,7 +45,8 @@ _GLOBAL_OPTIONS: list[Callable[[Any], Any]] = [
         "output_mode",
         type=click.Choice(_OUTPUT_CHOICES),
         default=None,
-        help="Output format. [default: human]",
+        envvar="PLBP_OUTPUT",
+        help="Output format. [default: text]",
     ),
     click.option(
         "--json",
@@ -54,10 +55,34 @@ _GLOBAL_OPTIONS: list[Callable[[Any], Any]] = [
         help="Shorthand for --output json.",
     ),
     click.option(
+        "--output-file",
+        "output_file",
+        type=click.Path(dir_okay=False, writable=True),
+        default=None,
+        help="Write results to a file instead of stdout (format set by --output).",
+    ),
+    click.option(
         "-v", "--verbose", count=True, help="Increase log verbosity (-vv for debug)."
     ),
     click.option(
         "-q", "--quiet", is_flag=True, help="Suppress non-essential stderr output."
+    ),
+    click.option(
+        "--log-level",
+        "log_level",
+        type=click.Choice(["debug", "info", "warning", "error", "critical"]),
+        default=None,
+        envvar="PLBP_LOG_LEVEL",
+        help="Explicit console log level (overrides -v/-q).",
+    ),
+    click.option(
+        "--log-file",
+        "log_file",
+        is_flag=False,
+        flag_value=LOG_FILE_DEFAULT_SENTINEL,
+        default=None,
+        envvar="PLBP_LOG_FILE",
+        help="Enable rotating file logging (PATH optional; default: XDG state).",
     ),
     click.option("--no-color", is_flag=True, help="Disable colored output."),
     click.option(
@@ -65,17 +90,30 @@ _GLOBAL_OPTIONS: list[Callable[[Any], Any]] = [
         "config_file",
         type=click.Path(dir_okay=False),
         default=None,
-        help="Path to a .env config file.",
+        envvar="PLBP_CONFIG",
+        help="Path to a TOML config file (overrides layered discovery).",
     ),
     click.option(
         "--token",
         default=None,
-        help="Py Personal Access Token (overrides env and config file).",
+        help="Py Personal Access Token (overrides $PLBP_TOKEN). Never stored.",
     ),
     click.option(
         "--no-input", is_flag=True, help="Never prompt; fail instead (for scripts/CI)."
     ),
 ]
+
+
+def _fallback_renderer(
+    output_mode: str | None, json_mode: bool, no_color: bool
+) -> Renderer:
+    """Minimal renderer for errors raised *while building* the context.
+
+    Resolved from flags only — the config that would refine format/color is
+    exactly what failed to load.
+    """
+    mode = OutputMode.JSON if json_mode else OutputMode(output_mode or "text")
+    return Renderer(mode=mode, color="never" if no_color else "auto")
 
 
 def global_options[F: Callable[..., Any]](func: F) -> F:
@@ -86,24 +124,44 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
         *args: Any,
         output_mode: str | None,
         json_mode: bool,
+        output_file: str | None,
         verbose: int,
         quiet: bool,
+        log_level: str | None,
+        log_file: str | None,
         no_color: bool,
         config_file: str | None,
         token: str | None,
         no_input: bool,
         **kwargs: Any,
     ) -> Any:
-        app = AppContext.create(
-            output_mode=output_mode,
-            json_mode=json_mode,
-            verbose=verbose,
-            quiet=quiet,
-            no_color=no_color,
-            config_file=config_file,
-            token=token,
-            no_input=no_input,
-        )
+        # create() does real work now (config load, logging setup), so its
+        # failures must be rendered, not tracebacked. Errors here are
+        # configuration-shaped by construction -> ExitCode.CONFIG.
+        try:
+            app = AppContext.create(
+                output_mode=output_mode,
+                json_mode=json_mode,
+                output_file=output_file,
+                verbose=verbose,
+                quiet=quiet,
+                log_level=log_level,
+                log_file=log_file,
+                no_color=no_color,
+                config_file=config_file,
+                token=token,
+                no_input=no_input,
+            )
+        except PyError as exc:
+            _fallback_renderer(output_mode, json_mode, no_color).error(
+                exc.message, exc.exit_code
+            )
+            raise SystemExit(int(exc.exit_code)) from exc
+        except Exception as exc:
+            _fallback_renderer(output_mode, json_mode, no_color).error(
+                str(exc), ExitCode.CONFIG
+            )
+            raise SystemExit(int(ExitCode.CONFIG)) from exc
         try:
             return func(app, *args, **kwargs)
         except PyError as exc:

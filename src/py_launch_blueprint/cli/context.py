@@ -25,11 +25,24 @@ commands that don't need a token (e.g. ``config path``) never trigger lookup.
 """
 
 import logging
+import os
 from dataclasses import dataclass
+from pathlib import Path
 
 from py_launch_blueprint.cli.output import OutputMode, Renderer
+from py_launch_blueprint.core import paths
 from py_launch_blueprint.core.config import Config, load_config
-from py_launch_blueprint.core.logging import LogFormat, configure_logging
+from py_launch_blueprint.core.errors import ConfigError
+from py_launch_blueprint.core.logging import (
+    LOG_LEVELS,
+    LogFormat,
+    configure_logging,
+    get_logger,
+)
+from py_launch_blueprint.core.settings import LoggingSettings
+
+#: flag_value sentinel for `--log-file` used without a PATH (R11.2).
+LOG_FILE_DEFAULT_SENTINEL = "__PLBP_LOG_FILE_DEFAULT__"
 
 
 @dataclass
@@ -57,33 +70,57 @@ class AppContext:
         config_file: str | None,
         no_input: bool,
         token: str | None,
+        output_file: str | None = None,
+        log_level: str | None = None,
+        log_file: str | None = None,
     ) -> "AppContext":
-        """Build the context from raw global-option values."""
-        mode = _resolve_mode(output_mode, json_mode)
+        """Build the context from raw global-option values.
 
-        # Verbosity → log level: default WARNING, -v INFO, -vv DEBUG, -q ERROR.
-        if quiet:
-            level = logging.ERROR
-        elif verbose >= 2:
-            level = logging.DEBUG
-        elif verbose == 1:
-            level = logging.INFO
-        else:
-            level = logging.WARNING
-        configure_logging(level=level, fmt=LogFormat.AUTO)
+        Config is loaded eagerly (it never raises on missing/invalid files)
+        because output format, color, and logging resolve from it when no
+        flag/env says otherwise (R7 precedence: flag → env → config → default).
+        """
+        config = load_config(config_file=config_file, token_override=token)
+        settings = config.settings
+
+        mode = _resolve_mode(output_mode, json_mode, settings.output.format)
+        color = _resolve_color(no_color, settings.output.color)
+        renderer = Renderer(mode=mode, color=color, output_file=output_file)
+        # Non-fatal load problems (invalid values dropped, unreadable
+        # discovered layers) are surfaced on stderr, never swallowed.
+        for warning in config.warnings:
+            renderer.message(f"[yellow]warning:[/yellow] {warning}")
+
+        file_path = _resolve_log_file(log_file, settings.logging)
+        configure_logging(
+            level=_resolve_console_level(
+                log_level, verbose, quiet, settings.logging.level
+            ),
+            fmt=LogFormat.AUTO,
+            file_path=file_path,
+            file_level=LOG_LEVELS[settings.logging.file_level],
+            file_format=_resolve_log_format(settings.logging.format),
+        )
+        get_logger(__name__).debug(
+            "invocation context ready",
+            output_mode=str(mode),
+            color=color,
+            log_file=str(file_path) if file_path else None,
+        )
 
         return cls(
-            renderer=Renderer(mode=mode, no_color=no_color),
+            renderer=renderer,
             output_mode=mode,
             config_file=config_file,
             token=token,
             no_input=no_input,
             verbose=verbose,
+            _config=config,
         )
 
     @property
     def config(self) -> Config:
-        """Lazily resolve and cache configuration."""
+        """Return the resolved configuration (loaded in :meth:`create`)."""
         if self._config is None:
             self._config = load_config(
                 config_file=self.config_file, token_override=self.token
@@ -91,10 +128,76 @@ class AppContext:
         return self._config
 
 
-def _resolve_mode(output_mode: str | None, json_mode: bool) -> OutputMode:
-    """``--json`` wins; otherwise use ``--output`` or default to human."""
+def _resolve_mode(
+    output_mode: str | None, json_mode: bool, config_format: str = "text"
+) -> OutputMode:
+    """``--json`` wins; then ``--output`` (flag or PLBP_OUTPUT); then config.
+
+    Format never auto-switches on TTY (R3.3): a piped run formats the same as
+    an interactive one unless something explicitly says otherwise.
+    """
     if json_mode:
         return OutputMode.JSON
     if output_mode:
         return OutputMode(output_mode)
-    return OutputMode.HUMAN
+    return OutputMode(config_format)
+
+
+def _resolve_color(no_color_flag: bool, config_color: str) -> str:
+    """R5.5 precedence: --no-color flag > NO_COLOR env > config > auto."""
+    if no_color_flag:
+        return "never"
+    if os.environ.get("NO_COLOR"):
+        return "never"
+    return config_color  # "auto" | "always" | "never"
+
+
+def _resolve_console_level(
+    log_level: str | None, verbose: int, quiet: bool, config_level: str
+) -> int:
+    """Console level: --log-level (or env) > -q/-v > config > WARNING (R10)."""
+    if log_level:
+        return LOG_LEVELS[log_level]
+    if quiet:
+        return logging.ERROR
+    if verbose >= 2:
+        return logging.DEBUG
+    if verbose == 1:
+        return logging.INFO
+    return LOG_LEVELS[config_level]
+
+
+def _resolve_log_file(
+    log_file: str | None, logging_settings: LoggingSettings
+) -> Path | None:
+    """File sink path: flag/env > config ``logging.file`` > off (R11.1/R11.2).
+
+    Bare ``--log-file`` (no PATH) selects the default XDG state location.
+    R12 says *presence* of ``$PLBP_LOG_FILE`` enables the sink, but click
+    treats an empty env value as unset — so check the environment directly:
+    ``PLBP_LOG_FILE=`` (set, empty) also enables the default location.
+    """
+    if log_file is None and "PLBP_LOG_FILE" in os.environ:
+        log_file = os.environ["PLBP_LOG_FILE"] or LOG_FILE_DEFAULT_SENTINEL
+    if log_file == LOG_FILE_DEFAULT_SENTINEL:
+        return paths.log_file()
+    if log_file:
+        return Path(log_file).expanduser()
+    if logging_settings.file:
+        return Path(logging_settings.file).expanduser()
+    return None
+
+
+def _resolve_log_format(config_format: str) -> str:
+    """File sink format: $PLBP_LOG_FORMAT > config ``logging.format``.
+
+    The env value is validated like every other knob — a typo must not
+    silently fall back to text.
+    """
+    raw = os.environ.get("PLBP_LOG_FORMAT")
+    if raw is None or raw == "":
+        return config_format
+    normalized = raw.strip().lower()
+    if normalized not in ("text", "json"):
+        raise ConfigError(f"invalid PLBP_LOG_FORMAT: {raw!r} (allowed: text, json)")
+    return normalized

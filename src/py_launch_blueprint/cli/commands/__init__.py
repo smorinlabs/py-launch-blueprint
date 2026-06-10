@@ -17,7 +17,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Command groups — one module per noun (gh-style: ``pylb <noun> <verb>``)."""
+"""Command groups — one module per noun (gh-style: ``plbp <noun> <verb>``)."""
 
 from py_launch_blueprint.cli.commands.config import config_group
 from py_launch_blueprint.cli.commands.projects import projects_group

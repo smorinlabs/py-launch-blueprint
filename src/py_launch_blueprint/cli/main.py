@@ -17,7 +17,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Root command group for the ``pylb`` CLI.
+"""Root command group for the ``plbp`` CLI.
 
 Wires the global help option, an extended ``--version``, shell completion, and
 every noun group. Adding a noun is one import + one entry in ``COMMAND_GROUPS``
@@ -37,8 +37,8 @@ from py_launch_blueprint.cli.options import global_options
 from py_launch_blueprint.core.diagnostics import run_diagnostics
 from py_launch_blueprint.core.errors import ExitCode
 
-_COMPLETE_VAR = "_PYLB_COMPLETE"
-_PROG_NAME = "pylb"
+_COMPLETE_VAR = "_PLBP_COMPLETE"
+_PROG_NAME = "plbp"
 
 
 def _print_version(ctx: click.Context, _param: click.Parameter, value: bool) -> None:
@@ -53,7 +53,13 @@ def _print_version(ctx: click.Context, _param: click.Parameter, value: bool) -> 
 
 @click.group(
     name=_PROG_NAME,
-    context_settings={"help_option_names": ["-h", "--help"]},
+    context_settings={
+        "help_option_names": ["-h", "--help"],
+        # Every option also resolves from a PLBP_* env var (R1.2). The shared
+        # global options set explicit flat names (PLBP_OUTPUT, PLBP_CONFIG);
+        # this prefix is the catch-all for any others.
+        "auto_envvar_prefix": "PLBP",
+    },
 )
 @click.option(
     "-V",
@@ -65,10 +71,10 @@ def _print_version(ctx: click.Context, _param: click.Parameter, value: bool) -> 
     help="Show version, Python, and platform, then exit.",
 )
 def cli() -> None:
-    """pylb — a gh-style CLI for Py.
+    """plbp — a gh-style CLI for Py.
 
-    Commands follow a noun-verb shape, e.g. `pylb projects list`. Every command
-    supports -o/--output {human,json,markdown}, --json, -v/--verbose, --no-color,
+    Commands follow a noun-verb shape, e.g. `plbp projects list`. Every command
+    supports -o/--output {text,json,markdown}, --json, -v/--verbose, --no-color,
     and --config. Results go to stdout; logs and errors go to stderr.
     """
 
@@ -79,8 +85,8 @@ def completion(shell: str) -> None:
     """Print a shell completion script.
 
     Examples:
-        pylb completion bash >> ~/.bashrc
-        eval "$(pylb completion zsh)"
+        plbp completion bash >> ~/.bashrc
+        eval "$(plbp completion zsh)"
     """
     comp_cls = get_completion_class(shell)
     if comp_cls is None:  # pragma: no cover - click ships all three

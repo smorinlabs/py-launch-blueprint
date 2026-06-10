@@ -115,10 +115,10 @@ py-projects --version
 
 ---
 
-# `pylb` — noun-verb CLI (new)
+# `plbp` — noun-verb CLI (new)
 
-`pylb` is the gh-style entry point for this project. Commands follow a
-`pylb <noun> <verb>` shape and share one set of global flags, one output
+`plbp` is the gh-style entry point for this project. Commands follow a
+`plbp <noun> <verb>` shape and share one set of global flags, one output
 contract, and structured logging out of the box. The legacy `py-projects`
 command above is preserved for back-compat.
 
@@ -140,46 +140,56 @@ human text, JSON, or Markdown.
 
 | Flag | Purpose |
 |------|---------|
-| `-o, --output [human\|json\|markdown]` | output format (default `human`) |
+| `-o, --output [text\|json\|markdown]` | output format (default `text`; env `PLBP_OUTPUT`; config `output.format`) |
 | `--json` | shorthand for `--output json` |
-| `-v, --verbose` | increase log verbosity (`-vv` for debug) |
-| `-q, --quiet` | suppress non-essential stderr |
-| `--no-color` | disable ANSI color |
-| `--config PATH` | path to a `.env` config file |
-| `--token TEXT` | Py token (overrides env and config file) |
+| `--output-file PATH` | write results to a file instead of stdout (format still set by `--output`) |
+| `-v, --verbose` | raise console log level (`-v` info, `-vv` debug) |
+| `-q, --quiet` | lower console log level to error |
+| `--log-level LEVEL` | explicit console level, overrides `-v`/`-q` (env `PLBP_LOG_LEVEL`) |
+| `--log-file [PATH]` | enable rotating file logging; bare flag uses the XDG state path (env `PLBP_LOG_FILE`) |
+| `--no-color` | force color off (`NO_COLOR` env and config `output.color` also honored) |
+| `--config PATH` | path to a TOML config file (overrides discovery; env `PLBP_CONFIG`) |
+| `--token TEXT` | Py token (overrides `$PLBP_TOKEN`; never stored on disk) |
 | `--no-input` | never prompt; fail instead (scripts/CI) |
 | `-V, --version` | version + Python + platform (root) |
 | `-h, --help` | help at every level |
 
 ## Output contract
 
-- **Results** → stdout (pipe-safe). **Logs, messages, errors** → stderr.
+- **Results** → stdout (pipe-safe), or the `--output-file` path when given.
+  **Logs, messages, errors** → stderr, always.
 - In `--json` mode, stdout is clean parseable JSON; errors become a structured
   `{"error": {"code", "name", "message"}}` object on stderr.
+- Format never auto-switches on TTY: piped output formats the same as
+  interactive output unless `-o`/`PLBP_OUTPUT`/config says otherwise.
+- Color: auto-detected from the TTY; `--no-color` > `NO_COLOR` env >
+  `output.color` config (`auto`/`always`/`never`) > auto-detect.
 
 ## Usage
 
 ```bash
 # Projects (noun) → list / get (verbs)
-pylb projects list
-pylb projects list --workspace "My Workspace" --json
-pylb projects list -o markdown
-pylb projects get 12345
+plbp projects list
+plbp projects list --workspace "My Workspace" --json
+plbp projects list -o markdown
+plbp projects get 12345
 
-# Config (no network required)
-pylb config path
-pylb config get token --json
-pylb config set token <TOKEN>            # writes pylb_config.toml (0600)
-pylb config set token <TOKEN> --dry-run  # show what would change, write nothing
-pylb config set token <TOKEN> --yes      # skip the overwrite confirmation
+# Config — set/get non-secret keys by dotted path (no network required)
+plbp config path
+plbp config get output.color
+plbp config set logging.level info               # writes [logging] level
+plbp config set output.color always --dry-run    # preview, write nothing
+plbp config set logging.file_level debug --yes   # skip the overwrite prompt
+# the token is NEVER stored in config — pass --token or set $PLBP_TOKEN
+plbp config get token --json                     # masked; resolves from flag/env
 
 # Diagnose setup (Python/platform, config file, token). Exits non-zero on errors.
-pylb doctor
-pylb doctor --json
+plbp doctor
+plbp doctor --json
 
 # Shell completion
-pylb completion bash >> ~/.bashrc
-eval "$(pylb completion zsh)"
+plbp completion bash >> ~/.bashrc
+eval "$(plbp completion zsh)"
 ```
 
 Mutating commands (e.g. `config set`) share a safety pattern: `--dry-run`
@@ -189,29 +199,59 @@ prompting).
 
 ## Configuration file (TOML, XDG)
 
-`pylb` reads a TOML config file from an XDG-compliant location, namespaced
+`plbp` reads a TOML config file from an XDG-compliant location, namespaced
 under the app and named so its purpose is obvious:
 
 ```
-~/.config/pylb/pylb_config.toml          # $XDG_CONFIG_HOME/pylb/pylb_config.toml
+~/.config/plbp/plbp_config.toml          # $XDG_CONFIG_HOME/plbp/plbp_config.toml
 ```
 
 ```toml
-# pylb_config.toml
-token = "your_token_here"
-# or, equivalently:
-# [auth]
-# token = "your_token_here"
+# plbp_config.toml — non-secret settings only, organized into tables
+[output]
+format = "text"   # text | json | markdown
+color  = "auto"   # auto | always | never
+
+[logging]
+level = "warning" # console level
 ```
 
-Token precedence: `--token` > `PY_TOKEN` env var > config file. Run
-`pylb config path` to see the resolved location. The same XDG convention
-applies to other file kinds the app may create (resolved in `core/paths.py`):
-data → `$XDG_DATA_HOME/pylb/pylb_db.db`, state/logs →
-`$XDG_STATE_HOME/pylb/pylb_<name>.log`, cache → `$XDG_CACHE_HOME/pylb/`.
+Config is discovered in layers, each overriding the previous: system
+(`$XDG_CONFIG_DIRS`) → user (`$XDG_CONFIG_HOME`) → project
+(`./plbp_config.toml`); `--config` overrides discovery entirely. Per-setting
+precedence: flag → env (`PLBP_*`) → project → user → system → default.
 
-## Structured logging
+Secrets are **never** stored here — the token resolves from `--token` or
+`$PLBP_TOKEN` only. The same XDG convention applies to other file kinds
+(resolved in `core/paths.py`): data → `$XDG_DATA_HOME/plbp/plbp_db.db`,
+state/logs → `$XDG_STATE_HOME/plbp/plbp.log`, cache → `$XDG_CACHE_HOME/plbp/`.
 
-Logging uses [`structlog`](https://www.structlog.org/): human-friendly colored
-output on a TTY, one-JSON-object-per-line when piped or in CI. All logs go to
-stderr. Configure verbosity with `-v`/`-vv`/`-q`.
+## Structured logging (dual sink)
+
+Logging uses [`structlog`](https://www.structlog.org/) rendered through stdlib
+handlers, giving two independent sinks:
+
+- **Console (stderr, always on)** — human-friendly colored output on a TTY,
+  one-JSON-object-per-line when piped or in CI. Level: `WARNING` by default;
+  `-v` info, `-vv` debug, `-q` error, `--log-level` explicit override
+  (also `PLBP_LOG_LEVEL` / config `logging.level`).
+- **Rotating file (off by default)** — enabled by `--log-file [PATH]`,
+  `$PLBP_LOG_FILE`, or config `logging.file`. Bare `--log-file` writes to
+  `$XDG_STATE_HOME/plbp/plbp.log` (logs are *state*, not config). Rotates at
+  10 MB x 5 backups. Its level (`logging.file_level`, default `debug`) and
+  format (`logging.format`: `text` or `json` JSONL; env `PLBP_LOG_FORMAT`)
+  are independent of the console.
+
+When both sinks are active they attach to the same logger: the logger floor is
+the most verbose sink and each handler filters independently — e.g. a quiet
+console at `warning` while the file captures full `debug` detail.
+
+```bash
+plbp doctor -vv                          # debug detail on stderr
+plbp doctor --log-file                   # + JSONL/text file under XDG state
+plbp doctor --log-file /tmp/run.log --log-level error   # quiet console, full file
+plbp config set logging.file_level info --yes           # tune the file sink
+```
+
+Results on stdout are never mixed with logs — `plbp ... --json | jq` stays
+safe at any verbosity.
