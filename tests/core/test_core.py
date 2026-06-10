@@ -237,3 +237,12 @@ def test_output_format_vocabularies_stay_in_sync():
 
     literal = get_args(OutputSettings.model_fields["format"].annotation)
     assert tuple(m.value for m in OutputMode) == literal
+
+
+def test_write_leaves_no_temp_files(tmp_path):
+    # Atomic write: only the config file remains after a set.
+    cfg_file = tmp_path / "plbp_config.toml"
+    set_config_value(cfg_file, "output.color", "never")
+    set_config_value(cfg_file, "logging.level", "info")
+    assert [p.name for p in tmp_path.iterdir()] == ["plbp_config.toml"]
+    assert (cfg_file.stat().st_mode & 0o777) == 0o600

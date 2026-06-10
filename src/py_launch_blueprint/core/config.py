@@ -34,7 +34,9 @@ Secrets are **never** stored in the config file (R8): the token resolves from
 *loads* and *writes* configuration; it never prints.
 """
 
+import contextlib
 import os
+import tempfile
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -209,15 +211,29 @@ def read_config_for_write(config_path: Path) -> dict[str, Any]:
 
 
 def write_config_data(config_path: Path, data: dict[str, Any]) -> None:
-    """Write a config dict as TOML, creating the parent dir (0700).
+    """Write a config dict as TOML, atomically, restricted to the owner.
 
-    The file is restricted to the owner (0600): users habitually put
-    sensitive things in CLI config files even though the schema holds no
-    secrets.
+    Writes to a temp file in the same directory and ``os.replace``s it over
+    the target, so an interrupted write can never leave a truncated config
+    (which ``config set`` would then refuse to touch). ``mkstemp`` creates
+    the file 0600 from the first byte — users habitually put sensitive
+    things in CLI config files even though the schema holds no secrets.
     """
     config_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    config_path.write_text(tomli_w.dumps(data), encoding="utf-8")
-    config_path.chmod(0o600)
+    rendered = tomli_w.dumps(data)
+    fd, tmp_name = tempfile.mkstemp(
+        dir=config_path.parent, prefix=f".{config_path.name}."
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(rendered)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp_name, config_path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp_name)
+        raise
 
 
 def set_config_value(config_path: Path, dotted_key: str, raw_value: str) -> Any:
