@@ -20,6 +20,11 @@ scripts/install-lefthook.sh
 scripts/install-gitleaks.sh
 ```
 
+`scripts/install-lefthook.sh` is REQUIRED before any commit/push work: it
+wires lefthook into `.git/hooks`, and without it none of the hooks below
+fire. Fresh clones, containers, and remote agent sessions start without it —
+run it (it is idempotent) as part of environment setup, every session.
+
 ## Canonical commands
 
 | Task | Command |
@@ -36,24 +41,26 @@ scripts/install-gitleaks.sh
 
 ## Verification flow before commit/PR
 
-1. `uv sync --group dev --extra web` (refresh deps).
-2. `just check` (full pipeline must pass).
-3. Init-system integrity (CI `blueprint-guard` + `init-integration` enforce
+1. `scripts/install-lefthook.sh` (idempotent — REQUIRED in fresh
+   clones/containers so the hooks in step 5 actually fire).
+2. `uv sync --group dev --extra web` (refresh deps).
+3. `just check` (full pipeline must pass).
+4. Init-system integrity (CI `blueprint-guard` + `init-integration` enforce
    these). If you added/renamed/removed files containing identity values
    (package name, app name, author, owner, repo name), register them in
    `init/manifest.toml` `[[replace]]` blocks, then run:
    - `uv run --script init/ci/check_manifest_drift.py`
    - `uv run pytest init/tests/ --override-ini="addopts=" -q`
-4. Stage + commit. Lefthook fires automatically:
+5. Stage + commit. Lefthook fires automatically:
    - **commit-msg** → commitlint (Conventional Commits, lowercase subject).
    - **pre-commit** → gitleaks + editorconfig-checker + yamllint + codespell
      + ruff check/format on staged Python files.
    - **pre-push** → gitleaks range scan + bandit + init-system integrity
      (guard wiring, manifest drift, path filter, init tests).
 
-   Lefthook only fires if installed (`scripts/install-lefthook.sh`). Fresh
-   containers and remote agent sessions usually do NOT have it — run the
-   step-3 checks manually before pushing in those environments.
+   If lefthook was not installed (step 1 skipped), the hooks are silent
+   no-ops — do NOT push until you have either installed it or run the
+   step-4 checks manually.
 
 ## Commit message format
 
