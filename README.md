@@ -65,11 +65,11 @@ Teams and professionals needing maintainable, type-safe Python projects followin
 
 - **Linting with `ruff`**: Catch errors and enforce code style at lightning speed (10-100x faster than traditional linters), reducing waiting time and improving developer productivity.
 
-- **Type checking with `mypy`**: Prevent type-related bugs before they occur, making your codebase more robust and easier to maintain as it grows.
+- **Type checking with [`ty`](https://docs.astral.sh/ty/)**: Prevent type-related bugs before they occur with Astral's fast Rust-based type checker, making your codebase more robust and easier to maintain as it grows.
 
 - **Formatting with `ruff`**: Ensure consistent code style across your project automatically, eliminating style debates and pull request revision cycles.
 
-- **Pre-commit hooks with `pre-commit`**: Enforce quality standards before code enters your repository, preventing bad code from ever being committed and reducing technical debt.
+- **Git hooks with [`lefthook`](https://lefthook.dev/)**: Enforce quality standards before code enters your repository (secret scanning, linting, commit-message checks at commit/push), preventing bad code from ever being committed and reducing technical debt.
 
 - **TOML formatting and validation with `taplo`**: Verify Toml files for syntax correctness, maintain consistent configuration files, ensuring readability and avoiding syntax errors in critical project settings.
 
@@ -95,7 +95,7 @@ Teams and professionals needing maintainable, type-safe Python projects followin
 
 - **`Read the Docs` integration**: Deploy documentation automatically, providing instant hosting and versioning for your project's documentation.
 
-- **Changelog management with `cog`**: Track and communicate changes effectively to users and team members, improving project transparency and adoption.
+- **Changelog management with `release-please`**: Generate the changelog and version bumps automatically from Conventional Commits, improving project transparency and adoption.
 
 ### Testing & Quality Assurance
 
@@ -142,13 +142,6 @@ Teams and professionals needing maintainable, type-safe Python projects followin
 - **Cursor Rules configuration**: Optimize Cursor AI assistant for your specific project structure, improving suggestion relevance.
 
 - **Windsurf Rules configuration**: Configure Windsurf IDE to understand your project architecture, enhancing code generation quality.
-
-### Communication & Notifications
-
-- **Slack integration for PRs and issues**: Send automated notifications to Slack when PRs or issues are opened/closed, keeping the team informed.
-
-- **PR reminder notifications**: Ping relevant team members on Slack for PR reviews, reducing review cycle times.
-
 
 Start your next Python project with confidence, knowing you're building on a foundation of best practices and modern development tools.
 

@@ -17,8 +17,8 @@ globs:
 - Python version: Requires Python 3.12 or higher
 
 ### Build System
-- **Hatch**: Used as the build backend with hatchling and hatch-vcs plugins
-- Version management: Version is determined from VCS (Git) and managed by hatch-vcs
+- **uv_build**: Used as the build backend (per ADR-06)
+- Version management: Static `[project] version` in pyproject.toml, bumped by release-please
 
 ## Development Workflow
 
@@ -27,7 +27,7 @@ globs:
   - `just install-dev`: Install package in editable mode with dev dependencies
   - `just format`: Run code formatters (ruff)
   - `just lint`: Run linters (ruff)
-  - `just typecheck`: Run type checking (mypy)
+  - `just typecheck`: Run type checking (ty)
   - `just test`: Run tests (pytest)
   - `just check`: Run all checks (tests, lint, typecheck)
   - `just docs`: Build documentation
@@ -38,8 +38,8 @@ globs:
   - PEP8 compliance
   - Import sorting
   - Code quality checks
-- **MyPy**: Static type checking with strict mode enabled
-- **Pre-commit**: Git hooks for code quality checks
+- **ty**: Static type checking (Astral)
+- **Lefthook**: Git hooks for code quality checks
 - **Pytest**: Testing framework with coverage reports
 
 ## Documentation
@@ -64,15 +64,13 @@ globs:
 - pydantic: Structured result models (the JSON representation)
 - structlog: Structured logging
 - tomli-w: Writing the TOML config file
-- questionary: Interactive command line interface
 - requests: HTTP requests
 - rich: Rich text and formatting in terminal
 
 ### Development Dependencies
 - pytest & pytest-cov: Testing with coverage
-- mypy: Static type checking
+- ty: Static type checking
 - ruff: Linting and formatting
-- pre-commit: Pre-commit hooks
 - types-requests & types-Pygments: Type stubs
 - cogapp: Code generation
 

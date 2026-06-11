@@ -494,8 +494,8 @@ check-gitleaks mode="full":
 [group('legacy')]
 @typecheck-pip:
     echo "Running type checker..."
-    echo "  mypy"
-    mypy {{py_package_name}}/
+    echo "  ty"
+    ty check {{py_package_path}}/
 
 # Run tests
 [group('legacy')]

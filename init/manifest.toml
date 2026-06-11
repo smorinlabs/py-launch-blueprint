@@ -159,7 +159,7 @@ files = [
 ]
 mode = "structured"
 
-# owner (text) — 26 occurrences in 13 files
+# owner (text) — 27 occurrences in 14 files
 [[replace]]
 field = "owner"
 current = ["smorinlabs"]
@@ -176,6 +176,7 @@ files = [
   "docs/source/tasks/type_checking_code.md",      # 2x
   "docs/source/tools/github_actions.md",          # 1x
   "docs/source/tools/justfiles.md",               # 1x
+  "docs/source/tools/ty.md",                      # 1x
   "docs/source/tutorials/full_project_setup.md",  # 1x
 ]
 mode = "text"
@@ -189,7 +190,7 @@ files = [
 ]
 mode = "structured"
 
-# package_name (text) — 138 occurrences in 48 files
+# package_name (text) — 140 occurrences in 49 files
 [[replace]]
 field = "package_name"
 current = ["py_launch_blueprint"]
@@ -213,6 +214,7 @@ files = [
   "docs/source/tasks/type_checking_code.md",           # 2x
   "docs/source/tasks/using_ci_cd.md",                  # 3x
   "docs/source/tools/github_actions.md",               # 2x
+  "docs/source/tools/ty.md",                           # 2x
   "docs/source/tutorials/full_project_setup.md",       # 3x
   "lefthook.yml",                                      # 1x
   "src/py_launch_blueprint/__init__.py",               # 1x
@@ -260,7 +262,7 @@ files = [
 ]
 mode = "structured"
 
-# repo_name (text) — 65 occurrences in 23 files
+# repo_name (text) — 66 occurrences in 24 files
 [[replace]]
 field = "repo_name"
 current = ["py-launch-blueprint"]
@@ -286,6 +288,7 @@ files = [
   "docs/source/tasks/type_checking_code.md",      # 2x
   "docs/source/tools/github_actions.md",          # 1x
   "docs/source/tools/justfiles.md",               # 1x
+  "docs/source/tools/ty.md",                      # 1x
   "docs/source/tutorials/full_project_setup.md",  # 2x
   "package.json",                                 # 2x
   "src/py_launch_blueprint/web/__init__.py",      # 1x

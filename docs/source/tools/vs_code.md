@@ -15,20 +15,19 @@ Here are the recommended VS Code extensions for this project:
 3. **Ruff** (`charliermarsh.ruff`)
    - A fast and efficient linter and formatter for Python code.
 
-4. **MyPy** (`matangover.mypy`)
-   - A static type checker for Python, helping you ensure your code adheres to specified type annotations.
-
-5. **Even Better TOML** (`tamasfe.even-better-toml`)
+4. **Even Better TOML** (`tamasfe.even-better-toml`)
    - Provides syntax highlighting, formatting, and validation for TOML files.
 
-6. **YAML** (`redhat.vscode-yaml`)
+5. **YAML** (`redhat.vscode-yaml`)
    - Provides comprehensive YAML language support to VS Code, including validation, autocompletion, and hover support.
 
-7. **GitLens** (`eamodio.gitlens`)
+6. **GitLens** (`eamodio.gitlens`)
    - Enhances the built-in Git capabilities of VS Code, providing features such as blame annotations, code lens, and more.
 
-8. **Code Spell Checker** (`streetsidesoftware.code-spell-checker`)
+7. **Code Spell Checker** (`streetsidesoftware.code-spell-checker`)
    - A basic spell checker that works well with camelCase code.
+
+> **Note:** command-line type checking is handled by [ty](ty.md) (`just typecheck`); in the editor, Pylance provides the equivalent real-time feedback, so no separate type-checker extension is needed.
 
 ## Installing Extensions
 
@@ -44,7 +43,6 @@ Alternatively, you can install extensions from the command line using the `code`
 code --install-extension ms-python.python
 code --install-extension ms-python.vscode-pylance
 code --install-extension charliermarsh.ruff
-code --install-extension matangover.mypy
 code --install-extension tamasfe.even-better-toml
 code --install-extension redhat.vscode-yaml
 code --install-extension eamodio.gitlens
