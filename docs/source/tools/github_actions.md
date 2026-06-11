@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: uv sync --all-extras --dev
-      - run: uvx mypy py_launch_blueprint/
+      - run: uv run ty check src/py_launch_blueprint/
       - run: uvx ruff check py_launch_blueprint/
 ```
 

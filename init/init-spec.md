@@ -54,8 +54,9 @@ Inventory of `github.com/smorinlabs/py-launch-blueprint` (fetched and verified):
   identity-rewriting it — a fork starts its own changelog, repopulated by release-please.
 - **`init/` already exists** with `setup-github-environments.sh` and
   `setup-pypi-publishing.sh`; the new system co-locates here.
-- **Toolchain already present:** `questionary`, `rich`, `click` are project
-  dependencies; `uv` is the package manager; `pyproject.toml` carries meaningful
+- **Toolchain already present:** `rich`, `click` are project dependencies
+  (`questionary` is provisioned by the init script's own PEP 723 metadata, not
+  the project); `uv` is the package manager; `pyproject.toml` carries meaningful
   `ITM-`/`ADR-` annotation comments that must survive any rewrite.
 - The Justfile is 710 lines with ~11 public recipes plus aliases.
 

@@ -18,7 +18,7 @@ It depends on the tool you choose, but both offer a convenient way to install th
 ## Using uv:
 
 ```bash
-# This command creates a live development installation that allows you to modify the code without reinstalling while also installing additional development tools (like pytest, mypy, etc.) specified in your project's dev dependencies.
+# This command creates a live development installation that allows you to modify the code without reinstalling while also installing additional development tools (like pytest, ty, etc.) specified in your project's dev dependencies.
 uv pip install --editable ".[dev]"
 
 # Format the code
@@ -28,7 +28,7 @@ uvx ruff format py_launch_blueprint/
 uvx ruff check py_launch_blueprint/
 
 # Run type checker
-uvx  --with-editable . mypy py_launch_blueprint/
+uv run ty check src/py_launch_blueprint/
 
 # Run tests
 uvx --with-editable . pytest
@@ -65,7 +65,7 @@ pip install --editable ".[dev]"
 # Run development tools directly (no need for 'uv pip run')
 ruff format py_launch_blueprint/
 ruff check py_launch_blueprint/
-mypy py_launch_blueprint/
+ty check src/py_launch_blueprint/
 pytest --cov=py_launch_blueprint --cov-report=term-missing
 
 # Check the installed package cli tool version
