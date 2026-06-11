@@ -24,7 +24,7 @@ scripts/install-gitleaks.sh
 
 | Task | Command |
 |---|---|
-| Sync dev env | `uv sync --group dev` (PEP 735 — not `pip install '.[dev]'`) |
+| Sync dev env | `uv sync --group dev --extra web` (PEP 735 — not `pip install '.[dev]'`) |
 | All checks | `just check` |
 | Run tests | `pytest` (default excludes `slow`/`live` markers; full: `pytest -m ""`) |
 | Lint | `uvx ruff check .` |
@@ -36,12 +36,24 @@ scripts/install-gitleaks.sh
 
 ## Verification flow before commit/PR
 
-1. `uv sync --group dev` (refresh deps).
+1. `uv sync --group dev --extra web` (refresh deps).
 2. `just check` (full pipeline must pass).
-3. Stage + commit. Lefthook fires automatically:
+3. Init-system integrity (CI `blueprint-guard` + `init-integration` enforce
+   these). If you added/renamed/removed files containing identity values
+   (package name, app name, author, owner, repo name), register them in
+   `init/manifest.toml` `[[replace]]` blocks, then run:
+   - `uv run --script init/ci/check_manifest_drift.py`
+   - `uv run pytest init/tests/ --override-ini="addopts=" -q`
+4. Stage + commit. Lefthook fires automatically:
    - **commit-msg** → commitlint (Conventional Commits, lowercase subject).
-   - **pre-commit** → gitleaks + editorconfig-checker + yamllint + codespell.
-   - **pre-push** → gitleaks range scan.
+   - **pre-commit** → gitleaks + editorconfig-checker + yamllint + codespell
+     + ruff check/format on staged Python files.
+   - **pre-push** → gitleaks range scan + bandit + init-system integrity
+     (guard wiring, manifest drift, path filter, init tests).
+
+   Lefthook only fires if installed (`scripts/install-lefthook.sh`). Fresh
+   containers and remote agent sessions usually do NOT have it — run the
+   step-3 checks manually before pushing in those environments.
 
 ## Commit message format
 

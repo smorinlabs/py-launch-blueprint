@@ -1,7 +1,7 @@
 # CLAUDE.md - Agent Guidelines for Py Launch Blueprint
 
 ## Project Commands
-- Setup: `just setup` or `uv sync --group dev` (PEP 735; per ITM-063)
+- Setup: `just setup` or `uv sync --group dev --extra web` (PEP 735; per ITM-063)
 - Format: `just format` or `uvx ruff format src/py_launch_blueprint/`
 - Lint: `just lint` or `uvx ruff check src/py_launch_blueprint/`
 - Type check: `just typecheck` or `uv run --extra web ty check src/py_launch_blueprint/` (ITM-026 / ADR-03; ty must be in dev deps; `--extra web` so web/ imports resolve)
@@ -11,6 +11,17 @@
 - Web (FastAPI, behind `web` extra): `just serve` dev server; `just test-web` runs tests/web
 - Hooks: lefthook auto-runs at commit/push (`scripts/install-lefthook.sh` to set up)
 - Manual secret scan: `scripts/check-gitleaks.sh --staged` or `--range`
+
+## Before pushing a PR (init-system integrity)
+Lefthook pre-push runs these automatically, but ONLY if installed — in fresh
+containers / remote agent sessions it usually isn't, so run them manually
+before every push (CI `blueprint-guard` + `init-integration` enforce them):
+- `uv run --script init/ci/check_manifest_drift.py`
+- `uv run pytest init/tests/ --override-ini="addopts=" -q`
+- Rule behind the drift check: any added/renamed file containing an identity
+  value (`py_launch_blueprint`, `py-launch-blueprint`, `plbp`, `PLBP`,
+  author/owner names) must be listed in that value's `[[replace]]` block in
+  `init/manifest.toml`, or a fork's `just init` ships half-renamed.
 
 ## Code Style Guidelines
 - Line length: 88 characters (Black standard)
