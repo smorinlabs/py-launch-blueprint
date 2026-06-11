@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.0.0...v2.0.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* **test:** guard conftest _git() against running outside the temp sandbox ([#392](https://github.com/smorinlabs/py-launch-blueprint/issues/392)) ([078a01f](https://github.com/smorinlabs/py-launch-blueprint/commit/078a01f60231672db11de35987df7553f51c1328))
+
 ## [2.0.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.7...v2.0.0) (2026-06-11)
 
 
