@@ -75,13 +75,16 @@ def main() -> int:
     manifest = load_manifest()
     coverage = covered_by_value(manifest)
 
-    # Files init deletes or regenerates wholesale are exempt — their content is
-    # never rewritten in place. [[rename]] sources are deliberately NOT exempt:
-    # a rename moves the *filename*, not the identity strings inside the file,
-    # so a renamed-and-replaced file (e.g. docs/design/0001-…) must still be
-    # listed under each value its content contains, verified independently here.
+    # Files init deletes, regenerates, or resets wholesale are exempt — their
+    # content is never rewritten in place ([[reset]] overwrites the file with a
+    # fresh stub, so the blueprint identity it carries today is discarded, not
+    # renamed). [[rename]] sources are deliberately NOT exempt: a rename moves
+    # the *filename*, not the identity strings inside the file, so a
+    # renamed-and-replaced file (e.g. docs/design/0001-…) must still be listed
+    # under each value its content contains, verified independently here.
     exempt = {(REPO_ROOT / r.path).resolve() for r in manifest.removes}
     exempt |= {(REPO_ROOT / r.path).resolve() for r in manifest.regenerates}
+    exempt |= {(REPO_ROOT / r.path).resolve() for r in manifest.resets}
 
     leftover: dict[Path, list[str]] = {}
     for path in iter_repo_files():

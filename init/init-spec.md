@@ -49,7 +49,9 @@ Inventory of `github.com/smorinlabs/py-launch-blueprint` (fetched and verified):
   but `2026` in `LICENSE`. *(A separate URL inconsistency — `smorin` vs `smorinlabs` —
   existed earlier and was resolved on the `feat/init-script` branch; it is the kind of
   drift the doctor's owner-consistency check is designed to flag in downstream projects.)*
-- **`CHANGELOG.md` is a release-please stub** — no reset needed.
+- **`CHANGELOG.md` accumulates the blueprint's own release history** (compare-URLs,
+  `plbp`, `smorinlabs`), so `init` **resets it to a stub** via `[[reset]]` rather than
+  identity-rewriting it — a fork starts its own changelog, repopulated by release-please.
 - **`init/` already exists** with `setup-github-environments.sh` and
   `setup-pypi-publishing.sh`; the new system co-locates here.
 - **Toolchain already present:** `questionary`, `rich`, `click` are project
