@@ -22,7 +22,7 @@ file by hand — see Conventions.
 
 | ID  | St    | Project                                                                 |
 |-----|-------|------------------------------------------------------------------------|
-| P01 | `[ ]` | [Init app-name rebrand robustness](projects/P01-init-rebrand-robustness.md) — per-field drift coverage (B) + derive non-contract internals (C) |
+| P01 | `[x]` | [Init app-name rebrand robustness](projects/P01-init-rebrand-robustness.md) — per-field drift coverage (B) + derive non-contract internals (C) |
 
 ## Conventions
 

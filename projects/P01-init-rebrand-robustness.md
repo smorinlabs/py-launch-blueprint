@@ -1,6 +1,6 @@
 # P01 — Init app-name rebrand robustness
 
-- **Status:** `[ ]` scoped, not started
+- **Status:** `[x]` completed — B + C merged (#389)
 - **Captured:** 2026-06-10
 - **Scope:** init rebrand system (`init/`), CLI internals (`src/py_launch_blueprint/`)
 
@@ -77,13 +77,15 @@ engine*, not name derivation.
 
 ## Acceptance criteria
 
-- [ ] Drift checker fails when a file contains an identity value not covered
+- [x] Drift checker fails when a file contains an identity value not covered
       under that value's own field (regression fixture test).
-- [ ] Drift checker verifies content coverage independently of `[[rename]]`.
-- [ ] `_COMPLETE_VAR`, `auto_envvar_prefix`, and the logging owner-marker derive
-      from `APP_NAME`; `core/logging.py` carries no `plbp`/`PLBP` literal.
-- [ ] User-facing env-var literals unchanged and still greppable.
-- [ ] Full rebrand integration still reports `no-identity-leak: ok`.
+- [x] Drift checker verifies content coverage independently of `[[rename]]`.
+- [x] `_COMPLETE_VAR`, `auto_envvar_prefix`, and the logging owner-marker derive
+      from `APP_NAME` (the owner-marker trap is gone; the one remaining uppercase
+      token is the user-facing `*_LOG_FILE` env var named in a docstring).
+- [x] User-facing env-var literals unchanged and still greppable.
+- [x] Full rebrand integration reports `no-identity-leak: ok` (CI-confirmed:
+      the clone_reinit / integration-ok jobs passed on #389).
 
 ## References
 
