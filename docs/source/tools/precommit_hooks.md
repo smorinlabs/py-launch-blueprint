@@ -9,5 +9,5 @@ Following pre-commit hooks are used in this repo
 - `trailing-whitespace` removes trailing spaces at the end of lines in your files,
 - `check-toml` checks if all TOML files in your repository are valid,
 - `check-added-large-files` warns when you try to add large files to the repository,
-- `mypy` checks your Python code for type errors based on type annotations,
+- `ty` checks your Python code for type errors based on type annotations,
 - `ruff` acts as a fast linter and formatter for Python, ensuring clean code,
