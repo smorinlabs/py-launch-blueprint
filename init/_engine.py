@@ -32,6 +32,7 @@ from common import (
     Manifest,
     RemoveOp,
     RenameOp,
+    ResetOp,
 )
 
 
@@ -167,6 +168,11 @@ def build_plan(manifest: Manifest, answers: Answers, root: Path = REPO_ROOT) -> 
             continue
         plan.items.append(PlanItem("rename", op.src, f"→ {op.dst}"))
 
+    for op in manifest.resets:
+        target = root / op.path
+        exists = "exists" if target.exists() else "missing — create"
+        plan.items.append(PlanItem("reset", op.path, f"→ fresh stub ({exists})"))
+
     return plan
 
 
@@ -178,6 +184,15 @@ def apply_remove(op: RemoveOp, root: Path = REPO_ROOT) -> bool:
         shutil.rmtree(target)
     else:
         target.unlink()
+    return True
+
+
+def apply_reset(op: ResetOp, root: Path = REPO_ROOT) -> bool:
+    """Overwrite a file with its fresh stub. Returns True if it changed."""
+    target = root / op.path
+    if target.exists() and target.read_text(encoding="utf-8") == op.stub:
+        return False
+    target.write_text(op.stub, encoding="utf-8")
     return True
 
 
@@ -230,6 +245,7 @@ class ApplyReport:
     removed: list[str] = field(default_factory=list)
     replaced: list[str] = field(default_factory=list)
     renamed: list[tuple[str, str]] = field(default_factory=list)
+    reset: list[str] = field(default_factory=list)
     skipped: list[str] = field(default_factory=list)
 
     def render(self) -> str:
@@ -238,12 +254,13 @@ class ApplyReport:
             f"{len(self.removed)} removed, "
             f"{len(self.replaced)} replaced, "
             f"{len(self.renamed)} renamed, "
+            f"{len(self.reset)} reset, "
             f"{len(self.skipped)} skipped."
         )
 
 
 def apply(manifest: Manifest, answers: Answers, root: Path = REPO_ROOT) -> ApplyReport:
-    """Execute the manifest in remove → replace → rename order."""
+    """Execute the manifest in remove → replace → rename → reset order."""
     answers.validate()
     report = ApplyReport()
     rep_map = _replacement_map(answers)
@@ -277,5 +294,11 @@ def apply(manifest: Manifest, answers: Answers, root: Path = REPO_ROOT) -> Apply
             report.renamed.append((op.src, op.dst))
         else:
             report.skipped.append(f"rename {op.src} (missing)")
+
+    for op in manifest.resets:
+        if apply_reset(op, root):
+            report.reset.append(op.path)
+        else:
+            report.skipped.append(f"reset {op.path} (no change)")
 
     return report

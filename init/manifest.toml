@@ -16,7 +16,7 @@ files = [
 ]
 mode = "structured"
 
-# author (text) — 36 occurrences in 35 files
+# author (text) — 35 occurrences in 34 files
 [[replace]]
 field = "author"
 current = ["Steve Morin"]
@@ -29,7 +29,6 @@ files = [
   ".github/workflows/dependency-review.yml",             # 1x
   ".github/workflows/manual-pr-security-scan.yml",       # 1x
   ".readthedocs.yaml",                                   # 1x
-  "CHANGELOG.md",                                        # 1x
   "LICENSE",                                             # 1x
   "docs/source/_templates/base.html",                    # 1x
   "docs/source/conf.py",                                 # 2x
@@ -152,14 +151,13 @@ files = [
 ]
 mode = "structured"
 
-# owner (text) — 122 occurrences in 14 files
+# owner (text) — 26 occurrences in 13 files
 [[replace]]
 field = "owner"
 current = ["smorinlabs"]
 files = [
   ".github/CONTRIBUTING.md",                      # 1x
   ".github/ISSUE_TEMPLATE/config.yml",            # 1x
-  "CHANGELOG.md",                                 # 96x
   "Justfile",                                     # 1x
   "README.md",                                    # 5x
   "docs/source/conf.py",                          # 2x
@@ -249,7 +247,7 @@ files = [
 ]
 mode = "structured"
 
-# repo_name (text) — 161 occurrences in 24 files
+# repo_name (text) — 65 occurrences in 23 files
 [[replace]]
 field = "repo_name"
 current = ["py-launch-blueprint"]
@@ -260,7 +258,6 @@ files = [
   ".github/codeql/codeql-config.yml",             # 1x
   ".github/workflows/blueprint-guard.yml",        # 1x
   "AGENTS.md",                                    # 1x
-  "CHANGELOG.md",                                 # 96x
   "Justfile",                                     # 1x
   "README.md",                                    # 17x
   "docs/design/0001-plbp-cli-conventions.md",     # 3x
@@ -356,3 +353,10 @@ command = ["uv", "lock"]
 [[regenerate]]
 path = "bun.lock"
 command = ["bun", "install"]
+
+# Reset (not rewrite) on init: CHANGELOG.md accumulates the blueprint's own
+# release history (compare-URLs, `plbp`, `smorinlabs`); a fork starts its own,
+# populated by release-please from the fork's first release.
+[[reset]]
+path = "CHANGELOG.md"
+stub = "# Changelog\n"

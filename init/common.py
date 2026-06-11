@@ -204,11 +204,28 @@ class RegenerateOp:
 
 
 @dataclass(frozen=True)
+class ResetOp:
+    """A file reset to a fresh stub on init rather than identity-rewritten.
+
+    For files that accumulate the *blueprint's own* history — `CHANGELOG.md`,
+    whose release notes name the blueprint (`plbp`, `smorinlabs`, compare-URLs)
+    — a fork must start its own. So `init` overwrites the file with a stub
+    instead of rewriting the identity strings inside it (which would graft a
+    fabricated history onto the fork). Reset runs in the main rewrite phase,
+    so it is never skipped the way lockfile regeneration is.
+    """
+
+    path: str
+    stub: str
+
+
+@dataclass(frozen=True)
 class Manifest:
     replaces: tuple[ReplaceOp, ...] = field(default_factory=tuple)
     renames: tuple[RenameOp, ...] = field(default_factory=tuple)
     removes: tuple[RemoveOp, ...] = field(default_factory=tuple)
     regenerates: tuple[RegenerateOp, ...] = field(default_factory=tuple)
+    resets: tuple[ResetOp, ...] = field(default_factory=tuple)
 
 
 def load_manifest(path: Path = MANIFEST_PATH) -> Manifest:
@@ -233,6 +250,10 @@ def load_manifest(path: Path = MANIFEST_PATH) -> Manifest:
         regenerates=tuple(
             RegenerateOp(path=r["path"], command=tuple(r["command"]))
             for r in raw.get("regenerate", [])
+        ),
+        resets=tuple(
+            ResetOp(path=r["path"], stub=r.get("stub", "# Changelog\n"))
+            for r in raw.get("reset", [])
         ),
     )
 
