@@ -1,5 +1,46 @@
 # Changelog
 
+## [2.0.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.7...v2.0.0) (2026-06-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** rename to plbp, layered TOML config, dotted config set (phase 1) ([#378](https://github.com/smorinlabs/py-launch-blueprint/issues/378))
+
+### Features
+
+* **ci:** codecov tokenless OIDC upload ([#365](https://github.com/smorinlabs/py-launch-blueprint/issues/365)) ([2e2b2d8](https://github.com/smorinlabs/py-launch-blueprint/commit/2e2b2d8c2c4e8ae0367df24400cb03c0d1caa070))
+* **ci:** codecov tokenless OIDC upload ([#369](https://github.com/smorinlabs/py-launch-blueprint/issues/369)) ([68d54da](https://github.com/smorinlabs/py-launch-blueprint/commit/68d54da3fa0e727b577867a9eb0ac1c46ccb713d))
+* **cli:** add doctor, config set, and a mutation safety pattern ([9376065](https://github.com/smorinlabs/py-launch-blueprint/commit/93760650c262a5e6dd25effa5736085bd394a274))
+* **cli:** add gh-style pylb CLI with core library layer ([fda272d](https://github.com/smorinlabs/py-launch-blueprint/commit/fda272d756ed26cb601e68d7656e15ac608e5a8d))
+* **cli:** dual-sink logging with rotating file sink (phase 3) ([#380](https://github.com/smorinlabs/py-launch-blueprint/issues/380)) ([7a6eab9](https://github.com/smorinlabs/py-launch-blueprint/commit/7a6eab9083a86eb6ada69fb1a802e98f900ca678))
+* **cli:** gh-style pylb CLI with core library layer + structured logging ([#374](https://github.com/smorinlabs/py-launch-blueprint/issues/374)) ([6922305](https://github.com/smorinlabs/py-launch-blueprint/commit/6922305299b6a184666b8fce703247b360038bdc))
+* **cli:** output-file, color precedence, format-from-config (phase 2) ([#379](https://github.com/smorinlabs/py-launch-blueprint/issues/379)) ([8cc36d7](https://github.com/smorinlabs/py-launch-blueprint/commit/8cc36d7f4fb5fa87d9d86edba2b49bb6b0c3deaf))
+* **cli:** rename to plbp, layered TOML config, dotted config set (phase 1) ([#378](https://github.com/smorinlabs/py-launch-blueprint/issues/378)) ([03db3f5](https://github.com/smorinlabs/py-launch-blueprint/commit/03db3f505febe5db21d50680dd57da581142b721))
+* **config:** xdg-compliant toml config; fix init rebrand completeness ([2ee9cea](https://github.com/smorinlabs/py-launch-blueprint/commit/2ee9ceac57eefe09640f87c88ed663978f2571d6))
+* **init:** per-field drift coverage + derive non-contract internals (P01) ([#389](https://github.com/smorinlabs/py-launch-blueprint/issues/389)) ([b85c0af](https://github.com/smorinlabs/py-launch-blueprint/commit/b85c0af937a9b810b1e85933aea1cd25d42f0c46))
+* **init:** rebrand the app short name via new app_name identity ([#381](https://github.com/smorinlabs/py-launch-blueprint/issues/381)) ([397cdab](https://github.com/smorinlabs/py-launch-blueprint/commit/397cdab52c14437c2071191c2c287625bc1166c0))
+* **init:** reset CHANGELOG.md to a stub on init (fix the release-blocking leak) ([#391](https://github.com/smorinlabs/py-launch-blueprint/issues/391)) ([3dc7057](https://github.com/smorinlabs/py-launch-blueprint/commit/3dc70571ae011c8d27b0f7c185f2bc72dea2cda4))
+* **init:** reset CHANGELOG.md to a stub on init instead of rewriting it ([3dc7057](https://github.com/smorinlabs/py-launch-blueprint/commit/3dc70571ae011c8d27b0f7c185f2bc72dea2cda4))
+
+
+### Bug Fixes
+
+* **dev:** repair broken local lefthook hooks (commitlint, editorconfig-checker, init-tests) ([#372](https://github.com/smorinlabs/py-launch-blueprint/issues/372)) ([16caf01](https://github.com/smorinlabs/py-launch-blueprint/commit/16caf014c070450e44e9f4052c3539f59e82ff70))
+* **init:** iter_repo_files honors .gitignore via git ls-files ([4f1d848](https://github.com/smorinlabs/py-launch-blueprint/commit/4f1d8485be1132b02bf1feeaadfe31469d513cc3))
+* **init:** manifest-drift hook honors .gitignore ([#360](https://github.com/smorinlabs/py-launch-blueprint/issues/360)) ([4f1d848](https://github.com/smorinlabs/py-launch-blueprint/commit/4f1d8485be1132b02bf1feeaadfe31469d513cc3))
+
+
+### Refactor
+
+* **cli:** single-source vocabularies, honest config-get source, one-parse config set ([#384](https://github.com/smorinlabs/py-launch-blueprint/issues/384)) ([970b42d](https://github.com/smorinlabs/py-launch-blueprint/commit/970b42d66b9cfe88333ab64423eb1e2f3cdf290a))
+* remove legacy py-projects CLI and collapse command_name identity ([#388](https://github.com/smorinlabs/py-launch-blueprint/issues/388)) ([f587e48](https://github.com/smorinlabs/py-launch-blueprint/commit/f587e48b41bcf6535ba1b62f348147294911c48d))
+
+
+### Reverts
+
+* PR [#365](https://github.com/smorinlabs/py-launch-blueprint/issues/365) — restore 152 files wiped by phantom 'initial commit (fixture)' ([#366](https://github.com/smorinlabs/py-launch-blueprint/issues/366)) ([feb0938](https://github.com/smorinlabs/py-launch-blueprint/commit/feb0938b75709b3c3ffff15fe16be1360ed5c3a6))
+
 ## [1.1.7](https://github.com/smorinlabs/py-launch-blueprint/compare/v1.1.6...v1.1.7) (2026-06-07)
 
 
