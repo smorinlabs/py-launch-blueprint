@@ -53,6 +53,10 @@ files = [
   "src/py_launch_blueprint/core/services/projects.py",   # 1x
   "src/py_launch_blueprint/core/settings.py",            # 1x
   "src/py_launch_blueprint/web/__init__.py",             # 1x
+  "src/py_launch_blueprint/web/app.py",                  # 1x
+  "src/py_launch_blueprint/web/deps.py",                 # 1x
+  "src/py_launch_blueprint/web/routers/__init__.py",     # 1x
+  "src/py_launch_blueprint/web/routers/projects.py",     # 1x
   "tests/__init__.py",                                   # 1x
   "tests/test_version_consistency.py",                   # 1x
 ]
@@ -100,6 +104,7 @@ files = [
   "src/py_launch_blueprint/core/diagnostics.py",        # 1x
   "src/py_launch_blueprint/core/models.py",             # 1x
   "src/py_launch_blueprint/core/paths.py",              # 20x
+  "src/py_launch_blueprint/web/app.py",                 # 1x
   "tests/cli/test_pylb.py",                             # 27x
   "tests/conftest.py",                                  # 1x
   "tests/core/test_core.py",                            # 19x
@@ -129,6 +134,7 @@ files = [
   "src/py_launch_blueprint/core/logging.py",          # 1x
   "src/py_launch_blueprint/core/settings.py",         # 1x
   "tests/cli/test_pylb.py",                           # 38x
+  "tests/web/test_app.py",                            # 2x
   "projects/P01-init-rebrand-robustness.md",          # 11x
 ]
 mode = "text"
@@ -226,6 +232,10 @@ files = [
   "src/py_launch_blueprint/core/services/projects.py", # 3x
   "src/py_launch_blueprint/core/settings.py",          # 1x
   "src/py_launch_blueprint/web/__init__.py",           # 1x
+  "src/py_launch_blueprint/web/app.py",                # 8x
+  "src/py_launch_blueprint/web/deps.py",               # 3x
+  "src/py_launch_blueprint/web/routers/__init__.py",   # 1x
+  "src/py_launch_blueprint/web/routers/projects.py",   # 2x
   "pyrightconfig.json",                                # 1x
   "release-please-config.json",                        # 1x
   "tests/cli/test_pylb.py",                            # 6x
@@ -233,6 +243,7 @@ files = [
   "tests/core/test_logging.py",                        # 1x
   "tests/test_output.py",                              # 3x
   "tests/test_version_consistency.py",                 # 2x
+  "tests/web/test_app.py",                             # 5x
   "projects/P01-init-rebrand-robustness.md",           # 1x
 ]
 mode = "text"
@@ -275,6 +286,7 @@ files = [
   "docs/source/tutorials/full_project_setup.md",  # 2x
   "package.json",                                 # 2x
   "src/py_launch_blueprint/web/__init__.py",      # 1x
+  "src/py_launch_blueprint/web/app.py",           # 1x
 ]
 mode = "text"
 
