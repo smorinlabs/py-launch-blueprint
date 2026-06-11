@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -43,6 +44,18 @@ from common import MODES  # noqa: E402 — SSOT; re-exported for legacy imports
 
 def _git(*args: str, cwd: Path) -> subprocess.CompletedProcess:
     """Run git with a sandboxed identity (no global config side-effects)."""
+    # Safety rail: these fixtures `git init`/`git commit` under a "Test Fixture"
+    # identity. If `cwd` were ever misdirected at the live repo, that commit
+    # would land on the real project — the root cause of the 152-file-wipe
+    # incident. Refuse to run anywhere but the system temp dir. `.resolve()` on
+    # both sides normalizes macOS `/var/folders` vs `/private/var/folders`.
+    tmp_root = Path(tempfile.gettempdir()).resolve()
+    resolved_cwd = Path(cwd).resolve()
+    if not resolved_cwd.is_relative_to(tmp_root):
+        raise RuntimeError(
+            f"refusing to run sandboxed _git outside the system temp dir: "
+            f"cwd={resolved_cwd} is not under {tmp_root}"
+        )
     env_args = [
         "-c",
         "user.email=test@example.com",
