@@ -29,7 +29,8 @@ scripts/install-gitleaks.sh
 | Run tests | `pytest` (default excludes `slow`/`live` markers; full: `pytest -m ""`) |
 | Lint | `uvx ruff check .` |
 | Format check | `uvx ruff format --check .` |
-| Typecheck | `uv run ty check src/py_launch_blueprint/` (ITM-026 / ADR-03) |
+| Typecheck | `uv run --extra web ty check src/py_launch_blueprint/` (ITM-026 / ADR-03) |
+| Web tests / dev server | `just test-web` / `just serve` (FastAPI, `web` extra) |
 | Secret scan (staged) | `scripts/check-gitleaks.sh --staged` |
 | Build | `uv build` (uv_build backend per ADR-06) |
 

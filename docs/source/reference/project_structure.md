@@ -39,7 +39,7 @@ py-launch-blueprint/
 │   ├── __init__.py                 # Package initialization
 │   ├── cli/                        # Click CLI (thin presentation layer)
 │   ├── core/                       # Library: logic + Pydantic models
-│   └── web/                        # Reserved stub for a future web service
+│   └── web/                        # FastAPI web service (behind the `web` extra)
 ├── tests/                          # Test files
 │   ├── __init__.py                 # Test package initialization
 │   ├── cli/                        # CLI tests
@@ -76,7 +76,7 @@ py-launch-blueprint/
 │   ├── __init__.py                 # Package initialization
 │   ├── cli/                        # Click CLI (thin presentation layer)
 │   ├── core/                       # Library: logic + Pydantic models
-│   └── web/                        # Reserved stub for a future web service
+│   └── web/                        # FastAPI web service (behind the `web` extra)
 ├── pyproject.toml                  # Project configuration file
 ├── cog.toml                        # Cog configuration file
 ├── CONTRIBUTORS.md                 # Project contributors
@@ -105,7 +105,7 @@ Contains the source code for the project, organized into the `cli/`, `core/`, an
 
 ### tests/
 
-Contains test files for the project, organized under `tests/cli/` and `tests/core/`.
+Contains test files for the project, organized under `tests/cli/`, `tests/core/`, and `tests/web/`.
 
 ### .gitignore
 

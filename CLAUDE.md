@@ -4,10 +4,11 @@
 - Setup: `just setup` or `uv sync --group dev` (PEP 735; per ITM-063)
 - Format: `just format` or `uvx ruff format src/py_launch_blueprint/`
 - Lint: `just lint` or `uvx ruff check src/py_launch_blueprint/`
-- Type check: `just typecheck` or `uv run ty check src/py_launch_blueprint/` (ITM-026 / ADR-03; ty must be in dev deps)
+- Type check: `just typecheck` or `uv run --extra web ty check src/py_launch_blueprint/` (ITM-026 / ADR-03; ty must be in dev deps; `--extra web` so web/ imports resolve)
 - Test all: `just test` or `pytest` (default skips `slow`/`live` markers per ITM-046)
 - Test single: `pytest tests/test_file.py::test_name`
 - All checks: `just check`
+- Web (FastAPI, behind `web` extra): `just serve` dev server; `just test-web` runs tests/web
 - Hooks: lefthook auto-runs at commit/push (`scripts/install-lefthook.sh` to set up)
 - Manual secret scan: `scripts/check-gitleaks.sh --staged` or `--range`
 

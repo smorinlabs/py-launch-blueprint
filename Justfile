@@ -195,7 +195,7 @@ alias l := lint
 @typecheck:
     echo "Running type checker..."
     echo "  ty (ITM-026, per ADR-03)"
-    uv run ty check {{py_package_path}}/
+    uv run --extra web ty check {{py_package_path}}/
 
 alias tc := typecheck
 
@@ -228,6 +228,16 @@ alias ca := check
 [group('run'), group('quick start')]
 @run cmd=app_name *args=args:
     uvx --with-editable . {{cmd}} {{args}}
+
+# Run the FastAPI dev server (web extra) with auto-reload
+[group('run'), group('dev')]
+@serve host="127.0.0.1" port="8000":
+    uv run --extra web uvicorn {{py_package_name}}.web.app:create_app --factory --host {{host}} --port {{port}} --reload
+
+# Run web layer tests (installs the web extra; TestClient needs httpx)
+[group('test'), group('dev')]
+@test-web *options:
+    uv run --extra web pytest tests/web {{options}}
 
 # Blueprint setup guard — Tier 2 (hard block on the risk subset).
 # Private. Used as a dependency on recipes that produce a wrong artifact,
