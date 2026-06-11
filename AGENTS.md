@@ -20,27 +20,47 @@ scripts/install-lefthook.sh
 scripts/install-gitleaks.sh
 ```
 
+`scripts/install-lefthook.sh` is REQUIRED before any commit/push work: it
+wires lefthook into `.git/hooks`, and without it none of the hooks below
+fire. Fresh clones, containers, and remote agent sessions start without it —
+run it (it is idempotent) as part of environment setup, every session.
+
 ## Canonical commands
 
 | Task | Command |
 |---|---|
-| Sync dev env | `uv sync --group dev` (PEP 735 — not `pip install '.[dev]'`) |
+| Sync dev env | `uv sync --group dev --extra web` (PEP 735 — not `pip install '.[dev]'`) |
 | All checks | `just check` |
 | Run tests | `pytest` (default excludes `slow`/`live` markers; full: `pytest -m ""`) |
 | Lint | `uvx ruff check .` |
 | Format check | `uvx ruff format --check .` |
-| Typecheck | `uv run ty check src/py_launch_blueprint/` (ITM-026 / ADR-03) |
+| Typecheck | `uv run --extra web ty check src/py_launch_blueprint/` (ITM-026 / ADR-03) |
+| Web tests / dev server | `just test-web` / `just serve` (FastAPI, `web` extra) |
 | Secret scan (staged) | `scripts/check-gitleaks.sh --staged` |
 | Build | `uv build` (uv_build backend per ADR-06) |
 
 ## Verification flow before commit/PR
 
-1. `uv sync --group dev` (refresh deps).
-2. `just check` (full pipeline must pass).
-3. Stage + commit. Lefthook fires automatically:
+1. `scripts/install-lefthook.sh` (idempotent — REQUIRED in fresh
+   clones/containers so the hooks in step 5 actually fire).
+2. `uv sync --group dev --extra web` (refresh deps).
+3. `just check` (full pipeline must pass).
+4. Init-system integrity (CI `blueprint-guard` + `init-integration` enforce
+   these). If you added/renamed/removed files containing identity values
+   (package name, app name, author, owner, repo name), register them in
+   `init/manifest.toml` `[[replace]]` blocks, then run:
+   - `uv run --script init/ci/check_manifest_drift.py`
+   - `uv run pytest init/tests/ --override-ini="addopts=" -q`
+5. Stage + commit. Lefthook fires automatically:
    - **commit-msg** → commitlint (Conventional Commits, lowercase subject).
-   - **pre-commit** → gitleaks + editorconfig-checker + yamllint + codespell.
-   - **pre-push** → gitleaks range scan.
+   - **pre-commit** → gitleaks + editorconfig-checker + yamllint + codespell
+     + ruff check/format on staged Python files.
+   - **pre-push** → gitleaks range scan + bandit + init-system integrity
+     (guard wiring, manifest drift, path filter, init tests).
+
+   If lefthook was not installed (step 1 skipped), the hooks are silent
+   no-ops — do NOT push until you have either installed it or run the
+   step-4 checks manually.
 
 ## Commit message format
 

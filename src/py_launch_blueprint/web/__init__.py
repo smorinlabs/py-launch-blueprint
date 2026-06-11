@@ -17,19 +17,31 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Reserved space for the future web service (not yet implemented).
+"""FastAPI web service — a thin adapter over ``py_launch_blueprint.core``.
 
-Intended layout when built (FastAPI), behind the ``web`` extra
-(``pip install py-launch-blueprint[web]``)::
+Ships behind the ``web`` extra (``pip install py-launch-blueprint[web]`` /
+``uv sync --extra web``). Layout::
 
     web/
-    ├── __init__.py
     ├── app.py          # FastAPI app factory: create_app() -> FastAPI
-    ├── deps.py         # shared dependencies (auth, config, service wiring)
+    ├── deps.py         # shared dependencies (config, service wiring)
     └── routers/
-        └── projects.py # GET /projects → core.services + core.models (same models the CLI renders)
+        └── projects.py # /projects → core.services + core.models
 
 Design rule: the web layer, like the CLI, is a *thin* adapter over
 ``py_launch_blueprint.core``. It returns ``core.models`` objects directly as
-JSON responses, so the API and the CLI share one data contract.
+JSON responses, so the API and the CLI share one data contract. Run locally
+with ``just serve``.
 """
+
+try:
+    from py_launch_blueprint.web.app import create_app
+except ModuleNotFoundError as exc:  # pragma: no cover - import-time guard
+    if exc.name and exc.name.split(".")[0] in {"fastapi", "starlette"}:
+        raise ModuleNotFoundError(
+            "the web service requires the 'web' extra: "
+            "pip install 'py-launch-blueprint[web]' (or: uv sync --extra web)"
+        ) from exc
+    raise
+
+__all__ = ["create_app"]

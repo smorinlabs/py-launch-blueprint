@@ -53,7 +53,7 @@ from py_launch_blueprint.core.settings import (
     settings_from_layers,
 )
 
-TOKEN_ENV_VAR = "PLBP_TOKEN"  # noqa: S105 — env var name, not a secret value
+TOKEN_ENV_VAR = "PLBP_TOKEN"  # noqa: S105 # nosec B105 — env var name, not a secret value
 
 
 @dataclass

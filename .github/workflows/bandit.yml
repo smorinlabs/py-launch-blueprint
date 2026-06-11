@@ -27,4 +27,6 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - name: Run bandit
-        run: uvx bandit -r py_launch_blueprint/ -c pyproject.toml
+        # src/ path (post src-layout move); the old flat `py_launch_blueprint/`
+        # path no longer exists, so the scan was silently covering nothing.
+        run: uvx bandit -r src/py_launch_blueprint/ -c pyproject.toml
