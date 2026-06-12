@@ -85,13 +85,8 @@ just install-dev
 
 ## 4. Documentation Management
 
-### `install-docs`
-Install Sphinx and any necessary extensions.
-
-#### Usage
-```bash
-just install-docs
-```
+Docs recipes run Sphinx via `uv run --group docs`, which installs the `docs`
+dependency group on demand — there is no separate install step.
 
 ### `init-docs`
 Initialize documentation (use only for new projects).
@@ -102,7 +97,7 @@ just init-docs
 ```
 
 ### `docs-help`
-Show help for documentation using `make` inside the `docs` directory.
+Show the available Sphinx build targets.
 
 #### Usage
 ```bash
