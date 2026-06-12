@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.1.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.0.1...v2.1.0) (2026-06-12)
+
+
+### Features
+
+* **cli:** error codes with hints, did-you-mean, pager, config init, doctor --bundle ([cee5ef5](https://github.com/smorinlabs/py-launch-blueprint/commit/cee5ef55b8e9bf5a43e0c3d0d6f1d0062ffc2734))
+* **cli:** universal CLI polish — error codes, did-you-mean, pager, config init, doctor --bundle, windows paths, llms.txt ([#400](https://github.com/smorinlabs/py-launch-blueprint/issues/400)) ([9ef4271](https://github.com/smorinlabs/py-launch-blueprint/commit/9ef427117353dac3d7499bd1c9e4b88463d1b92f))
+* **core:** windows-native default paths and windows ci matrix ([656e803](https://github.com/smorinlabs/py-launch-blueprint/commit/656e8039af185f51b4498b149f32e3e4828cea04))
+* **env:** add mise and flox as first-class dev environments ([#403](https://github.com/smorinlabs/py-launch-blueprint/issues/403)) ([55a1bf6](https://github.com/smorinlabs/py-launch-blueprint/commit/55a1bf69b4cb88de6e6a02f2d61f46d108e96ed0))
+* **setup:** two-level setup — make bootstrap (level 1) + just setup (level 2) ([#405](https://github.com/smorinlabs/py-launch-blueprint/issues/405)) ([6e268f6](https://github.com/smorinlabs/py-launch-blueprint/commit/6e268f6d549ae13e085346e8d608a163c67d1704))
+* **web:** add fastapi service skeleton behind the web extra ([#395](https://github.com/smorinlabs/py-launch-blueprint/issues/395)) ([cdd6e26](https://github.com/smorinlabs/py-launch-blueprint/commit/cdd6e2685280d0977d7e812557cf08a141e5e758))
+* **web:** bake in rest api best practices (contract, config, observability) ([#399](https://github.com/smorinlabs/py-launch-blueprint/issues/399)) ([90d1a8b](https://github.com/smorinlabs/py-launch-blueprint/commit/90d1a8bb027838f2e98f00fe25c5adcbb51cecf4))
+
+
+### Bug Fixes
+
+* **cli:** address coderabbit review findings ([b9fd146](https://github.com/smorinlabs/py-launch-blueprint/commit/b9fd146e4f74b66997de5ea0d9861421e3adb132))
+* **cli:** gate pager on a real tty and keep first-run marker out of json mode ([80284cd](https://github.com/smorinlabs/py-launch-blueprint/commit/80284cd325910eb56913dfd0360b440428b01ff9))
+* **deps:** drop unused questionary dep and finish ty cutover ([87219ac](https://github.com/smorinlabs/py-launch-blueprint/commit/87219acd83e15f38479674dfe711eb94b8cb58ed))
+* **deps:** drop unused questionary dep and finish ty cutover ([#396](https://github.com/smorinlabs/py-launch-blueprint/issues/396)) ([cfaefd7](https://github.com/smorinlabs/py-launch-blueprint/commit/cfaefd795f3e129a39e0162145217b809eb84ff0))
+* **docs:** build docs via uv run --group docs; drop broken docs/Makefile ([#402](https://github.com/smorinlabs/py-launch-blueprint/issues/402)) ([d63834d](https://github.com/smorinlabs/py-launch-blueprint/commit/d63834df91e8e17a972b0a912ad4a057f780ad49))
+* gitleaks installer exit-trap crash aborting just setup on fresh machines ([85ddaeb](https://github.com/smorinlabs/py-launch-blueprint/commit/85ddaeb219bbb7421ba778d382408df7625014fa))
+
+
+### Refactor
+
+* **justfile:** remove legacy pip recipes and go toolchain dependency ([#401](https://github.com/smorinlabs/py-launch-blueprint/issues/401)) ([6ab697a](https://github.com/smorinlabs/py-launch-blueprint/commit/6ab697a6ba95f0d2b4e8372e09347219a35c1a66))
+* **skill:** relocate to .claude/skills with codex symlink; de-just the runbook ([#409](https://github.com/smorinlabs/py-launch-blueprint/issues/409)) ([29ef63b](https://github.com/smorinlabs/py-launch-blueprint/commit/29ef63b4ec786788626a583efdda0753c8181f57))
+
 ## [2.0.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.0.0...v2.0.1) (2026-06-11)
 
 
