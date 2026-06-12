@@ -38,7 +38,11 @@ log = get_logger(__name__)
 
 
 def instrument_metrics(app: FastAPI) -> None:
-    """Expose RED metrics (rate/errors/duration per handler) at /metrics."""
+    """Expose RED metrics (rate/errors/duration per handler) at /metrics.
+
+    Args:
+        app: The application to instrument.
+    """
     Instrumentator(
         excluded_handlers=["/metrics", "/healthz", "/readyz"],
     ).instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
