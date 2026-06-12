@@ -23,7 +23,7 @@ Use UV to run various development tools:
 ```sh
 uvx ruff format py_launch_blueprint/       # Format code
 uvx ruff check py_launch_blueprint/        # Run linter
-uvx --with-editable . mypy py_launch_blueprint/  # Type check
+uv run ty check src/py_launch_blueprint/  # Type check
 uvx --with-editable . pytest               # Run tests
 uvx --with pytest-cov --with-editable . pytest --cov=py_launch_blueprint --cov-report=term-missing  # Test coverage
 ```
@@ -78,7 +78,7 @@ You can run development tools directly with pip:
 ```sh
 ruff format py_launch_blueprint/
 ruff check py_launch_blueprint/
-mypy py_launch_blueprint/
+ty check src/py_launch_blueprint/
 pytest --cov=py_launch_blueprint --cov-report=term-missing
 ```
 

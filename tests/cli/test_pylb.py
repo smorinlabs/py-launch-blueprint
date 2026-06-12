@@ -1,13 +1,18 @@
 """Tests for the new noun-verb `plbp` CLI (via Click's CliRunner)."""
 
 import json
+import tomllib
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 from click.testing import CliRunner
 
 from py_launch_blueprint import __version__
+from py_launch_blueprint.cli.context import AppContext, maybe_show_first_run_hint
 from py_launch_blueprint.cli.main import cli
+from py_launch_blueprint.cli.output import OutputMode, Renderer
+from py_launch_blueprint.core.config import Config
 from py_launch_blueprint.core.models import Project
 
 
@@ -119,7 +124,8 @@ def test_config_path(runner, monkeypatch):
     result = runner.invoke(cli, ["config", "path", "--config", "/nope/.env", "--json"])
     assert result.exit_code == 0
     payload = json.loads(result.output)
-    assert payload["path"] == "/nope/.env"
+    # str(Path(...)) so the expectation tracks the platform separator
+    assert payload["path"] == str(Path("/nope/.env"))
     assert payload["exists"] is False
 
 
@@ -409,7 +415,8 @@ def test_log_file_from_config(runner, tmp_path, monkeypatch):
     monkeypatch.delenv("PLBP_LOG_FILE", raising=False)
     log = tmp_path / "cfg.log"
     cfg = tmp_path / "plbp_config.toml"
-    cfg.write_text(f'[logging]\nfile = "{log}"\n')
+    # as_posix(): backslashes would be TOML escape sequences on windows
+    cfg.write_text(f'[logging]\nfile = "{log.as_posix()}"\n')
     result = runner.invoke(cli, ["config", "path", "--config", str(cfg)])
     assert result.exit_code == 0
     assert log.exists()
@@ -495,3 +502,225 @@ def test_config_get_reports_default_source(runner, tmp_path, monkeypatch):
     )
     payload = json.loads(result.output)
     assert payload["source"] == "config"
+
+
+# -- did-you-mean suggestions (REC-01) -------------------------------------
+
+
+def test_unknown_root_command_suggests_near_miss(runner):
+    result = runner.invoke(cli, ["porjects"])
+    assert result.exit_code != 0
+    assert "Did you mean 'projects'?" in result.output
+
+
+def test_unknown_verb_suggests_near_miss(runner):
+    result = runner.invoke(cli, ["projects", "lst", "--token", "t"])
+    assert result.exit_code != 0
+    assert "Did you mean 'list'?" in result.output
+
+
+def test_unknown_command_without_match_keeps_plain_error(runner):
+    result = runner.invoke(cli, ["zzzzzzzz"])
+    assert result.exit_code != 0
+    assert "Did you mean" not in result.output
+
+
+# -- error codes, hints, crash log (REC-02 / REC-22) -----------------------
+
+
+def test_auth_error_carries_error_code_and_hint(runner, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    result = runner.invoke(
+        cli, ["projects", "list", "--config", "/nope/.env", "--json"]
+    )
+    assert result.exit_code == 2
+    payload = json.loads(result.output)
+    assert payload["error"]["error_code"] == "PLBP002"
+    assert "PLBP_TOKEN" in payload["error"]["hint"]
+
+
+def test_auth_error_text_shows_hint(runner, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    result = runner.invoke(cli, ["projects", "list", "--config", "/nope/.env"])
+    assert result.exit_code == 2
+    assert "PLBP002" in result.output
+    assert "hint:" in result.output
+
+
+def test_unexpected_error_writes_crash_log(runner, mock_service, tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    mock_service.list_projects.side_effect = RuntimeError("kaboom")
+    result = runner.invoke(cli, ["projects", "list", "--token", "t"])
+    assert result.exit_code == 4
+    assert "kaboom" in result.output
+    assert "full traceback:" in result.output
+    crash = tmp_path / "plbp" / "plbp_crash.log"
+    assert crash.exists()
+    assert "RuntimeError: kaboom" in crash.read_text()
+
+
+def test_unexpected_error_json_includes_traceback_path(
+    runner, mock_service, tmp_path, monkeypatch
+):
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    mock_service.list_projects.side_effect = RuntimeError("kaboom")
+    result = runner.invoke(cli, ["projects", "list", "--token", "t", "--json"])
+    assert result.exit_code == 4
+    payload = json.loads(result.output)
+    assert payload["error"]["error_code"] == "PLBP000"
+    assert payload["error"]["traceback_path"].endswith("plbp_crash.log")
+
+
+# -- config init (REC-05) ---------------------------------------------------
+
+
+def test_config_init_yes_writes_current_defaults(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    target = tmp_path / "cfg.toml"
+    result = runner.invoke(cli, ["config", "init", "--yes", "--config", str(target)])
+    assert result.exit_code == 0
+    data = tomllib.loads(target.read_text())
+    assert data["output"]["format"] == "text"
+    assert data["output"]["color"] == "auto"
+    assert data["logging"]["level"] == "warning"
+
+
+def test_config_init_prompts_and_writes_answers(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    target = tmp_path / "cfg.toml"
+    result = runner.invoke(
+        cli,
+        ["config", "init", "--config", str(target)],
+        input="json\nalways\ninfo\n",
+    )
+    assert result.exit_code == 0
+    data = tomllib.loads(target.read_text())
+    assert data["output"]["format"] == "json"
+    assert data["output"]["color"] == "always"
+    assert data["logging"]["level"] == "info"
+
+
+def test_config_init_no_input_refuses_with_hint(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    target = tmp_path / "cfg.toml"
+    result = runner.invoke(
+        cli, ["config", "init", "--no-input", "--config", str(target)]
+    )
+    assert result.exit_code == 1
+    assert "--yes" in result.output
+    assert not target.exists()
+
+
+def test_config_init_dry_run_writes_nothing(runner, tmp_path, monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    target = tmp_path / "cfg.toml"
+    result = runner.invoke(
+        cli, ["config", "init", "--yes", "--dry-run", "--config", str(target)]
+    )
+    assert result.exit_code == 0
+    assert not target.exists()
+
+
+# -- first-run hint (REC-05) -------------------------------------------------
+
+
+def _hint_app(monkeypatch, tmp_path, **overrides):
+    """Build an AppContext whose stderr renders as a terminal."""
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    kwargs = {
+        "renderer": Renderer(OutputMode.TEXT, color="always"),
+        "output_mode": OutputMode.TEXT,
+        "config_file": None,
+        "token": None,
+        "no_input": False,
+        "verbose": 0,
+        "quiet": False,
+        "_config": Config(),
+    }
+    kwargs.update(overrides)
+    return AppContext(**kwargs)
+
+
+def test_first_run_hint_shown_once(monkeypatch, tmp_path, capsys):
+    app = _hint_app(monkeypatch, tmp_path)
+    maybe_show_first_run_hint(app)
+    assert "config init" in capsys.readouterr().err
+    maybe_show_first_run_hint(app)  # marker written -> silent now
+    assert capsys.readouterr().err == ""
+    assert (tmp_path / "plbp" / "plbp_first_run.marker").exists()
+
+
+def test_first_run_hint_suppressed_for_scripts(monkeypatch, tmp_path, capsys):
+    for overrides in ({"quiet": True}, {"no_input": True}):
+        maybe_show_first_run_hint(_hint_app(monkeypatch, tmp_path, **overrides))
+        assert capsys.readouterr().err == ""
+
+
+def test_first_run_hint_suppressed_when_config_exists(monkeypatch, tmp_path, capsys):
+    config = Config(loaded_paths=[tmp_path / "cfg.toml"])
+    maybe_show_first_run_hint(_hint_app(monkeypatch, tmp_path, _config=config))
+    assert capsys.readouterr().err == ""
+
+
+def test_first_run_hint_json_mode_burns_nothing(monkeypatch, tmp_path, capsys):
+    app = _hint_app(
+        monkeypatch,
+        tmp_path,
+        renderer=Renderer(OutputMode.JSON, color="always"),
+        output_mode=OutputMode.JSON,
+    )
+    maybe_show_first_run_hint(app)
+    assert capsys.readouterr().err == ""
+    # marker must NOT be written: the hint was never shown, so a later
+    # interactive text-mode run still gets it
+    assert not (tmp_path / "plbp" / "plbp_first_run.marker").exists()
+
+
+def test_first_run_hint_suppressed_when_not_a_terminal(monkeypatch, tmp_path, capsys):
+    app = _hint_app(
+        monkeypatch, tmp_path, renderer=Renderer(OutputMode.TEXT, no_color=True)
+    )
+    maybe_show_first_run_hint(app)
+    assert capsys.readouterr().err == ""
+    # and no marker burned: the hint can still fire on a real terminal later
+    assert not (tmp_path / "plbp" / "plbp_first_run.marker").exists()
+
+
+# -- doctor --bundle (REC-21) -------------------------------------------------
+
+
+def test_doctor_bundle_json_redacts_secrets(runner, monkeypatch):
+    monkeypatch.setenv("PLBP_TOKEN", "supersecret123")
+    result = runner.invoke(cli, ["doctor", "--bundle", "--json"])
+    assert result.exit_code == 0
+    assert "supersecret123" not in result.output
+    payload = json.loads(result.output)
+    assert payload["version"] == __version__
+    assert payload["env"]["PLBP_TOKEN"] == "<redacted>"
+    assert payload["token_present"] is True
+    assert payload["token_source"] == "env"
+    assert any(check["name"] == "python" for check in payload["checks"])
+
+
+def test_doctor_bundle_text_summary(runner, monkeypatch):
+    monkeypatch.setenv("PLBP_TOKEN", "t")
+    result = runner.invoke(cli, ["doctor", "--bundle"])
+    assert result.exit_code == 0
+    assert "Diagnostics bundle" in result.output
+
+
+def test_unexpected_context_failure_follows_crash_contract(
+    runner, tmp_path, monkeypatch
+):
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+
+    def boom(cls, **kwargs):
+        raise RuntimeError("context exploded")
+
+    monkeypatch.setattr(AppContext, "create", classmethod(boom))
+    result = runner.invoke(cli, ["config", "path", "--json"])
+    assert result.exit_code == 4
+    payload = json.loads(result.output)
+    assert payload["error"]["error_code"] == "PLBP000"
+    assert payload["error"]["traceback_path"].endswith("plbp_crash.log")
+    assert (tmp_path / "plbp" / "plbp_crash.log").exists()

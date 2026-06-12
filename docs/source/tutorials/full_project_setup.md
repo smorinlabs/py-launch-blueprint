@@ -94,7 +94,7 @@ just lint
 - **Setup**: `just setup` or `uv pip install --editable ".[dev]"`
 - **Format**: `just format` or `uvx ruff format py_launch_blueprint/`
 - **Lint**: `just lint` or `uvx ruff check py_launch_blueprint/`
-- **Type check**: `just typecheck` or `uvx --with-editable . mypy py_launch_blueprint/`
+- **Type check**: `just typecheck` or `uv run ty check src/py_launch_blueprint/`
 - **Test all**: `just test` or `uvx --with-editable . pytest`
 - **Test single**: `uvx --with-editable . pytest tests/test_file.py::test_name`
 - **All checks**: `just check`

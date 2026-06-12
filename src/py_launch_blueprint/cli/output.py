@@ -28,6 +28,10 @@ Rules (per clig.dev):
 """
 
 import json
+import os
+import shlex
+import subprocess  # nosec B404 — only ever runs the user's own pager
+import sys
 from enum import StrEnum
 from pathlib import Path
 
@@ -45,6 +49,61 @@ class OutputMode(StrEnum):
     TEXT = "text"
     JSON = "json"
     MARKDOWN = "markdown"
+
+
+#: ``-F`` quit if one screen, ``-R`` pass ANSI colors, ``-X`` no screen clear.
+DEFAULT_PAGER = "less -FRX"
+
+#: True on Windows. Module-level so tests can exercise both tokenization
+#: branches by monkeypatching (same pattern as ``core.paths._WINDOWS``).
+_WINDOWS = sys.platform == "win32"
+
+
+def _pager_argv(pager: str) -> list[str]:
+    """Tokenize the pager command per-platform.
+
+    POSIX shlex rules eat backslashes, mangling Windows paths like
+    ``C:\\tools\\less.exe``. On Windows, split with ``posix=False`` (which
+    preserves backslashes) and strip the surrounding quotes that mode keeps.
+    Quoting is the supported spelling for a path with spaces; an unquoted
+    one still tokenizes wrong, fails to launch, and falls back to plain
+    output via the caller's error handling.
+    """
+    if not _WINDOWS:
+        return shlex.split(pager)
+    argv = shlex.split(pager, posix=False)
+    return [
+        arg[1:-1] if len(arg) >= 2 and arg[0] == arg[-1] and arg[0] in "'\"" else arg
+        for arg in argv
+    ]
+
+
+def _resolve_pager_command() -> str:
+    """Pager precedence: ``PLBP_PAGER`` > ``PAGER`` > ``less -FRX``.
+
+    A variable that is set but empty *disables* paging (git convention) —
+    only an unset variable falls through to the next layer.
+    """
+    for var in ("PLBP_PAGER", "PAGER"):
+        if var in os.environ:
+            return os.environ[var].strip()
+    return DEFAULT_PAGER
+
+
+def _isatty(console: Console) -> bool:
+    """True when the console's underlying stream is a real TTY.
+
+    ``Console.is_terminal`` is forced True by ``color="always"`` — right for
+    styling, wrong for paging: a piped run must never block on a pager, no
+    matter how color was resolved.
+    """
+    isatty = getattr(console.file, "isatty", None)
+    if isatty is None:
+        return False
+    try:
+        return bool(isatty())
+    except ValueError:  # closed/replaced stream
+        return False
 
 
 def _console_color_args(color: str) -> tuple[bool | None, bool | None]:
@@ -73,10 +132,12 @@ class Renderer:
         no_color: bool = False,
         color: str | None = None,
         output_file: str | None = None,
+        paging: bool = True,
     ) -> None:
         self.mode = mode
         self.color = color or ("never" if no_color else "auto")
         self.output_file = Path(output_file) if output_file else None
+        self.paging = paging
         nc, force = _console_color_args(self.color)
         # stdout console for results; stderr console for everything else.
         self.out = Console(highlight=False, no_color=nc, force_terminal=force)
@@ -96,7 +157,40 @@ class Renderer:
         elif self.mode is OutputMode.MARKDOWN:
             click.echo(self._to_markdown(result))
         else:
+            self._render_text_paged(result)
+
+    def _render_text_paged(self, result: CLIResult) -> None:
+        """Text mode: pipe through the user's pager when output won't fit.
+
+        Paging happens only when results go to an interactive terminal —
+        never when piped, redirected to a file, in JSON/Markdown mode, or
+        under ``--no-input`` (``paging=False``). The pager resolves from
+        ``PLBP_PAGER`` > ``PAGER`` > ``less -FRX``; an empty value disables.
+        """
+        if not (self.paging and self.out.is_terminal and _isatty(self.out)):
             self._render_text(result, self.out)
+            return
+        pager = _resolve_pager_command()
+        if not pager:
+            self._render_text(result, self.out)
+            return
+        with self.out.capture() as capture:
+            self._render_text(result, self.out)
+        text = capture.get()
+        if text.count("\n") < self.out.size.height:
+            self.out.file.write(text)
+            self.out.file.flush()
+            return
+        try:
+            # argv comes from the user's own PAGER environment — running it
+            # is the feature, same trust model as git/less.
+            subprocess.run(  # noqa: S603 # nosec B603
+                _pager_argv(pager), input=text, text=True, check=False
+            )
+        except (OSError, ValueError):
+            # Missing pager binary or unparsable command: never lose output.
+            self.out.file.write(text)
+            self.out.file.flush()
 
     def _render_to_file(self, result: CLIResult) -> None:
         """R4: --output-file changes the destination, never the format."""
@@ -128,7 +222,9 @@ class Renderer:
         table = Table(title=title, show_header=True, header_style="bold cyan")
         for column in columns:
             table.add_column(column)
-        for row in result.table_rows():
+        # Rich rows may carry markup (hyperlinks, relative times); rich strips
+        # the styling itself for non-terminal destinations (pipes, files).
+        for row in result.table_rows_rich():
             table.add_row(*row)
         console.print(table)
 
@@ -157,12 +253,39 @@ class Renderer:
             return
         self.err.print(text)
 
-    def error(self, message: str, code: ExitCode = ExitCode.API) -> None:
-        """Report an error to stderr in a mode-appropriate way."""
+    def error(
+        self,
+        message: str,
+        code: ExitCode = ExitCode.API,
+        *,
+        error_code: str | None = None,
+        hint: str | None = None,
+        traceback_path: str | None = None,
+    ) -> None:
+        """Report an error to stderr in a mode-appropriate way.
+
+        ``error_code`` is the stable ``PLBP###`` string (append-only table in
+        ``core/errors.py``); ``hint`` is one actionable next step;
+        ``traceback_path`` points at the crash log for unexpected errors.
+        The JSON ``error`` object only ever gains keys (append-only contract).
+        """
         if self.mode is OutputMode.JSON:
-            payload = {
-                "error": {"code": int(code), "name": code.name, "message": message}
+            detail: dict[str, int | str] = {
+                "code": int(code),
+                "name": code.name,
+                "message": message,
             }
-            click.echo(json.dumps(payload), err=True)
+            if error_code:
+                detail["error_code"] = error_code
+            if hint:
+                detail["hint"] = hint
+            if traceback_path:
+                detail["traceback_path"] = traceback_path
+            click.echo(json.dumps({"error": detail}), err=True)
         else:
-            self.err.print(f"[red]Error:[/red] {message}")
+            suffix = f" [dim]({error_code})[/dim]" if error_code else ""
+            self.err.print(f"[red]Error:[/red] {message}{suffix}")
+            if hint:
+                self.err.print(f"[yellow]hint:[/yellow] {hint}")
+            if traceback_path:
+                self.err.print(f"full traceback: {traceback_path}")

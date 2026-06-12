@@ -1,0 +1,48 @@
+# WEB-51 — breaking-change gate on the committed OpenAPI snapshot.
+# tests/web/test_openapi_snapshot.py keeps docs/api/openapi.json honest;
+# this workflow diffs it against the base branch so breaking API changes
+# fail the PR instead of surprising clients.
+
+name: api-contract
+
+on:
+  pull_request:
+    paths:
+      - docs/api/openapi.json
+
+permissions: {}
+
+concurrency:
+  group: api-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  breaking:
+    name: oasdiff-breaking
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Extract base-branch spec
+        # Written INSIDE the workspace: the oasdiff action is a Docker action
+        # and only /github/workspace is mounted — /tmp would not be visible.
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch origin "$BASE_REF" --depth=1
+          spec="origin/$BASE_REF:docs/api/openapi.json"
+          if git show "$spec" > base-openapi.json 2>/dev/null; then
+            echo "base spec extracted"
+          else
+            # First PR to introduce the snapshot: nothing to diff against.
+            printf '%s' \
+              '{"openapi":"3.1.0","info":{"title":"x","version":"0"},"paths":{}}' \
+              > base-openapi.json
+          fi
+      - name: oasdiff breaking changes
+        uses: oasdiff/oasdiff-action/breaking@v0.0.57
+        with:
+          base: base-openapi.json
+          revision: docs/api/openapi.json
+          fail-on: ERR

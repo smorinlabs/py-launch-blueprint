@@ -23,6 +23,15 @@ Start from [`template.md`](template.md).
 | [0002](0002-no-secrets-in-config-file.md) | Secrets are never stored in the config file | Accepted |
 | [0003](0003-keep-markdown-output-mode.md) | Keep `markdown` as a third output format (spec deviation) | Accepted |
 | [0004](0004-config-errors-degrade-to-warnings.md) | Invalid config values degrade to warnings, never crashes | Accepted |
+| [0005](0005-mise-flox-first-class-toolchains.md) | mise and flox are first-class toolchain provisioners (lean 10-tool set) | Accepted |
+| [0006](0006-stable-error-codes-hints-crash-log.md) | Stable error codes, hints, and a crash log | Accepted |
+| [0007](0007-did-you-mean-stdlib-difflib.md) | Did-you-mean suggestions via stdlib difflib | Accepted |
+| [0008](0008-pager-for-long-text-output.md) | Long text output pages through the user's pager | Accepted |
+| [0009](0009-config-init-and-first-run-hint.md) | Guided `config init` plus a marker-backed one-time first-run hint | Accepted |
+| [0010](0010-rich-row-variant-on-result-models.md) | Terminal niceties via a rich-only row variant on result models | Accepted |
+| [0011](0011-windows-native-paths-xdg-overrides.md) | Windows-native default directories; XDG overrides win everywhere | Accepted |
+| [0012](0012-doctor-bundle-redact-at-collection.md) | `doctor --bundle` redacts at collection time, excludes log contents | Accepted |
+| [0013](0013-web-service-best-practices.md) | Web service: baked-in REST best practices behind the `web` extra | Accepted |
 
 ## Note on historical decisions
 

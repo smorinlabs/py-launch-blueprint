@@ -1,0 +1,25 @@
+# mise toolchain — one of the project's three first-class dev environments,
+# alongside the native per-tool installs (Makefile + Justfile `install-*`
+# targets, scripts/install-*.sh) and the flox env (.flox/env/manifest.toml).
+# All three provision the SAME 10-tool set; keep them in sync when adding or
+# removing a tool. Decision record:
+# docs/adr/0005-mise-flox-first-class-toolchains.md.
+#
+# Intentionally NOT declared here:
+#   * yamllint, codespell, bandit, editorconfig-checker — invoked via `uvx`
+#     (lefthook.yml / Justfile), fetched on demand by uv.
+#   * commitlint — invoked via `bunx --bun @commitlint/cli` (ADR-04); a mise
+#     shim named `commitlint` shadows bun's PATH fallback and breaks the
+#     commit-msg hook on a cold bun cache (see the note in lefthook.yml).
+#   * ty, pytest — project dev deps, provided by `uv run`.
+[tools]
+python = "3.12"
+uv = "latest"
+ruff = "latest"
+taplo = "latest"
+gitleaks = "latest"
+just = "latest"
+bun = "latest"
+gh = "latest"
+lefthook = "latest"
+make = "latest"

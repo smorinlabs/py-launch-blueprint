@@ -4,23 +4,25 @@ Thank you for your interest in contributing to Py Launch Blueprint! We welcome c
 
 ## Setup
 
-Requires **Python 3.12+** (per ITM-033). Install the toolchain once:
+Requires **Python 3.12+** (per ITM-033). Setup is two levels, in order
+(both idempotent — safe to re-run):
 
 ```bash
-# Install tools (idempotent; each script verifies before installing):
-scripts/install-bun.sh          # Bun (commitlint runtime; per ADR-04)
-scripts/install-lefthook.sh     # Lefthook (hook manager; per ADR-01)
-scripts/install-gitleaks.sh     # Gitleaks (secret scanner; per ADR-02)
+# Level 1 — bootstrap the base toolchain (just + uv); skip if both installed:
+make bootstrap
 
-# Verify everything is on PATH (ITM-022):
-make hook-check
-
-# Sync the dev environment:
-uv sync --group dev             # PEP 735 dependency-groups (per ITM-063)
-bun install                     # commitlint deps from package.json
+# Level 2 — everything else (dev env, git hooks, hook toolchain):
+just setup
 ```
 
-`scripts/install-lefthook.sh` runs `lefthook install` at the end, wiring `.git/hooks/` for this clone.
+`just setup` syncs the dev environment (`uv sync --group dev --extra web`,
+PEP 735 per ITM-063), installs bun/lefthook/gitleaks via the
+`scripts/install-*.sh` installers (bun per ADR-04, lefthook per ADR-01,
+gitleaks per ADR-02), runs `bun install` for commitlint deps, installs
+taplo + yamlfmt, and wires `.git/hooks/` for this clone via
+`lefthook install`. If the base toolchain is missing it fails and points
+you back to `make bootstrap`. To verify the hook toolchain at any time:
+`make hook-check` (ITM-022).
 
 ## Daily workflow
 
