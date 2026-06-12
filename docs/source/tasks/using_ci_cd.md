@@ -12,7 +12,7 @@ The CI/CD workflow (`.github/workflows/ci.yaml`) runs on:
 - **Test**: Runs tests on Python 3.12 and 3.13 (ubuntu + macOS matrix)
   - Sets up environment using `uv` and `actions/setup-python`
   - Installs dependencies: `uv sync --all-extras --dev`
-  - Runs MyPy (`uvx mypy`), Ruff (`uvx ruff check`), and pytest (`uvx pytest`)
+  - Runs ty (`uv run ty check`), Ruff (`uvx ruff check`), and pytest (`uvx pytest`)
 
 ## **Workflow Configuration**
 
@@ -39,7 +39,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: uv sync --all-extras --dev
-      - run: uvx mypy py_launch_blueprint/
+      - run: uv run ty check src/py_launch_blueprint/
       - run: uvx ruff check py_launch_blueprint/
       - run: uvx pytest
 ```

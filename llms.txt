@@ -1,0 +1,30 @@
+# py-launch-blueprint
+
+> A production-ready Python CLI project template with best practices baked
+> in: a gh-style noun-verb CLI (`plbp`) on Click, a typed core library
+> (Pydantic result models are the output contract), layered TOML config in
+> platform-native locations, structured logging, and a fork-ready rename
+> system (`just init`) so the whole stack can be rebranded in one command.
+
+Architecture in one line: `core/` holds pure logic and models (no printing),
+`cli/` is thin presentation over it, `web/` is an optional FastAPI front-end
+behind the `web` extra — every front-end renders the same result models.
+
+## Docs
+
+- [README](https://github.com/smorinlabs/py-launch-blueprint/blob/main/README.md): overview, installation, and feature tour
+- [CLI conventions](https://github.com/smorinlabs/py-launch-blueprint/blob/main/EXAMPLECLI.md): the `plbp` command shapes, global flags, output contract, exit and error codes
+- [Documentation site](https://py-launch-blueprint.readthedocs.io/en/latest/): full rendered docs
+- [Agent guidelines](https://github.com/smorinlabs/py-launch-blueprint/blob/main/CLAUDE.md): commands and rules for AI coding agents working in this repo
+- [Changelog](https://github.com/smorinlabs/py-launch-blueprint/blob/main/CHANGELOG.md): release history (release-please managed)
+
+## Using the CLI
+
+- [Global flags and output contract](https://github.com/smorinlabs/py-launch-blueprint/blob/main/EXAMPLECLI.md): results on stdout, logs/errors on stderr; `-o text|json|markdown` everywhere; stable exit codes and `PLBP###` error codes
+- [Configuration](https://github.com/smorinlabs/py-launch-blueprint/blob/main/EXAMPLECLI.md): layered TOML (`system → user → project`), `plbp config init|get|set|path`, secrets never stored in files
+
+## Optional
+
+- [Contributing](https://github.com/smorinlabs/py-launch-blueprint/blob/main/CONTRIBUTORS.md): contributor list and workflow
+- [Release process](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/RELEASE.md): release-please + OIDC trusted publishing
+- [Fork/init system](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/POST_INIT.md): how `just init` rebrands the template into your own project

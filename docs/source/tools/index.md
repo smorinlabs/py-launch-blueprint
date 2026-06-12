@@ -7,7 +7,7 @@ Welcome to the Tools section of the Py Launch Blueprint documentation. This sect
 - [Ruff](ruff.md)
 - [Taplo](taplo.md)
 - [Yaml-Lint](yaml_lint.md)
-- [MyPy](mypy.md)
+- [ty](ty.md)
 - [Pytest](pytest.md)
 - [UV](uv.md)
 - [GitHub Actions](github_actions.md)
@@ -26,14 +26,15 @@ maxdepth: 2
 ---
 ruff
 taplo
-yaml-lint
-mypy
+yaml_lint
+ty
 pytest
 uv
 github_actions
 vs_code
 makefiles
 justfiles
+precommit_hooks
 cla-assistant
 code-cov
 

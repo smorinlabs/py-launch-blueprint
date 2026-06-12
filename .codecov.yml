@@ -5,6 +5,17 @@ coverage:
   precision: 2
   round: down
   range: "70...100"
+  # WL-005 - coverage gates (baseline 89% at introduction). `auto` compares
+  # against the PR base, so coverage can never silently erode; the threshold
+  # absorbs measurement noise. Patch: new/changed lines need 80% coverage.
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: 80%
 
 comment:
   layout: "reach,diff,flags,footer"

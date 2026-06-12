@@ -23,3 +23,9 @@ indent_style = tab
 # Decided in round-2 Q&A; see analysis/synthesis/items/ITM-008-C04.
 [*.md]
 trim_trailing_whitespace = false
+
+# Syrupy golden snapshots (WL-023): the amber format indents every line of a
+# multiline snapshot, so blank lines legitimately carry trailing spaces.
+# Editor auto-trim would corrupt the snapshot bytes and fail the comparison.
+[*.ambr]
+trim_trailing_whitespace = false

@@ -1,4 +1,6 @@
-SHELL := /bin/zsh
+# bash, not zsh: the bootstrap layer must work on stock Linux (devcontainers,
+# CI runners, fresh VMs) where zsh is typically absent.
+SHELL := /bin/bash
 
 # Text colors
 BLACK := \033[30m
@@ -34,9 +36,34 @@ CHECK := $(GREEN)✓$(NC)
 CROSS := $(RED)✗$(NC)
 DASH := $(GRAY)-$(NC)
 
-.PHONY: all check hook-check install-uv install-just set-path help install-just-force install-uv-force
+.PHONY: all bootstrap check hook-check install-uv install-just install-docker install-docker-force install-flox set-path help install-just-force install-uv-force
 
 all: help
+
+# Two-level setup. This Makefile is Level 1 ONLY — the bootstrap that
+# installs the base toolchain (just + uv). Everything after that is
+# Level 2: `just setup` (dev env sync, git hooks, hook toolchain).
+# Do not add project tasks here; they belong in the Justfile.
+
+bootstrap: ## Level 1 — install base toolchain (just + uv) if missing, then verify
+	@if command -v just >/dev/null 2>&1; then \
+		echo -e "[$(CHECK)] just already installed"; \
+	else \
+		echo "Installing just to $(HOME)/.local/bin..."; \
+		mkdir -p "$(HOME)/.local/bin"; \
+		curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$(HOME)/.local/bin"; \
+	fi
+	@if command -v uv >/dev/null 2>&1; then \
+		echo -e "[$(CHECK)] uv already installed"; \
+	else \
+		echo "Installing uv..."; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	fi
+	@PATH="$(HOME)/.local/bin:$$PATH" $(MAKE) --no-print-directory check
+	@echo ""
+	@echo -e "Bootstrap complete. If 'just' or 'uv' is not found in new shells, add"
+	@echo -e "$(HOME)/.local/bin to your PATH ($(YELLOW)SET_PATH=$(HOME)/.local/bin make set-path$(NC) for zsh)."
+	@echo -e "Next: $(BLUE)just setup$(NC)"
 
 ## `make check` Example Output
 
@@ -78,6 +105,12 @@ check: ## Check system requirements
 		ERROR_COUNT=$$((ERROR_COUNT + 1)); \
 		MISSING_DEPS="$${CHECK_CMD_NAME}$${MISSING_DEPS:+,} $${MISSING_DEPS}"; \
 	fi; \
+	CHECK_CMD_NAME="docker"; \
+	if [ $(shell command -v docker >/dev/null 2>&1 && echo "0" || echo "1" ) -eq 0 ] ; then \
+		printf "[$(CHECK)] $${CHECK_CMD_NAME} (optional)\n"; \
+	else \
+		printf "[$(DASH)] $${CHECK_CMD_NAME} (optional — only for $(CYAN)just docker-web$(NC); $(GREEN)make install-docker$(NC))\n"; \
+	fi; \
 	if [ "$${ERROR_COUNT}" = "0" ]; then \
 		echo -e "$(GREEN)All dependencies are installed!$(NC)"; \
 	else \
@@ -115,33 +148,19 @@ hook-check: ## ITM-022 — verify lefthook + downstream hook tools on PATH
 
 install-just: ## Print install just command and where to find install options
 	@echo "just installation command:"
-	@echo -e "${CYAN}curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin${NC}"
+	@echo -e "${CYAN}curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin${NC}"
 	@echo "or"
 	@echo -e "${CYAN}make install-just-force${NC}"
-	@echo "NOTE:change ~/bin to the desired installation directory"
+	@echo "NOTE:change ~/.local/bin to the desired installation directory"
 	@echo "Find other install options here: https://github.com/casey/just"
-	@echo -e "To setup just PATH, run: ${YELLOW}SET_PATH=$(HOME)/bin make set-path${NC}"
+	@echo -e "To setup just PATH, run: ${YELLOW}SET_PATH=$(HOME)/.local/bin make set-path${NC}"
 
-install-just-force: ## Install just and add it to PATH
-	@echo "Installing just to ~/bin..."
-	@curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to $(HOME)/bin
-	@echo "Adding $(HOME)/bin to PATH in $(HOME)/.zshenv..."
-	@if ! awk -v path="$(HOME)/bin" ' \
-		BEGIN {found=0} \
-		/^export PATH=/ { \
-			if (index($$0, path) > 0) { \
-				found=1; \
-				exit; \
-			} \
-		} \
-		END {exit !found}' "$(HOME)/.zshenv"; then \
-		echo "export PATH=\"$$PATH:$(HOME)/bin\"" >> "$(HOME)/.zshenv"; \
-		echo -e "$(GREEN)Added PATH entry:$(NC) $$PATH:$(HOME)/bin"; \
-		echo -e "Run $(BLUE)source $(HOME)/.zshenv$(NC) to apply changes"; \
-	else \
-		echo -e "$(CHECK) PATH already contains $(HOME)/bin"; \
-	fi
-	@echo "Please run 'source ~/.zshenv' or open a new terminal to update your PATH."
+install-just-force: ## Install just to ~/.local/bin
+	@echo "Installing just to $(HOME)/.local/bin..."
+	@mkdir -p "$(HOME)/.local/bin"
+	@curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$(HOME)/.local/bin"
+	@echo -e "If $(HOME)/.local/bin is not on your PATH, add it (bash: ~/.bashrc, zsh:"
+	@echo -e "$(YELLOW)SET_PATH=$(HOME)/.local/bin make set-path$(NC)), then open a new terminal."
 
 
 install-uv: ## Print install uv command and where to find install options
@@ -173,6 +192,47 @@ install-uv-force: ## Install uv and add it to PATH
 		echo -e "$(CHECK) PATH already contains $${UV_INSTALL_PATH}"; \
 	fi
 	@echo "Please run 'source ~/.zshenv' or open a new terminal to update your PATH if changes were made."
+
+install-docker: ## OPTIONAL — print Docker install instructions (needed only for `just docker-web`)
+	@echo "Docker is OPTIONAL for this project — only the container image build"
+	@echo "(just docker-web) needs it. Everything else runs without Docker."
+	@echo ""
+	@echo "Linux installation command (Docker convenience script):"
+	@echo -e "${CYAN}curl -fsSL https://get.docker.com | sh${NC}"
+	@echo "or"
+	@echo -e "${CYAN}make install-docker-force${NC}"
+	@echo "macOS/Windows: install Docker Desktop — https://docs.docker.com/get-docker/"
+
+install-docker-force: ## OPTIONAL — install Docker engine via convenience script (Linux only)
+	@if [ "$$(uname -s)" != "Linux" ]; then \
+		echo -e "$(RED)install-docker-force supports Linux only.$(NC)"; \
+		echo "macOS/Windows: install Docker Desktop — https://docs.docker.com/get-docker/"; \
+		exit 1; \
+	fi
+	@echo "Installing Docker engine via https://get.docker.com ..."
+	@curl -fsSL https://get.docker.com | sh
+	@echo -e "$(CHECK) Docker installed. You may need to add your user to the docker group:"
+	@echo -e "${CYAN}sudo usermod -aG docker $$USER && newgrp docker${NC}"
+
+# Flox is OPTIONAL — one of the three first-class toolchain provisioners
+# (native installs / mise / flox; see docs/adr/0005). Nothing in the project
+# requires it; `flox activate` simply provisions the same 10-tool set declared
+# in .flox/env/manifest.toml. Installation is platform-specific and may need
+# sudo, so this target prints the commands rather than running them.
+install-flox: ## (Optional) Print flox install instructions (toolchain provisioner; see docs/adr/0005)
+	@echo "flox is OPTIONAL — it provisions the dev toolchain declared in .flox/ (see docs/adr/0005)."
+	@echo ""
+	@echo "macOS (Homebrew):"
+	@echo -e "  ${CYAN}brew install flox${NC}"
+	@echo ""
+	@echo "Linux (Debian/Ubuntu — download the .deb, then):"
+	@echo -e "  ${CYAN}sudo apt install ./flox.x86_64-linux.deb${NC}"
+	@echo "Linux (Fedora/RHEL — download the .rpm, then):"
+	@echo -e "  ${CYAN}sudo dnf install ./flox.x86_64-linux.rpm${NC}"
+	@echo ""
+	@echo "Downloads and all install options (incl. nix profile): https://flox.dev/docs/install-flox/"
+	@echo ""
+	@echo -e "Then run ${YELLOW}flox activate${NC} from the repo root to enter the environment."
 
 set-path: ## Add SET_PATH to PATH in .zshenv if not already present
 	@if [ -z "$(SET_PATH)" ]; then \

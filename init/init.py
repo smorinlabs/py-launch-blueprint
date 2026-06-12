@@ -25,7 +25,8 @@ Flags:
     --allow-dirty       Run even if git tree is dirty (NOT for missing .git).
     --commit            Stage and commit the changes after apply.
     --prune             Remove the init/ system itself (one-time, post-init).
-    --no-lockfile       Skip uv lock / bun install regeneration (tests use this).
+    --no-lockfile       Skip [[regenerate]] commands — uv lock / bun install /
+                        snapshot regeneration (tests use this).
     --yes               Skip the interactive confirmation prompt.
 """
 
@@ -45,6 +46,9 @@ from common import (
     MARKER_PATH,
     PROMPTED_IDENTITY_FIELDS,
     REPO_ROOT,
+    SKILL_DIR,
+    SKILL_LINK,
+    Manifest,
     ValidationError,
     load_manifest,
     origin_matches_blueprint,
@@ -212,17 +216,35 @@ def write_marker(answers: Answers) -> None:
     MARKER_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def regenerate_lockfiles() -> None:
-    if (REPO_ROOT / "pyproject.toml").exists():
+def run_regenerates(manifest: Manifest) -> None:
+    """Execute every ``[[regenerate]]`` command, in manifest order.
+
+    These are files whose content embeds identity but cannot be rewritten by
+    string replacement: lockfiles (hashes), and generated artifacts whose
+    *layout* depends on the new identity — e.g. the CLI ``--help`` snapshots,
+    which re-wrap at 80 columns for the renamed program name. Runs after
+    replaces and renames so the regenerators see the renamed tree. Best
+    effort: a missing tool or failing command warns instead of aborting init
+    (git is still the undo button).
+    """
+    for op in manifest.regenerates:
+        if not (REPO_ROOT / op.path).exists():
+            continue
         try:
-            _run(["uv", "lock"], check=False)
+            result = _run(list(op.command), check=False)
         except FileNotFoundError:
-            print("  (skipping uv lock — uv not on PATH)", file=sys.stderr)
-    if (REPO_ROOT / "package.json").exists() and (REPO_ROOT / "bun.lock").exists():
-        try:
-            _run(["bun", "install"], check=False)
-        except FileNotFoundError:
-            print("  (skipping bun install — bun not on PATH)", file=sys.stderr)
+            print(
+                f"  (skipping {op.path} — {op.command[0]} not on PATH)",
+                file=sys.stderr,
+            )
+            continue
+        if result.returncode != 0:
+            print(
+                f"  WARNING: regenerating {op.path} failed "
+                f"(`{' '.join(op.command)}` exited {result.returncode}) — "
+                "regenerate it manually",
+                file=sys.stderr,
+            )
 
 
 def prune_init_system() -> None:
@@ -245,19 +267,37 @@ def prune_init_system() -> None:
         INIT_DIR / "README.md",
         INIT_DIR / "ci",
         INIT_DIR / "tests",
-        REPO_ROOT / "skill",  # agent skill is blueprint-only tooling
+        SKILL_LINK,  # Codex-side symlink first, so it never dangles
+        SKILL_DIR,  # agent skill is blueprint-only tooling
         REPO_ROOT / ".github" / "workflows" / "blueprint-guard.yml",
         REPO_ROOT / ".github" / "workflows" / "init-integration.yml",
     ]
     import shutil
 
     for t in targets:
+        if t.is_symlink():
+            t.unlink()  # never rmtree through a symlink
+            continue
         if not t.exists():
             continue
         if t.is_dir():
             shutil.rmtree(t)
         else:
             t.unlink()
+    # The skill dir/link live under .claude/skills/ and .agents/skills/;
+    # drop those parents too when the skill was the only thing in them.
+    for parent in (
+        SKILL_LINK.parent,
+        SKILL_LINK.parent.parent,
+        SKILL_DIR.parent,
+        SKILL_DIR.parent.parent,
+    ):
+        try:
+            parent.rmdir()  # only succeeds when empty
+        except OSError:
+            # Parent still holds other entries (e.g. user-added skills) or
+            # was already gone — best-effort cleanup, keep it.
+            pass
     print(
         "pruned init/ system. Manually remove `_blueprint_notice`, `_guard`, "
         "`init`, `init-doctor` from Justfile and the .blueprint-contributor line "
@@ -351,8 +391,8 @@ def main(argv: list[str] | None = None) -> int:
     print(report.render())
 
     if not args.no_lockfile:
-        print("regenerating lockfiles...", file=sys.stderr)
-        regenerate_lockfiles()
+        print("regenerating lockfiles and generated artifacts...", file=sys.stderr)
+        run_regenerates(manifest)
 
     write_marker(answers)
     print(f"marker written: {MARKER_PATH.relative_to(REPO_ROOT)}")

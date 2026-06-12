@@ -35,7 +35,7 @@ Py Launch Blueprint eliminates the setup friction in Python projects by providin
 **Zero-config** development environment with **type safety** built in.
 
 ## ✨ Features TLDR
-- 🛠️ **Dev Tools**: Ruff (linting/formatting), MyPy (type checking), Pre-commit hooks
+- 🛠️ **Dev Tools**: Ruff (linting/formatting), `ty` (type checking, Astral), lefthook (hooks), commitlint
 - 🧠 **AI Ready**: Default configs for Cursor, Windsurf, Claude Code
 - 💪 **Production**: Python 3.12+, uv + uv_build, PEP 735 dependency-groups
 - 🚀 **DX - Developer Experience**: VS Code integration, sensible defaults, quality documentation
@@ -62,14 +62,14 @@ make help
 ```bash
     just check-deps
     just install-dev
-    just pre-commit-setup
+    just hooks-install
     just help
 ```
 
 ### Step 4 - Use
 ```bash
-just pre-commit-run
-just run
+just hooks-run
+just check
 ```
 
 ## Complete Feature List
@@ -82,15 +82,15 @@ just run
 
 - **Linting with `ruff`**: Catch errors and enforce code style at lightning speed (10-100x faster than traditional linters), reducing waiting time and improving developer productivity.
 
-- **Type checking with `mypy`**: Prevent type-related bugs before they occur, making your codebase more robust and easier to maintain as it grows.
+- **Type checking with [`ty`](https://docs.astral.sh/ty/)**: Prevent type-related bugs before they occur with Astral's fast Rust-based type checker, making your codebase more robust and easier to maintain as it grows.
 
 - **Formatting with `ruff`**: Ensure consistent code style across your project automatically, eliminating style debates and pull request revision cycles.
 
-- **Pre-commit hooks with `pre-commit`**: Enforce quality standards before code enters your repository, preventing bad code from ever being committed and reducing technical debt.
+- **Git hooks with [`lefthook`](https://lefthook.dev/)**: Enforce quality standards before code enters your repository (secret scanning, linting, commit-message checks at commit/push), preventing bad code from ever being committed and reducing technical debt.
 
 - **TOML formatting and validation with `taplo`**: Verify Toml files for syntax correctness, maintain consistent configuration files, ensuring readability and avoiding syntax errors in critical project settings.
 
-- **YAML validation with [yamllint](docs/source/tools/yaml_lint.md)**: Verify YAML files for syntax correctness, preventing configuration errors and deployment failures.
+- **YAML validation with [yamllint](tools/yaml_lint.md)**: Verify YAML files for syntax correctness, preventing configuration errors and deployment failures.
 
 ### Project Structure & Management
 
@@ -112,7 +112,7 @@ just run
 
 - **`Read the Docs` integration**: Deploy documentation automatically, providing instant hosting and versioning for your project's documentation.
 
-- **Changelog management with `cog`**: Track and communicate changes effectively to users and team members, improving project transparency and adoption.
+- **Changelog management with `release-please`**: Generate the changelog and version bumps automatically from Conventional Commits, improving project transparency and adoption.
 
 ### Testing & Quality Assurance
 
@@ -130,9 +130,9 @@ just run
 
 - **Issue templates (Feature, Bug, Documentation)**: Standardize issue reporting with appropriate fields for each type, gathering all necessary information upfront.
 
-- **Automated contributor recognition with `cog`**: Automatically update contributor lists with cog, acknowledging all project participants without manual tracking.
+- **Automated contributor recognition with `contributors-please`**: Automatically update contributor lists, acknowledging all project participants without manual tracking.
 
-- **Conventional commits support with `cog`**: Enforce structured commit messages, enabling automated changelog generation and version management.
+- **Conventional commits enforced with `commitlint`**: Enforce structured commit messages so `release-please` can automate changelog generation and version bumps.
 
 - **Security policy**: Establish clear vulnerability reporting procedures, promoting responsible disclosure and faster security fixes.
 
@@ -159,13 +159,6 @@ just run
 - **Cursor Rules configuration**: Optimize Cursor AI assistant for your specific project structure, improving suggestion relevance.
 
 - **Windsurf Rules configuration**: Configure Windsurf IDE to understand your project architecture, enhancing code generation quality.
-
-### Communication & Notifications
-
-- **Slack integration for PRs and issues**: Send automated notifications to Slack when PRs or issues are opened/closed, keeping the team informed.
-
-- **PR reminder notifications**: Ping relevant team members on Slack for PR reviews, reducing review cycle times.
-
 
 Start your next Python project with confidence, knowing you're building on a foundation of best practices and modern development tools.
 
@@ -253,6 +246,7 @@ about/index
 tasks/index
 tools/index
 tutorials/index
+web/index
 reference/index
 contributing/index
 github-templates

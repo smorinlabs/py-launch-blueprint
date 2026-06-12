@@ -117,7 +117,7 @@ def check_no_identity_leftover() -> Finding:
     for value in BLUEPRINT_IDENTITY.values():
         for path in iter_repo_files():
             if is_bootstrap_path(path):
-                continue  # init/ and skill/ are bootstrap tooling, not migration targets
+                continue  # bootstrap tooling (init/, the agent skill), not migration targets
             if path.resolve() in regenerate_paths:
                 continue
             try:

@@ -1,6 +1,6 @@
-## Taplo: A Fast TOML Formatter & Linter
+# Taplo: A Fast TOML Formatter & Linter
 
-### Introduction
+## Introduction
 Taplo is used to automatically format and validate project files like pyproject.toml and cog.toml, ensuring consistent structure and preventing syntax errors across the codebase.
 
 ---
@@ -15,7 +15,7 @@ Taplo is used to automatically format and validate project files like pyproject.
 
 ---
 
-### ⚙️ Getting Started
+## ⚙️ Getting Started
 
 **Installation**
 Install Taplo CLI (requires Rust):
@@ -37,7 +37,7 @@ Expected output will show aligned key/value and comment (based on config).
 
 ---
 
-### 🚀 Usage
+## 🚀 Usage
 
 **Example Use Case**:
 
@@ -64,7 +64,7 @@ just pre-commit-run
 
 ---
 
-### 🛠 Recommended Configuration
+## 🛠 Recommended Configuration
 
 `.taplo.toml`:
 
@@ -86,7 +86,7 @@ newline-style = "LF"
 
 ---
 
-### 🛑 Disabling Taplo
+## 🛑 Disabling Taplo
 
 **To temporarily skip formatting:**
 * Disable specific rules in `.taplo.toml`:
@@ -111,8 +111,7 @@ newline-style = "LF"
 
 ---
 
-### 📚 References
+## 📚 References
 
 * [📘 Taplo Docs](https://taplo.tamasfe.dev/)
 * [🛠 Taplo GitHub](https://github.com/tamasfe/taplo)
----

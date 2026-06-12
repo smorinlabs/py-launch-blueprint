@@ -1,0 +1,8 @@
+run/
+cache/
+lib/
+log/
+!env/
+# Generated on first `flox activate`; deliberately not committed yet (ADR 0005
+# follow-up). Remove this line if/when the lock is pinned in the repo.
+env/manifest.lock

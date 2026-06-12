@@ -19,14 +19,9 @@ Our project uses YAML files extensively for configuration, GitHub Actions workfl
 ## ⚙️ Getting Started
 
 ### Prerequisites
-Install Go and yamlfmt:
+Install yamlfmt (downloads the pre-built binary; no Go toolchain needed):
 ```bash
-# Install Go (if not already installed)
-just install-go
-
-# Install yamlfmt
 just install-yamlfmt
-
 ```
 
 ---
@@ -59,34 +54,25 @@ just check-yaml
 
 ### yamllint Configuration (`.yamllint`)
 
----
+## 🔄 Git Hook Integration (lefthook)
 
-## 🔄 Pre-commit Integration
+Git hooks are managed by [lefthook](https://lefthook.dev/) (`lefthook.yml`), not
+the Python `pre-commit` framework. YAML *linting* runs automatically on staged
+files at commit time; YAML *formatting* is a manual step.
 
-YAML formatting runs automatically on every commit via `pre-commit`:
+- The `yamllint` pre-commit hook validates staged `.yaml`/`.yml` files on every
+  commit and blocks commits with syntax/style errors.
+- `yamlfmt` formatting is **not** wired into a hook — run it on demand with
+  `just format-yaml` (or `yamlfmt .`).
 
-- The `yamlfmt` hook formats `.yaml` and `.yml` files automatically.
-- The `yamllint` hook validates `.yaml` and `.yml` files automatically.
-- Prevents commits with YAML syntax/style errors.
-- Ensures codebase consistency and reduces manual reviews.
-
-Example `.pre-commit-config.yaml` snippet for YAML linting:
+The relevant `lefthook.yml` entry:
 
 ```yaml
-repos:
-  - repo: https://github.com/google/yamlfmt
-    rev: v0.13.0
-    hooks:
-      - id: yamlfmt
-        name: "Format YAML files"
-        files: \.ya?ml$
-  - repo: local
-    hooks:
-      - id: yamllint
-        name: Lint YAML files
-        entry: uvx yamllint -c .yamllint .
-        language: system
-        pass_filenames: false
+pre-commit:
+  commands:
+    yamllint:
+      glob: "*.{yml,yaml}"
+      run: uv run yamllint -c .yamllint {staged_files}
 ```
 
 ---
@@ -96,7 +82,7 @@ repos:
 - To skip linting temporarily, use the `--no-verify` flag on `git commit`.
 - To disable formatting rules, edit `.yamlfmt`.
 - To disable lint rules, edit `.yamllint`.
-- To remove linting completely, remove related pre-commit hooks and `just` commands.
+- To remove linting completely, remove the related `lefthook.yml` hooks and `just` commands.
 
 ---
 
@@ -104,6 +90,6 @@ repos:
 
 * [📘 yamlfmt GitHub Repository](https://github.com/google/yamlfmt)
 * [🛠 yamlfmt Configuration Options](https://github.com/google/yamlfmt#configuration)
-* [🔧 Our yamlfmt Configuration](.yamlfmt)
+* [🔧 Our yamlfmt Configuration](https://github.com/smorinlabs/py-launch-blueprint/blob/main/.yamlfmt)
 * [🔧 yamllint Documentation](https://yamllint.readthedocs.io/)
 * [🚀 Pre-commit Integration](https://pre-commit.com/)

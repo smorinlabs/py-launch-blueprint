@@ -39,11 +39,13 @@ py-launch-blueprint/
 │   ├── __init__.py                 # Package initialization
 │   ├── cli/                        # Click CLI (thin presentation layer)
 │   ├── core/                       # Library: logic + Pydantic models
-│   └── web/                        # Reserved stub for a future web service
+│   └── web/                        # FastAPI web service (behind the `web` extra)
 ├── tests/                          # Test files
 │   ├── __init__.py                 # Test package initialization
 │   ├── cli/                        # CLI tests
 │   └── core/                       # Library tests
+├── .flox/                          # Flox environment (optional toolchain provisioner; ADR 0005)
+│   └── env/manifest.toml           # Declares the 10-tool dev set for `flox activate`
 ├── .gitignore                      # Git ignore file
 ├── .pre-commit-config.yaml         # Pre-commit hooks configuration
 ├── .python-version                 # Python version file
@@ -69,18 +71,19 @@ py-launch-blueprint/
 │   │   └── contributing/           # Contribution guidelines
 │   └── build/                      # Built documentation files
 ├── EXAMPLECLI.md                   # Example CLI documentation
+├── EXAMPLEWEB.md                   # Example web service documentation
 ├── Justfile                        # Just task runner configuration
 ├── Makefile                        # Makefile for building the project
+├── mise.toml                       # mise toolchain (optional provisioner; ADR 0005)
 ├── PULL_REQUEST_TEMPLATE.md        # Pull request template
 ├── src/py_launch_blueprint/        # Source code for the project
 │   ├── __init__.py                 # Package initialization
 │   ├── cli/                        # Click CLI (thin presentation layer)
 │   ├── core/                       # Library: logic + Pydantic models
-│   └── web/                        # Reserved stub for a future web service
+│   └── web/                        # FastAPI web service (behind the `web` extra)
 ├── pyproject.toml                  # Project configuration file
 ├── cog.toml                        # Cog configuration file
 ├── CONTRIBUTORS.md                 # Project contributors
-├── pyrightconfig.json              # Pyright configuration
 ├── README.md                       # Project overview and navigation
 ├── SECURITY.md                     # Security policy
 └── tests/                          # Test files
@@ -105,7 +108,7 @@ Contains the source code for the project, organized into the `cli/`, `core/`, an
 
 ### tests/
 
-Contains test files for the project, organized under `tests/cli/` and `tests/core/`.
+Contains test files for the project, organized under `tests/cli/`, `tests/core/`, and `tests/web/`.
 
 ### .gitignore
 
@@ -143,6 +146,10 @@ Provides guidelines for contributing to the project.
 
 Contains documentation for the example CLI tool.
 
+### EXAMPLEWEB.md
+
+Contains documentation for the example FastAPI web service (the `web` extra).
+
 ### Justfile
 
 Configuration file for the Just task runner to manage development tasks.
@@ -164,10 +171,6 @@ Configuration file for COG (Cocogitto), used for changelog generation.
 
 ### CONTRIBUTORS.md
 Auto-generated file that lists the project contributors.
-
-### pyrightconfig.json
-
-Configuration file for Pyright, a static type checker for TypeScript and JavaScript.
 
 ### README.md
 

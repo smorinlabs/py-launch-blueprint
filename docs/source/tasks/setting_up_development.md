@@ -1,9 +1,33 @@
+# Setting Up Development
+
 ## Setup & Dependency Check
 
 Run the following command to check if the base dependencies are installed.
 ```bash
 make check
 ```
+
+### (Optional) Provision the whole toolchain with mise or flox
+
+Instead of installing each tool natively, you can provision the project's full
+10-tool set (python, uv, ruff, taplo, gitleaks, just, bun, gh, lefthook, make)
+with a single command — both manifests live at the repo root and are kept in
+sync with the native installers (see
+[ADR 0005](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/adr/0005-mise-flox-first-class-toolchains.md)):
+
+```bash
+# Option A: mise (https://mise.jdx.dev/) — reads mise.toml
+curl https://mise.run | sh   # install mise itself, then:
+mise install
+
+# Option B: flox (https://flox.dev/) — reads .flox/
+make install-flox            # prints platform-specific install instructions
+flox activate
+```
+
+Note: yamllint, codespell, bandit, editorconfig-checker, and commitlint are
+deliberately not in these manifests — they are fetched on demand via
+`uvx`/`bunx` by the git hooks and Justfile recipes.
 
 # Setup Development Environment
 
@@ -18,7 +42,7 @@ It depends on the tool you choose, but both offer a convenient way to install th
 ## Using uv:
 
 ```bash
-# This command creates a live development installation that allows you to modify the code without reinstalling while also installing additional development tools (like pytest, mypy, etc.) specified in your project's dev dependencies.
+# This command creates a live development installation that allows you to modify the code without reinstalling while also installing additional development tools (like pytest, ty, etc.) specified in your project's dev dependencies.
 uv pip install --editable ".[dev]"
 
 # Format the code
@@ -28,7 +52,7 @@ uvx ruff format py_launch_blueprint/
 uvx ruff check py_launch_blueprint/
 
 # Run type checker
-uvx  --with-editable . mypy py_launch_blueprint/
+uv run ty check src/py_launch_blueprint/
 
 # Run tests
 uvx --with-editable . pytest
@@ -65,7 +89,7 @@ pip install --editable ".[dev]"
 # Run development tools directly (no need for 'uv pip run')
 ruff format py_launch_blueprint/
 ruff check py_launch_blueprint/
-mypy py_launch_blueprint/
+ty check src/py_launch_blueprint/
 pytest --cov=py_launch_blueprint --cov-report=term-missing
 
 # Check the installed package cli tool version
