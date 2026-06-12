@@ -2,7 +2,12 @@
 
 import json
 
-from py_launch_blueprint.cli.output import OutputMode, Renderer
+from py_launch_blueprint.cli import output as output_mod
+from py_launch_blueprint.cli.output import (
+    OutputMode,
+    Renderer,
+    _resolve_pager_command,
+)
 from py_launch_blueprint.core.errors import ExitCode
 from py_launch_blueprint.core.models import Project, ProjectList
 
@@ -157,8 +162,6 @@ def _tall_result(rows: int = 40):
 
 
 def test_pager_env_precedence(monkeypatch):
-    from py_launch_blueprint.cli.output import _resolve_pager_command
-
     monkeypatch.delenv("PLBP_PAGER", raising=False)
     monkeypatch.delenv("PAGER", raising=False)
     assert _resolve_pager_command() == "less -FRX"
@@ -171,8 +174,6 @@ def test_pager_env_precedence(monkeypatch):
 
 
 def test_pager_not_used_when_not_a_terminal(capsys, monkeypatch):
-    import py_launch_blueprint.cli.output as output_mod
-
     def explode(*args, **kwargs):  # pragma: no cover - must not be reached
         raise AssertionError("pager must not run for piped output")
 
@@ -182,8 +183,6 @@ def test_pager_not_used_when_not_a_terminal(capsys, monkeypatch):
 
 
 def test_pager_invoked_for_tall_terminal_output(monkeypatch):
-    import py_launch_blueprint.cli.output as output_mod
-
     calls = {}
 
     def fake_run(args, **kwargs):
@@ -198,8 +197,6 @@ def test_pager_invoked_for_tall_terminal_output(monkeypatch):
 
 
 def test_pager_skipped_for_short_output(capsys, monkeypatch):
-    import py_launch_blueprint.cli.output as output_mod
-
     def explode(*args, **kwargs):  # pragma: no cover - must not be reached
         raise AssertionError("short output must not be paged")
 
@@ -210,8 +207,6 @@ def test_pager_skipped_for_short_output(capsys, monkeypatch):
 
 
 def test_pager_missing_binary_falls_back_to_plain_output(capsys, monkeypatch):
-    import py_launch_blueprint.cli.output as output_mod
-
     def missing(*args, **kwargs):
         raise FileNotFoundError("no such pager")
 
@@ -222,8 +217,6 @@ def test_pager_missing_binary_falls_back_to_plain_output(capsys, monkeypatch):
 
 
 def test_pager_disabled_by_paging_false(capsys, monkeypatch):
-    import py_launch_blueprint.cli.output as output_mod
-
     def explode(*args, **kwargs):  # pragma: no cover - must not be reached
         raise AssertionError("paging=False must never page")
 
