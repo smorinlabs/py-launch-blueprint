@@ -18,6 +18,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  merge_group:  # job must report inside the merge queue; lint step no-ops there
 
 permissions: {}
 
@@ -37,7 +38,10 @@ jobs:
         with:
           fetch-depth: 0  # range scan needs full history
 
+      # On merge_group there are no PR commits to lint (they were already
+      # linted on the PR) — skip the step so the required check reports green.
       - name: commitlint
+        if: github.event_name != 'merge_group'
         uses: wagoid/commitlint-github-action@v6.2.1
         with:
           configFile: commitlint.config.mjs

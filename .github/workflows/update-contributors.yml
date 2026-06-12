@@ -33,3 +33,9 @@ jobs:
           state-file: .contributors.jsonl
           config-file: .contributors.yml
           mode: pull-request
+          # Override the action's default ("docs: update contributors
+          # [skip ci]"): [skip ci] suppresses the pull_request workflows
+          # behind main's required checks, leaving the bot PR permanently
+          # blocked. Loop protection comes from paths-ignore above, not
+          # from [skip ci].
+          commit-message: "docs: update contributors"

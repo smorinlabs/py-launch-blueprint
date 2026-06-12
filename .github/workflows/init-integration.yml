@@ -33,6 +33,7 @@ name: init-integration
 
 on:
   pull_request:
+  merge_group:  # required checks must also report on the merge queue's speculative merge
   push:
     branches: [main]
   schedule:

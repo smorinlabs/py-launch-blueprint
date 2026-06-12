@@ -13,6 +13,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # The merge queue emits merge_group (not pull_request) for its speculative
+  # merge — without this trigger the ci-ok required check never reports and
+  # every queue entry deadlocks at "Expected".
+  merge_group:
 
 permissions: {}
 
@@ -54,6 +58,10 @@ jobs:
           # a packaging input that build-smoke must validate (CodeRabbit).
           skip='^docs/|^assets/|^\.vscode/|^\.cursor/|^\.windsurf|\.md$'
           skip="$skip|^LICENSE$|^\.github/ISSUE_TEMPLATE/"
+          # .contributors.jsonl is contributors-please's generated ledger -
+          # bookkeeping only, so the weekly bot PR stays on the docs-only
+          # fast path now that its commits no longer carry [skip ci].
+          skip="$skip|^\.contributors\.jsonl$"
           changed="$(git diff --name-only "${BASE_SHA}...HEAD")"
           if printf '%s\n' "$changed" | grep -qx 'README\.md' \
               || printf '%s\n' "$changed" \
