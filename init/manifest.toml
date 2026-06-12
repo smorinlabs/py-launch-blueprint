@@ -91,6 +91,11 @@ files = [
   "docs/adr/0002-no-secrets-in-config-file.md",         # 1x
   "docs/adr/0003-keep-markdown-output-mode.md",         # 1x
   "docs/adr/0004-config-errors-degrade-to-warnings.md", # 1x
+  "docs/adr/0005-stable-error-codes-hints-crash-log.md", # 2x
+  "docs/adr/0006-did-you-mean-stdlib-difflib.md",       # 3x
+  "docs/adr/0008-config-init-and-first-run-hint.md",    # 2x
+  "docs/adr/0010-windows-native-paths-xdg-overrides.md", # 3x
+  "docs/adr/0011-doctor-bundle-redact-at-collection.md", # 2x
   "docs/adr/README.md",                                 # 2x
   "docs/design/0001-plbp-cli-conventions.md",           # 28x
   "docs/design/README.md",                              # 2x
@@ -132,6 +137,8 @@ files = [
   "docs/design/0001-plbp-cli-conventions.md",         # 26x
   "docs/adr/0001-app-short-name-plbp.md",             # 2x
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
+  "docs/adr/0005-stable-error-codes-hints-crash-log.md", # 5x
+  "docs/adr/0007-pager-for-long-text-output.md",      # 2x
   "docs/source/index.md",                             # 1x
   "llms.txt",                                         # 1x
   "POST_INIT.md",                                     # 1x
