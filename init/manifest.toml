@@ -106,6 +106,7 @@ files = [
   "docs/adr/0009-config-init-and-first-run-hint.md",    # 2x
   "docs/adr/0011-windows-native-paths-xdg-overrides.md", # 3x
   "docs/adr/0012-doctor-bundle-redact-at-collection.md", # 2x
+  "docs/adr/0014-app-short-name-placeholder.md",        # 10x
   "docs/adr/README.md",                                 # 2x
   "docs/design/0001-plbp-cli-conventions.md",           # 28x
   "docs/design/README.md",                              # 2x
@@ -153,6 +154,7 @@ files = [
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
   "docs/adr/0006-stable-error-codes-hints-crash-log.md", # 5x
   "docs/adr/0008-pager-for-long-text-output.md",      # 2x
+  "docs/adr/0014-app-short-name-placeholder.md",      # 5x
   "docs/source/index.md",                             # 1x
   "docs/source/web/index.md",                         # 10x
   "llms.txt",                                         # 1x

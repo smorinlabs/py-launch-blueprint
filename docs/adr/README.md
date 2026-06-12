@@ -19,7 +19,7 @@ Start from [`template.md`](template.md).
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [0001](0001-app-short-name-plbp.md) | App short name `plbp` (hard rename from `pylb`) | Accepted |
+| [0001](0001-app-short-name-plbp.md) | App short name `plbp` (hard rename from `pylb`) | Superseded by 0014 |
 | [0002](0002-no-secrets-in-config-file.md) | Secrets are never stored in the config file | Accepted |
 | [0003](0003-keep-markdown-output-mode.md) | Keep `markdown` as a third output format (spec deviation) | Accepted |
 | [0004](0004-config-errors-degrade-to-warnings.md) | Invalid config values degrade to warnings, never crashes | Accepted |
@@ -32,6 +32,7 @@ Start from [`template.md`](template.md).
 | [0011](0011-windows-native-paths-xdg-overrides.md) | Windows-native default directories; XDG overrides win everywhere | Accepted |
 | [0012](0012-doctor-bundle-redact-at-collection.md) | `doctor --bundle` redacts at collection time, excludes log contents | Accepted |
 | [0013](0013-web-service-best-practices.md) | Web service: baked-in REST best practices behind the `web` extra | Accepted |
+| [0014](0014-app-short-name-placeholder.md) | App short name is an obvious placeholder (`acmeapp`), not a brand | Accepted |
 
 ## Note on historical decisions
 
