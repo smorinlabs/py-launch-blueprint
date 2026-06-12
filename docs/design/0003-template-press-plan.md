@@ -1,12 +1,17 @@
-# Template Press — The Plan
+# Template Press — Reusable Init/Post-Init Engine Plan
+
+- **Status:** Accepted (implementation not started)
+- **Type:** Design / decision record
+- **Created:** 2026-06-12
+- **Applies to:** the `init/` system (rebrand + post-init) and its future
+  extraction into the `template-press` engine
 
 > Decision record and implementation plan for extracting the init and
 > post-init systems into a reusable engine. This concretizes the
-> recommendations of [INIT_POST_INIT_ANALYSIS.md](INIT_POST_INIT_ANALYSIS.md)
-> (Part 3), which were reviewed and **accepted** on 2026-06-12.
->
-> Status: **approved, not yet started**. Supersedes nothing; the analysis
-> document remains the rationale, this document is the contract.
+> recommendations of the
+> [init/post-init analysis](../research/0003-init-post-init-analysis.md)
+> (Part 3), which were reviewed and **accepted** on 2026-06-12. The analysis
+> remains the rationale; this document is the contract.
 
 ---
 
@@ -47,7 +52,7 @@ plate, is made ready, runs, and the output is proofed.
 |---|---|---|
 | PyPI distribution | `template-press` | Free as of 2026-06-12 (404 on `pypi.org/pypi/template-press/json`); `templatepress` also free. **Reserve early** with a 0.0.1 placeholder once the repo exists. |
 | Import package | `template_press` | PEP 8 normalization of the distribution name |
-| GitHub repo | `smorinlabs/template-press` | `github.com/template-press` (org/user) also free as of 2026-06-12 |
+| GitHub repo | `template-press` under the blueprint owner's account | `github.com/template-press` (org/user name) also free as of 2026-06-12 |
 | CLI command | `press` | Short, verb-like: `press init`, `press setup`. A legacy `press` distribution exists on PyPI (Rackspace imaging tool); collision only matters if co-installed — ship `tpress` as an alias console script as the escape hatch. |
 | Consumer-repo dir | `press/` | See §4 |
 
@@ -55,7 +60,7 @@ Metaphor glossary (for docs, not for CLI verbs — verbs stay plain):
 
 | Print term | System concept |
 |---|---|
-| Plate | The template repo (the fixed master: py-launch-blueprint) |
+| Plate | The template repo (the fixed master — this blueprint) |
 | Makeready | `press init` — the preparation that turns the plate's output into *yours* |
 | Press run | Applying the plan (deterministic; same inputs → same output) |
 | Proofing | `press doctor` / checks — verifying the output against the master |
@@ -149,8 +154,7 @@ Rules:
 - **`press/` is not pruned.** Unlike today's `init/` tree, the directory
   persists after init because the setup board is open-ended. Pruning
   (analog of `init --prune`) removes only template-only content the
-  manifest marks as such (e.g. blueprint design docs like the analysis
-  file and this plan).
+  manifest marks as such (e.g. the blueprint's own walkthrough docs).
 - Contributor sentinel moves: `init/.blueprint-contributor` →
   `press/.contributor` (git-ignored), same guard-skip semantics.
 - Every TOML file carries `meta.schema = <int>`; the schema version is
@@ -292,7 +296,7 @@ expensive to coordinate prematurely.
 
 **Phase 3 — Extract the engine**
 
-- Create `smorinlabs/template-press`; reserve the PyPI name immediately.
+- Create the `template-press` repo; reserve the PyPI name immediately.
 - Move engine code (everything that is not template data) into
   `template_press/` per §3; blueprint keeps only the `press/` data dir.
 - Blueprint Justfile recipes become `uvx template-press@<pinned> ...`
@@ -315,7 +319,7 @@ Migration map (current → target, executed during phase 3):
 | `init/.blueprint-contributor` | `press/.contributor` |
 | `init/guard.sh` two-tier guard | stays in blueprint (template concern), reads `press/state.toml` |
 | `init/tests/` five-mode matrix, `init/ci/` drift checks | engine repo test fixtures; blueprint CI calls the engine |
-| `init/init-spec.md`, analysis + this plan | engine repo docs (design history) |
+| `init/init-spec.md`, the [analysis](../research/0003-init-post-init-analysis.md) + this plan | engine repo docs (design history) |
 
 The `init/` → `press/` directory rename happens at the start of phase 3,
 together with the `uvx` cutover, so guards/CI/manifest paths are touched

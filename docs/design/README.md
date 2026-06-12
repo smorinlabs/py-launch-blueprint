@@ -18,3 +18,5 @@ feature proposals, conventions, and requirements — before or while implementin
 | Doc | Title | Status |
 |-----|-------|--------|
 | [0001](0001-plbp-cli-conventions.md) | `plbp` CLI conventions — output, color, config (TOML), logging | Proposed |
+| [0002](0002-web-api-conventions.md) | Web API conventions — the FastAPI service | Accepted |
+| [0003](0003-template-press-plan.md) | Template Press — reusable init/post-init engine plan | Accepted |

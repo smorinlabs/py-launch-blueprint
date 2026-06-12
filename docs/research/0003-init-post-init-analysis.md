@@ -1265,7 +1265,7 @@ Ranked by how much each choice buys you:
 > accepted. The concrete decision record — engine name (**template-press**),
 > the `press/` directory and config-file contracts, the core/TUI/CLI-JSON
 > architecture, and the phased migration map — lives in
-> [TEMPLATE_PRESS_PLAN.md](TEMPLATE_PRESS_PLAN.md).
+> [design doc 0003 — Template Press plan](../design/0003-template-press-plan.md).
 
 ## The one-sentence model
 
