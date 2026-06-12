@@ -98,6 +98,7 @@ files = [
   "Justfile",                                           # 1x
   "POST_INIT.md",                                       # 1x
   "README.md",                                          # 2x
+  "TESTANALYSIS.md",                                     # 5x (wishlist analysis)
   "docs/adr/0001-app-short-name-plbp.md",               # 5x
   "docs/adr/0002-no-secrets-in-config-file.md",         # 1x
   "docs/adr/0003-keep-markdown-output-mode.md",         # 1x
