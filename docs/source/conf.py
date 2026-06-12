@@ -33,6 +33,10 @@ extensions = [
     'sphinx_copybutton' # for copy button in code blocks
 ]
 
+# WL-021: generate anchors for h1-h3 so '#heading-slug' cross-references
+# resolve (the -W docs gate treats missing targets as errors).
+myst_heading_anchors = 3
+
 myst_enable_extensions = [
     'colon_fence', # for colon fences ::: bash instead of ```bash
     'deflist', # for definition lists Term\n : Definition

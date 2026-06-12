@@ -23,6 +23,7 @@ file by hand — see Conventions.
 | ID  | St    | Project                                                                 |
 |-----|-------|------------------------------------------------------------------------|
 | P01 | `[x]` | [Init app-name rebrand robustness](projects/P01-init-rebrand-robustness.md) — per-field drift coverage (B) + derive non-contract internals (C) |
+| P02 | `[x]` | [Repo simplification & organization (SIMP series)](projects/P02-repo-simplification.md) — single-purpose PRs to simplify/consolidate Justfile, docs, setup, tests, workflows, agent configs |
 
 ## Conventions
 

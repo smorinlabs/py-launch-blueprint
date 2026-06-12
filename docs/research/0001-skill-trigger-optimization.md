@@ -1,5 +1,10 @@
 # Trigger-optimization results
 
+**Question:** can description wording make the
+[`new-python-project`](../../.claude/skills/new-python-project/SKILL.md)
+agent skill auto-trigger reliably? (Findings originally lived in the
+skill's `optimization-workspace/`; moved here as research.)
+
 Ran the skill-creator's `run_eval.py` against six candidate descriptions
 across two distinct strategic axes (description style + scope of trigger
 intent). Two eval sets — the first (`trigger_eval.json`) used

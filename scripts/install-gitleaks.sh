@@ -38,12 +38,14 @@ main() {
         echo "INFO: existing gitleaks at ${existing}; reinstalling pinned ${GITLEAKS_VERSION}"
     fi
 
-    local platform tar checksums url tmpdir
+    local platform tar checksums url
     platform=$(detect_platform)
     tar="gitleaks_${GITLEAKS_VERSION}_${platform}.tar.gz"
     checksums="gitleaks_${GITLEAKS_VERSION}_checksums.txt"
     url="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
 
+    # tmpdir must NOT be `local`: the EXIT trap runs after main() returns,
+    # where a local would be out of scope and `set -u` would abort the script.
     tmpdir=$(mktemp -d)
     trap 'rm -rf "${tmpdir}"' EXIT
 

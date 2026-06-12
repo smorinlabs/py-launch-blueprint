@@ -16,4 +16,6 @@ itself mandate anything — when a conclusion is reached, capture it in a
 
 | Doc | Title | Date |
 |-----|-------|------|
-| [0002](0002-init-post-init-analysis.md) | Init & post-init systems — asset report & design exploration | 2026-06 |
+| [0001](0001-skill-trigger-optimization.md) | Trigger optimization for the `new-python-project` agent skill | 2026-06 |
+| [0002](0002-dev-tooling-wishlist.md) | Test & tooling analysis — dev-tooling wishlist (WL series) | 2026-06 |
+| [0003](0003-init-post-init-analysis.md) | Init & post-init systems — asset report & design exploration | 2026-06 |

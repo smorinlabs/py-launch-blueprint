@@ -1,0 +1,307 @@
+# serializer version: 1
+# name: test_help_snapshot[plbp completion]
+  '''
+  Usage: plbp completion [OPTIONS] {bash|zsh|fish}
+  
+    Print a shell completion script.
+  
+    Examples:     plbp completion bash >> ~/.bashrc     eval "$(plbp completion
+    zsh)"
+  
+  Options:
+    -h, --help  Show this message and exit.
+  
+  '''
+# ---
+# name: test_help_snapshot[plbp config get]
+  '''
+  Usage: plbp config get [OPTIONS] {logging.file|logging.file_level|logging.format
+                         |logging.level|output.color|output.format|token}
+  
+    Show a resolved config value and where it came from.
+  
+    The token is masked and resolves from flag/env only. Examples:     plbp config
+    get output.color     plbp config get logging.level --json     plbp config get
+    token
+  
+  Options:
+    -o, --output [text|json|markdown]
+                                    Output format. [default: text]
+    --json                          Shorthand for --output json.
+    --output-file FILE              Write results to a file instead of stdout
+                                    (format set by --output).
+    -v, --verbose                   Increase log verbosity (-vv for debug).
+    -q, --quiet                     Suppress non-essential stderr output.
+    --log-level [debug|info|warning|error|critical]
+                                    Explicit console log level (overrides -v/-q).
+    --log-file TEXT                 Enable rotating file logging (PATH optional;
+                                    default: XDG state).
+    --no-color                      Disable colored output.
+    --config FILE                   Path to a TOML config file (overrides layered
+                                    discovery).
+    --token TEXT                    Py Personal Access Token (overrides
+                                    $PLBP_TOKEN). Never stored.
+    --no-input                      Never prompt; fail instead (for scripts/CI).
+    -h, --help                      Show this message and exit.
+  
+  '''
+# ---
+# name: test_help_snapshot[plbp config init]
+  '''
+  Usage: plbp config init [OPTIONS]
+  
+    Create or update the config file with guided prompts.
+  
+    Asks (on stderr, so stdout stays pipe-safe) for the most common settings,
+    offering the currently resolved values as defaults, then writes them to the
+    TOML config file. Secrets are never written — the token stays in --token /
+    $PLBP_TOKEN. Examples:
+  
+        plbp config init     plbp config init --yes       # accept current values,
+        no prompts     plbp config init --dry-run   # preview, write nothing
+  
+  Options:
+    --dry-run                       Show what would change; write nothing.
+    -y, --yes                       Skip confirmation prompts (for scripts/CI).
+    -o, --output [text|json|markdown]
+                                    Output format. [default: text]
+    --json                          Shorthand for --output json.
+    --output-file FILE              Write results to a file instead of stdout
+                                    (format set by --output).
+    -v, --verbose                   Increase log verbosity (-vv for debug).
+    -q, --quiet                     Suppress non-essential stderr output.
+    --log-level [debug|info|warning|error|critical]
+                                    Explicit console log level (overrides -v/-q).
+    --log-file TEXT                 Enable rotating file logging (PATH optional;
+                                    default: XDG state).
+    --no-color                      Disable colored output.
+    --config FILE                   Path to a TOML config file (overrides layered
+                                    discovery).
+    --token TEXT                    Py Personal Access Token (overrides
+                                    $PLBP_TOKEN). Never stored.
+    --no-input                      Never prompt; fail instead (for scripts/CI).
+    -h, --help                      Show this message and exit.
+  
+  '''
+# ---
+# name: test_help_snapshot[plbp config path]
+  '''
+  Usage: plbp config path [OPTIONS]
+  
+    Show the config file path and whether it exists.
+  
+    Examples:     plbp config path     plbp config path --json
+  
+  Options:
+    -o, --output [text|json|markdown]
+                                    Output format. [default: text]
+    --json                          Shorthand for --output json.
+    --output-file FILE              Write results to a file instead of stdout
+                                    (format set by --output).
+    -v, --verbose                   Increase log verbosity (-vv for debug).
+    -q, --quiet                     Suppress non-essential stderr output.
+    --log-level [debug|info|warning|error|critical]
+                                    Explicit console log level (overrides -v/-q).
+    --log-file TEXT                 Enable rotating file logging (PATH optional;
+                                    default: XDG state).
+    --no-color                      Disable colored output.
+    --config FILE                   Path to a TOML config file (overrides layered
+                                    discovery).
+    --token TEXT                    Py Personal Access Token (overrides
+                                    $PLBP_TOKEN). Never stored.
+    --no-input                      Never prompt; fail instead (for scripts/CI).
+    -h, --help                      Show this message and exit.
+  
+  '''
+# ---
+# name: test_help_snapshot[plbp config set]
+  '''
+  Usage: plbp config set [OPTIONS] {logging.file|logging.file_level|logging.format
+                         |logging.level|output.color|output.format} VALUE
+  
+    Write a non-secret config value to the TOML config file.
+  
+    KEY is a dotted path into the config tables. Examples:     plbp config set
+    output.color always     plbp config set logging.level info     plbp config set
+    logging.file_level debug --yes
+  
+    Secrets are never stored here — supply the token via --token or $PLBP_TOKEN.
+    Prompts before overwriting an existing value unless --yes.
+  
+  Options:
+    --dry-run                       Show what would change; write nothing.
+    -y, --yes                       Skip confirmation prompts (for scripts/CI).
+    -o, --output [text|json|markdown]
+                                    Output format. [default: text]
+    --json                          Shorthand for --output json.
+    --output-file FILE              Write results to a file instead of stdout
+                                    (format set by --output).
+    -v, --verbose                   Increase log verbosity (-vv for debug).
+    -q, --quiet                     Suppress non-essential stderr output.
+    --log-level [debug|info|warning|error|critical]
+                                    Explicit console log level (overrides -v/-q).
+    --log-file TEXT                 Enable rotating file logging (PATH optional;
+                                    default: XDG state).
+    --no-color                      Disable colored output.
+    --config FILE                   Path to a TOML config file (overrides layered
+                                    discovery).
+    --token TEXT                    Py Personal Access Token (overrides
+                                    $PLBP_TOKEN). Never stored.
+    --no-input                      Never prompt; fail instead (for scripts/CI).
+    -h, --help                      Show this message and exit.
+  
+  '''
+# ---
+# name: test_help_snapshot[plbp config]
+  '''
+  Usage: plbp config [OPTIONS] COMMAND [ARGS]...
+  
+    Inspect and edit CLI configuration.
+  
+  Options:
+    -h, --help  Show this message and exit.
+  
+  Commands:
+    get   Show a resolved config value and where it came from.
+    init  Create or update the config file with guided prompts.
+    path  Show the config file path and whether it exists.
+    set   Write a non-secret config value to the TOML config file.
+  
+  '''
+# ---
+# name: test_help_snapshot[plbp doctor]
+  '''
+  Usage: plbp doctor [OPTIONS]
+  
+    Diagnose configuration and environment.
+  
+    Reports Python/platform, the resolved config file, and token status. Exits
+    non-zero if any check is an error (useful in CI). Honors -o/--json. --bundle
+    widens the report into a redacted snapshot (version, settings, app env vars
+    with secrets masked) safe to paste into a public issue.
+  
+  Options:
+    --bundle                        Emit a redacted diagnostics bundle to attach
+                                    to bug reports.
+    -o, --output [text|json|markdown]
+                                    Output format. [default: text]
+    --json                          Shorthand for --output json.
+    --output-file FILE              Write results to a file instead of stdout
+                                    (format set by --output).
+    -v, --verbose                   Increase log verbosity (-vv for debug).
+    -q, --quiet                     Suppress non-essential stderr output.
+    --log-level [debug|info|warning|error|critical]
+                                    Explicit console log level (overrides -v/-q).
+    --log-file TEXT                 Enable rotating file logging (PATH optional;
+                                    default: XDG state).
+    --no-color                      Disable colored output.
+    --config FILE                   Path to a TOML config file (overrides layered
+                                    discovery).
+    --token TEXT                    Py Personal Access Token (overrides
+                                    $PLBP_TOKEN). Never stored.
+    --no-input                      Never prompt; fail instead (for scripts/CI).
+    -h, --help                      Show this message and exit.
+  
+  '''
+# ---
+# name: test_help_snapshot[plbp projects get]
+  '''
+  Usage: plbp projects get [OPTIONS] PROJECT_ID
+  
+    Fetch a single project by its ID.
+  
+    Examples:     plbp projects get 12345     plbp projects get 12345 --json
+  
+  Options:
+    -o, --output [text|json|markdown]
+                                    Output format. [default: text]
+    --json                          Shorthand for --output json.
+    --output-file FILE              Write results to a file instead of stdout
+                                    (format set by --output).
+    -v, --verbose                   Increase log verbosity (-vv for debug).
+    -q, --quiet                     Suppress non-essential stderr output.
+    --log-level [debug|info|warning|error|critical]
+                                    Explicit console log level (overrides -v/-q).
+    --log-file TEXT                 Enable rotating file logging (PATH optional;
+                                    default: XDG state).
+    --no-color                      Disable colored output.
+    --config FILE                   Path to a TOML config file (overrides layered
+                                    discovery).
+    --token TEXT                    Py Personal Access Token (overrides
+                                    $PLBP_TOKEN). Never stored.
+    --no-input                      Never prompt; fail instead (for scripts/CI).
+    -h, --help                      Show this message and exit.
+  
+  '''
+# ---
+# name: test_help_snapshot[plbp projects list]
+  '''
+  Usage: plbp projects list [OPTIONS]
+  
+    List projects, optionally filtered by workspace.
+  
+    Examples:     plbp projects list     plbp projects list --workspace "My
+    Workspace" --json     plbp projects list -o markdown
+  
+  Options:
+    --workspace TEXT                Filter projects by workspace name.
+    --limit INTEGER RANGE           Maximum number of projects to retrieve.
+                                    [default: 200; x>=1]
+    -o, --output [text|json|markdown]
+                                    Output format. [default: text]
+    --json                          Shorthand for --output json.
+    --output-file FILE              Write results to a file instead of stdout
+                                    (format set by --output).
+    -v, --verbose                   Increase log verbosity (-vv for debug).
+    -q, --quiet                     Suppress non-essential stderr output.
+    --log-level [debug|info|warning|error|critical]
+                                    Explicit console log level (overrides -v/-q).
+    --log-file TEXT                 Enable rotating file logging (PATH optional;
+                                    default: XDG state).
+    --no-color                      Disable colored output.
+    --config FILE                   Path to a TOML config file (overrides layered
+                                    discovery).
+    --token TEXT                    Py Personal Access Token (overrides
+                                    $PLBP_TOKEN). Never stored.
+    --no-input                      Never prompt; fail instead (for scripts/CI).
+    -h, --help                      Show this message and exit.
+  
+  '''
+# ---
+# name: test_help_snapshot[plbp projects]
+  '''
+  Usage: plbp projects [OPTIONS] COMMAND [ARGS]...
+  
+    List and inspect Py projects.
+  
+  Options:
+    -h, --help  Show this message and exit.
+  
+  Commands:
+    get   Fetch a single project by its ID.
+    list  List projects, optionally filtered by workspace.
+  
+  '''
+# ---
+# name: test_help_snapshot[plbp]
+  '''
+  Usage: plbp [OPTIONS] COMMAND [ARGS]...
+  
+    plbp — a gh-style CLI for Py.
+  
+    Commands follow a noun-verb shape, e.g. `plbp projects list`. Every command
+    supports -o/--output {text,json,markdown}, --json, -v/--verbose, --no-color,
+    and --config. Results go to stdout; logs and errors go to stderr.
+  
+  Options:
+    -V, --version  Show version, Python, and platform, then exit.
+    -h, --help     Show this message and exit.
+  
+  Commands:
+    completion  Print a shell completion script.
+    config      Inspect and edit CLI configuration.
+    doctor      Diagnose configuration and environment.
+    projects    List and inspect Py projects.
+  
+  '''
+# ---

@@ -12,7 +12,7 @@ replace them:
 - `just init` — rebrands identity (name, owner, package) across the repo.
 - `just post-init` — automates the publishing / Codecov / Read the Docs wiring.
 - [`RELEASE.md`](RELEASE.md) — the release/publish flow in detail.
-- [`.github/SECURITY.md`](.github/SECURITY.md) — security controls + CodeQL setup.
+- [`.github/SECURITY.md`](../.github/SECURITY.md) — security controls + CodeQL setup.
 
 Legend: **Default** = how the template ships. Each item is a checkbox so you can
 track what you've decided.
@@ -36,8 +36,9 @@ setup in [§2](#2-checks--configuration).
       `.github/workflows/commitlint.yml`, `commitlint.config.mjs`. Note:
       release-please depends on conventional commits; dropping this weakens it.
 - [ ] **Lint suite extras** (actionlint, yamllint, codespell, editorconfig-check,
-      large-file-guard) — *Default: on.* Files: the like-named workflows. Drop
-      individually if noisy.
+      large-file-guard) — *Default: on.* Files: `.github/workflows/lint.yml`
+      (one job per tool) + `.github/workflows/large-file-guard.yml`. Drop
+      individual jobs if noisy.
 
 ### Security (recommended: keep)
 
