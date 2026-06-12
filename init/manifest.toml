@@ -238,7 +238,7 @@ field = "package_name"
 current = ["py_launch_blueprint"]
 files = [
   ".github/workflows/ci.yml",                          # 2x
-  ".github/workflows/lint.yml",                        # 1x (bandit job)
+  ".github/workflows/lint.yml",                        # 2x (bandit job)
   ".vscode/launch.json",                               # 2x
   ".windsurfrules",                                    # 1x
   "AGENTS.md",                                         # 1x

@@ -37,8 +37,8 @@ setup in [§2](#2-checks--configuration).
       release-please depends on conventional commits; dropping this weakens it.
 - [ ] **Lint suite extras** (actionlint, yamllint, codespell, editorconfig-check,
       large-file-guard) — *Default: on.* Files: `.github/workflows/lint.yml`
-      (one job per tool) + `large-file-guard.yml`. Drop individual jobs if
-      noisy.
+      (one job per tool) + `.github/workflows/large-file-guard.yml`. Drop
+      individual jobs if noisy.
 
 ### Security (recommended: keep)
 
