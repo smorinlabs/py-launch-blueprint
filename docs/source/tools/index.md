@@ -26,7 +26,7 @@ maxdepth: 2
 ---
 ruff
 taplo
-yaml-lint
+yaml_lint
 ty
 pytest
 uv
@@ -34,6 +34,7 @@ github_actions
 vs_code
 makefiles
 justfiles
+precommit_hooks
 cla-assistant
 code-cov
 

@@ -1,4 +1,4 @@
-## Precommit hooks
+# Precommit hooks
 
 Hooks are designed to maintain clean, consistent, and error-free code and configuration files. They save time by catching issues before they make it into your repository.
 

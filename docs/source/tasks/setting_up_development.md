@@ -1,3 +1,5 @@
+# Setting Up Development
+
 ## Setup & Dependency Check
 
 Run the following command to check if the base dependencies are installed.

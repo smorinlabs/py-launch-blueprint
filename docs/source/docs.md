@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # Documentation Guide
 
 This guide will help you get started with writing documentation for this project using Sphinx and MyST Markdown.

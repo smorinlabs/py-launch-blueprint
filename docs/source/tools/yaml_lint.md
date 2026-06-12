@@ -59,8 +59,6 @@ just check-yaml
 
 ### yamllint Configuration (`.yamllint`)
 
----
-
 ## 🔄 Pre-commit Integration
 
 YAML formatting runs automatically on every commit via `pre-commit`:
@@ -104,6 +102,6 @@ repos:
 
 * [📘 yamlfmt GitHub Repository](https://github.com/google/yamlfmt)
 * [🛠 yamlfmt Configuration Options](https://github.com/google/yamlfmt#configuration)
-* [🔧 Our yamlfmt Configuration](.yamlfmt)
+* [🔧 Our yamlfmt Configuration](https://github.com/smorinlabs/py-launch-blueprint/blob/main/.yamlfmt)
 * [🔧 yamllint Documentation](https://yamllint.readthedocs.io/)
 * [🚀 Pre-commit Integration](https://pre-commit.com/)

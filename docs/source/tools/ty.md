@@ -1,4 +1,4 @@
-## ty
+# ty
 
 This project uses both ty and pyright/Pylance for type checking (per
 [ADR-03](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/adr/README.md)):
@@ -6,7 +6,7 @@ This project uses both ty and pyright/Pylance for type checking (per
 - **ty** is used in CI and at the command line for strict type checking.
 - **Pylance** is used in VS Code for real-time feedback during development.
 
-### About ty
+## About ty
 [ty](https://docs.astral.sh/ty/) is an extremely fast static type checker for
 Python, written in Rust by [Astral](https://astral.sh/) (the makers of Ruff and
 uv). It checks whether your code adheres to its type annotations and helps you
@@ -21,7 +21,7 @@ of every check cycle, locally and in CI.
 This combination of ty and Pylance ensures comprehensive type checking while
 maintaining a smooth development experience.
 
-### Running ty
+## Running ty
 
 ```bash
 just typecheck
@@ -33,7 +33,7 @@ or directly:
 uv run ty check src/py_launch_blueprint/
 ```
 
-### Suppressing diagnostics
+## Suppressing diagnostics
 
 Use suppression comments sparingly, and prefer fixing the type error:
 
@@ -44,7 +44,7 @@ x = something()  # ty: ignore[possibly-unbound-attribute]
 y = other()  # type: ignore
 ```
 
-### Third-party library stubs
+## Third-party library stubs
 
 ty consumes the same stub packages as other type checkers. Install stubs for
 libraries that don't ship inline types:
@@ -53,13 +53,13 @@ libraries that don't ship inline types:
 uv add --group dev types-requests
 ```
 
-### Type checking only specific files
+## Type checking only specific files
 
 ```bash
 uv run ty check src/py_launch_blueprint/cli/main.py
 ```
 
-### VS Code Settings for pyright/Pylance
+## VS Code Settings for pyright/Pylance
 
 ```json
 {
@@ -72,7 +72,7 @@ uv run ty check src/py_launch_blueprint/cli/main.py
 }
 ```
 
-### Common Type Annotation Examples
+## Common Type Annotation Examples
 
 ```python
 from collections.abc import Callable
