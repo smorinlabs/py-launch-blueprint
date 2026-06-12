@@ -98,8 +98,7 @@ check-deps:
     if ! command -v just >/dev/null 2>&1; then echo "{{YELLOW}}just is not installed{{NC}}\n RUN {{BLUE}}make install-just{{NC}}"; exit 1; fi
     if ! command -v lefthook >/dev/null 2>&1; then echo "{{YELLOW}}WARNING: lefthook is not installed{{NC}}\n RUN {{BLUE}}scripts/install-lefthook.sh{{NC}}"; fi
     if ! command -v taplo >/dev/null 2>&1; then echo "{{YELLOW}}Taplo is not installed{{NC}}\n RUN {{BLUE}}just install-taplo{{NC}}"; exit 1; fi
-    if ! command -v go >/dev/null 2>&1; then echo "{{YELLOW}}go is not installed{{NC}}\n RUN {{BLUE}}make install-go{{NC}}"; exit 1; fi
-    if ! command -v yamlfmt >/dev/null 2>&1; then echo "{{YELLOW}}yamlfmt is not installed{{NC}}\n RUN {{BLUE}}make install-yamlfmt{{NC}}"; exit 1; fi
+    if ! command -v yamlfmt >/dev/null 2>&1; then echo "{{YELLOW}}yamlfmt is not installed{{NC}}\n RUN {{BLUE}}just install-yamlfmt{{NC}}"; exit 1; fi
     echo "All required tools are installed"
 
 alias c := check-deps
@@ -461,47 +460,6 @@ install-gitleaks:
 check-gitleaks mode="full":
     bash scripts/check-gitleaks.sh {{mode}}
 
-# Alternative commands when virtual environment is activated:
-# These commands can be used after running 'source .venv/bin/activate'
-
-# Setup virtual environment
-[group('legacy')]
-@setup-venv:
-    python3 -m venv .venv
-    echo "Note: After setup, activate the virtual environment with:"
-    echo "  source .venv/bin/activate  # On Unix/macOS"
-    echo "  .venv\Scripts\activate  # On Windows"
-
-# Install in development mode
-[group('legacy')]
-@install-dev-pip:
-    pip install --editable ".[dev]"
-
-# Format code (includes ruff format and import sorting)
-[group('legacy')]
-@format-pip:
-    echo "Running linter..."
-    echo "  ruff"
-    ruff format {{py_package_name}}/
-
-# Run linter (code style and quality checks)
-[group('legacy')]
-@lint-pip:
-    ruff check {{py_package_name}}/
-    ruff check --select I --fix {{py_package_name}}/
-
-# Run type checker
-[group('legacy')]
-@typecheck-pip:
-    echo "Running type checker..."
-    echo "  ty"
-    ty check {{py_package_path}}/
-
-# Run tests
-[group('legacy')]
-@test-pip *options:
-    pytest {{options}}
-
 # Create a test repository from a PR
 [group('workflow')]
 [confirm("Are you sure you want to create a new repository from a PR?")]
@@ -706,11 +664,6 @@ clean-pr-to-testrepo new_repo_name="test-actions-repo": _guard
         git checkout main
     fi
 
-# Change working directory example
-[working-directory: 'bar']
-@_foo:
-    echo "example"
-
 [group('dev'), group('quick start')]
 @dev:
     just format
@@ -722,45 +675,49 @@ clean-pr-to-testrepo new_repo_name="test-actions-repo": _guard
 # Alias for dev (full developer cycle: format → lint → test → build)
 alias cycle := dev
 
-# Install Go
+# Install yamlfmt from upstream pre-built binary (no Go toolchain needed —
+# same approach as install-taplo). Detects OS + arch and pulls the matching
+# release asset from https://github.com/google/yamlfmt/releases.
+# Falls back to `go install` if the platform isn't covered.
+#
+# Uses a shebang body so bash interprets $(...) and ${...} directly — Just's
+# template engine would otherwise mangle them.
 [group('setup'), group('install')]
-@install-go:
-    if ! command -v go >/dev/null 2>&1; then \
-        echo "❗ Go is not installed."; \
-        echo "🔧 Installing Go..."; \
-        OS=$(uname); \
-        if [ "$$OS" = "Darwin" ]; then \
-            brew install go >/dev/null 2>&1; \
-        elif [ "$$OS" = "Linux" ]; then \
-            sudo apt update -qq && sudo apt install -y golang-go >/dev/null 2>&1; \
-        else \
-            echo "⚠️ Please install Go manually: https://go.dev/dl/"; \
-            exit 1; \
-        fi; \
-        if command -v go >/dev/null 2>&1; then \
-            echo "✅ Go installation complete."; \
-            echo "⚠️ Please update your PATH."; \
-        else \
-            echo "❌ Go installation failed. Please install manually."; \
-            exit 1; \
-        fi; \
-    else \
-        echo "✅ Go is already installed."; \
+install-yamlfmt:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if command -v yamlfmt >/dev/null 2>&1; then
+        echo -e "{{YELLOW}}yamlfmt is already installed{{NC}}"
+        exit 0
     fi
-
-# Install yamlfmt
-[group('setup'), group('install')]
-@install-yamlfmt:
-    if ! command -v go >/dev/null 2>&1; then \
-        echo "❌ Go is not installed. Run: just install-go"; \
-        exit 1; \
-    fi; \
-    if command -v yamlfmt >/dev/null 2>&1; then \
-        echo "✅ yamlfmt is already installed."; \
-    else \
-        echo "📦 Installing yamlfmt..."; \
-        go install github.com/google/yamlfmt/cmd/yamlfmt@latest; \
-        echo "✅ yamlfmt installed!"; \
+    VERSION=0.17.2
+    case "$(uname -s)" in
+        Linux*)  os=Linux ;;
+        Darwin*) os=Darwin ;;
+        *)       os= ;;
+    esac
+    case "$(uname -m)" in
+        x86_64)        arch=x86_64 ;;
+        arm64|aarch64) arch=arm64 ;;
+        *)             arch= ;;
+    esac
+    if [ -z "$os" ] || [ -z "$arch" ]; then
+        echo -e "{{YELLOW}}No pre-built binary for $(uname -s)/$(uname -m); using go install{{NC}}"
+        go install github.com/google/yamlfmt/cmd/yamlfmt@v${VERSION} \
+            || { echo -e "{{RED}}Failed to install yamlfmt.{{NC}} Install Go first: https://go.dev/dl/" >&2; exit 1; }
+        exit 0
+    fi
+    INSTALL_DIR="$HOME/.local/bin"
+    mkdir -p "$INSTALL_DIR"
+    URL="https://github.com/google/yamlfmt/releases/download/v${VERSION}/yamlfmt_${VERSION}_${os}_${arch}.tar.gz"
+    echo -e "{{BLUE}}Downloading $URL{{NC}}"
+    if curl -fsSL "$URL" | tar -xz -C "$INSTALL_DIR" yamlfmt && chmod +x "$INSTALL_DIR/yamlfmt"; then
+        echo -e "{{GREEN}}✓ yamlfmt ${VERSION} installed to $INSTALL_DIR/yamlfmt{{NC}}"
+        command -v yamlfmt >/dev/null 2>&1 \
+            || echo -e "{{YELLOW}}Note: add $INSTALL_DIR to your PATH to use yamlfmt{{NC}}"
+    else
+        echo -e "{{RED}}Failed to download pre-built yamlfmt; falling back to go install{{NC}}" >&2
+        go install github.com/google/yamlfmt/cmd/yamlfmt@v${VERSION}
     fi
 
 # YAML formatting and validation with yamlfmt

@@ -81,14 +81,6 @@ Install the package in editable mode with dev dependencies.
 just install-dev
 ```
 
-### `install-dev-pip`
-Install in development mode using pip.
-
-#### Usage
-```bash
-just install-dev-pip
-```
-
 ---
 
 ## 4. Documentation Management
@@ -203,42 +195,3 @@ Clean up temporary files and caches.
 ```bash
 just clean
 ```
-
----
-
-## 8. Alternative Pip Commands
-
-### `format-pip`
-Format code using pip.
-
-#### Usage
-```bash
-just format-pip
-```
-
-### `lint-pip`
-Run linter using pip.
-
-#### Usage
-```bash
-just lint-pip
-```
-
-### `typecheck-pip`
-Run type checker using pip.
-
-#### Usage
-```bash
-just typecheck-pip
-```
-
-### `test-pip`
-Run tests using pip.
-
-#### Usage
-```bash
-just test-pip [OPTIONS]
-```
-
-#### Options
-- `options`: Additional pytest options.
