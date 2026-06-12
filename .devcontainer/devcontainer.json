@@ -2,7 +2,7 @@
   "_comment": "ITM-067 - Portable devcontainer per ADR-11. Base image decided round 17: ghcr.io/astral-sh/uv (uv-prebuilt for fast cold start; matches ITM-033 py3.12 floor).",
   "name": "py-launch-blueprint",
   "image": "ghcr.io/astral-sh/uv:python3.12-bookworm-slim",
-  "postCreateCommand": "uv sync --group dev && scripts/install-bun.sh && scripts/install-lefthook.sh && scripts/install-gitleaks.sh",
+  "postCreateCommand": "sh .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
       "extensions": [

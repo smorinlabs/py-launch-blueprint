@@ -93,20 +93,58 @@ BRANCH_NAME := "test-actions-" + DATE_TIME
 [group('setup'), group('debug')]
 check-deps:
     #!/usr/bin/env sh
-    if ! command -v uv >/dev/null 2>&1; then echo "{{YELLOW}}uv is not installed{{NC}}\n RUN {{BLUE}}make install-uv{{NC}}"; exit 1; fi
+    if ! command -v uv >/dev/null 2>&1; then echo "{{YELLOW}}uv is not installed{{NC}}\n RUN {{BLUE}}make bootstrap{{NC}}"; exit 1; fi
     if ! command -v python3 >/dev/null 2>&1; then echo "{{YELLOW}}python3 is not installed{{NC}}"; exit 1; fi
-    if ! command -v just >/dev/null 2>&1; then echo "{{YELLOW}}just is not installed{{NC}}\n RUN {{BLUE}}make install-just{{NC}}"; exit 1; fi
-    if ! command -v lefthook >/dev/null 2>&1; then echo "{{YELLOW}}WARNING: lefthook is not installed{{NC}}\n RUN {{BLUE}}scripts/install-lefthook.sh{{NC}}"; fi
+    if ! command -v just >/dev/null 2>&1; then echo "{{YELLOW}}just is not installed{{NC}}\n RUN {{BLUE}}make bootstrap{{NC}}"; exit 1; fi
+    if ! command -v lefthook >/dev/null 2>&1; then echo "{{YELLOW}}WARNING: lefthook is not installed{{NC}}\n RUN {{BLUE}}just setup{{NC}}"; fi
     if ! command -v taplo >/dev/null 2>&1; then echo "{{YELLOW}}Taplo is not installed{{NC}}\n RUN {{BLUE}}just install-taplo{{NC}}"; exit 1; fi
     if ! command -v yamlfmt >/dev/null 2>&1; then echo "{{YELLOW}}yamlfmt is not installed{{NC}}\n RUN {{BLUE}}just install-yamlfmt{{NC}}"; exit 1; fi
     echo "All required tools are installed"
 
 alias c := check-deps
 
+# One-command project setup — Level 2 of the two-level flow. Level 1 is
+# `make bootstrap` (base toolchain: just + uv); run that first on a bare
+# machine. Idempotent: safe to re-run in every fresh clone/container/session.
+[group('setup'), group('quick start')]
+setup:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Bootstrap gate — catches `just setup` being run before `make bootstrap`.
+    if command -v make >/dev/null 2>&1; then
+        if ! make --no-print-directory check; then
+            echo -e "{{RED}}Base toolchain incomplete — run {{BLUE}}make bootstrap{{RED}} first, then re-run {{BLUE}}just setup{{RED}}.{{NC}}" >&2
+            exit 1
+        fi
+    elif command -v uv >/dev/null 2>&1; then
+        echo -e "{{YELLOW}}make not found — skipping bootstrap check (uv is present, continuing).{{NC}}"
+    else
+        echo -e "{{RED}}uv not found (and make is unavailable to bootstrap it).{{NC}}" >&2
+        echo -e "{{RED}}Run {{BLUE}}make bootstrap{{RED}} on a machine with make, or install uv: https://docs.astral.sh/uv/{{NC}}" >&2
+        exit 1
+    fi
+    # Tools installed below land in these dirs; make them visible to the
+    # rest of this run (the final check-deps) even on a fresh machine.
+    export PATH="$HOME/.local/bin:$HOME/.bun/bin:${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+    echo -e "{{BLUE}}[1/4] Syncing dev environment: uv sync --group dev --extra web{{NC}}"
+    uv sync --group dev --extra web
+    echo -e "{{BLUE}}[2/4] Installing hook toolchain (bun, lefthook, gitleaks)...{{NC}}"
+    scripts/install-bun.sh
+    scripts/install-lefthook.sh
+    scripts/install-gitleaks.sh
+    bun install
+    echo -e "{{BLUE}}[3/4] Installing formatters (taplo, yamlfmt)...{{NC}}"
+    just install-taplo
+    just install-yamlfmt
+    echo -e "{{BLUE}}[4/4] Verifying...{{NC}}"
+    just check-deps
+    echo -e "{{GREEN}}✓ Setup complete.{{NC}} Try {{BLUE}}just check{{NC}} to run the full quality pipeline."
+    echo -e "If a tool is missing in NEW shells, ensure ~/.local/bin, ~/.bun/bin and ~/.cargo/bin are on your PATH."
+
 # Install package in editable mode with dev dependencies
 [group('install'), group('quick start')]
 @install-dev: check-deps
-    uv pip install --editable ".[dev]"
+    uv sync --group dev --extra web
 
 # Install Taplo from upstream pre-built binary (much faster than `cargo install`,
 # which compiles from source — ~1s vs ~2min). Detects OS + arch and pulls the

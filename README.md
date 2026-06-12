@@ -37,12 +37,8 @@ Py Launch Blueprint eliminates the setup friction in Python projects by providin
 ```bash
 git clone https://github.com/smorinlabs/py-launch-blueprint.git
 cd py-launch-blueprint
-make hook-check          # verify toolchain (lefthook/gitleaks/bun/uv/...)
-scripts/install-bun.sh
-scripts/install-lefthook.sh
-scripts/install-gitleaks.sh
-uv sync --group dev      # PEP 735 dev tools
-bun install              # commitlint deps
+make bootstrap           # level 1 — base toolchain (just + uv); skip if installed
+just setup               # level 2 — dev env, git hooks, hook toolchain
 just check               # full quality pipeline
 ```
 
