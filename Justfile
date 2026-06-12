@@ -266,10 +266,16 @@ alias ca := check
 @run cmd=app_name *args=args:
     uvx --with-editable . {{cmd}} {{args}}
 
-# Run the FastAPI dev server (web extra) with auto-reload
+# Run the FastAPI dev server (web extra) with auto-reload. Dev defaults to
+# pretty console logs (prod default is JSON; WEB-12) — export
+# <APP_NAME>_WEB_LOG_FORMAT yourself to override.
 [group('run'), group('dev')]
-@serve host="127.0.0.1" port="8000":
-    uv run --extra web uvicorn {{py_package_name}}.web.app:create_app --factory --host {{host}} --port {{port}} --reload --timeout-graceful-shutdown 5
+serve host="127.0.0.1" port="8000":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    var="$(echo {{app_name}} | tr '[:lower:]' '[:upper:]')_WEB_LOG_FORMAT"
+    export "${var}=${!var:-console}"
+    exec uv run --extra web uvicorn {{py_package_name}}.web.app:create_app --factory --host {{host}} --port {{port}} --reload --timeout-graceful-shutdown 5
 
 # Run web layer tests incl. slow contract fuzzing (web extra; httpx for TestClient)
 [group('test'), group('dev')]
