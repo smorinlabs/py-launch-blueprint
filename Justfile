@@ -161,9 +161,9 @@ install-taplo:
 @format:
     echo "Running formatters..."
     echo "  ruff format"
-    uvx --with-editable . ruff format {{py_package_path}}/
+    uv run ruff format {{py_package_path}}/
     echo "  ruff isort"
-    uvx --with-editable . ruff check --select I --fix {{py_package_path}}/
+    uv run ruff check --select I --fix {{py_package_path}}/
 
 alias f := format
 
@@ -186,7 +186,7 @@ alias ct := check-toml
 @lint:
     echo "Running linter..."
     echo "  ruff"
-    uvx --with-editable . ruff check {{py_package_path}}/
+    uv run ruff check {{py_package_path}}/
 
 alias l := lint
 
@@ -202,7 +202,7 @@ alias tc := typecheck
 # Run tests
 [group('test'), group('dev')]
 @test *options:
-    uvx --with-editable . pytest {{options}}
+    uv run pytest {{options}}
 
 alias t := test
 
@@ -238,6 +238,25 @@ alias ca := check
 [group('test'), group('dev')]
 @test-web *options:
     uv run --extra web pytest tests/web {{options}}
+
+# Regenerate the committed OpenAPI schema (WL-026). CI fails if the live
+# schema drifts from docs/api/openapi.json — run this after changing the API.
+[group('dev')]
+@export-openapi:
+    uv run --extra web python -m {{py_package_name}}.web.openapi docs/api/openapi.json
+    echo "Wrote docs/api/openapi.json"
+
+# Audit locked dependencies (all extras + groups) against known CVEs (WL-014).
+# Same pipeline as the scheduled dep-audit workflow.
+[group('dev')]
+audit:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    tmp="$(mktemp)"
+    trap 'rm -f "$tmp"' EXIT
+    uv export --locked --no-emit-project --all-extras --all-groups \
+        --format requirements.txt --quiet -o "$tmp"
+    uv run pip-audit --strict --disable-pip -r "$tmp"
 
 # Blueprint setup guard — Tier 2 (hard block on the risk subset).
 # Private. Used as a dependency on recipes that produce a wrong artifact,
@@ -772,20 +791,20 @@ alias cycle := dev
 [group('dev')]
 @lint-yaml:
     echo "🔍 Linting YAML files with yamllint..."
-    uvx yamllint -c .yamllint .
+    uv run yamllint -c .yamllint .
 
 [group('dev')]
 @check-yaml:
     echo "✅ Checking YAML formatting..."
-    uvx yamllint -c .yamllint .
+    uv run yamllint -c .yamllint .
     echo "YAML files are properly linted!"
 
 [group('dev')]
 @check-spelling:
     echo "🔍 Checking spelling..."
-    uvx codespell .
+    uv run codespell .
 
 [group('dev')]
 @check-editorconfig:
     echo "🔍 Checking EditorConfig rules..."
-    uvx --from editorconfig-checker ec
+    uv run ec -config .editorconfig-checker.json

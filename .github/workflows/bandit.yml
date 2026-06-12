@@ -26,7 +26,11 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
+      - name: Sync locked dev tools
+        # WL-001: locked via uv.lock, matching the pre-push hook exactly.
+        run: uv sync --locked --only-group dev
+
       - name: Run bandit
         # src/ path (post src-layout move); the old flat `py_launch_blueprint/`
         # path no longer exists, so the scan was silently covering nothing.
-        run: uvx bandit -r src/py_launch_blueprint/ -c pyproject.toml
+        run: uv run --no-sync bandit -r src/py_launch_blueprint/ -c pyproject.toml

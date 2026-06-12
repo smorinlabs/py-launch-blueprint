@@ -1,0 +1,70 @@
+# WL-014 - scheduled dependency vulnerability audit + WL-021 docs linkcheck.
+#
+# Why scheduled, not per-PR: dependency-review (PR) only fires when a PR
+# *changes* the manifests - a CVE published against an already-pinned
+# dependency never triggers it. This weekly run audits the full locked
+# graph (all extras + groups) via pip-audit (PyPA, OSV + PyPI advisory DBs).
+# Locally: `just audit` runs the identical pipeline.
+#
+# Docs linkcheck lives here too: external links rot independently of PRs,
+# and flaky third-party sites should not block merges (the blocking -W html
+# build runs per-PR in ci.yml).
+
+name: weekly-audit
+
+on:
+  schedule:
+    - cron: '0 5 * * 1'  # weekly, Monday 05:00 UTC (after dependabot's run)
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: dep-audit
+  cancel-in-progress: true
+
+jobs:
+  pip-audit:
+    name: pip-audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Sync locked dev tools
+        run: uv sync --locked --only-group dev
+
+      - name: Export locked dependency graph
+        # Full closure, hashed + pinned, so pip-audit needs no resolver
+        # (--disable-pip) and audits exactly what uv.lock ships.
+        run: >-
+          uv export --locked --no-emit-project --all-extras --all-groups
+          --format requirements.txt -o requirements-audit.txt
+
+      - name: Audit against known vulnerabilities
+        run: >-
+          uv run --no-sync pip-audit --strict --disable-pip
+          -r requirements-audit.txt
+
+  docs-linkcheck:
+    name: docs-linkcheck
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Sync docs env (web extra so autodoc imports resolve)
+        run: uv sync --locked --group docs --extra web
+
+      - name: Sphinx linkcheck
+        run: >-
+          uv run --no-sync sphinx-build -b linkcheck
+          docs/source docs/_build/linkcheck

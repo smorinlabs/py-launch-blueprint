@@ -32,8 +32,8 @@ run it (it is idempotent) as part of environment setup, every session.
 | Sync dev env | `uv sync --group dev --extra web` (PEP 735 — not `pip install '.[dev]'`) |
 | All checks | `just check` |
 | Run tests | `pytest` (default excludes `slow`/`live` markers; full: `pytest -m ""`) |
-| Lint | `uvx ruff check .` |
-| Format check | `uvx ruff format --check .` |
+| Lint | `uv run ruff check .` |
+| Format check | `uv run ruff format --check .` |
 | Typecheck | `uv run --extra web ty check src/py_launch_blueprint/` (ITM-026 / ADR-03) |
 | Web tests / dev server | `just test-web` / `just serve` (FastAPI, `web` extra) |
 | Secret scan (staged) | `scripts/check-gitleaks.sh --staged` |
