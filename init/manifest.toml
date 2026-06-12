@@ -55,6 +55,7 @@ files = [
   "src/py_launch_blueprint/web/__init__.py",             # 1x
   "src/py_launch_blueprint/web/app.py",                  # 1x
   "src/py_launch_blueprint/web/deps.py",                 # 1x
+  "src/py_launch_blueprint/web/openapi.py",              # 1x (WL-026)
   "src/py_launch_blueprint/web/routers/__init__.py",     # 1x
   "src/py_launch_blueprint/web/routers/projects.py",     # 1x
   "tests/__init__.py",                                   # 1x
@@ -80,6 +81,7 @@ field = "app_name"
 current = ["plbp"]
 files = [
   ".windsurfrules",                                     # 1x
+  ".github/workflows/ci.yml",                           # build-smoke (WL-004)
   "CLAUDE.md",                                          # 1x
   "EXAMPLECLI.md",                                      # 36x
   "Justfile",                                           # 1x
@@ -90,6 +92,7 @@ files = [
   "docs/adr/0003-keep-markdown-output-mode.md",         # 1x
   "docs/adr/0004-config-errors-degrade-to-warnings.md", # 1x
   "docs/adr/README.md",                                 # 2x
+  "docs/api/openapi.json",                              # generated (WL-026); `just export-openapi`
   "docs/design/0001-plbp-cli-conventions.md",           # 28x
   "docs/design/README.md",                              # 2x
   "docs/source/index.md",                               # 14x
@@ -107,6 +110,8 @@ files = [
   "src/py_launch_blueprint/core/paths.py",              # 20x
   "src/py_launch_blueprint/web/app.py",                 # 1x
   "tests/cli/test_pylb.py",                             # 27x
+  "tests/cli/__snapshots__/test_help_snapshots.ambr",   # generated (WL-023); `pytest --snapshot-update`
+  "tests/cli/test_help_snapshots.py",                   # WL-023
   "tests/conftest.py",                                  # 1x
   "tests/core/test_core.py",                            # 19x
   "tests/core/test_logging.py",                         # 8x
@@ -136,6 +141,7 @@ files = [
   "src/py_launch_blueprint/core/logging.py",          # 1x
   "src/py_launch_blueprint/core/settings.py",         # 1x
   "tests/cli/test_pylb.py",                           # 38x
+  "tests/cli/__snapshots__/test_help_snapshots.ambr", # generated (WL-023)
   "tests/web/test_app.py",                            # 2x
   "projects/P01-init-rebrand-robustness.md",          # 11x
 ]
@@ -176,6 +182,8 @@ files = [
   "docs/source/tasks/type_checking_code.md",      # 2x
   "docs/source/tools/github_actions.md",          # 1x
   "docs/source/tools/justfiles.md",               # 1x
+  "docs/source/tools/cla-assistant.md",           # WL-021 link fix
+  "docs/source/tools/yaml_lint.md",               # WL-021 link fix
   "docs/source/tools/ty.md",                      # 1x
   "docs/source/tutorials/full_project_setup.md",  # 1x
 ]
@@ -238,15 +246,18 @@ files = [
   "src/py_launch_blueprint/web/__init__.py",           # 1x
   "src/py_launch_blueprint/web/app.py",                # 8x
   "src/py_launch_blueprint/web/deps.py",               # 3x
+  "src/py_launch_blueprint/web/openapi.py",            # WL-026
   "src/py_launch_blueprint/web/routers/__init__.py",   # 1x
   "src/py_launch_blueprint/web/routers/projects.py",   # 2x
   "pyrightconfig.json",                                # 1x
   "release-please-config.json",                        # 1x
   "tests/cli/test_pylb.py",                            # 6x
+  "tests/cli/test_help_snapshots.py",                  # WL-023
   "tests/core/test_core.py",                           # 9x
   "tests/core/test_logging.py",                        # 1x
   "tests/test_output.py",                              # 3x
   "tests/test_version_consistency.py",                 # 2x
+  "tests/web/test_openapi_schema.py",                  # WL-026
   "tests/web/test_app.py",                             # 5x
   "projects/P01-init-rebrand-robustness.md",           # 1x
 ]
@@ -277,6 +288,7 @@ files = [
   "Justfile",                                     # 1x
   "README.md",                                    # 17x
   "docs/design/0001-plbp-cli-conventions.md",     # 3x
+  "docs/api/openapi.json",                        # generated (WL-026)
   "docs/source/_templates/base.html",             # 1x
   "docs/source/conf.py",                          # 3x
   "docs/source/contributing/index.md",            # 1x
@@ -288,6 +300,8 @@ files = [
   "docs/source/tasks/type_checking_code.md",      # 2x
   "docs/source/tools/github_actions.md",          # 1x
   "docs/source/tools/justfiles.md",               # 1x
+  "docs/source/tools/cla-assistant.md",           # WL-021 link fix
+  "docs/source/tools/yaml_lint.md",               # WL-021 link fix
   "docs/source/tools/ty.md",                      # 1x
   "docs/source/tutorials/full_project_setup.md",  # 2x
   "package.json",                                 # 2x
