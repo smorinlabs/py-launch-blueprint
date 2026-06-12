@@ -80,3 +80,10 @@ def test_posix_defaults_unchanged(monkeypatch):
     assert paths.state_home() == Path.home() / ".local" / "state"
     assert paths.cache_dir() == Path.home() / ".cache" / "plbp"
     assert paths.config_dirs() == [Path("/etc/xdg")]
+
+
+def test_windows_config_dirs_split_on_semicolons(windows, monkeypatch, tmp_path):
+    one = tmp_path / "one"
+    two = tmp_path / "two"
+    monkeypatch.setenv("XDG_CONFIG_DIRS", f"{one};{two}")
+    assert paths.config_dirs() == [one, two]

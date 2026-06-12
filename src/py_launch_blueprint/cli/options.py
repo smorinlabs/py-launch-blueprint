@@ -193,10 +193,17 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
             )
             raise SystemExit(int(exc.exit_code)) from exc
         except Exception as exc:
+            # Unexpected failure while building the context (renderer,
+            # logging, paths setup) follows the same contract as any other
+            # unexpected error: PLBP000 + crash log — not a config error,
+            # which would send the user debugging a healthy config file.
             _fallback_renderer(output_mode, json_mode, no_color).error(
-                str(exc), ExitCode.CONFIG
+                str(exc),
+                ExitCode.IO,
+                error_code=ERROR_CODE_UNEXPECTED,
+                traceback_path=_write_crash_log(exc),
             )
-            raise SystemExit(int(ExitCode.CONFIG)) from exc
+            raise SystemExit(int(ExitCode.IO)) from exc
         try:
             maybe_show_first_run_hint(app)
             return func(app, *args, **kwargs)

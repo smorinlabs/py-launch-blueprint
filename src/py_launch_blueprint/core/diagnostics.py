@@ -41,7 +41,7 @@ MIN_PYTHON = (3, 12)
 
 #: Env-var name fragments whose values are redacted from bundles. Broad on
 #: purpose: a bundle is built to be pasted into a public issue.
-_SENSITIVE_ENV_MARKERS = ("TOKEN", "SECRET", "KEY", "PASSWORD")
+_SENSITIVE_ENV_MARKERS = ("TOKEN", "SECRET", "KEY", "PASSWORD", "CRED", "PRIVATE")
 
 
 def run_diagnostics(config: Config) -> DoctorReport:

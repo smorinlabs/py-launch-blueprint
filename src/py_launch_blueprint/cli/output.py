@@ -31,6 +31,7 @@ import json
 import os
 import shlex
 import subprocess  # nosec B404 — only ever runs the user's own pager
+import sys
 from enum import StrEnum
 from pathlib import Path
 
@@ -52,6 +53,29 @@ class OutputMode(StrEnum):
 
 #: ``-F`` quit if one screen, ``-R`` pass ANSI colors, ``-X`` no screen clear.
 DEFAULT_PAGER = "less -FRX"
+
+#: True on Windows. Module-level so tests can exercise both tokenization
+#: branches by monkeypatching (same pattern as ``core.paths._WINDOWS``).
+_WINDOWS = sys.platform == "win32"
+
+
+def _pager_argv(pager: str) -> list[str]:
+    """Tokenize the pager command per-platform.
+
+    POSIX shlex rules eat backslashes, mangling Windows paths like
+    ``C:\\tools\\less.exe``. On Windows, split with ``posix=False`` (which
+    preserves backslashes) and strip the surrounding quotes that mode keeps.
+    Quoting is the supported spelling for a path with spaces; an unquoted
+    one still tokenizes wrong, fails to launch, and falls back to plain
+    output via the caller's error handling.
+    """
+    if not _WINDOWS:
+        return shlex.split(pager)
+    argv = shlex.split(pager, posix=False)
+    return [
+        arg[1:-1] if len(arg) >= 2 and arg[0] == arg[-1] and arg[0] in "'\"" else arg
+        for arg in argv
+    ]
 
 
 def _resolve_pager_command() -> str:
@@ -161,7 +185,7 @@ class Renderer:
             # argv comes from the user's own PAGER environment — running it
             # is the feature, same trust model as git/less.
             subprocess.run(  # noqa: S603 # nosec B603
-                shlex.split(pager), input=text, text=True, check=False
+                _pager_argv(pager), input=text, text=True, check=False
             )
         except (OSError, ValueError):
             # Missing pager binary or unparsable command: never lose output.

@@ -30,6 +30,8 @@ contract per output mode:
 
 from datetime import UTC, datetime
 
+from rich.markup import escape
+
 #: (seconds per unit, singular name) — largest first. Months/years use the
 #: coarse 30/365-day buckets appropriate for "about how long ago" display.
 _UNITS: list[tuple[int, str]] = [
@@ -73,5 +75,8 @@ def rich_link(text: str, url: str) -> str:
 
     Rich emits the escape codes only on terminals that support them and
     falls back to plain ``text`` everywhere else (pipes, files, no-color).
+    ``text`` is escaped — a path containing ``[`` must render literally,
+    not parse as markup. The URL needs no escaping (file URIs are
+    percent-encoded; markup is not parsed inside the tag).
     """
-    return f"[link={url}]{text}[/link]"
+    return f"[link={url}]{escape(text)}[/link]"

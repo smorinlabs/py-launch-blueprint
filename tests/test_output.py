@@ -240,3 +240,27 @@ def test_pager_disabled_by_paging_false(capsys, monkeypatch):
     monkeypatch.setattr(output_mod, "_isatty", lambda console: True)
     Renderer(OutputMode.TEXT, color="always", paging=False).render(_tall_result())
     assert "P39" in capsys.readouterr().out
+
+
+# -- pager tokenization (windows-aware; coderabbit review) -------------------
+
+
+def test_pager_argv_posix(monkeypatch):
+    monkeypatch.setattr(output_mod, "_WINDOWS", False)
+    assert output_mod._pager_argv("less -FRX") == ["less", "-FRX"]
+
+
+def test_pager_argv_windows_preserves_backslashes(monkeypatch):
+    monkeypatch.setattr(output_mod, "_WINDOWS", True)
+    assert output_mod._pager_argv(r"C:\tools\less.exe -FRX") == [
+        r"C:\tools\less.exe",
+        "-FRX",
+    ]
+
+
+def test_pager_argv_windows_strips_quotes_around_spaced_path(monkeypatch):
+    monkeypatch.setattr(output_mod, "_WINDOWS", True)
+    assert output_mod._pager_argv(r'"C:\Program Files\less.exe" -FRX') == [
+        r"C:\Program Files\less.exe",
+        "-FRX",
+    ]

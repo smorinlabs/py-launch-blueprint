@@ -707,3 +707,20 @@ def test_doctor_bundle_text_summary(runner, monkeypatch):
     result = runner.invoke(cli, ["doctor", "--bundle"])
     assert result.exit_code == 0
     assert "Diagnostics bundle" in result.output
+
+
+def test_unexpected_context_failure_follows_crash_contract(
+    runner, tmp_path, monkeypatch
+):
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+
+    def boom(cls, **kwargs):
+        raise RuntimeError("context exploded")
+
+    monkeypatch.setattr(AppContext, "create", classmethod(boom))
+    result = runner.invoke(cli, ["config", "path", "--json"])
+    assert result.exit_code == 4
+    payload = json.loads(result.output)
+    assert payload["error"]["error_code"] == "PLBP000"
+    assert payload["error"]["traceback_path"].endswith("plbp_crash.log")
+    assert (tmp_path / "plbp" / "plbp_crash.log").exists()

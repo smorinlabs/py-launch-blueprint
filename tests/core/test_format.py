@@ -54,3 +54,8 @@ def test_config_path_rich_row_falls_back_for_relative_path():
 def test_plain_rows_never_carry_markup(tmp_path):
     result = ConfigPath(path=str(tmp_path / "cfg.toml"), exists=True)
     assert "[link=" not in result.table_rows()[0][0]
+
+
+def test_rich_link_escapes_markup_in_text():
+    # a path containing brackets must render literally, not parse as markup
+    assert rich_link("a[b]", "https://e") == "[link=https://e]a\\[b][/link]"

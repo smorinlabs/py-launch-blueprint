@@ -113,7 +113,10 @@ def config_dirs() -> list[Path]:
     default is the machine-wide ``%PROGRAMDATA%``.
     """
     raw = os.environ.get("XDG_CONFIG_DIRS", "")
-    dirs = [Path(p) for p in raw.split(os.pathsep) if p and Path(p).is_absolute()]
+    # Follow the _WINDOWS flag rather than os.pathsep so simulated-platform
+    # tests split the same way the real platform would (";" on Windows).
+    sep = ";" if _WINDOWS else os.pathsep
+    dirs = [Path(p) for p in raw.split(sep) if p and Path(p).is_absolute()]
     if dirs:
         return dirs
     if _WINDOWS:
