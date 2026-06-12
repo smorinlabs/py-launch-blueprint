@@ -6,7 +6,7 @@
 CLA Assistant automates the process of managing Contributor License Agreements (CLAs) for open source projects. It ensures that all contributors have signed the appropriate CLA before their pull requests can be merged, helping maintain legal compliance and reducing manual tracking for maintainers.
 
 ## Key Benefits and Value Proposition
-- ** maintains legal compliance** and streamlines the contribution process.
+- **Maintains legal compliance** and streamlines the contribution process.
 - **Automated CLA checks** on every pull request
 - **Streamlined contributor experience** with a simple signing process
 - **Legal protection** for project maintainers and organizations
