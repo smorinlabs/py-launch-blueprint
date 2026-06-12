@@ -48,7 +48,7 @@ just check               # full quality pipeline
 
 Install as a tool: `uvx --from py-launch-blueprint plbp` (uvx needs `--from` because the distribution name differs from the console-script name) or `pip install py-launch-blueprint && plbp`.
 
-The template ships **two working front-ends over one typed core**: the [`plbp` noun-verb CLI](EXAMPLECLI.md) — global flags, text/JSON/Markdown output contract, stable exit & error codes, layered TOML config — and a [FastAPI web service](EXAMPLEWEB.md) behind the `web` extra (`just serve`) that returns the same Pydantic models.
+The [`plbp` noun-verb CLI](EXAMPLECLI.md) documents the template's CLI conventions: global flags, the text/JSON/Markdown output contract, stable exit & error codes, and layered TOML config.
 
 See [AGENTS.md](AGENTS.md) for the canonical command set, [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the daily workflow, and [RELEASE.md](RELEASE.md) for the release flow.
 

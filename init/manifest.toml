@@ -84,7 +84,6 @@ files = [
   ".windsurfrules",                                     # 1x
   "CLAUDE.md",                                          # 1x
   "EXAMPLECLI.md",                                      # 36x
-  "EXAMPLEWEB.md",                                      # 8x
   "Justfile",                                           # 1x
   "POST_INIT.md",                                       # 1x
   "README.md",                                          # 2x
@@ -135,7 +134,6 @@ current = ["PLBP"]
 files = [
   "CLAUDE.md",                                        # 1x
   "EXAMPLECLI.md",                                    # 12x
-  "EXAMPLEWEB.md",                                    # 1x
   "docs/design/0001-plbp-cli-conventions.md",         # 26x
   "docs/adr/0001-app-short-name-plbp.md",             # 2x
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
@@ -223,7 +221,6 @@ files = [
   "AGENTS.md",                                         # 1x
   "CLAUDE.md",                                         # 4x
   "EXAMPLECLI.md",                                     # 1x
-  "EXAMPLEWEB.md",                                     # 2x
   "Justfile",                                          # 2x
   "README.md",                                         # 1x
   "docs/source/conf.py",                               # 3x
@@ -299,7 +296,6 @@ files = [
   ".github/workflows/blueprint-guard.yml",        # 1x
   "AGENTS.md",                                    # 1x
   "CLAUDE.md",                                    # 1x
-  "EXAMPLEWEB.md",                                # 2x
   "Justfile",                                     # 1x
   "README.md",                                    # 17x
   "docs/design/0001-plbp-cli-conventions.md",     # 3x
