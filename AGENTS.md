@@ -1,8 +1,10 @@
 # AGENTS.md
 
-Vendor-neutral entrypoint for coding agents (Claude Code, Cursor, Codex,
-Aider, etc.). For Claude-specific rules see [`CLAUDE.md`](CLAUDE.md); for
-human-contributor flow see [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md).
+Canonical guidance for ALL coding agents (Claude Code, Cursor, Codex,
+Windsurf, Aider, etc.) — this is the single file to edit.
+[`CLAUDE.md`](CLAUDE.md) imports it verbatim (`@AGENTS.md`); Cursor,
+Windsurf, and Codex read this file natively. For human-contributor flow see
+[`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md).
 
 ## Required tools
 
@@ -35,13 +37,24 @@ clones, containers, and remote agent sessions start without it — run
 |---|---|
 | Sync dev env | `uv sync --group dev --extra web` (PEP 735 — not `pip install '.[dev]'`) |
 | All checks | `just check` |
-| Run tests | `pytest` (default excludes `slow`/`live` markers; full: `pytest -m ""`) |
+| Run tests | `pytest` (default excludes `slow`/`live` markers per ITM-046; full: `pytest -m ""`) |
+| Run one test | `pytest tests/test_file.py::test_name` |
 | Lint | `uv run ruff check .` |
+| Format | `just format` or `uv run ruff format src/py_launch_blueprint/` |
 | Format check | `uv run ruff format --check .` |
-| Typecheck | `uv run --extra web ty check src/py_launch_blueprint/` (ITM-026 / ADR-03) |
+| Typecheck | `uv run --extra web ty check src/py_launch_blueprint/` (ITM-026 / ADR-03; `--extra web` so web/ imports resolve) |
+| Dependency CVE audit | `just audit` (WL-014; same pipeline as the weekly CI workflow) |
 | Web tests / dev server | `just test-web` / `just serve` (FastAPI, `web` extra) |
-| Secret scan (staged) | `scripts/check-gitleaks.sh --staged` |
+| Secret scan | `scripts/check-gitleaks.sh --staged` or `--range` |
 | Build | `uv build` (uv_build backend per ADR-06) |
+
+Hook/CI tools run from the locked dev group (`uv run`, never floating
+`uvx`) per WL-001 — versions come from `uv.lock`.
+
+Web API conventions (problem+json, `/v1`, pagination, WEB-xx ids):
+`docs/design/0002-web-api-conventions.md`. After ANY web route change:
+`just export-openapi` and commit the snapshot (a test + the api-contract
+workflow enforce it).
 
 ## Verification flow before commit/PR
 
@@ -49,9 +62,11 @@ clones, containers, and remote agent sessions start without it — run
    hooks in step 4 actually fire; also refreshes deps).
 2. `just check` (full pipeline must pass).
 3. Init-system integrity (CI `blueprint-guard` + `init-integration` enforce
-   these). If you added/renamed/removed files containing identity values
-   (package name, app name, author, owner, repo name), register them in
-   `init/manifest.toml` `[[replace]]` blocks, then run:
+   these). Rule behind the drift check: any added/renamed file containing an
+   identity value (`py_launch_blueprint`, `py-launch-blueprint`, `plbp`,
+   `PLBP`, author/owner names) must be listed in that value's `[[replace]]`
+   block in `init/manifest.toml`, or a fork's `just init` ships
+   half-renamed. Then run:
    - `uv run --script init/ci/check_manifest_drift.py`
    - `uv run pytest init/tests/ --override-ini="addopts=" -q`
 4. Stage + commit. Lefthook fires automatically:
@@ -75,6 +90,34 @@ Conventional Commits with lowercase subject (commitlint enforces):
 
 Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 `docs`, `style`, `test`, `ci`, `build`.
+
+## Code style
+
+- Line length: 88 characters (Black standard)
+- Types: strict typing required for all functions
+- Imports: sorted (ruff isort); absolute intra-package imports
+  (`from py_launch_blueprint…` — the codebase convention)
+- Naming: PEP 8 conventions enforced via Ruff
+- Errors: prefer explicit error handling over assertions
+- Tests: type annotations optional for test files
+- Security: no hardcoded credentials, follow bandit rules
+
+## Developer environment
+
+- Toolchain provisioning (per ADR 0005) — three first-class options, all
+  declaring the SAME 10-tool set (python, uv, ruff, taplo, gitleaks, just,
+  bun, gh, lefthook, make); keep them in sync when adding/removing a tool:
+  1. Native installs (Makefile + Justfile `install-*` targets,
+     `scripts/install-*.sh`)
+  2. `mise install` (root `mise.toml`)
+  3. `flox activate` (root `.flox/`)
+- Deliberately NOT in `mise.toml`/`.flox`: yamllint, codespell, bandit,
+  editorconfig-checker (run via `uv run` from the locked dev group, per WL-001)
+  and commitlint (run via `bunx --bun @commitlint/cli`) — `uv sync`/bun provide
+  them, and a mise `commitlint` shim shadows bun's PATH fallback (see note in
+  lefthook.yml)
+- Build backend: `uv_build` with static `[project] version` (per ADR-06)
+- IDE: VS Code with Ruff, Pyright, EditorConfig extensions
 
 ## Releases
 
@@ -108,8 +151,10 @@ copy-pasteable shell block.
 
 If you scaffold from this template and your project's command surface
 diverges (extra tools, different test runner, custom hooks), update **this
-file first**, then `CLAUDE.md` if you use Claude Code. Vendor-specific
-agent configs (`.cursor/`, `.windsurf*`, etc.) inherit from these two.
+file** — it is the single source of truth. `CLAUDE.md` imports it; add
+Claude-specific notes there only. Vendor-specific rule files (`.cursor/`,
+`.windsurf*`) are deliberately absent: Cursor, Windsurf, and Codex all read
+`AGENTS.md` directly.
 
 ## Project tracking (plugin: project-harness)
 
