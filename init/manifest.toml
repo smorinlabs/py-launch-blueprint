@@ -234,7 +234,7 @@ files = [
   ".github/workflows/bandit.yml",                      # 1x
   ".github/workflows/ci.yml",                          # 2x
   ".vscode/launch.json",                               # 2x
-  "AGENTS.md",                                         # 3x
+  "AGENTS.md",                                         # 4x
   "EXAMPLECLI.md",                                     # 1x
   "EXAMPLEWEB.md",                                     # 2x
   "Justfile",                                          # 2x

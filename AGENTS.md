@@ -91,7 +91,8 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 
 - Line length: 88 characters (Black standard)
 - Types: strict typing required for all functions
-- Imports: sorted with relative imports preferred
+- Imports: sorted (ruff isort); absolute intra-package imports
+  (`from py_launch_blueprint…` — the codebase convention)
 - Naming: PEP 8 conventions enforced via Ruff
 - Errors: prefer explicit error handling over assertions
 - Tests: type annotations optional for test files
