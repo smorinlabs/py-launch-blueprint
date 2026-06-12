@@ -353,42 +353,35 @@ debug-info:
     rm -rf .venv
     rm -rf {{py_package_path}}/__pycache__/
 
-# Install Sphinx and any necessary extensions
-[group('docs'), group('install')]
-@install-docs:
-    @#!/usr/bin/env sh
-    if ! command -v uv >/dev/null 2>&1; then echo "uv is not installed"; exit 1; fi
-    echo "Installing Sphinx..."
-    uv pip install sphinx
-    echo "Installing required Sphinx extensions..."
-    uv pip install sphinx-rtd-theme sphinx-autobuild myst-parser
-    echo -e "{{GREEN}} Documentation dependencies installed{{NC}}"
+# Docs recipes call Sphinx via `uv run --group docs` (PEP 735 dependency
+# group, per ITM-063 — same path Read the Docs uses). uv syncs the group
+# on demand, so there is no separate install step.
 
 # Not usually needed, Initialize docs only if you are starting a new project
 [group('docs'), group('setup')]
 @init-docs:
-    uv run --extra docs  --directory=docs sphinx-quickstart
+    uv run --group docs --directory=docs sphinx-quickstart
 # recommend you separate "source" and "build" directories within the root path (docs/source and docs/build)
 
-# Show help for documentation sphinx
+# Show available Sphinx build targets
 [group('docs'), group('help')]
 @docs-help:
-    cd docs && make
+    uv run --group docs sphinx-build -M help docs/source docs/build
 
 # Build documentation (default html format) change the target if needed e.g. just docs latexpdf
 [group('docs'), group('build')]
 @docs target="html":
-    cd docs && make {{target}}
+    uv run --group docs sphinx-build -M {{target}} docs/source docs/build
 
 # Run documentation server with hot reloading
 [group('docs'), group('run'), group('dev')]
 @docs-dev:
-    cd docs && make hotreloadhtml
+    uv run --group docs sphinx-autobuild -b html docs/source docs/build
 
 # Clean documentation build files
 [group('docs'), group('clean')]
 @docs-clean:
-    cd docs && make clean
+    rm -rf docs/build
 
 # Update CONTRIBUTORS.md file
 alias contributors := update-contributors
