@@ -27,6 +27,7 @@ ALL_COMMANDS = list(_walk(cli, ()))
 
 @pytest.mark.parametrize("path", ALL_COMMANDS, ids=lambda p: " ".join(("plbp", *p)))
 def test_help_snapshot(path, snapshot, monkeypatch):
+    """Each command's --help output must match its committed golden snapshot."""
     # Click wraps help text to the terminal width (shutil.get_terminal_size
     # honors COLUMNS) — pin it so snapshots match across local shells and CI.
     monkeypatch.setenv("COLUMNS", "80")

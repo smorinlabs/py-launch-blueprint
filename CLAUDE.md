@@ -50,9 +50,10 @@ them):
   2. `mise install` (root `mise.toml`)
   3. `flox activate` (root `.flox/`)
 - Deliberately NOT in `mise.toml`/`.flox`: yamllint, codespell, bandit,
-  editorconfig-checker (run via `uvx`) and commitlint (run via
-  `bunx --bun @commitlint/cli`) — uv/bun fetch them on demand, and a mise
-  `commitlint` shim shadows bun's PATH fallback (see note in lefthook.yml)
+  editorconfig-checker (run via `uv run` from the locked dev group, per WL-001)
+  and commitlint (run via `bunx --bun @commitlint/cli`) — `uv sync`/bun provide
+  them, and a mise `commitlint` shim shadows bun's PATH fallback (see note in
+  lefthook.yml)
 - Hook manager: `lefthook` (per ADR-01)
 - Build backend: `uv_build` with static `[project] version` (per ADR-06)
 - Releases: `release-please` opens version PR; tag triggers OIDC trusted publish (per ADR-05/07)
