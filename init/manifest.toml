@@ -110,7 +110,6 @@ files = [
   "src/py_launch_blueprint/core/paths.py",              # 20x
   "src/py_launch_blueprint/web/app.py",                 # 1x
   "tests/cli/test_pylb.py",                             # 27x
-  "tests/cli/__snapshots__/test_help_snapshots.ambr",   # generated (WL-023); `pytest --snapshot-update`
   "tests/cli/test_help_snapshots.py",                   # WL-023
   "tests/conftest.py",                                  # 1x
   "tests/core/test_core.py",                            # 19x
@@ -141,7 +140,6 @@ files = [
   "src/py_launch_blueprint/core/logging.py",          # 1x
   "src/py_launch_blueprint/core/settings.py",         # 1x
   "tests/cli/test_pylb.py",                           # 38x
-  "tests/cli/__snapshots__/test_help_snapshots.ambr", # generated (WL-023)
   "tests/web/test_app.py",                            # 2x
   "projects/P01-init-rebrand-robustness.md",          # 11x
 ]
@@ -385,6 +383,22 @@ command = ["uv", "lock"]
 [[regenerate]]
 path = "bun.lock"
 command = ["bun", "install"]
+
+# CLI --help snapshots (WL-023): regenerated, not text-replaced — help output
+# re-wraps at 80 columns for the renamed program name, which string
+# replacement cannot reproduce. Runs after replaces/renames + uv lock, so the
+# regenerated snapshots reflect the fork's identity.
+[[regenerate]]
+path = "tests/cli/__snapshots__/test_help_snapshots.ambr"
+command = [
+  "uv",
+  "run",
+  "pytest",
+  "tests/cli/test_help_snapshots.py",
+  "--snapshot-update",
+  "-q",
+  "--override-ini=addopts=",
+]
 
 # Reset (not rewrite) on init: CHANGELOG.md accumulates the blueprint's own
 # release history (compare-URLs, `plbp`, `smorinlabs`); a fork starts its own,
