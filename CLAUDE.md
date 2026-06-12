@@ -1,9 +1,9 @@
 # CLAUDE.md - Agent Guidelines for Py Launch Blueprint
 
 ## Project Commands
-- Setup (run BOTH in every fresh clone/container/session):
-  1. `uv sync --group dev --extra web` (PEP 735; per ITM-063)
-  2. `scripts/install-lefthook.sh` (REQUIRED — wires git hooks; idempotent, safe to re-run)
+- Setup — two levels, in order (idempotent; run in every fresh clone/container/session):
+  1. Level 1 (bare machines only): `make bootstrap` — installs the base toolchain (just, uv). Skip if both are already installed.
+  2. Level 2: `just setup` — runs `uv sync --group dev --extra web` (PEP 735; per ITM-063), wires lefthook git hooks (REQUIRED before any commit/push), and installs the hook toolchain (bun, gitleaks, taplo, yamlfmt). Fails with a pointer to `make bootstrap` if the base toolchain is missing.
 - Format: `just format` or `uvx ruff format src/py_launch_blueprint/`
 - Lint: `just lint` or `uvx ruff check src/py_launch_blueprint/`
 - Type check: `just typecheck` or `uv run --extra web ty check src/py_launch_blueprint/` (ITM-026 / ADR-03; ty must be in dev deps; `--extra web` so web/ imports resolve)
@@ -13,11 +13,11 @@
 - Web (FastAPI, behind `web` extra): `just serve` dev server; `just test-web` runs tests/web
 - Web API conventions (problem+json, /v1, pagination, WEB-xx ids): docs/design/0002-web-api-conventions.md
 - After ANY web route change: `just export-openapi` and commit the snapshot (a test + the api-contract workflow enforce it)
-- Hooks: lefthook runs at commit/push ONLY after `scripts/install-lefthook.sh` — run it before any commit (see Setup)
+- Hooks: lefthook runs at commit/push ONLY after `just setup` (or `scripts/install-lefthook.sh`) — run it before any commit (see Setup)
 - Manual secret scan: `scripts/check-gitleaks.sh --staged` or `--range`
 
 ## Before pushing a PR (init-system integrity)
-Run `scripts/install-lefthook.sh` (idempotent) so the pre-push hook runs these
+Run `just setup` (idempotent) so the pre-push hook runs these
 automatically. If hooks still aren't active (or to double-check), run them
 manually before every push (CI `blueprint-guard` + `init-integration` enforce
 them):

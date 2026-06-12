@@ -29,9 +29,13 @@ Sphinx directly via `uv run --group docs`.)
 
 ## Usage
 
-The primary Makefile in the root directory is used to set up the development environment. Typical commands include:
+The primary Makefile in the root directory is **Level 1** of the project's
+two-level setup: it bootstraps the base toolchain (`just` + `uv`), and then
+`just setup` (Level 2) takes over for everything else (dev environment, git
+hooks, hook toolchain). Typical commands include:
 
 ```sh
+make bootstrap   	# To install just + uv if missing, then verify (then run: just setup)
 make check   		# To check system requirements
 make install-just	# To print the install command for tool 'just'
 make install-just-force	# To forcibly install the 'just' command runner
