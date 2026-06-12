@@ -82,7 +82,7 @@ files = [
 ]
 mode = "structured"
 
-# app_name (text) — 214 occurrences in 29 files
+# app_name (text) — 313 occurrences in 48 files
 # NOTE: 4-char token — safe for text mode because "plbp" was invented to be
 # substring-disjoint from real words and every other identity value.
 [[replace]]
@@ -140,7 +140,7 @@ files = [
 ]
 mode = "text"
 
-# app_name_upper (text) — 120 occurrences in 16 files
+# app_name_upper (text) — 228 occurrences in 32 files
 # Derived identity (app_name.upper()): the PLBP_* env prefix and the
 # _PLBP_COMPLETE completion var. Never prompted; init derives it.
 [[replace]]

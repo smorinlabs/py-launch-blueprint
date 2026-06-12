@@ -19,7 +19,7 @@ Start from [`template.md`](template.md).
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [0001](0001-app-short-name-plbp.md) | App short name `plbp` (hard rename from `pylb`) | Superseded by 0014 |
+| [0001](0001-app-short-name-plbp.md) | App short name `plbp` (hard rename from `pylb`) | Superseded by 0016 |
 | [0002](0002-no-secrets-in-config-file.md) | Secrets are never stored in the config file | Accepted |
 | [0003](0003-keep-markdown-output-mode.md) | Keep `markdown` as a third output format (spec deviation) | Accepted |
 | [0004](0004-config-errors-degrade-to-warnings.md) | Invalid config values degrade to warnings, never crashes | Accepted |
