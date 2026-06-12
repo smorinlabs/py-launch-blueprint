@@ -33,8 +33,9 @@ from click.shell_completion import get_completion_class
 from py_launch_blueprint import __version__
 from py_launch_blueprint.cli.commands import COMMAND_GROUPS
 from py_launch_blueprint.cli.context import AppContext
+from py_launch_blueprint.cli.groups import SuggestingGroup
 from py_launch_blueprint.cli.options import global_options
-from py_launch_blueprint.core.diagnostics import run_diagnostics
+from py_launch_blueprint.core.diagnostics import build_bundle, run_diagnostics
 from py_launch_blueprint.core.errors import ExitCode
 from py_launch_blueprint.core.paths import APP_NAME
 
@@ -57,6 +58,7 @@ def _print_version(ctx: click.Context, _param: click.Parameter, value: bool) -> 
 
 @click.group(
     name=_PROG_NAME,
+    cls=SuggestingGroup,
     context_settings={
         "help_option_names": ["-h", "--help"],
         # Every option also resolves from a <APP_NAME>_* env var (R1.2). The
@@ -100,15 +102,25 @@ def completion(shell: str) -> None:
 
 
 @cli.command(name="doctor")
+@click.option(
+    "--bundle",
+    is_flag=True,
+    help="Emit a redacted diagnostics bundle to attach to bug reports.",
+)
 @global_options
-def doctor(app: AppContext) -> None:
+def doctor(app: AppContext, bundle: bool) -> None:
     """Diagnose configuration and environment.
 
     Reports Python/platform, the resolved config file, and token status.
     Exits non-zero if any check is an error (useful in CI). Honors -o/--json.
+    --bundle widens the report into a redacted snapshot (version, settings,
+    app env vars with secrets masked) safe to paste into a public issue.
     """
     report = run_diagnostics(app.config)
-    app.renderer.render(report)
+    if bundle:
+        app.renderer.render(build_bundle(app.config, report))
+    else:
+        app.renderer.render(report)
     if report.has_error():
         raise SystemExit(int(ExitCode.CONFIG))
 

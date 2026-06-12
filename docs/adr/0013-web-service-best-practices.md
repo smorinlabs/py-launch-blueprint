@@ -1,4 +1,4 @@
-# 0006. Web service: baked-in REST best practices behind the `web` extra
+# 0013. Web service: baked-in REST best practices behind the `web` extra
 
 - **Status:** Accepted
 - **Date:** 2026-06-12

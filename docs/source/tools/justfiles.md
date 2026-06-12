@@ -52,15 +52,6 @@ just build
 just install-dev
 ```
 
-When your virtual environment is activated, you can also use direct commands without uvx:
-
-```bash
-just format-pip   # Run formatter directly
-just lint-pip     # Run linter directly
-just typecheck-pip # Run type checker directly
-just test-pip     # Run tests directly with pytest
-```
-
-The Justfile standardizes common development tasks and provides a consistent interface for both uvx and direct command execution.
+The Justfile standardizes common development tasks and provides a consistent interface for running them.
 
 For a full list of available commands, refer to [this guide](../reference/cli_reference.md).

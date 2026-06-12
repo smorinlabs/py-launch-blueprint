@@ -4,7 +4,7 @@ The blueprint ships an optional REST service: a *thin adapter* over the same
 `core` library the CLI uses, with production best practices already wired.
 Each convention carries a **WEB-xx** id — the full catalog and rationale live
 in [design 0002](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/design/0002-web-api-conventions.md)
-and [ADR 0006](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/adr/0006-web-service-best-practices.md).
+and [ADR 0013](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/adr/0013-web-service-best-practices.md).
 For the root-level walkthrough (the web counterpart of EXAMPLECLI.md) see
 [EXAMPLEWEB.md](https://github.com/smorinlabs/py-launch-blueprint/blob/main/EXAMPLEWEB.md).
 

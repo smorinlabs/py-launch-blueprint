@@ -25,15 +25,28 @@ consumes the global values, builds an :class:`AppContext`, and passes it as the
 first argument to the wrapped command.
 """
 
+import datetime
 import functools
+import traceback
 from collections.abc import Callable
 from typing import Any, cast
 
 import click
 
-from py_launch_blueprint.cli.context import LOG_FILE_DEFAULT_SENTINEL, AppContext
+from py_launch_blueprint.cli.context import (
+    LOG_FILE_DEFAULT_SENTINEL,
+    AppContext,
+    maybe_show_first_run_hint,
+)
 from py_launch_blueprint.cli.output import OutputMode, Renderer
-from py_launch_blueprint.core.errors import ConfigError, ExitCode, PyError
+from py_launch_blueprint.core import paths
+from py_launch_blueprint.core.errors import (
+    ERROR_CODE_INTERRUPT,
+    ERROR_CODE_UNEXPECTED,
+    ConfigError,
+    ExitCode,
+    PyError,
+)
 from py_launch_blueprint.core.logging import LOG_LEVELS
 
 _OUTPUT_CHOICES = [mode.value for mode in OutputMode]
@@ -117,6 +130,27 @@ def _fallback_renderer(
     return Renderer(mode=mode, color="never" if no_color else "auto")
 
 
+def _write_crash_log(exc: BaseException) -> str | None:
+    """Append the traceback to the crash log; return its path (best-effort).
+
+    Unexpected errors must never vanish: without ``--verbose`` the user only
+    sees the message, so the full traceback goes to
+    ``<state>/plbp/plbp_crash.log`` and the error output points at it.
+    Returns ``None`` if even that write fails — reporting a crash must not
+    crash.
+    """
+    try:
+        crash_path = paths.state_file("crash")
+        paths.ensure_dir(crash_path.parent)
+        stamp = datetime.datetime.now(datetime.UTC).isoformat()
+        rendered = "".join(traceback.format_exception(exc))
+        with crash_path.open("a", encoding="utf-8") as handle:
+            handle.write(f"--- {stamp} ---\n{rendered}\n")
+        return str(crash_path)
+    except OSError:
+        return None
+
+
 def global_options[F: Callable[..., Any]](func: F) -> F:
     """Attach the global options and inject an ``AppContext`` first arg."""
 
@@ -155,24 +189,41 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
             )
         except PyError as exc:
             _fallback_renderer(output_mode, json_mode, no_color).error(
-                exc.message, exc.exit_code
+                exc.message, exc.exit_code, error_code=exc.error_code, hint=exc.hint
             )
             raise SystemExit(int(exc.exit_code)) from exc
         except Exception as exc:
+            # Unexpected failure while building the context (renderer,
+            # logging, paths setup) follows the same contract as any other
+            # unexpected error: PLBP000 + crash log — not a config error,
+            # which would send the user debugging a healthy config file.
             _fallback_renderer(output_mode, json_mode, no_color).error(
-                str(exc), ExitCode.CONFIG
+                str(exc),
+                ExitCode.IO,
+                error_code=ERROR_CODE_UNEXPECTED,
+                traceback_path=_write_crash_log(exc),
             )
-            raise SystemExit(int(ExitCode.CONFIG)) from exc
+            raise SystemExit(int(ExitCode.IO)) from exc
         try:
+            maybe_show_first_run_hint(app)
             return func(app, *args, **kwargs)
         except PyError as exc:
-            app.renderer.error(exc.message, exc.exit_code)
+            app.renderer.error(
+                exc.message, exc.exit_code, error_code=exc.error_code, hint=exc.hint
+            )
             raise SystemExit(int(exc.exit_code)) from exc
         except KeyboardInterrupt:
-            app.renderer.error("Interrupted.", ExitCode.INTERRUPT)
+            app.renderer.error(
+                "Interrupted.", ExitCode.INTERRUPT, error_code=ERROR_CODE_INTERRUPT
+            )
             raise SystemExit(int(ExitCode.INTERRUPT)) from None
         except Exception as exc:
-            app.renderer.error(str(exc), ExitCode.IO)
+            app.renderer.error(
+                str(exc),
+                ExitCode.IO,
+                error_code=ERROR_CODE_UNEXPECTED,
+                traceback_path=_write_crash_log(exc),
+            )
             if app.verbose:
                 app.renderer.err.print_exception()
             raise SystemExit(int(ExitCode.IO)) from exc
@@ -221,7 +272,7 @@ def confirm(app: AppContext, prompt: str, *, assume_yes: bool) -> bool:
         return True
     if app.no_input:
         raise ConfigError(
-            f"refusing to proceed without confirmation (--no-input); "
-            f"pass --yes to: {prompt}"
+            f"refusing to proceed without confirmation (--no-input): {prompt}",
+            hint="pass --yes to confirm non-interactively",
         )
     return click.confirm(prompt, default=False, err=True)

@@ -26,13 +26,14 @@ result → renderer, early validation, typed errors → exit codes).
 import click
 
 from py_launch_blueprint.cli.context import AppContext
+from py_launch_blueprint.cli.groups import SuggestingGroup
 from py_launch_blueprint.cli.options import global_options
 from py_launch_blueprint.core.errors import AuthError
 from py_launch_blueprint.core.models import ProjectList
 from py_launch_blueprint.core.services import ProjectsService
 
 
-@click.group(name="projects")
+@click.group(name="projects", cls=SuggestingGroup)
 def projects_group() -> None:
     """List and inspect Py projects."""
 
@@ -42,8 +43,8 @@ def _service(app: AppContext) -> ProjectsService:
     token = app.config.token
     if not token:
         raise AuthError(
-            "No Py token found. Supply it via --token or the $PLBP_TOKEN "
-            "environment variable (never stored in the config file)."
+            "No Py token found (never stored in the config file).",
+            hint="supply it via --token or $PLBP_TOKEN; `plbp doctor` checks setup",
         )
     return ProjectsService(token)
 

@@ -139,5 +139,5 @@ The committed snapshot `docs/api/openapi.json` **is** the API contract:
 
 For the full convention catalog and rationale see
 [docs/design/0002](docs/design/0002-web-api-conventions.md) and
-[ADR 0006](docs/adr/0006-web-service-best-practices.md); the user guide lives
+[ADR 0013](docs/adr/0013-web-service-best-practices.md); the user guide lives
 at [docs/source/web/index.md](docs/source/web/index.md).

@@ -39,12 +39,14 @@ files = [
   "src/py_launch_blueprint/cli/commands/projects.py",    # 1x
   "src/py_launch_blueprint/cli/context.py",              # 1x
   "src/py_launch_blueprint/cli/exit_codes.py",           # 1x
+  "src/py_launch_blueprint/cli/groups.py",               # 1x
   "src/py_launch_blueprint/cli/main.py",                 # 1x
   "src/py_launch_blueprint/cli/options.py",              # 1x
   "src/py_launch_blueprint/cli/output.py",               # 1x
   "src/py_launch_blueprint/core/__init__.py",            # 1x
   "src/py_launch_blueprint/core/config.py",              # 1x
   "src/py_launch_blueprint/core/errors.py",              # 1x
+  "src/py_launch_blueprint/core/format.py",              # 1x
   "src/py_launch_blueprint/core/logging.py",             # 1x
   "src/py_launch_blueprint/core/models.py",              # 1x
   "src/py_launch_blueprint/core/diagnostics.py",         # 1x
@@ -99,6 +101,11 @@ files = [
   "docs/adr/0002-no-secrets-in-config-file.md",         # 1x
   "docs/adr/0003-keep-markdown-output-mode.md",         # 1x
   "docs/adr/0004-config-errors-degrade-to-warnings.md", # 1x
+  "docs/adr/0006-stable-error-codes-hints-crash-log.md", # 2x
+  "docs/adr/0007-did-you-mean-stdlib-difflib.md",       # 3x
+  "docs/adr/0009-config-init-and-first-run-hint.md",    # 2x
+  "docs/adr/0011-windows-native-paths-xdg-overrides.md", # 3x
+  "docs/adr/0012-doctor-bundle-redact-at-collection.md", # 2x
   "docs/adr/README.md",                                 # 2x
   "docs/design/0001-plbp-cli-conventions.md",           # 28x
   "docs/design/README.md",                              # 2x
@@ -106,10 +113,13 @@ files = [
   "docs/source/reference/cli_reference.md",             # 1x
   "docs/source/web/index.md",                           # 1x
   "docs/source/tasks/setting_up_development.md",        # 2x
+  "llms.txt",                                           # 3x
   "projects/P01-init-rebrand-robustness.md",            # 7x
   "src/py_launch_blueprint/cli/commands/__init__.py",   # 1x
   "src/py_launch_blueprint/cli/commands/config.py",     # 9x
   "src/py_launch_blueprint/cli/commands/projects.py",   # 6x
+  "src/py_launch_blueprint/cli/context.py",             # 3x
+  "src/py_launch_blueprint/cli/groups.py",              # 2x
   "src/py_launch_blueprint/cli/main.py",                # 6x
   "src/py_launch_blueprint/cli/options.py",             # 1x
   "src/py_launch_blueprint/core/config.py",             # 9x
@@ -121,6 +131,8 @@ files = [
   "tests/conftest.py",                                  # 1x
   "tests/core/test_core.py",                            # 19x
   "tests/core/test_logging.py",                         # 8x
+  "tests/core/test_paths.py",                           # 10x
+  "tests/test_output.py",                               # 4x
 ]
 mode = "text"
 
@@ -139,19 +151,25 @@ files = [
   "docs/design/0002-web-api-conventions.md",          # 4x
   "docs/adr/0001-app-short-name-plbp.md",             # 2x
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
+  "docs/adr/0006-stable-error-codes-hints-crash-log.md", # 5x
+  "docs/adr/0008-pager-for-long-text-output.md",      # 2x
   "docs/source/index.md",                             # 1x
   "docs/source/web/index.md",                         # 10x
+  "llms.txt",                                         # 1x
   "POST_INIT.md",                                     # 1x
   "src/py_launch_blueprint/cli/commands/config.py",   # 2x
   "src/py_launch_blueprint/cli/commands/projects.py", # 1x
   "src/py_launch_blueprint/cli/context.py",           # 9x
   "src/py_launch_blueprint/cli/main.py",              # 2x
   "src/py_launch_blueprint/cli/options.py",           # 5x
+  "src/py_launch_blueprint/cli/output.py",            # 4x
   "src/py_launch_blueprint/core/config.py",           # 5x
+  "src/py_launch_blueprint/core/errors.py",           # 6x
   "src/py_launch_blueprint/core/logging.py",          # 1x
   "src/py_launch_blueprint/core/settings.py",         # 1x
   "src/py_launch_blueprint/web/settings.py",          # 1x
   "tests/cli/test_pylb.py",                           # 38x
+  "tests/test_output.py",                             # 15x
   "tests/web/test_app.py",                            # 2x
   "tests/web/test_settings.py",                       # 5x
   "projects/P01-init-rebrand-robustness.md",          # 11x
@@ -196,6 +214,7 @@ files = [
   "docs/source/tools/justfiles.md",               # 1x
   "docs/source/tools/ty.md",                      # 1x
   "docs/source/tutorials/full_project_setup.md",  # 1x
+  "llms.txt",                                     # 9x
 ]
 mode = "text"
 
@@ -251,6 +270,7 @@ files = [
   "src/py_launch_blueprint/core/config.py",            # 3x
   "src/py_launch_blueprint/core/errors.py",            # 1x
   "src/py_launch_blueprint/core/logging.py",           # 1x
+  "src/py_launch_blueprint/core/models.py",            # 1x
   "src/py_launch_blueprint/core/services/__init__.py", # 1x
   "src/py_launch_blueprint/core/services/projects.py", # 3x
   "src/py_launch_blueprint/core/settings.py",          # 1x
@@ -265,7 +285,7 @@ files = [
   "src/py_launch_blueprint/web/settings.py",           # 2x
   "src/py_launch_blueprint/web/telemetry.py",          # 2x
   "Dockerfile",                                        # 1x
-  "docs/adr/0006-web-service-best-practices.md",       # 2x
+  "docs/adr/0013-web-service-best-practices.md",       # 2x
   "docs/design/0002-web-api-conventions.md",           # 2x
   "docs/source/web/index.md",                          # 1x
   "scripts/export_openapi.py",                         # 2x
@@ -273,7 +293,9 @@ files = [
   "release-please-config.json",                        # 1x
   "tests/cli/test_pylb.py",                            # 6x
   "tests/core/test_core.py",                           # 9x
+  "tests/core/test_format.py",                         # 2x
   "tests/core/test_logging.py",                        # 1x
+  "tests/core/test_paths.py",                          # 1x
   "tests/test_output.py",                              # 3x
   "tests/test_version_consistency.py",                 # 2x
   "tests/web/test_app.py",                             # 6x
@@ -325,11 +347,12 @@ files = [
   "docs/source/tools/justfiles.md",               # 1x
   "docs/source/tools/ty.md",                      # 1x
   "docs/source/tutorials/full_project_setup.md",  # 2x
+  "llms.txt",                                     # 11x
   "package.json",                                 # 2x
   "src/py_launch_blueprint/web/__init__.py",      # 1x
   "src/py_launch_blueprint/web/app.py",           # 1x
   "docs/api/openapi.json",                        # 1x
-  "docs/adr/0006-web-service-best-practices.md",  # 1x
+  "docs/adr/0013-web-service-best-practices.md",  # 1x
   "docs/source/web/index.md",                     # 2x
 ]
 mode = "text"

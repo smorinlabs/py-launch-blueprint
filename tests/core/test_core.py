@@ -1,6 +1,7 @@
 """Tests for the core library layer (pure, no CLI)."""
 
 import logging
+import sys
 from pathlib import Path
 
 import pytest
@@ -155,12 +156,15 @@ def test_state_file_naming_under_xdg(tmp_path, monkeypatch):
 
 
 def test_xdg_default_when_unset(monkeypatch):
+    # Pin the POSIX branch: Windows defaults are covered in test_paths.py.
+    monkeypatch.setattr(paths, "_WINDOWS", False)
     monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
     assert paths.config_home() == Path.home() / ".config"
 
 
 def test_xdg_relative_value_ignored(monkeypatch):
     # Spec: a non-absolute XDG value must be ignored in favor of the default.
+    monkeypatch.setattr(paths, "_WINDOWS", False)
     monkeypatch.setenv("XDG_CONFIG_HOME", "relative/not/absolute")
     assert paths.config_home() == Path.home() / ".config"
 
@@ -209,7 +213,8 @@ def test_set_config_value_refuses_corrupt_file(tmp_path):
 def test_set_config_value_restricts_permissions(tmp_path):
     cfg_file = tmp_path / "plbp_config.toml"
     set_config_value(cfg_file, "output.color", "never")
-    assert (cfg_file.stat().st_mode & 0o777) == 0o600
+    if sys.platform != "win32":  # POSIX modes don't exist on windows
+        assert (cfg_file.stat().st_mode & 0o777) == 0o600
 
 
 # -- vocabulary single-sourcing guards (review findings) ---------------------
@@ -245,4 +250,5 @@ def test_write_leaves_no_temp_files(tmp_path):
     set_config_value(cfg_file, "output.color", "never")
     set_config_value(cfg_file, "logging.level", "info")
     assert [p.name for p in tmp_path.iterdir()] == ["plbp_config.toml"]
-    assert (cfg_file.stat().st_mode & 0o777) == 0o600
+    if sys.platform != "win32":  # POSIX modes don't exist on windows
+        assert (cfg_file.stat().st_mode & 0o777) == 0o600

@@ -114,6 +114,18 @@ def coerce_value(section: str, key: str, raw: str) -> Any:
     return getattr(validated, key)
 
 
+def allowed_values(section: str, key: str) -> tuple[str, ...] | None:
+    """Allowed string literals for a settable key, or None if unconstrained.
+
+    Used for error messages and interactive prompts (``config init``).
+    """
+    annotation = _SECTIONS[section].model_fields[key].annotation
+    choices = getattr(annotation, "__args__", None)
+    if choices and all(isinstance(c, str) for c in choices):
+        return tuple(choices)
+    return None
+
+
 def _allowed_hint(model: type[BaseModel], key: str) -> str | None:
     """Render the allowed values for a Literal field, for error messages."""
     annotation = model.model_fields[key].annotation

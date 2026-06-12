@@ -209,9 +209,11 @@ strict_markers = true
 skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache,*.log,skill/optimization-workspace"
 # *.log + skill/optimization-workspace: the optimization writeup quotes raw
 # eval phrasings (LLM text artifacts) that aren't real typos; skip the tree.
-ignore-words-list = "ans"
+ignore-words-list = "ans,porjects"
 # ans: variable name used in prompt-handling code; codespell wants to "fix"
 # it to "and". Whitelist to keep the short variable name.
+# porjects: intentional typo — the did-you-mean example in cli/groups.py and
+# its test ("plbp porjects" must suggest "projects").
 check-filenames = true
 check-hidden = false
 
