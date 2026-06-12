@@ -66,6 +66,22 @@ def _resolve_pager_command() -> str:
     return DEFAULT_PAGER
 
 
+def _isatty(console: Console) -> bool:
+    """True when the console's underlying stream is a real TTY.
+
+    ``Console.is_terminal`` is forced True by ``color="always"`` — right for
+    styling, wrong for paging: a piped run must never block on a pager, no
+    matter how color was resolved.
+    """
+    isatty = getattr(console.file, "isatty", None)
+    if isatty is None:
+        return False
+    try:
+        return bool(isatty())
+    except ValueError:  # closed/replaced stream
+        return False
+
+
 def _console_color_args(color: str) -> tuple[bool | None, bool | None]:
     """Map a resolved color mode to rich's ``(no_color, force_terminal)``.
 
@@ -127,7 +143,7 @@ class Renderer:
         under ``--no-input`` (``paging=False``). The pager resolves from
         ``PLBP_PAGER`` > ``PAGER`` > ``less -FRX``; an empty value disables.
         """
-        if not (self.paging and self.out.is_terminal):
+        if not (self.paging and self.out.is_terminal and _isatty(self.out)):
             self._render_text(result, self.out)
             return
         pager = _resolve_pager_command()

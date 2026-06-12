@@ -662,6 +662,20 @@ def test_first_run_hint_suppressed_when_config_exists(monkeypatch, tmp_path, cap
     assert capsys.readouterr().err == ""
 
 
+def test_first_run_hint_json_mode_burns_nothing(monkeypatch, tmp_path, capsys):
+    app = _hint_app(
+        monkeypatch,
+        tmp_path,
+        renderer=Renderer(OutputMode.JSON, color="always"),
+        output_mode=OutputMode.JSON,
+    )
+    maybe_show_first_run_hint(app)
+    assert capsys.readouterr().err == ""
+    # marker must NOT be written: the hint was never shown, so a later
+    # interactive text-mode run still gets it
+    assert not (tmp_path / "plbp" / "plbp_first_run.marker").exists()
+
+
 def test_first_run_hint_suppressed_when_not_a_terminal(monkeypatch, tmp_path, capsys):
     app = _hint_app(
         monkeypatch, tmp_path, renderer=Renderer(OutputMode.TEXT, no_color=True)

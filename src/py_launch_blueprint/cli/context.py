@@ -147,6 +147,10 @@ def maybe_show_first_run_hint(app: AppContext) -> None:
     """
     if app.no_input or app.quiet or not app.renderer.err.is_terminal:
         return
+    # JSON mode would swallow the message (``message()`` is a no-op there);
+    # bail before the marker is written or the hint is burned unseen.
+    if app.output_mode is OutputMode.JSON:
+        return
     if app.config.loaded_paths:
         return
     ctx = click.get_current_context(silent=True)

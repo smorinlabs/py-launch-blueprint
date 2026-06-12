@@ -191,6 +191,7 @@ def test_pager_invoked_for_tall_terminal_output(monkeypatch):
 
     monkeypatch.setenv("PLBP_PAGER", "fakepager --flag")
     monkeypatch.setattr(output_mod.subprocess, "run", fake_run)
+    monkeypatch.setattr(output_mod, "_isatty", lambda console: True)
     Renderer(OutputMode.TEXT, color="always").render(_tall_result())
     assert calls["args"] == ["fakepager", "--flag"]
     assert "P39" in calls["input"]
@@ -202,6 +203,7 @@ def test_pager_skipped_for_short_output(capsys, monkeypatch):
 
     monkeypatch.setenv("PLBP_PAGER", "fakepager")
     monkeypatch.setattr(output_mod.subprocess, "run", explode)
+    monkeypatch.setattr(output_mod, "_isatty", lambda console: True)
     Renderer(OutputMode.TEXT, color="always").render(_result())
     assert "Alpha" in capsys.readouterr().out
 
@@ -212,6 +214,19 @@ def test_pager_missing_binary_falls_back_to_plain_output(capsys, monkeypatch):
 
     monkeypatch.setenv("PLBP_PAGER", "definitely-not-a-pager")
     monkeypatch.setattr(output_mod.subprocess, "run", missing)
+    monkeypatch.setattr(output_mod, "_isatty", lambda console: True)
+    Renderer(OutputMode.TEXT, color="always").render(_tall_result())
+    assert "P39" in capsys.readouterr().out
+
+
+def test_pager_not_used_when_color_forced_but_piped(capsys, monkeypatch):
+    # color="always" forces rich's is_terminal True; the real stdout is
+    # still a pipe here, and a piped run must never block on a pager.
+    def explode(*args, **kwargs):  # pragma: no cover - must not be reached
+        raise AssertionError("pager must not run when stdout is not a tty")
+
+    monkeypatch.setenv("PLBP_PAGER", "fakepager")
+    monkeypatch.setattr(output_mod.subprocess, "run", explode)
     Renderer(OutputMode.TEXT, color="always").render(_tall_result())
     assert "P39" in capsys.readouterr().out
 
@@ -222,5 +237,6 @@ def test_pager_disabled_by_paging_false(capsys, monkeypatch):
 
     monkeypatch.setenv("PLBP_PAGER", "fakepager")
     monkeypatch.setattr(output_mod.subprocess, "run", explode)
+    monkeypatch.setattr(output_mod, "_isatty", lambda console: True)
     Renderer(OutputMode.TEXT, color="always", paging=False).render(_tall_result())
     assert "P39" in capsys.readouterr().out
