@@ -3,7 +3,7 @@
   "info": {
     "title": "py-launch-blueprint",
     "description": "REST API over the same core library the CLI uses. Errors are RFC 9457 `application/problem+json`; business routes live under `/v1`; collections paginate with `page`/`size` query params.",
-    "version": "2.0.1"
+    "version": "2.1.0"
   },
   "paths": {
     "/healthz": {
