@@ -44,6 +44,8 @@ py-launch-blueprint/
 │   ├── __init__.py                 # Test package initialization
 │   ├── cli/                        # CLI tests
 │   └── core/                       # Library tests
+├── .flox/                          # Flox environment (optional toolchain provisioner; ADR 0005)
+│   └── env/manifest.toml           # Declares the 10-tool dev set for `flox activate`
 ├── .gitignore                      # Git ignore file
 ├── .pre-commit-config.yaml         # Pre-commit hooks configuration
 ├── .python-version                 # Python version file
@@ -69,8 +71,10 @@ py-launch-blueprint/
 │   │   └── contributing/           # Contribution guidelines
 │   └── build/                      # Built documentation files
 ├── EXAMPLECLI.md                   # Example CLI documentation
+├── EXAMPLEWEB.md                   # Example web service documentation
 ├── Justfile                        # Just task runner configuration
 ├── Makefile                        # Makefile for building the project
+├── mise.toml                       # mise toolchain (optional provisioner; ADR 0005)
 ├── PULL_REQUEST_TEMPLATE.md        # Pull request template
 ├── src/py_launch_blueprint/        # Source code for the project
 │   ├── __init__.py                 # Package initialization
@@ -142,6 +146,10 @@ Provides guidelines for contributing to the project.
 ### EXAMPLECLI.md
 
 Contains documentation for the example CLI tool.
+
+### EXAMPLEWEB.md
+
+Contains documentation for the example FastAPI web service (the `web` extra).
 
 ### Justfile
 

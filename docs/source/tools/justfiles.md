@@ -2,11 +2,10 @@
 
 This project includes a [`Justfile`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/Justfile) that defines useful commands for common development tasks. [Just](https://github.com/casey/just) is a simple command runner that helps standardize commands across your project.
 
-To use these commands, first [install Just](https://github.com/casey/just#installation). Alternatively, this project's root `Makefile` provides convenient targets for installing and force-installing `just`:
+To use these commands, first [install Just](https://github.com/casey/just#installation). Alternatively, this project's root `Makefile` is the Level 1 bootstrap — it installs `just` (and `uv`) for you:
 
 ```bash
-make install-just
-make install-just-force
+make bootstrap
 ```
 Refer to the [Makefiles documentation](./makefiles.md) for more details on these `make` commands.
 
@@ -52,15 +51,6 @@ just build
 just install-dev
 ```
 
-When your virtual environment is activated, you can also use direct commands without uvx:
-
-```bash
-just format-pip   # Run formatter directly
-just lint-pip     # Run linter directly
-just typecheck-pip # Run type checker directly
-just test-pip     # Run tests directly with pytest
-```
-
-The Justfile standardizes common development tasks and provides a consistent interface for both uvx and direct command execution.
+The Justfile standardizes common development tasks and provides a consistent interface for running them.
 
 For a full list of available commands, refer to [this guide](../reference/cli_reference.md).

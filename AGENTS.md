@@ -12,18 +12,22 @@ human-contributor flow see [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md).
 - **lefthook** — hook manager (per ADR-01).
 - **gitleaks** — secret scanner (per ADR-02).
 
-One-shot install (idempotent):
+Setup is two levels, in order (both idempotent):
 
 ```bash
-scripts/install-bun.sh
-scripts/install-lefthook.sh
-scripts/install-gitleaks.sh
+make bootstrap   # Level 1 — base toolchain (just + uv); bare machines only
+just setup       # Level 2 — everything else (run every fresh clone/container/session)
 ```
 
-`scripts/install-lefthook.sh` is REQUIRED before any commit/push work: it
-wires lefthook into `.git/hooks`, and without it none of the hooks below
-fire. Fresh clones, containers, and remote agent sessions start without it —
-run it (it is idempotent) as part of environment setup, every session.
+`just setup` syncs the dev env (`uv sync --group dev --extra web`), wires
+lefthook git hooks, and installs the hook toolchain (bun + `bun install`,
+gitleaks, taplo, yamlfmt). It starts by running the Makefile's `make check`
+gate and fails with a pointer to `make bootstrap` if the base toolchain is
+missing — so running it "too early" is safe. The hook wiring is REQUIRED
+before any commit/push work: without it none of the hooks below fire. Fresh
+clones, containers, and remote agent sessions start without it — run
+`just setup` as part of environment setup, every session. (The underlying
+`scripts/install-*.sh` installers remain available individually.)
 
 ## Canonical commands
 
@@ -41,17 +45,16 @@ run it (it is idempotent) as part of environment setup, every session.
 
 ## Verification flow before commit/PR
 
-1. `scripts/install-lefthook.sh` (idempotent — REQUIRED in fresh
-   clones/containers so the hooks in step 5 actually fire).
-2. `uv sync --group dev --extra web` (refresh deps).
-3. `just check` (full pipeline must pass).
-4. Init-system integrity (CI `blueprint-guard` + `init-integration` enforce
+1. `just setup` (idempotent — REQUIRED in fresh clones/containers so the
+   hooks in step 4 actually fire; also refreshes deps).
+2. `just check` (full pipeline must pass).
+3. Init-system integrity (CI `blueprint-guard` + `init-integration` enforce
    these). If you added/renamed/removed files containing identity values
    (package name, app name, author, owner, repo name), register them in
    `init/manifest.toml` `[[replace]]` blocks, then run:
    - `uv run --script init/ci/check_manifest_drift.py`
    - `uv run pytest init/tests/ --override-ini="addopts=" -q`
-5. Stage + commit. Lefthook fires automatically:
+4. Stage + commit. Lefthook fires automatically:
    - **commit-msg** → commitlint (Conventional Commits, lowercase subject).
    - **pre-commit** → gitleaks + editorconfig-checker + yamllint + codespell
      + ruff check/format on staged Python files.
@@ -60,7 +63,7 @@ run it (it is idempotent) as part of environment setup, every session.
 
    If lefthook was not installed (step 1 skipped), the hooks are silent
    no-ops — do NOT push until you have either installed it or run the
-   step-4 checks manually.
+   step-3 checks manually.
 
 ## Commit message format
 

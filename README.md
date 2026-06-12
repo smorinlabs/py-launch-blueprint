@@ -37,18 +37,20 @@ Py Launch Blueprint eliminates the setup friction in Python projects by providin
 ```bash
 git clone https://github.com/smorinlabs/py-launch-blueprint.git
 cd py-launch-blueprint
-make hook-check          # verify toolchain (lefthook/gitleaks/bun/uv/...)
-scripts/install-bun.sh
-scripts/install-lefthook.sh
-scripts/install-gitleaks.sh
-uv sync --group dev      # PEP 735 dev tools
-bun install              # commitlint deps
+make bootstrap           # level 1 — base toolchain (just + uv); skip if installed
+just setup               # level 2 — dev env, git hooks, hook toolchain
 just check               # full quality pipeline
 ```
 
 Install as a tool: `uvx --from py-launch-blueprint plbp` (uvx needs `--from` because the distribution name differs from the console-script name) or `pip install py-launch-blueprint && plbp`.
 
+The [`plbp` noun-verb CLI](EXAMPLECLI.md) documents the template's CLI conventions: global flags, the text/JSON/Markdown output contract, stable exit & error codes, and layered TOML config.
+
 See [AGENTS.md](AGENTS.md) for the canonical command set, [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the daily workflow, and [RELEASE.md](RELEASE.md) for the release flow.
+
+## Web service (FastAPI)
+
+The blueprint includes an optional REST API (`uv sync --extra web`, `just serve`) with production best practices already baked in: RFC 9457 problem+json errors, `/v1` versioning, pagination, Idempotency-Key replay, Prometheus metrics, opt-in OpenTelemetry tracing, rate limiting, security headers, typed env settings, a committed OpenAPI snapshot with breaking-change CI (oasdiff) and schemathesis fuzzing, generated typed clients, and a production Dockerfile. See [EXAMPLEWEB.md](EXAMPLEWEB.md) for the service walkthrough (the web counterpart of [EXAMPLECLI.md](EXAMPLECLI.md)), the [web service docs](docs/source/web/index.md), the [WEB-xx convention catalog](docs/design/0002-web-api-conventions.md), and [ADR 0013](docs/adr/0013-web-service-best-practices.md) for the design decisions.
 
 **Starting a new project from this template?** If you use Claude Code or any agent that reads `AGENTS.md`, just say *"create a new Python project from py-launch-blueprint"* — the [`skill/`](skill/SKILL.md) skill will walk you through `gh repo create --template`, identity collection, `just init` rebrand with preview, and an optional handoff to `just post-init` for publishing/Codecov/ReadTheDocs setup. For humans without an agent: the skill is also a copy-pasteable runbook. After init, work through [`POST_INIT.md`](POST_INIT.md) — the checklist of decisions, secrets, and repo settings to configure. Internal engineering docs (ADRs, design specs, research) live under [`docs/`](docs/README.md).
 
@@ -60,6 +62,8 @@ Teams and professionals needing maintainable, type-safe Python projects followin
 ### Development Tools
 
 - **Bootstrap dependency check and install with `make`**: Execute common development tasks with simple commands, standardizing workflows across team members.
+
+- **Optional one-command toolchains with [`mise`](https://mise.jdx.dev/) or [`flox`](https://flox.dev/)**: `mise install` (root `mise.toml`) or `flox activate` (root `.flox/`) provisions the same 10-tool set as the native installers — pick whichever fits your machine; see [ADR 0005](docs/adr/0005-mise-flox-first-class-toolchains.md).
 
 - **Command running with `just`**: Define and run project-specific commands with a modern Make alternative, simplifying complex operations with clear syntax.
 

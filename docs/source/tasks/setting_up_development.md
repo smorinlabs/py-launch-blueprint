@@ -7,6 +7,28 @@ Run the following command to check if the base dependencies are installed.
 make check
 ```
 
+### (Optional) Provision the whole toolchain with mise or flox
+
+Instead of installing each tool natively, you can provision the project's full
+10-tool set (python, uv, ruff, taplo, gitleaks, just, bun, gh, lefthook, make)
+with a single command — both manifests live at the repo root and are kept in
+sync with the native installers (see
+[ADR 0005](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/adr/0005-mise-flox-first-class-toolchains.md)):
+
+```bash
+# Option A: mise (https://mise.jdx.dev/) — reads mise.toml
+curl https://mise.run | sh   # install mise itself, then:
+mise install
+
+# Option B: flox (https://flox.dev/) — reads .flox/
+make install-flox            # prints platform-specific install instructions
+flox activate
+```
+
+Note: yamllint, codespell, bandit, editorconfig-checker, and commitlint are
+deliberately not in these manifests — they are fetched on demand via
+`uvx`/`bunx` by the git hooks and Justfile recipes.
+
 # Setup Development Environment
 
 Project requires Python 3.12+ (which is also specified inside [.python-version](https://github.com/smorinlabs/py-launch-blueprint/blob/main/.python-version) file)

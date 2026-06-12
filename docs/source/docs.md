@@ -9,19 +9,15 @@ This guide will help you get started with writing documentation for this project
 (quickstart-docs)=
 ## Quick Start
 
-To start working on the documentation:
+To start working on the documentation, start the documentation server with hot
+reloading (dependencies install automatically — the recipe runs Sphinx via
+`uv run --group docs`, which syncs the `docs` dependency group on demand):
 
-1. Make sure you have the dependencies installed:
-   ```bash
-   just install-docs
-   ```
+```bash
+just docs-dev
+```
 
-2. Start the documentation server with hot reloading:
-   ```bash
-   cd docs
-   make hotreloadhtml
-   ```
-   This will start a local server (usually at http://127.0.0.1:8000) that automatically rebuilds and reloads when you make changes.
+This will start a local server (usually at http://127.0.0.1:8000) that automatically rebuilds and reloads when you make changes.
 
 ## Adding New Pages
 
@@ -157,12 +153,12 @@ Create tables using markdown syntax:
 
 ## Building Documentation
 
-Common make commands:
+Common commands (run from the repo root):
 
-- `make html` - Build HTML documentation
-- `make hotreloadhtml` - Start development server with hot reloading
-- `make clean` - Remove built documentation
-- `make help` - Show all available commands
+- `just docs` - Build HTML documentation (`just docs latexpdf` for other targets)
+- `just docs-dev` - Start development server with hot reloading
+- `just docs-clean` - Remove built documentation
+- `just docs-help` - Show all available Sphinx build targets
 
 ## Troubleshooting
 
@@ -179,6 +175,6 @@ Common issues and solutions:
    - Look for warning messages in the build output
 
 3. **Build Errors**:
-   - Run `make clean` before `make html`
+   - Run `just docs-clean` before `just docs`
    - Check syntax in modified files
    - Look for missing dependencies

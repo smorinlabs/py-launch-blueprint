@@ -46,6 +46,44 @@
   
   '''
 # ---
+# name: test_help_snapshot[plbp config init]
+  '''
+  Usage: plbp config init [OPTIONS]
+  
+    Create or update the config file with guided prompts.
+  
+    Asks (on stderr, so stdout stays pipe-safe) for the most common settings,
+    offering the currently resolved values as defaults, then writes them to the
+    TOML config file. Secrets are never written — the token stays in --token /
+    $PLBP_TOKEN. Examples:
+  
+        plbp config init     plbp config init --yes       # accept current values,
+        no prompts     plbp config init --dry-run   # preview, write nothing
+  
+  Options:
+    --dry-run                       Show what would change; write nothing.
+    -y, --yes                       Skip confirmation prompts (for scripts/CI).
+    -o, --output [text|json|markdown]
+                                    Output format. [default: text]
+    --json                          Shorthand for --output json.
+    --output-file FILE              Write results to a file instead of stdout
+                                    (format set by --output).
+    -v, --verbose                   Increase log verbosity (-vv for debug).
+    -q, --quiet                     Suppress non-essential stderr output.
+    --log-level [debug|info|warning|error|critical]
+                                    Explicit console log level (overrides -v/-q).
+    --log-file TEXT                 Enable rotating file logging (PATH optional;
+                                    default: XDG state).
+    --no-color                      Disable colored output.
+    --config FILE                   Path to a TOML config file (overrides layered
+                                    discovery).
+    --token TEXT                    Py Personal Access Token (overrides
+                                    $PLBP_TOKEN). Never stored.
+    --no-input                      Never prompt; fail instead (for scripts/CI).
+    -h, --help                      Show this message and exit.
+  
+  '''
+# ---
 # name: test_help_snapshot[plbp config path]
   '''
   Usage: plbp config path [OPTIONS]
@@ -125,6 +163,7 @@
   
   Commands:
     get   Show a resolved config value and where it came from.
+    init  Create or update the config file with guided prompts.
     path  Show the config file path and whether it exists.
     set   Write a non-secret config value to the TOML config file.
   
@@ -137,9 +176,13 @@
     Diagnose configuration and environment.
   
     Reports Python/platform, the resolved config file, and token status. Exits
-    non-zero if any check is an error (useful in CI). Honors -o/--json.
+    non-zero if any check is an error (useful in CI). Honors -o/--json. --bundle
+    widens the report into a redacted snapshot (version, settings, app env vars
+    with secrets masked) safe to paste into a public issue.
   
   Options:
+    --bundle                        Emit a redacted diagnostics bundle to attach
+                                    to bug reports.
     -o, --output [text|json|markdown]
                                     Output format. [default: text]
     --json                          Shorthand for --output json.

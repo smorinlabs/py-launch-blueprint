@@ -19,14 +19,9 @@ Our project uses YAML files extensively for configuration, GitHub Actions workfl
 ## ⚙️ Getting Started
 
 ### Prerequisites
-Install Go and yamlfmt:
+Install yamlfmt (downloads the pre-built binary; no Go toolchain needed):
 ```bash
-# Install Go (if not already installed)
-just install-go
-
-# Install yamlfmt
 just install-yamlfmt
-
 ```
 
 ---

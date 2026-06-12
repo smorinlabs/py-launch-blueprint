@@ -93,21 +93,58 @@ BRANCH_NAME := "test-actions-" + DATE_TIME
 [group('setup'), group('debug')]
 check-deps:
     #!/usr/bin/env sh
-    if ! command -v uv >/dev/null 2>&1; then echo "{{YELLOW}}uv is not installed{{NC}}\n RUN {{BLUE}}make install-uv{{NC}}"; exit 1; fi
+    if ! command -v uv >/dev/null 2>&1; then echo "{{YELLOW}}uv is not installed{{NC}}\n RUN {{BLUE}}make bootstrap{{NC}}"; exit 1; fi
     if ! command -v python3 >/dev/null 2>&1; then echo "{{YELLOW}}python3 is not installed{{NC}}"; exit 1; fi
-    if ! command -v just >/dev/null 2>&1; then echo "{{YELLOW}}just is not installed{{NC}}\n RUN {{BLUE}}make install-just{{NC}}"; exit 1; fi
-    if ! command -v lefthook >/dev/null 2>&1; then echo "{{YELLOW}}WARNING: lefthook is not installed{{NC}}\n RUN {{BLUE}}scripts/install-lefthook.sh{{NC}}"; fi
+    if ! command -v just >/dev/null 2>&1; then echo "{{YELLOW}}just is not installed{{NC}}\n RUN {{BLUE}}make bootstrap{{NC}}"; exit 1; fi
+    if ! command -v lefthook >/dev/null 2>&1; then echo "{{YELLOW}}WARNING: lefthook is not installed{{NC}}\n RUN {{BLUE}}just setup{{NC}}"; fi
     if ! command -v taplo >/dev/null 2>&1; then echo "{{YELLOW}}Taplo is not installed{{NC}}\n RUN {{BLUE}}just install-taplo{{NC}}"; exit 1; fi
-    if ! command -v go >/dev/null 2>&1; then echo "{{YELLOW}}go is not installed{{NC}}\n RUN {{BLUE}}make install-go{{NC}}"; exit 1; fi
-    if ! command -v yamlfmt >/dev/null 2>&1; then echo "{{YELLOW}}yamlfmt is not installed{{NC}}\n RUN {{BLUE}}make install-yamlfmt{{NC}}"; exit 1; fi
+    if ! command -v yamlfmt >/dev/null 2>&1; then echo "{{YELLOW}}yamlfmt is not installed{{NC}}\n RUN {{BLUE}}just install-yamlfmt{{NC}}"; exit 1; fi
     echo "All required tools are installed"
 
 alias c := check-deps
 
+# One-command project setup — Level 2 of the two-level flow. Level 1 is
+# `make bootstrap` (base toolchain: just + uv); run that first on a bare
+# machine. Idempotent: safe to re-run in every fresh clone/container/session.
+[group('setup'), group('quick start')]
+setup:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Bootstrap gate — catches `just setup` being run before `make bootstrap`.
+    if command -v make >/dev/null 2>&1; then
+        if ! make --no-print-directory check; then
+            echo -e "{{RED}}Base toolchain incomplete — run {{BLUE}}make bootstrap{{RED}} first, then re-run {{BLUE}}just setup{{RED}}.{{NC}}" >&2
+            exit 1
+        fi
+    elif command -v uv >/dev/null 2>&1; then
+        echo -e "{{YELLOW}}make not found — skipping bootstrap check (uv is present, continuing).{{NC}}"
+    else
+        echo -e "{{RED}}uv not found (and make is unavailable to bootstrap it).{{NC}}" >&2
+        echo -e "{{RED}}Run {{BLUE}}make bootstrap{{RED}} on a machine with make, or install uv: https://docs.astral.sh/uv/{{NC}}" >&2
+        exit 1
+    fi
+    # Tools installed below land in these dirs; make them visible to the
+    # rest of this run (the final check-deps) even on a fresh machine.
+    export PATH="$HOME/.local/bin:$HOME/.bun/bin:${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+    echo -e "{{BLUE}}[1/4] Syncing dev environment: uv sync --group dev --extra web{{NC}}"
+    uv sync --group dev --extra web
+    echo -e "{{BLUE}}[2/4] Installing hook toolchain (bun, lefthook, gitleaks)...{{NC}}"
+    scripts/install-bun.sh
+    scripts/install-lefthook.sh
+    scripts/install-gitleaks.sh
+    bun install
+    echo -e "{{BLUE}}[3/4] Installing formatters (taplo, yamlfmt)...{{NC}}"
+    just install-taplo
+    just install-yamlfmt
+    echo -e "{{BLUE}}[4/4] Verifying...{{NC}}"
+    just check-deps
+    echo -e "{{GREEN}}✓ Setup complete.{{NC}} Try {{BLUE}}just check{{NC}} to run the full quality pipeline."
+    echo -e "If a tool is missing in NEW shells, ensure ~/.local/bin, ~/.bun/bin and ~/.cargo/bin are on your PATH."
+
 # Install package in editable mode with dev dependencies
 [group('install'), group('quick start')]
 @install-dev: check-deps
-    uv pip install --editable ".[dev]"
+    uv sync --group dev --extra web
 
 # Install Taplo from upstream pre-built binary (much faster than `cargo install`,
 # which compiles from source — ~1s vs ~2min). Detects OS + arch and pulls the
@@ -232,19 +269,29 @@ alias ca := check
 # Run the FastAPI dev server (web extra) with auto-reload
 [group('run'), group('dev')]
 @serve host="127.0.0.1" port="8000":
-    uv run --extra web uvicorn {{py_package_name}}.web.app:create_app --factory --host {{host}} --port {{port}} --reload
+    uv run --extra web uvicorn {{py_package_name}}.web.app:create_app --factory --host {{host}} --port {{port}} --reload --timeout-graceful-shutdown 5
 
-# Run web layer tests (installs the web extra; TestClient needs httpx)
+# Run web layer tests incl. slow contract fuzzing (web extra; httpx for TestClient)
 [group('test'), group('dev')]
 @test-web *options:
-    uv run --extra web pytest tests/web {{options}}
+    uv run --extra web pytest tests/web -m "" {{options}}
 
-# Regenerate the committed OpenAPI schema (WL-026). CI fails if the live
-# schema drifts from docs/api/openapi.json — run this after changing the API.
-[group('dev')]
+# Regenerate the committed OpenAPI snapshot (WEB-51). Run after ANY route
+# change — tests/web/test_openapi_snapshot.py fails until you do.
+[group('build'), group('dev')]
 @export-openapi:
-    uv run --extra web python -m {{py_package_name}}.web.openapi docs/api/openapi.json
-    echo "Wrote docs/api/openapi.json"
+    uv run --extra web python scripts/export_openapi.py
+
+# Generate a typed Python client from the OpenAPI snapshot (WEB-60)
+[group('build')]
+@client-python out="clients/python":
+    uvx openapi-python-client generate --path docs/api/openapi.json --output-path {{out}} --overwrite
+    echo "client written to {{out}}"
+
+# Build the production web-service image (WEB-32)
+[group('build')]
+@docker-web tag="plbp-web:dev": _guard
+    docker build -t {{tag}} .
 
 # Audit locked dependencies (all extras + groups) against known CVEs (WL-014).
 # Same pipeline as the scheduled dep-audit workflow.
@@ -372,42 +419,35 @@ debug-info:
     rm -rf .venv
     rm -rf {{py_package_path}}/__pycache__/
 
-# Install Sphinx and any necessary extensions
-[group('docs'), group('install')]
-@install-docs:
-    @#!/usr/bin/env sh
-    if ! command -v uv >/dev/null 2>&1; then echo "uv is not installed"; exit 1; fi
-    echo "Installing Sphinx..."
-    uv pip install sphinx
-    echo "Installing required Sphinx extensions..."
-    uv pip install sphinx-rtd-theme sphinx-autobuild myst-parser
-    echo -e "{{GREEN}} Documentation dependencies installed{{NC}}"
+# Docs recipes call Sphinx via `uv run --group docs` (PEP 735 dependency
+# group, per ITM-063 — same path Read the Docs uses). uv syncs the group
+# on demand, so there is no separate install step.
 
 # Not usually needed, Initialize docs only if you are starting a new project
 [group('docs'), group('setup')]
 @init-docs:
-    uv run --extra docs  --directory=docs sphinx-quickstart
+    uv run --group docs --directory=docs sphinx-quickstart
 # recommend you separate "source" and "build" directories within the root path (docs/source and docs/build)
 
-# Show help for documentation sphinx
+# Show available Sphinx build targets
 [group('docs'), group('help')]
 @docs-help:
-    cd docs && make
+    uv run --group docs sphinx-build -M help docs/source docs/build
 
 # Build documentation (default html format) change the target if needed e.g. just docs latexpdf
 [group('docs'), group('build')]
 @docs target="html":
-    cd docs && make {{target}}
+    uv run --group docs sphinx-build -M {{target}} docs/source docs/build
 
 # Run documentation server with hot reloading
 [group('docs'), group('run'), group('dev')]
 @docs-dev:
-    cd docs && make hotreloadhtml
+    uv run --group docs sphinx-autobuild -b html docs/source docs/build
 
 # Clean documentation build files
 [group('docs'), group('clean')]
 @docs-clean:
-    cd docs && make clean
+    rm -rf docs/build
 
 # Update CONTRIBUTORS.md file
 alias contributors := update-contributors
@@ -479,47 +519,6 @@ install-gitleaks:
 [group('dev'), group('pre-commit')]
 check-gitleaks mode="full":
     bash scripts/check-gitleaks.sh {{mode}}
-
-# Alternative commands when virtual environment is activated:
-# These commands can be used after running 'source .venv/bin/activate'
-
-# Setup virtual environment
-[group('legacy')]
-@setup-venv:
-    python3 -m venv .venv
-    echo "Note: After setup, activate the virtual environment with:"
-    echo "  source .venv/bin/activate  # On Unix/macOS"
-    echo "  .venv\Scripts\activate  # On Windows"
-
-# Install in development mode
-[group('legacy')]
-@install-dev-pip:
-    pip install --editable ".[dev]"
-
-# Format code (includes ruff format and import sorting)
-[group('legacy')]
-@format-pip:
-    echo "Running linter..."
-    echo "  ruff"
-    ruff format {{py_package_name}}/
-
-# Run linter (code style and quality checks)
-[group('legacy')]
-@lint-pip:
-    ruff check {{py_package_name}}/
-    ruff check --select I --fix {{py_package_name}}/
-
-# Run type checker
-[group('legacy')]
-@typecheck-pip:
-    echo "Running type checker..."
-    echo "  ty"
-    ty check {{py_package_path}}/
-
-# Run tests
-[group('legacy')]
-@test-pip *options:
-    pytest {{options}}
 
 # Create a test repository from a PR
 [group('workflow')]
@@ -725,11 +724,6 @@ clean-pr-to-testrepo new_repo_name="test-actions-repo": _guard
         git checkout main
     fi
 
-# Change working directory example
-[working-directory: 'bar']
-@_foo:
-    echo "example"
-
 [group('dev'), group('quick start')]
 @dev:
     just format
@@ -741,45 +735,49 @@ clean-pr-to-testrepo new_repo_name="test-actions-repo": _guard
 # Alias for dev (full developer cycle: format → lint → test → build)
 alias cycle := dev
 
-# Install Go
+# Install yamlfmt from upstream pre-built binary (no Go toolchain needed —
+# same approach as install-taplo). Detects OS + arch and pulls the matching
+# release asset from https://github.com/google/yamlfmt/releases.
+# Falls back to `go install` if the platform isn't covered.
+#
+# Uses a shebang body so bash interprets $(...) and ${...} directly — Just's
+# template engine would otherwise mangle them.
 [group('setup'), group('install')]
-@install-go:
-    if ! command -v go >/dev/null 2>&1; then \
-        echo "❗ Go is not installed."; \
-        echo "🔧 Installing Go..."; \
-        OS=$(uname); \
-        if [ "$$OS" = "Darwin" ]; then \
-            brew install go >/dev/null 2>&1; \
-        elif [ "$$OS" = "Linux" ]; then \
-            sudo apt update -qq && sudo apt install -y golang-go >/dev/null 2>&1; \
-        else \
-            echo "⚠️ Please install Go manually: https://go.dev/dl/"; \
-            exit 1; \
-        fi; \
-        if command -v go >/dev/null 2>&1; then \
-            echo "✅ Go installation complete."; \
-            echo "⚠️ Please update your PATH."; \
-        else \
-            echo "❌ Go installation failed. Please install manually."; \
-            exit 1; \
-        fi; \
-    else \
-        echo "✅ Go is already installed."; \
+install-yamlfmt:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if command -v yamlfmt >/dev/null 2>&1; then
+        echo -e "{{YELLOW}}yamlfmt is already installed{{NC}}"
+        exit 0
     fi
-
-# Install yamlfmt
-[group('setup'), group('install')]
-@install-yamlfmt:
-    if ! command -v go >/dev/null 2>&1; then \
-        echo "❌ Go is not installed. Run: just install-go"; \
-        exit 1; \
-    fi; \
-    if command -v yamlfmt >/dev/null 2>&1; then \
-        echo "✅ yamlfmt is already installed."; \
-    else \
-        echo "📦 Installing yamlfmt..."; \
-        go install github.com/google/yamlfmt/cmd/yamlfmt@latest; \
-        echo "✅ yamlfmt installed!"; \
+    VERSION=0.17.2
+    case "$(uname -s)" in
+        Linux*)  os=Linux ;;
+        Darwin*) os=Darwin ;;
+        *)       os= ;;
+    esac
+    case "$(uname -m)" in
+        x86_64)        arch=x86_64 ;;
+        arm64|aarch64) arch=arm64 ;;
+        *)             arch= ;;
+    esac
+    if [ -z "$os" ] || [ -z "$arch" ]; then
+        echo -e "{{YELLOW}}No pre-built binary for $(uname -s)/$(uname -m); using go install{{NC}}"
+        go install github.com/google/yamlfmt/cmd/yamlfmt@v${VERSION} \
+            || { echo -e "{{RED}}Failed to install yamlfmt.{{NC}} Install Go first: https://go.dev/dl/" >&2; exit 1; }
+        exit 0
+    fi
+    INSTALL_DIR="$HOME/.local/bin"
+    mkdir -p "$INSTALL_DIR"
+    URL="https://github.com/google/yamlfmt/releases/download/v${VERSION}/yamlfmt_${VERSION}_${os}_${arch}.tar.gz"
+    echo -e "{{BLUE}}Downloading $URL{{NC}}"
+    if curl -fsSL "$URL" | tar -xz -C "$INSTALL_DIR" yamlfmt && chmod +x "$INSTALL_DIR/yamlfmt"; then
+        echo -e "{{GREEN}}✓ yamlfmt ${VERSION} installed to $INSTALL_DIR/yamlfmt{{NC}}"
+        command -v yamlfmt >/dev/null 2>&1 \
+            || echo -e "{{YELLOW}}Note: add $INSTALL_DIR to your PATH to use yamlfmt{{NC}}"
+    else
+        echo -e "{{RED}}Failed to download pre-built yamlfmt; falling back to go install{{NC}}" >&2
+        go install github.com/google/yamlfmt/cmd/yamlfmt@v${VERSION}
     fi
 
 # YAML formatting and validation with yamlfmt

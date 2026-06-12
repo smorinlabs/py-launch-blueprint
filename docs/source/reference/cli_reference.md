@@ -73,6 +73,17 @@ just test [OPTIONS]
 
 ## 3. Dependency Management
 
+### `setup`
+One-command project setup (Level 2). Verifies the base toolchain via the
+Makefile's `make check` (Level 1 — run `make bootstrap` first on a bare
+machine), syncs the dev environment, wires lefthook git hooks, and installs
+the hook toolchain (bun, gitleaks, taplo, yamlfmt). Idempotent.
+
+#### Usage
+```bash
+just setup
+```
+
 ### `install-dev`
 Install the package in editable mode with dev dependencies.
 
@@ -81,25 +92,12 @@ Install the package in editable mode with dev dependencies.
 just install-dev
 ```
 
-### `install-dev-pip`
-Install in development mode using pip.
-
-#### Usage
-```bash
-just install-dev-pip
-```
-
 ---
 
 ## 4. Documentation Management
 
-### `install-docs`
-Install Sphinx and any necessary extensions.
-
-#### Usage
-```bash
-just install-docs
-```
+Docs recipes run Sphinx via `uv run --group docs`, which installs the `docs`
+dependency group on demand — there is no separate install step.
 
 ### `init-docs`
 Initialize documentation (use only for new projects).
@@ -110,7 +108,7 @@ just init-docs
 ```
 
 ### `docs-help`
-Show help for documentation using `make` inside the `docs` directory.
+Show the available Sphinx build targets.
 
 #### Usage
 ```bash
@@ -203,42 +201,3 @@ Clean up temporary files and caches.
 ```bash
 just clean
 ```
-
----
-
-## 8. Alternative Pip Commands
-
-### `format-pip`
-Format code using pip.
-
-#### Usage
-```bash
-just format-pip
-```
-
-### `lint-pip`
-Run linter using pip.
-
-#### Usage
-```bash
-just lint-pip
-```
-
-### `typecheck-pip`
-Run type checker using pip.
-
-#### Usage
-```bash
-just typecheck-pip
-```
-
-### `test-pip`
-Run tests using pip.
-
-#### Usage
-```bash
-just test-pip [OPTIONS]
-```
-
-#### Options
-- `options`: Additional pytest options.
