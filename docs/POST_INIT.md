@@ -12,7 +12,7 @@ replace them:
 - `just init` — rebrands identity (name, owner, package) across the repo.
 - `just post-init` — automates the publishing / Codecov / Read the Docs wiring.
 - [`RELEASE.md`](RELEASE.md) — the release/publish flow in detail.
-- [`.github/SECURITY.md`](.github/SECURITY.md) — security controls + CodeQL setup.
+- [`.github/SECURITY.md`](../.github/SECURITY.md) — security controls + CodeQL setup.
 
 Legend: **Default** = how the template ships. Each item is a checkbox so you can
 track what you've decided.
@@ -36,8 +36,9 @@ setup in [§2](#2-checks--configuration).
       `.github/workflows/commitlint.yml`, `commitlint.config.mjs`. Note:
       release-please depends on conventional commits; dropping this weakens it.
 - [ ] **Lint suite extras** (actionlint, yamllint, codespell, editorconfig-check,
-      large-file-guard) — *Default: on.* Files: the like-named workflows. Drop
-      individually if noisy.
+      large-file-guard) — *Default: on.* Files: `.github/workflows/lint.yml`
+      (one job per tool) + `.github/workflows/large-file-guard.yml`. Drop
+      individual jobs if noisy.
 
 ### Security (recommended: keep)
 
@@ -148,9 +149,14 @@ init/setup-github-environments.sh <owner>/<repo>
 
 Under **Settings**:
 
-- [ ] **Branch protection** on `main`: require PR reviews, require status checks
-      (e.g. `ci`, `commitlint`, `codeql`), and (optionally) linear history. The
-      template assumes a protected `main` with required reviews.
+- [ ] **Branch protection** on `main`: require status checks anchored on the
+      aggregate gates — `ci-ok` (all of `ci.yml`), `integration-ok`, `guard`,
+      `unit-tests`, `commitlint (humans)`, plus the `lint.yml` job names
+      (`actionlint`, `bandit`, `codespell`, `editorconfig-check`, `yamllint`;
+      safe to require — they report *skipped* rather than never reporting).
+      Avoid listing individual `ci.yml` jobs: `ci-ok` subsumes them and its
+      `needs:` list is versioned in-repo, so job renames never desync the
+      settings. Full command in [§3.6](#36-branch-protection).
 - [ ] **Actions → General → Workflow permissions**: enable **"Allow GitHub
       Actions to create and approve pull requests"** (release-please and
       Dependabot open PRs).
@@ -252,9 +258,35 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 
 ### 3.6 Branch protection
 
-- [ ] **Protect `main`** · *repo setting* — require PR review + status checks.
+- [ ] **Protect `main`** · *repo setting* — require status checks (contexts are
+  **job names** as shown on a PR's checks tab, not workflow filenames).
   - Check: `gh api /repos/<owner>/<repo>/branches/main/protection --jq '.required_pull_request_reviews, .required_status_checks.contexts' 2>/dev/null || echo "unprotected"`
-  - Set: add a rule in Settings → Branches (or `gh api --method PUT …/branches/main/protection` with a JSON body). Required-check contexts should match the names on a PR's checks (e.g. `ci`, `commitlint`, `analyze (python)`, `trufflehog`, `yamllint`).
+  - Set (recommended baseline — aggregate gates + always-reporting linters):
+
+    ```bash
+    gh api -X PUT /repos/<owner>/<repo>/branches/main/protection --input - <<'JSON'
+    {
+      "required_status_checks": {
+        "strict": false,
+        "contexts": [
+          "ci-ok", "integration-ok", "guard", "unit-tests",
+          "commitlint (humans)",
+          "actionlint", "bandit", "codespell", "editorconfig-check", "yamllint"
+        ]
+      },
+      "enforce_admins": false,
+      "required_pull_request_reviews": null,
+      "restrictions": null,
+      "allow_force_pushes": false,
+      "allow_deletions": false
+    }
+    JSON
+    ```
+
+  - Knobs: `strict: true` additionally forces every PR up-to-date with `main`
+    before merge (safer, but every merge invalidates all other open PRs);
+    `enforce_admins: true` removes the admin escape hatch; add
+    `required_pull_request_reviews` once you have collaborators.
 
 ### 3.7 External services (UI / no `gh` check)
 

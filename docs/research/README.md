@@ -16,4 +16,5 @@ itself mandate anything — when a conclusion is reached, capture it in a
 
 | Doc | Title | Date |
 |-----|-------|------|
-| —   | _none yet_ | — |
+| [0001](0001-skill-trigger-optimization.md) | Trigger optimization for the `new-python-project` agent skill | 2026-06 |
+| [0002](0002-dev-tooling-wishlist.md) | Test & tooling analysis — dev-tooling wishlist (WL series) | 2026-06 |

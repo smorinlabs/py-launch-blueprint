@@ -84,7 +84,6 @@ py-launch-blueprint/
 ├── pyproject.toml                  # Project configuration file
 ├── cog.toml                        # Cog configuration file
 ├── CONTRIBUTORS.md                 # Project contributors
-├── pyrightconfig.json              # Pyright configuration
 ├── README.md                       # Project overview and navigation
 ├── SECURITY.md                     # Security policy
 └── tests/                          # Test files
@@ -172,10 +171,6 @@ Configuration file for COG (Cocogitto), used for changelog generation.
 
 ### CONTRIBUTORS.md
 Auto-generated file that lists the project contributors.
-
-### pyrightconfig.json
-
-Configuration file for Pyright, a static type checker for TypeScript and JavaScript.
 
 ### README.md
 

@@ -54,3 +54,25 @@ just install-dev
 The Justfile standardizes common development tasks and provides a consistent interface for running them.
 
 For a full list of available commands, refer to [this guide](../reference/cli_reference.md).
+
+## Editing conventions
+
+When adding or changing recipes in the `Justfile` (formerly enforced via a
+Windsurf rule file; recorded here as the durable home):
+
+- Leave a blank line between recipes.
+- Every recipe belongs to a `[group('…')]` that already exists in the file —
+  don't invent new groups casually.
+- Document each recipe with a comment on the line directly above it (this is
+  what `just --list` displays).
+
+```text
+# Format code
+[group('dev')]
+@format:
+    echo "Running formatters..."
+    uvx --with-editable . ruff format {{py_package_path}}/
+    uvx --with-editable . ruff check --select I --fix {{py_package_path}}/
+
+alias f := format
+```

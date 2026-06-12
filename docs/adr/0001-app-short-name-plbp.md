@@ -1,6 +1,6 @@
 # 0001. App short name `plbp` (hard rename from `pylb`)
 
-- **Status:** Superseded by [ADR 0014](0014-app-short-name-placeholder.md)
+- **Status:** Superseded by [ADR 0015](0015-app-short-name-placeholder.md)
   (the name choice; the hard-rename/no-alias policy below still stands)
 - **Date:** 2026-06-09
 - **Deciders:** maintainer (interactive), implemented in PR #378

@@ -67,7 +67,7 @@ files = [
   "src/py_launch_blueprint/web/telemetry.py",            # 1x
   "src/py_launch_blueprint/web/versioning.py",           # 1x
   "tests/__init__.py",                                   # 1x
-  "tests/test_version_consistency.py",                   # 1x
+  "tests/meta/test_version_consistency.py",              # 1x
 ]
 mode = "text"
 
@@ -88,15 +88,16 @@ mode = "structured"
 field = "app_name"
 current = ["plbp"]
 files = [
-  ".windsurfrules",                                     # 1x
-  "CLAUDE.md",                                          # 1x
+  ".github/workflows/ci.yml",                          # build-smoke (WL-004)
+  "AGENTS.md",                                          # 1x
   "Dockerfile",                                         # 2x
   "docs/api/openapi.json",                              # 1x
   "EXAMPLECLI.md",                                      # 36x
   "EXAMPLEWEB.md",                                      # 5x
   "Justfile",                                           # 1x
-  "POST_INIT.md",                                       # 1x
   "README.md",                                          # 2x
+  "docs/research/0002-dev-tooling-wishlist.md",        # 5x (wishlist analysis)
+  "docs/POST_INIT.md",                                  # 1x
   "docs/adr/0001-app-short-name-plbp.md",               # 5x
   "docs/adr/0002-no-secrets-in-config-file.md",         # 1x
   "docs/adr/0003-keep-markdown-output-mode.md",         # 1x
@@ -106,7 +107,7 @@ files = [
   "docs/adr/0009-config-init-and-first-run-hint.md",    # 2x
   "docs/adr/0011-windows-native-paths-xdg-overrides.md", # 3x
   "docs/adr/0012-doctor-bundle-redact-at-collection.md", # 2x
-  "docs/adr/0014-app-short-name-placeholder.md",        # 10x
+  "docs/adr/0015-app-short-name-placeholder.md",        # 10x
   "docs/adr/README.md",                                 # 2x
   "docs/design/0001-plbp-cli-conventions.md",           # 28x
   "docs/design/README.md",                              # 2x
@@ -128,12 +129,13 @@ files = [
   "src/py_launch_blueprint/core/models.py",             # 1x
   "src/py_launch_blueprint/core/paths.py",              # 20x
   "src/py_launch_blueprint/web/app.py",                 # 1x
+  "tests/cli/test_output.py",                           # 4x
   "tests/cli/test_pylb.py",                             # 27x
+  "tests/cli/test_help_snapshots.py",                   # WL-023
   "tests/conftest.py",                                  # 1x
   "tests/core/test_core.py",                            # 19x
   "tests/core/test_logging.py",                         # 8x
   "tests/core/test_paths.py",                           # 10x
-  "tests/test_output.py",                               # 4x
 ]
 mode = "text"
 
@@ -144,7 +146,7 @@ mode = "text"
 field = "app_name_upper"
 current = ["PLBP"]
 files = [
-  "CLAUDE.md",                                        # 1x
+  "AGENTS.md",                                        # 1x
   "Dockerfile",                                       # 1x
   "EXAMPLECLI.md",                                    # 12x
   "EXAMPLEWEB.md",                                    # 12x
@@ -154,11 +156,11 @@ files = [
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
   "docs/adr/0006-stable-error-codes-hints-crash-log.md", # 5x
   "docs/adr/0008-pager-for-long-text-output.md",      # 2x
-  "docs/adr/0014-app-short-name-placeholder.md",      # 5x
+  "docs/adr/0015-app-short-name-placeholder.md",      # 5x
+  "docs/POST_INIT.md",                                # 1x
   "docs/source/index.md",                             # 1x
   "docs/source/web/index.md",                         # 10x
   "llms.txt",                                         # 1x
-  "POST_INIT.md",                                     # 1x
   "src/py_launch_blueprint/cli/commands/config.py",   # 2x
   "src/py_launch_blueprint/cli/commands/projects.py", # 1x
   "src/py_launch_blueprint/cli/context.py",           # 9x
@@ -170,8 +172,8 @@ files = [
   "src/py_launch_blueprint/core/logging.py",          # 1x
   "src/py_launch_blueprint/core/settings.py",         # 1x
   "src/py_launch_blueprint/web/settings.py",          # 1x
+  "tests/cli/test_output.py",                         # 15x
   "tests/cli/test_pylb.py",                           # 38x
-  "tests/test_output.py",                             # 15x
   "tests/web/test_app.py",                            # 2x
   "tests/web/test_settings.py",                       # 5x
   "projects/P01-init-rebrand-robustness.md",          # 11x
@@ -214,6 +216,8 @@ files = [
   "docs/source/tasks/type_checking_code.md",      # 2x
   "docs/source/tools/github_actions.md",          # 1x
   "docs/source/tools/justfiles.md",               # 1x
+  "docs/source/tools/cla-assistant.md",           # WL-021 link fix
+  "docs/source/tools/yaml_lint.md",               # WL-021 link fix
   "docs/source/tools/ty.md",                      # 1x
   "docs/source/tutorials/full_project_setup.md",  # 1x
   "llms.txt",                                     # 9x
@@ -225,7 +229,7 @@ mode = "text"
 field = "package_name"
 current = ["py_launch_blueprint"]
 files = [
-  "pyproject.toml", # 5x
+  "pyproject.toml", # 6x (incl. [tool.pyright] include path)
 ]
 mode = "structured"
 
@@ -234,12 +238,10 @@ mode = "structured"
 field = "package_name"
 current = ["py_launch_blueprint"]
 files = [
-  ".github/workflows/bandit.yml",                      # 1x
   ".github/workflows/ci.yml",                          # 2x
+  ".github/workflows/lint.yml",                        # 2x (bandit job)
   ".vscode/launch.json",                               # 2x
-  ".windsurfrules",                                    # 1x
-  "AGENTS.md",                                         # 1x
-  "CLAUDE.md",                                         # 4x
+  "AGENTS.md",                                         # 4x
   "EXAMPLECLI.md",                                     # 1x
   "EXAMPLEWEB.md",                                     # 2x
   "Justfile",                                          # 2x
@@ -291,15 +293,15 @@ files = [
   "docs/design/0002-web-api-conventions.md",           # 2x
   "docs/source/web/index.md",                          # 1x
   "scripts/export_openapi.py",                         # 2x
-  "pyrightconfig.json",                                # 1x
   "release-please-config.json",                        # 1x
+  "tests/cli/test_output.py",                          # 3x
   "tests/cli/test_pylb.py",                            # 6x
+  "tests/cli/test_help_snapshots.py",                  # WL-023
   "tests/core/test_core.py",                           # 9x
   "tests/core/test_format.py",                         # 2x
   "tests/core/test_logging.py",                        # 1x
   "tests/core/test_paths.py",                          # 1x
-  "tests/test_output.py",                              # 3x
-  "tests/test_version_consistency.py",                 # 2x
+  "tests/meta/test_version_consistency.py",            # 2x
   "tests/web/test_app.py",                             # 6x
   "tests/web/test_contract.py",                        # 2x
   "tests/web/test_idempotency.py",                     # 1x
@@ -331,8 +333,7 @@ files = [
   ".github/ISSUE_TEMPLATE/config.yml",            # 1x
   ".github/codeql/codeql-config.yml",             # 1x
   ".github/workflows/blueprint-guard.yml",        # 1x
-  "AGENTS.md",                                    # 1x
-  "CLAUDE.md",                                    # 1x
+  "AGENTS.md",                                    # 2x
   "Justfile",                                     # 1x
   "README.md",                                    # 17x
   "docs/design/0001-plbp-cli-conventions.md",     # 3x
@@ -347,6 +348,8 @@ files = [
   "docs/source/tasks/type_checking_code.md",      # 2x
   "docs/source/tools/github_actions.md",          # 1x
   "docs/source/tools/justfiles.md",               # 1x
+  "docs/source/tools/cla-assistant.md",           # WL-021 link fix
+  "docs/source/tools/yaml_lint.md",               # WL-021 link fix
   "docs/source/tools/ty.md",                      # 1x
   "docs/source/tutorials/full_project_setup.md",  # 2x
   "llms.txt",                                     # 11x
@@ -408,19 +411,19 @@ path = "CONTRIBUTORS.md"
 reason = "py-launch-blueprint generated contributors file is project-specific"
 
 [[remove]]
-path = "tests/test_contributors_render.py"
+path = "tests/meta/test_contributors_render.py"
 reason = "py-launch-blueprint contributor-state regression is project-specific"
 
 [[remove]]
-path = "tests/test_contributors_state.py"
+path = "tests/meta/test_contributors_state.py"
 reason = "py-launch-blueprint contributor-state regression is project-specific"
 
 [[remove]]
-path = "tests/test_contributors_workflow.py"
+path = "tests/meta/test_contributors_workflow.py"
 reason = "py-launch-blueprint contributor-workflow regression is project-specific"
 
 [[remove]]
-path = "tests/test_justfile.py"
+path = "tests/meta/test_justfile.py"
 reason = "py-launch-blueprint contributor-recipe regression is project-specific"
 
 [[remove]]
@@ -434,6 +437,22 @@ command = ["uv", "lock"]
 [[regenerate]]
 path = "bun.lock"
 command = ["bun", "install"]
+
+# CLI --help snapshots (WL-023): regenerated, not text-replaced — help output
+# re-wraps at 80 columns for the renamed program name, which string
+# replacement cannot reproduce. Runs after replaces/renames + uv lock, so the
+# regenerated snapshots reflect the fork's identity.
+[[regenerate]]
+path = "tests/cli/__snapshots__/test_help_snapshots.ambr"
+command = [
+  "uv",
+  "run",
+  "pytest",
+  "tests/cli/test_help_snapshots.py",
+  "--snapshot-update",
+  "-q",
+  "--override-ini=addopts=",
+]
 
 # Reset (not rewrite) on init: CHANGELOG.md accumulates the blueprint's own
 # release history (compare-URLs, `plbp`, `smorinlabs`); a fork starts its own,

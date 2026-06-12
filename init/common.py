@@ -17,7 +17,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 INIT_DIR = Path(__file__).resolve().parent
-SKILL_DIR = REPO_ROOT / "skill"
+SKILL_DIR = REPO_ROOT / ".claude" / "skills" / "new-python-project"
+# Codex-side symlink to SKILL_DIR (Codex scans $REPO_ROOT/.agents/skills).
+SKILL_LINK = REPO_ROOT / ".agents" / "skills" / "new-python-project"
 MARKER_PATH = INIT_DIR / ".blueprint-initialized"
 CONTRIBUTOR_SENTINEL_PATH = INIT_DIR / ".blueprint-contributor"
 MANIFEST_PATH = INIT_DIR / "manifest.toml"

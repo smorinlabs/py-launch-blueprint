@@ -27,34 +27,35 @@ pre-commit:
     gitleaks:
       run: scripts/check-gitleaks.sh --staged
     # ITM-010 — editorconfig-checker staged-only (decided round 9).
-    # Use uvx (PyPI wheel bundles the Go binary) instead of the npm wrapper.
-    # The npm wrapper downloads the binary at runtime and flakes with
-    # TAR_BAD_ARCHIVE (the npm wrapper downloads the binary at runtime, which flakes).
+    # The PyPI wheel bundles the Go binary (the npm wrapper downloads it at
+    # runtime and flakes with TAR_BAD_ARCHIVE).
     # Note: the Go binary uses single-dash flags (-config, not --config).
+    # WL-001: `uv run` (locked dev group), not floating `uvx` — hooks and CI
+    # run the exact version in uv.lock.
     editorconfig-checker:
       run: >-
-        uvx --from editorconfig-checker ec
+        uv run ec
         -config .editorconfig-checker.json
         {staged_files}
     # ITM-013 — yamllint staged YAML only (decided round 2).
     yamllint:
       glob: "*.{yml,yaml}"
-      run: uvx yamllint -c .yamllint {staged_files}
+      run: uv run yamllint -c .yamllint {staged_files}
     # ITM-016 — codespell staged files (decided round 9).
     codespell:
-      run: uvx codespell --toml pyproject.toml {staged_files}
+      run: uv run codespell --toml pyproject.toml {staged_files}
     # ITM-066 — ruff lint + format check on staged Python files.
     # Added after PR #319 hit lint failures in CI that should have been
     # caught locally. `{staged_files}` keeps the check scoped — fast.
-    # --force-exclude: explicitly-passed paths bypass ruff's exclude list
-    # otherwise, so staging an excluded file (docs/source/conf.py) would
-    # fail here while `ruff format --check .` (CI) passes.
+    # `--force-exclude` so explicit staged paths still honor the
+    # [tool.ruff] exclude list (e.g. docs/source/conf.py), matching CI's
+    # `ruff check .` behavior.
     ruff-check:
       glob: "*.py"
-      run: uvx ruff check --force-exclude --output-format=concise {staged_files}
+      run: uv run ruff check --force-exclude --output-format=concise {staged_files}
     ruff-format:
       glob: "*.py"
-      run: uvx ruff format --check --force-exclude {staged_files}
+      run: uv run ruff format --check --force-exclude {staged_files}
 
 # Pre-push stage — per-tool steps land via downstream ITMs.
 pre-push:
@@ -65,8 +66,9 @@ pre-push:
       run: scripts/check-gitleaks.sh --range
     # ITM-032 — bandit (security linting) at pre-push (round-3 decision:
     # pre-push, not pre-commit, since full-tree scan is too slow per commit).
+    # WL-001: locked via the dev group (`uv run`, not floating `uvx`).
     bandit:
-      run: uvx bandit -r src/py_launch_blueprint/ -c pyproject.toml
+      run: uv run bandit -r src/py_launch_blueprint/ -c pyproject.toml
     # Init-system integrity — these are the checks the blueprint-guard
     # CI workflow runs. Caught locally at pre-push, they prevent the
     # "push → CI fails → push again" cycle that PR #319 went through.

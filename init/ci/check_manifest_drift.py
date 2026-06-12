@@ -89,7 +89,7 @@ def main() -> int:
     leftover: dict[Path, list[str]] = {}
     for path in iter_repo_files():
         if is_bootstrap_path(path):
-            continue  # init/ and skill/ are bootstrap tooling, not migration targets
+            continue  # bootstrap tooling (init/, the agent skill), not migration targets
         resolved = path.resolve()
         if resolved in exempt:
             continue
