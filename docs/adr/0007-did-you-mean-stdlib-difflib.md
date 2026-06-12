@@ -1,4 +1,4 @@
-# 0006. Did-you-mean suggestions via stdlib difflib
+# 0007. Did-you-mean suggestions via stdlib difflib
 
 - **Status:** Accepted
 - **Date:** 2026-06-12

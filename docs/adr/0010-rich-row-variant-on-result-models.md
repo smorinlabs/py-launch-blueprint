@@ -1,4 +1,4 @@
-# 0009. Terminal niceties via a rich-only row variant on result models
+# 0010. Terminal niceties via a rich-only row variant on result models
 
 - **Status:** Accepted
 - **Date:** 2026-06-12

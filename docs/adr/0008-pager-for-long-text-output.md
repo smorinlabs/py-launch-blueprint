@@ -1,4 +1,4 @@
-# 0007. Long text output pages through the user's pager
+# 0008. Long text output pages through the user's pager
 
 - **Status:** Accepted
 - **Date:** 2026-06-12

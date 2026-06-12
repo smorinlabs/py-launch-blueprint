@@ -1,0 +1,26 @@
+# flox env — one of the project's three first-class dev environments, alongside
+# the native per-tool installs (Makefile + Justfile `install-*` targets,
+# scripts/install-*.sh) and the mise toolchain (mise.toml). All three provision
+# the SAME 10-tool set; keep them in sync when adding or removing a tool.
+# Decision record: docs/adr/0005-mise-flox-first-class-toolchains.md.
+#
+# Intentionally NOT installed here: yamllint, codespell, bandit,
+# editorconfig-checker (invoked via `uvx`), commitlint (invoked via
+# `bunx --bun @commitlint/cli`; see the shim note in lefthook.yml), and
+# ty/pytest (project dev deps, provided by `uv run`).
+schema-version = "1.12.0"
+
+[install]
+python.pkg-path = "python312"
+uv.pkg-path = "uv"
+ruff.pkg-path = "ruff"
+taplo.pkg-path = "taplo"
+gitleaks.pkg-path = "gitleaks"
+just.pkg-path = "just"
+bun.pkg-path = "bun"
+gh.pkg-path = "gh"
+lefthook.pkg-path = "lefthook"
+gnumake.pkg-path = "gnumake"
+
+[options]
+systems = ["aarch64-darwin", "x86_64-linux", "aarch64-linux", "x86_64-darwin"]

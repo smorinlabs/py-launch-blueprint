@@ -1,4 +1,4 @@
-# 0011. `doctor --bundle` redacts at collection time, excludes log contents
+# 0012. `doctor --bundle` redacts at collection time, excludes log contents
 
 - **Status:** Accepted
 - **Date:** 2026-06-12

@@ -1,4 +1,4 @@
-# 0008. Guided `config init` plus a marker-backed one-time first-run hint
+# 0009. Guided `config init` plus a marker-backed one-time first-run hint
 
 - **Status:** Accepted
 - **Date:** 2026-06-12

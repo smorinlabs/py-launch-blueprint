@@ -1,4 +1,4 @@
-# 0005. Stable error codes, hints, and a crash log
+# 0006. Stable error codes, hints, and a crash log
 
 - **Status:** Accepted
 - **Date:** 2026-06-12

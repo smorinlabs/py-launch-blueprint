@@ -1,4 +1,4 @@
-# 0010. Windows-native default directories; XDG overrides win everywhere
+# 0011. Windows-native default directories; XDG overrides win everywhere
 
 - **Status:** Accepted
 - **Date:** 2026-06-12
