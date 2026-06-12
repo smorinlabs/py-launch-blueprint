@@ -16,4 +16,4 @@ itself mandate anything — when a conclusion is reached, capture it in a
 
 | Doc | Title | Date |
 |-----|-------|------|
-| —   | _none yet_ | — |
+| [0001](0001-skill-trigger-optimization.md) | Trigger optimization for the `new-python-project` agent skill | 2026-06 |
