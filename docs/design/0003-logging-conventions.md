@@ -3,7 +3,9 @@
 Status: accepted. Scope: every log line the project emits — `core/logging.py`
 (the shared pipeline), `cli/context.py` (the CLI profile), and
 `web/logging.py` (the web profile, WEB-12). Spawned from the web conventions
-catalog (`0002-web-api-conventions.md`, Observability section).
+catalog (`0002-web-api-conventions.md`, Observability section); the
+load-bearing decision is recorded in ADR
+[0015](../adr/0015-one-logging-pipeline-two-profiles.md).
 
 ## Architecture: pipeline vs. policy
 
