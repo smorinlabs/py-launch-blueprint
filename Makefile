@@ -45,19 +45,27 @@ all: help
 # Level 2: `just setup` (dev env sync, git hooks, hook toolchain).
 # Do not add project tasks here; they belong in the Justfile.
 
-bootstrap: ## Level 1 — install base toolchain (just + uv) if missing, then verify
-	@if command -v just >/dev/null 2>&1; then \
-		echo -e "[$(CHECK)] just already installed"; \
-	else \
-		echo "Installing just to $(HOME)/.local/bin..."; \
-		mkdir -p "$(HOME)/.local/bin"; \
-		curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$(HOME)/.local/bin"; \
-	fi
+# uv installs first so the just fallback below can rely on it. Primary just
+# install (just.systems) resolves the latest release via the anonymous GitHub
+# API, which 403s on rate-limited shared IPs (CI, cloud agents); the fallback
+# pulls the latest rust-just from PyPI, which has no such limit.
+bootstrap: ## Level 1 — install base toolchain (uv + just) if missing, then verify
 	@if command -v uv >/dev/null 2>&1; then \
 		echo -e "[$(CHECK)] uv already installed"; \
 	else \
 		echo "Installing uv..."; \
 		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	fi
+	@if command -v just >/dev/null 2>&1; then \
+		echo -e "[$(CHECK)] just already installed"; \
+	else \
+		echo "Installing just to $(HOME)/.local/bin..."; \
+		mkdir -p "$(HOME)/.local/bin"; \
+		curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$(HOME)/.local/bin" \
+		|| { \
+			echo "just.systems installer failed — falling back to PyPI (rust-just) via uv..."; \
+			PATH="$(HOME)/.local/bin:$$PATH" uv tool install rust-just; \
+		}; \
 	fi
 	@PATH="$(HOME)/.local/bin:$$PATH" $(MAKE) --no-print-directory check
 	@echo ""
@@ -152,13 +160,18 @@ install-just: ## Print install just command and where to find install options
 	@echo "or"
 	@echo -e "${CYAN}make install-just-force${NC}"
 	@echo "NOTE:change ~/.local/bin to the desired installation directory"
+	@echo -e "PyPI fallback (no GitHub API rate limit): ${CYAN}uv tool install rust-just${NC}"
 	@echo "Find other install options here: https://github.com/casey/just"
 	@echo -e "To setup just PATH, run: ${YELLOW}SET_PATH=$(HOME)/.local/bin make set-path${NC}"
 
-install-just-force: ## Install just to ~/.local/bin
+install-just-force: ## Install just to ~/.local/bin (PyPI fallback if uv present)
 	@echo "Installing just to $(HOME)/.local/bin..."
 	@mkdir -p "$(HOME)/.local/bin"
-	@curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$(HOME)/.local/bin"
+	@curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$(HOME)/.local/bin" \
+	|| { \
+		echo "just.systems installer failed — falling back to PyPI (rust-just) via uv..."; \
+		PATH="$(HOME)/.local/bin:$$PATH" uv tool install rust-just; \
+	}
 	@echo -e "If $(HOME)/.local/bin is not on your PATH, add it (bash: ~/.bashrc, zsh:"
 	@echo -e "$(YELLOW)SET_PATH=$(HOME)/.local/bin make set-path$(NC)), then open a new terminal."
 
