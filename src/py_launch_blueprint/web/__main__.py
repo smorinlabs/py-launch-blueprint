@@ -17,34 +17,29 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Projects endpoints — thin adapter over ``core.services.projects``.
+"""``python -m py_launch_blueprint.web`` — run the service with its settings.
 
-Items are the same ``core.models.Project`` objects the CLI renders (one data
-contract); the collection endpoint wraps them in the standard pagination
-envelope (WEB-03: ``page``/``size`` query params, ``items``/``total`` body).
-Handlers are sync (``def``) because ``ProjectsService`` uses ``requests``;
-FastAPI runs them in its threadpool.
+Host/port come from :class:`~py_launch_blueprint.web.settings.WebSettings`
+(``<APP_NAME>_WEB_HOST`` / ``_PORT`` env vars), with graceful shutdown
+draining (WEB-31). Dev reload lives in ``just serve``; this entry point is
+the production-shaped one (also used by the Dockerfile).
 """
 
-from fastapi import APIRouter
-from fastapi_pagination import Page, paginate
+import uvicorn
 
-from py_launch_blueprint.core.models import Project
-from py_launch_blueprint.web.deps import ProjectsServiceDep
-
-router = APIRouter(prefix="/projects", tags=["projects"])
+from py_launch_blueprint.web.settings import WebSettings
 
 
-@router.get("")
-def list_projects(
-    service: ProjectsServiceDep,
-    workspace: str | None = None,
-) -> Page[Project]:
-    """List projects, optionally filtered by workspace name."""
-    return paginate(service.list_projects(workspace=workspace))
+def main() -> None:
+    settings = WebSettings()
+    uvicorn.run(
+        "py_launch_blueprint.web.app:create_app",
+        factory=True,
+        host=settings.host,
+        port=settings.port,
+        timeout_graceful_shutdown=10,
+    )
 
 
-@router.get("/{project_id}")
-def get_project(service: ProjectsServiceDep, project_id: str) -> Project:
-    """Fetch a single project by its id."""
-    return service.get_project(project_id)
+if __name__ == "__main__":
+    main()

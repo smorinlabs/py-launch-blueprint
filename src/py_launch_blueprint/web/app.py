@@ -19,46 +19,60 @@
 
 """FastAPI app factory — the web counterpart of ``cli/main.py``.
 
-``create_app()`` wires logging, config, the ``PyError`` → HTTP status mapping,
-a request-id middleware, the operational endpoints (``/healthz``, ``/readyz``),
-and every router. Adding a noun is one import + one entry in ``ROUTERS``
-(see ``routers/__init__.py``).
+``create_app()`` wires, in order: typed settings (WEB-30), the RFC 9457
+problem-details handlers (WEB-01), the middleware stack (request-id logging,
+security headers WEB-23, idempotency replay WEB-05, optional CORS and rate
+limiting WEB-22), metrics/tracing (WEB-11/10), the unversioned operational
+endpoints, and every business router under ``/v1`` (WEB-02). Adding a noun is
+one import + one entry in ``ROUTERS`` (see ``routers/__init__.py``).
 
-Run it via the factory (``just serve``)::
+Run it via the factory (``just serve``), ``python -m py_launch_blueprint.web``,
+or the Dockerfile::
 
     uvicorn py_launch_blueprint.web.app:create_app --factory
 """
 
-import uuid
-from collections.abc import AsyncIterator, Awaitable, Callable
+import platform
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.routing import APIRoute
+from fastapi_pagination import add_pagination
 
 from py_launch_blueprint import __version__
 from py_launch_blueprint.core.config import load_config
 from py_launch_blueprint.core.diagnostics import run_diagnostics
-from py_launch_blueprint.core.errors import APIError, AuthError, ConfigError, PyError
-from py_launch_blueprint.core.logging import (
-    bind_contextvars,
-    clear_contextvars,
-    configure_logging,
-    get_logger,
-)
+from py_launch_blueprint.core.logging import configure_logging, get_logger
 from py_launch_blueprint.web.deps import ConfigDep
+from py_launch_blueprint.web.idempotency import IdempotencyMiddleware
+from py_launch_blueprint.web.middleware import (
+    RequestIDMiddleware,
+    SecurityHeadersMiddleware,
+)
+from py_launch_blueprint.web.problems import (
+    install_problem_handlers,
+    problem_response,
+)
 from py_launch_blueprint.web.routers import ROUTERS
+from py_launch_blueprint.web.settings import WebSettings
+from py_launch_blueprint.web.telemetry import instrument_metrics, instrument_tracing
+from py_launch_blueprint.web.versioning import V1_PREFIX
 
 log = get_logger(__name__)
 
-#: HTTP status for each handled error class. The web analog of the ExitCode
-#: taxonomy in ``core/errors.py`` — which failure maps to which code is domain
-#: knowledge every front-end shares. Append-only, like the exit-code table.
-ERROR_STATUS: dict[type[PyError], int] = {
-    AuthError: 401,
-    ConfigError: 500,
-    APIError: 502,  # upstream Py API failed; this service is the gateway
-}
+OPENAPI_TAGS = [
+    {"name": "projects", "description": "Py projects (same models the CLI renders)."},
+    {"name": "ops", "description": "Liveness, readiness, and build info."},
+]
+
+
+def _operation_id(route: APIRoute) -> str:
+    """Stable, client-friendly operation ids: ``<tag>-<function-name>``."""
+    prefix = f"{route.tags[0]}-" if route.tags else ""
+    return f"{prefix}{route.name}"
 
 
 @asynccontextmanager
@@ -68,42 +82,65 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.config = load_config()
     log.info("web_startup", version=__version__)
     yield
+    # Shutdown side of graceful termination (WEB-31): uvicorn stops accepting,
+    # drains in-flight requests (--timeout-graceful-shutdown), then runs this.
     log.info("web_shutdown")
 
 
-def create_app() -> FastAPI:
+def create_app(settings: WebSettings | None = None) -> FastAPI:
     """Build the FastAPI application (``uvicorn ... --factory`` entry point)."""
+    settings = settings if settings is not None else WebSettings()
+
     app = FastAPI(
         title="py-launch-blueprint",
         version=__version__,
+        description=(
+            "REST API over the same core library the CLI uses. Errors are "
+            "RFC 9457 `application/problem+json`; business routes live under "
+            "`/v1`; collections paginate with `page`/`size` query params."
+        ),
+        openapi_tags=OPENAPI_TAGS,
+        generate_unique_id_function=_operation_id,
         lifespan=_lifespan,
+        root_path=settings.root_path,
     )
+    app.state.settings = settings
 
-    @app.exception_handler(PyError)
-    async def handle_py_error(_request: Request, exc: PyError) -> JSONResponse:
-        status = ERROR_STATUS.get(type(exc), 500)
-        log.warning("request_failed", error=exc.message, exit_code=int(exc.exit_code))
-        return JSONResponse(status_code=status, content={"error": exc.message})
+    install_problem_handlers(app)
 
-    @app.middleware("http")
-    async def bind_request_id(
-        request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response:
-        # Request-scoped log context, same mechanism the CLI uses for
-        # command-scoped context (core/logging.py contextvars).
-        clear_contextvars()
-        request_id = request.headers.get("x-request-id") or uuid.uuid4().hex
-        bind_contextvars(request_id=request_id)
-        response = await call_next(request)
-        response.headers["x-request-id"] = request_id
-        return response
+    # Middleware (added inside-out: the last add_middleware runs first).
+    app.add_middleware(
+        IdempotencyMiddleware,
+        ttl_seconds=settings.idempotency_ttl_seconds,
+        max_entries=settings.idempotency_max_entries,
+    )
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RequestIDMiddleware)
+    if settings.cors_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=settings.cors_origins,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+    if settings.rate_limit:
+        _install_rate_limiting(app, settings.rate_limit)
 
-    @app.get("/healthz")
+    if settings.metrics_enabled:
+        instrument_metrics(app)
+    if settings.otel_enabled:
+        instrument_tracing(app)
+
+    @app.get("/healthz", tags=["ops"])
     async def healthz() -> dict[str, str]:
-        """Liveness: the process is up (the web analog of ``--version``)."""
-        return {"status": "ok", "version": __version__}
+        """Liveness + build info (the web analog of ``--version``)."""
+        return {
+            "status": "ok",
+            "version": __version__,
+            "python": platform.python_version(),
+        }
 
-    @app.get("/readyz")
+    @app.get("/readyz", tags=["ops"])
     async def readyz(config: ConfigDep) -> JSONResponse:
         """Readiness: the same checks as ``plbp doctor`` (503 on any error)."""
         report = run_diagnostics(config)
@@ -113,6 +150,36 @@ def create_app() -> FastAPI:
         )
 
     for router in ROUTERS:
-        app.include_router(router)
+        app.include_router(router, prefix=V1_PREFIX)
 
+    add_pagination(app)
     return app
+
+
+def _install_rate_limiting(app: FastAPI, default_limit: str) -> None:
+    """Wire slowapi with one app-wide default limit (WEB-22)."""
+    from slowapi import Limiter
+    from slowapi.errors import RateLimitExceeded
+    from slowapi.middleware import SlowAPIMiddleware
+    from slowapi.util import get_remote_address
+    from starlette.requests import Request
+
+    limiter = Limiter(key_func=get_remote_address, default_limits=[default_limit])
+    app.state.limiter = limiter
+    app.add_middleware(SlowAPIMiddleware)
+
+    # Sync on purpose: SlowAPIMiddleware silently swaps async handlers for
+    # its default (plain JSON) one — see slowapi.middleware.sync_check_limits.
+    def handle_rate_limited(request: Request, exc: Exception) -> JSONResponse:
+        # exc is always RateLimitExceeded (registered below); getattr keeps
+        # the broad signature slowapi calls with, without an assert.
+        response = problem_response(
+            request,
+            status_code=429,
+            title="Too Many Requests",
+            detail=f"Rate limit exceeded: {getattr(exc, 'detail', exc)}",
+        )
+        response.headers["Retry-After"] = "1"
+        return response
+
+    app.add_exception_handler(RateLimitExceeded, handle_rate_limited)

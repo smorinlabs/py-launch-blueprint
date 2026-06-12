@@ -20,18 +20,27 @@
 """FastAPI web service — a thin adapter over ``py_launch_blueprint.core``.
 
 Ships behind the ``web`` extra (``pip install py-launch-blueprint[web]`` /
-``uv sync --extra web``). Layout::
+``uv sync --extra web``); tracing needs the further ``otel`` extra. Layout::
 
     web/
-    ├── app.py          # FastAPI app factory: create_app() -> FastAPI
+    ├── app.py          # app factory: settings → middleware → routers (/v1)
+    ├── settings.py     # WEB-30 typed env settings (<APP_NAME>_WEB_*)
+    ├── problems.py     # WEB-01 RFC 9457 problem+json error envelope
+    ├── middleware.py   # request-id log context + WEB-23 security headers
+    ├── idempotency.py  # WEB-05 Idempotency-Key replay cache
+    ├── versioning.py   # WEB-02 /v1 prefix + deprecation header helpers
+    ├── telemetry.py    # WEB-11 Prometheus /metrics + WEB-10 OTel tracing
     ├── deps.py         # shared dependencies (config, service wiring)
+    ├── __main__.py     # python -m py_launch_blueprint.web (WEB-31 runner)
     └── routers/
-        └── projects.py # /projects → core.services + core.models
+        └── projects.py # /v1/projects → core.services + core.models
 
 Design rule: the web layer, like the CLI, is a *thin* adapter over
 ``py_launch_blueprint.core``. It returns ``core.models`` objects directly as
-JSON responses, so the API and the CLI share one data contract. Run locally
-with ``just serve``.
+JSON responses, so the API and the CLI share one data contract. Conventions
+live in ``docs/design/0002-web-api-conventions.md``. Run locally with
+``just serve``; regenerate the OpenAPI snapshot with ``just export-openapi``
+after any route change (a test enforces it).
 """
 
 try:
