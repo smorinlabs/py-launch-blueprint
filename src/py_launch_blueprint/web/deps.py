@@ -28,14 +28,21 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
-from py_launch_blueprint.core.config import TOKEN_ENV_VAR, Config
+from py_launch_blueprint.core.config import TOKEN_ENV_VAR, Config, load_config
 from py_launch_blueprint.core.errors import AuthError
 from py_launch_blueprint.core.services.projects import ProjectsService
 
 
 def get_config(request: Request) -> Config:
-    """The :class:`Config` loaded at startup (see ``app._lifespan``)."""
-    config: Config = request.app.state.config
+    """The :class:`Config` loaded at startup (see ``app._lifespan``).
+
+    Falls back to loading lazily when the lifespan hasn't run (raw ASGI
+    callers like schemathesis) — load_config never raises on missing files.
+    """
+    config: Config | None = getattr(request.app.state, "config", None)
+    if config is None:
+        config = load_config()
+        request.app.state.config = config
     return config
 
 

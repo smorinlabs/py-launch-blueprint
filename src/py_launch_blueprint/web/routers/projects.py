@@ -19,14 +19,17 @@
 
 """Projects endpoints — thin adapter over ``core.services.projects``.
 
-Returns the same ``core.models`` objects the CLI renders, so the API and the
-CLI share one data contract. Handlers are sync (``def``) because
-``ProjectsService`` uses ``requests``; FastAPI runs them in its threadpool.
+Items are the same ``core.models.Project`` objects the CLI renders (one data
+contract); the collection endpoint wraps them in the standard pagination
+envelope (WEB-03: ``page``/``size`` query params, ``items``/``total`` body).
+Handlers are sync (``def``) because ``ProjectsService`` uses ``requests``;
+FastAPI runs them in its threadpool.
 """
 
 from fastapi import APIRouter
+from fastapi_pagination import Page, paginate
 
-from py_launch_blueprint.core.models import Project, ProjectList
+from py_launch_blueprint.core.models import Project
 from py_launch_blueprint.web.deps import ProjectsServiceDep
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -36,10 +39,16 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 def list_projects(
     service: ProjectsServiceDep,
     workspace: str | None = None,
-    limit: int = 200,
-) -> ProjectList:
-    """List projects, optionally filtered by workspace name."""
-    return ProjectList(projects=service.list_projects(workspace=workspace, limit=limit))
+) -> Page[Project]:
+    """List projects, optionally filtered by workspace name.
+
+    Pagination window note: pages are sliced from one upstream fetch (the
+    service's default limit), so ``total`` reflects the fetched window, not
+    the upstream universe. True pass-through pagination needs cursor support
+    in ``ProjectsService`` — deferred; see "Deliberately deferred" in
+    docs/design/0002-web-api-conventions.md.
+    """
+    return paginate(service.list_projects(workspace=workspace))
 
 
 @router.get("/{project_id}")
