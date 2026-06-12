@@ -97,6 +97,10 @@ The committed snapshot `docs/api/openapi.json` **is** the API contract:
 bytecode-compiled, non-root user, `/healthz` HEALTHCHECK, graceful shutdown.
 The container binds `0.0.0.0`; the in-code default stays loopback.
 
+Docker itself is **optional** — only this recipe needs it. `make check`
+reports it as an optional dependency; install with `make install-docker`
+(or `make install-docker-force` on Linux).
+
 ## Adding an endpoint
 
 1. Put logic in `core/` (models + service) — the web layer stays thin.
