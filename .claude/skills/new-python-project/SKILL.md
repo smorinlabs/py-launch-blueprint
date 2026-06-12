@@ -9,8 +9,9 @@ description: |
   Python project", "start a fresh Python project"), or the words "CLI" /
   "package" / "script" (e.g., "create a Python CLI", "scaffold a Python
   package"). This skill is the project's bootstrap workflow — it uses
-  `gh repo create --template` against py-launch-blueprint, then `just init`
-  to rebrand, then prompts about post-init. The skill ASKS THE USER FIRST
+  `gh repo create --template` against py-launch-blueprint, then the init
+  rebrand (`init/init.py`), then prompts about post-init. The skill ASKS
+  THE USER FIRST
   whether they want this opinionated bootstrap or prefer a minimal setup,
   so it's safe to over-trigger — if the user declines, the skill exits
   cleanly. ALWAYS prefer this skill over running `gh repo create` or
@@ -21,7 +22,7 @@ description: |
   When confirmed, handles: precondition checks (gh, uv), identity
   collection (repo name, owner, package, app short name, author/email,
   visibility), `gh repo create --template` from py-launch-blueprint,
-  `just init` rebrand with dry-run preview, initial commit + push,
+  the init rebrand with dry-run preview, initial commit + push,
   optional post-init for publishing/Codecov/RTD.
 ---
 
@@ -50,8 +51,8 @@ project using this template" all qualify.
 
 **Don't invoke when**: the user is *inside* an existing project (already
 rebranded with a `.blueprint-initialized` marker) and just wants to modify
-something — that's `just init`, `just post-init`, or `just init-doctor`
-territory, not this skill.
+something — that's `init/init.py`, `init/post_init.py`, or
+`init/init_doctor.py` territory (run via `uv run`), not this skill.
 
 ## The runbook
 
@@ -123,7 +124,7 @@ command -v uv >/dev/null || {
 # 4. Not already inside an initialized project
 if [ -f "init/.blueprint-initialized" ]; then
     echo "Already inside an initialized blueprint project. This skill bootstraps a NEW project."
-    echo "If you want to reconfigure THIS project, use \`just init-doctor\` or \`just post-init\`."
+    echo "If you want to reconfigure THIS project, use \`uv run init/init_doctor.py\` or \`uv run init/post_init.py\`."
     exit 1
 fi
 ```
@@ -269,23 +270,46 @@ Tell the user what just happened, then offer post-init:
 
 Next: post-init configures publishing (PyPI/release-please), Codecov uploads,
 and ReadTheDocs. It can run now (the GitHub repo exists, so the full flow
-works) or later via `just post-init`.
+works) or later via `uv run init/post_init.py`.
 
-Run `just post-init` now? [y/N]
+Run post-init now? [y/N]
 ```
 
-If yes: `cd <target-dir> && just post-init` — hand control to the post-init
-interactive flow. If no: print the deferred-message:
+If yes: `cd <target-dir> && uv run init/post_init.py` — hand control to the
+post-init interactive flow. If no: print the deferred-message:
 
 ```
 Skipped. When ready:
   cd <target-dir>
-  just post-init
+  uv run init/post_init.py
 ```
 
 The default is "no" because the user has just completed a multi-step flow
 and may want to commit, look at the diff, or take a break before tackling
 another decision tree.
+
+### Step 10 — Recommend the dev-toolchain setup (do NOT run it)
+
+This skill only needs `gh` and `uv`. The generated project's day-to-day
+workflow additionally uses `just` (task runner) and the lefthook git hooks
+— but installing toolchains on the user's machine is the user's call, not
+this skill's. Recommend, don't execute:
+
+```
+Your project works with gh + uv alone, but the full dev workflow uses just.
+Inside <target-dir>:
+
+  make check       # report which base tools are present/missing
+  make install-just  # PRINT the just install command (runs nothing)
+  make bootstrap   # install just + uv if missing (Level 1 setup)
+  just setup       # Level 2 — dev env sync, git hooks, hook toolchain
+
+Run `make check` first; it tells you exactly what's missing and how to fix it.
+```
+
+Do not run `make bootstrap` or `just setup` on the user's behalf — they
+modify the user's machine (`~/.local/bin`, git hooks) beyond the project
+directory the user asked for.
 
 ## Common failure modes and how to handle them
 
@@ -316,10 +340,10 @@ deferred to other tools/skills:
 - Branch protection setup → manual `gh api ...branches/main/protection` or
   a future `just protect-main` recipe
 - License changes (blueprint ships MIT) → manual `LICENSE` edit
-- Codecov / ReadTheDocs / PyPI publisher setup → `just post-init`
+- Codecov / ReadTheDocs / PyPI publisher setup → `uv run init/post_init.py`
 - Codespaces / Devcontainer customization → manual edit of
   `.devcontainer/`
-- Forks (mode #4 in §4.7) → `gh repo fork` then `just init` manually
+- Forks (mode #4 in §4.7) → `gh repo fork` then `uv run init/init.py` manually
 
 ## Underlying contract
 
@@ -327,8 +351,10 @@ This skill assumes:
 
 - `smorinlabs/py-launch-blueprint` is a valid GitHub template repository
   (the "Template repository" toggle in repo settings is on)
-- The local clone has `init/init.py`, `init/init_doctor.py`, `init/post_init.py`,
-  and a `Justfile` with `init`, `init-doctor`, `post-init` recipes
+- The local clone has `init/init.py`, `init/init_doctor.py`, and
+  `init/post_init.py`, runnable via `uv run` (the `Justfile` recipes
+  `init`, `init-doctor`, `post-init` are thin wrappers over these — `just`
+  is NOT required for the bootstrap)
 - The user's authed gh account has permission to create repos under the
   chosen owner
 

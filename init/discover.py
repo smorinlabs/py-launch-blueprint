@@ -63,13 +63,13 @@ def is_binary(path: Path) -> bool:
 def scan_files(files: Iterable[Path]) -> dict[tuple[str, str], dict[Path, int]]:
     """Map (field, mode) → {file: count}.
 
-    Excludes files under init/ and skill/ — bootstrap tooling that references
+    Excludes files under the bootstrap dirs (init/, the agent skill) that reference
     identity strings as *data*, not as identity that should be rewritten.
     """
     hits: dict[tuple[str, str], dict[Path, int]] = defaultdict(dict)
     for path in files:
         if is_bootstrap_path(path):
-            continue  # init/ + skill/ are tooling, not migration targets
+            continue  # bootstrap tooling, not migration targets
         if path.name in LOCKFILES:
             continue  # lockfiles are regenerated, not replaced
         if path.name in RESET_FILES:
