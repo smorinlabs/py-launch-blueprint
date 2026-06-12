@@ -268,6 +268,7 @@ field = "repo_name"
 current = ["py-launch-blueprint"]
 files = [
   ".devcontainer/devcontainer.json",              # 1x
+  ".flox/env.json",                               # 1x
   ".github/CONTRIBUTING.md",                      # 1x
   ".github/ISSUE_TEMPLATE/config.yml",            # 1x
   ".github/codeql/codeql-config.yml",             # 1x

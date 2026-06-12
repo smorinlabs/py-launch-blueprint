@@ -39,6 +39,16 @@ them):
 ## Developer Environment
 - Python: 3.12+ required (per ITM-033)
 - Package manager: `uv` (dev environment), `bun` (commitlint deps; per ADR-04)
+- Toolchain provisioning (per ADR 0005) — three first-class options, all
+  declaring the SAME 10-tool set (python, uv, ruff, taplo, gitleaks, just, bun,
+  gh, lefthook, make); keep them in sync when adding/removing a tool:
+  1. Native installs (Justfile `install-*` recipes)
+  2. `mise install` (root `mise.toml`)
+  3. `flox activate` (root `.flox/`)
+- Deliberately NOT in `mise.toml`/`.flox`: yamllint, codespell, bandit,
+  editorconfig-checker (run via `uvx`) and commitlint (run via
+  `bunx --bun @commitlint/cli`) — uv/bun fetch them on demand, and a mise
+  `commitlint` shim shadows bun's PATH fallback (see note in lefthook.yml)
 - Hook manager: `lefthook` (per ADR-01)
 - Build backend: `uv_build` with static `[project] version` (per ADR-06)
 - Releases: `release-please` opens version PR; tag triggers OIDC trusted publish (per ADR-05/07)
