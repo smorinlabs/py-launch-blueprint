@@ -71,8 +71,8 @@ Windsurf rule file; recorded here as the durable home):
 [group('dev')]
 @format:
     echo "Running formatters..."
-    uvx --with-editable . ruff format {{py_package_name}}/
-    uvx --with-editable . ruff check --select I --fix {{py_package_name}}/
+    uvx --with-editable . ruff format {{py_package_path}}/
+    uvx --with-editable . ruff check --select I --fix {{py_package_path}}/
 
 alias f := format
 ```

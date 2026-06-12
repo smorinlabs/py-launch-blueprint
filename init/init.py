@@ -275,6 +275,8 @@ def prune_init_system() -> None:
         try:
             parent.rmdir()  # only succeeds when empty
         except OSError:
+            # Parent still holds other entries (e.g. user-added skills) or
+            # was already gone — best-effort cleanup, keep it.
             pass
     print(
         "pruned init/ system. Manually remove `_blueprint_notice`, `_guard`, "
