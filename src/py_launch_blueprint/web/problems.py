@@ -81,6 +81,43 @@ def problem_response(
     return JSONResponse(body, status_code=status_code, media_type=PROBLEM_CONTENT_TYPE)
 
 
+def declare_problem_responses(app: FastAPI) -> None:
+    """Make the OpenAPI schema tell the truth about 422s (WEB-01 + WEB-04).
+
+    Runtime returns problem documents, so the schema must not advertise
+    FastAPI's default ``HTTPValidationError`` + ``application/json`` —
+    generated clients would parse the wrong shape. Call AFTER all routers
+    are included (it wraps ``app.openapi``).
+    """
+    original_openapi = app.openapi
+
+    def openapi_with_problems() -> dict[str, Any]:
+        if app.openapi_schema:
+            return app.openapi_schema
+        schema = original_openapi()
+        components = schema.setdefault("components", {}).setdefault("schemas", {})
+        components["Problem"] = Problem.model_json_schema(
+            ref_template="#/components/schemas/{model}"
+        )
+        for methods in schema.get("paths", {}).values():
+            for operation in methods.values():
+                response_422 = operation.get("responses", {}).get("422")
+                if response_422 is not None:
+                    response_422["description"] = "Validation Error (RFC 9457)"
+                    response_422["content"] = {
+                        PROBLEM_CONTENT_TYPE: {
+                            "schema": {"$ref": "#/components/schemas/Problem"}
+                        }
+                    }
+        # FastAPI's default validation-error schemas are now unreferenced.
+        components.pop("HTTPValidationError", None)
+        components.pop("ValidationError", None)
+        app.openapi_schema = schema
+        return schema
+
+    app.openapi = openapi_with_problems  # ty: ignore[invalid-assignment]
+
+
 def install_problem_handlers(app: FastAPI) -> None:
     """Register the handlers that funnel every error into one envelope."""
 

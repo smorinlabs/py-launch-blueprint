@@ -58,7 +58,7 @@
           "projects"
         ],
         "summary": "List Projects",
-        "description": "List projects, optionally filtered by workspace name.",
+        "description": "List projects, optionally filtered by workspace name.\n\nPagination window note: pages are sliced from one upstream fetch (the\nservice's default limit), so ``total`` reflects the fetched window, not\nthe upstream universe. True pass-through pagination needs cursor support\nin ``ProjectsService`` \u2014 deferred; see \"Deliberately deferred\" in\ndocs/design/0002-web-api-conventions.md.",
         "operationId": "projects-list_projects",
         "parameters": [
           {
@@ -117,11 +117,11 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Validation Error (RFC 9457)",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -160,11 +160,11 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Validation Error (RFC 9457)",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -175,19 +175,6 @@
   },
   "components": {
     "schemas": {
-      "HTTPValidationError": {
-        "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "type": "array",
-            "title": "Detail"
-          }
-        },
-        "type": "object",
-        "title": "HTTPValidationError"
-      },
       "Page_Project_": {
         "properties": {
           "items": {
@@ -258,45 +245,53 @@
         "title": "Project",
         "description": "A single Py project."
       },
-      "ValidationError": {
+      "Problem": {
+        "description": "RFC 9457 problem document (extension members are allowed by the RFC).",
         "properties": {
-          "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
-            },
-            "type": "array",
-            "title": "Location"
-          },
-          "msg": {
-            "type": "string",
-            "title": "Message"
-          },
           "type": {
-            "type": "string",
-            "title": "Error Type"
+            "default": "about:blank",
+            "title": "Type",
+            "type": "string"
           },
-          "input": {
-            "title": "Input"
+          "title": {
+            "title": "Title",
+            "type": "string"
           },
-          "ctx": {
-            "type": "object",
-            "title": "Context"
+          "status": {
+            "title": "Status",
+            "type": "integer"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Detail"
+          },
+          "instance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Instance"
           }
         },
-        "type": "object",
         "required": [
-          "loc",
-          "msg",
-          "type"
+          "title",
+          "status"
         ],
-        "title": "ValidationError"
+        "title": "Problem",
+        "type": "object"
       }
     }
   },

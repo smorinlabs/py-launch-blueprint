@@ -84,17 +84,22 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
             del self._store[cache_key]
 
         response = await call_next(request)
-        body = b""
         # call_next really returns a streaming response; Response is the
         # declared (narrower) type, hence the suppression.
-        async for chunk in response.body_iterator:  # ty: ignore[unresolved-attribute]
-            body += chunk
+        chunks = [
+            chunk
+            async for chunk in response.body_iterator  # ty: ignore[unresolved-attribute]
+        ]
+        body = b"".join(chunks)
         rebuilt = Response(
             content=body,
             status_code=response.status_code,
             headers=dict(response.headers),
             media_type=response.media_type,
         )
+        # Re-attach background tasks: rebuilding the response must not silently
+        # drop work the endpoint scheduled (cleanup, notifications, ...).
+        rebuilt.background = response.background
         # Only successful outcomes are replayable; errors should be retried
         # for real (the Stripe semantics).
         if 200 <= response.status_code < 300:

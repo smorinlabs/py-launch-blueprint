@@ -50,12 +50,31 @@ def test_no_key_means_no_caching():
         assert a.json() != b.json()
 
 
-def test_errors_are_not_cached(monkeypatch):
+def test_errors_are_not_cached():
     with TestClient(make_app(), raise_server_exceptions=False) as client:
         first = client.post("/fails", headers={"Idempotency-Key": "e1"})
         second = client.post("/fails", headers={"Idempotency-Key": "e1"})
         assert first.status_code == second.status_code == 500
         assert "idempotency-replayed" not in second.headers
+
+
+def test_background_tasks_survive_rebuild():
+    ran = []
+    app = FastAPI()
+    app.add_middleware(IdempotencyMiddleware)
+
+    @app.post("/with-background")
+    def with_background():
+        from fastapi import Response
+        from starlette.background import BackgroundTask
+
+        return Response(
+            content=b"ok", background=BackgroundTask(lambda: ran.append(True))
+        )
+
+    with TestClient(app) as client:
+        client.post("/with-background", headers={"Idempotency-Key": "bg"})
+        assert ran == [True]
 
 
 def test_lru_eviction():

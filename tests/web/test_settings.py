@@ -1,4 +1,11 @@
-"""Typed env settings (WEB-30)."""
+"""Typed env settings (WEB-30).
+
+The literal PLBP_WEB_* names below are intentional: they are registered in
+init/manifest.toml, so a fork's `just init` rewrites them along with the code
+(same convention as tests/cli/test_pylb.py).
+"""
+
+import os
 
 import pytest
 from pydantic import ValidationError
@@ -11,7 +18,7 @@ def test_prefix_derives_from_app_name():
 
 
 def test_defaults_are_safe(monkeypatch):
-    for var in list(__import__("os").environ):
+    for var in list(os.environ):
         if var.startswith(ENV_PREFIX):
             monkeypatch.delenv(var)
     settings = WebSettings()
@@ -20,6 +27,7 @@ def test_defaults_are_safe(monkeypatch):
     assert settings.rate_limit is None
     assert settings.metrics_enabled is True
     assert settings.otel_enabled is False
+    assert settings.graceful_shutdown_seconds == 10
 
 
 def test_env_overrides(monkeypatch):

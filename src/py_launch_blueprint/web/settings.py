@@ -33,7 +33,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from py_launch_blueprint.core.paths import APP_NAME
 
-ENV_PREFIX = f"{APP_NAME.upper()}_WEB_"
+ENV_PREFIX: str = f"{APP_NAME.upper()}_WEB_"
 
 
 class WebSettings(BaseSettings):
@@ -61,3 +61,6 @@ class WebSettings(BaseSettings):
     #: Idempotency-Key replay cache tuning (WEB-05).
     idempotency_ttl_seconds: int = 86400
     idempotency_max_entries: int = 1024
+    #: Drain window for in-flight requests on shutdown (WEB-31); used by the
+    #: ``python -m py_launch_blueprint.web`` runner (and the Dockerfile).
+    graceful_shutdown_seconds: int = 10

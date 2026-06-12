@@ -4,9 +4,17 @@ Status: accepted. Scope: `src/py_launch_blueprint/web/` — the FastAPI service
 behind the `web` extra. Each convention carries the WEB-xx id from the
 best-practices catalog so future work can reference and extend it.
 
+## Getting started
+
+Install with `uv sync --group dev --extra web`; run with `just serve`
+(dev reload) or `python -m py_launch_blueprint.web` (production-shaped).
+Optional toggles are env vars (`PLBP_WEB_*`), e.g. `PLBP_WEB_OTEL_ENABLED=1`.
+The committed contract lives at `docs/api/openapi.json` — regenerate with
+`just export-openapi` after any route change (a test enforces it).
+
 ## Contract (A)
 
-- **WEB-01 — errors are RFC 9457 Problem Details.** Every non-2xx body is
+- **WEB-01 — errors are [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) Problem Details.** Every non-2xx body is
   `application/problem+json` with `type/title/status/detail/instance`,
   including FastAPI's own 422 validation errors (an `errors` extension
   carries the field details) and bare `HTTPException`s. The
@@ -15,8 +23,9 @@ best-practices catalog so future work can reference and extend it.
 - **WEB-02 — business routes live under `/v1`.** Ops endpoints (`/healthz`,
   `/readyz`, `/metrics`) are unversioned. A breaking change means a `/v2`
   router tree, never an in-place mutation. Sunsetting uses
-  `versioning.deprecation_headers()` (RFC 8594 `Deprecation` + `Sunset`)
-  plus OpenAPI's `deprecated` flag.
+  `versioning.deprecation_headers()`
+  ([RFC 8594](https://www.rfc-editor.org/rfc/rfc8594.html) `Deprecation` +
+  `Sunset`) plus OpenAPI's `deprecated` flag.
 - **WEB-03 — collections paginate** with fastapi-pagination's standard
   envelope: `page`/`size` query params, `items/total/page/size/pages` body.
   Items remain `core.models` objects — the CLI and API share one data
@@ -75,5 +84,7 @@ best-practices catalog so future work can reference and extend it.
 
 AuthN/AuthZ middleware (WEB-20/21 — should resolve the same token sources
 `core.config` knows), Redis-backed idempotency/rate-limit stores, async
-upstream client + retries (WEB-40/41), and full schemathesis conformance
-checks.
+upstream client + retries (WEB-40/41), full schemathesis conformance
+checks, and upstream pass-through pagination (today `/v1/projects` slices
+pages from one upstream fetch, so `total` reflects that window — fixing it
+properly means cursor support in `ProjectsService`).

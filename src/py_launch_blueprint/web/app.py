@@ -36,7 +36,7 @@ import platform
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
@@ -53,6 +53,7 @@ from py_launch_blueprint.web.middleware import (
     SecurityHeadersMiddleware,
 )
 from py_launch_blueprint.web.problems import (
+    declare_problem_responses,
     install_problem_handlers,
     problem_response,
 )
@@ -109,13 +110,14 @@ def create_app(settings: WebSettings | None = None) -> FastAPI:
     install_problem_handlers(app)
 
     # Middleware (added inside-out: the last add_middleware runs first).
+    # RequestID + SecurityHeaders go LAST so they are OUTERMOST — CORS
+    # preflights and slowapi 429s short-circuit without calling inner
+    # middleware, and those responses still need ids + security headers.
     app.add_middleware(
         IdempotencyMiddleware,
         ttl_seconds=settings.idempotency_ttl_seconds,
         max_entries=settings.idempotency_max_entries,
     )
-    app.add_middleware(SecurityHeadersMiddleware)
-    app.add_middleware(RequestIDMiddleware)
     if settings.cors_origins:
         app.add_middleware(
             CORSMiddleware,
@@ -125,6 +127,8 @@ def create_app(settings: WebSettings | None = None) -> FastAPI:
         )
     if settings.rate_limit:
         _install_rate_limiting(app, settings.rate_limit)
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RequestIDMiddleware)
 
     if settings.metrics_enabled:
         instrument_metrics(app)
@@ -141,18 +145,26 @@ def create_app(settings: WebSettings | None = None) -> FastAPI:
         }
 
     @app.get("/readyz", tags=["ops"])
-    async def readyz(config: ConfigDep) -> JSONResponse:
+    async def readyz(request: Request, config: ConfigDep) -> JSONResponse:
         """Readiness: the same checks as ``plbp doctor`` (503 on any error)."""
         report = run_diagnostics(config)
-        return JSONResponse(
-            status_code=503 if report.has_error() else 200,
-            content=report.model_dump(mode="json"),
-        )
+        if report.has_error():
+            # Non-2xx responses are problem documents everywhere (WEB-01);
+            # the diagnostic payload rides along as an extension member.
+            return problem_response(
+                request,
+                status_code=503,
+                title="Service Unavailable",
+                detail="Readiness checks failed.",
+                extensions={"diagnostics": report.model_dump(mode="json")},
+            )
+        return JSONResponse(status_code=200, content=report.model_dump(mode="json"))
 
     for router in ROUTERS:
         app.include_router(router, prefix=V1_PREFIX)
 
     add_pagination(app)
+    declare_problem_responses(app)  # after ALL routes exist (wraps app.openapi)
     return app
 
 
@@ -163,14 +175,21 @@ def _install_rate_limiting(app: FastAPI, default_limit: str) -> None:
     from slowapi.middleware import SlowAPIMiddleware
     from slowapi.util import get_remote_address
     from starlette.requests import Request
+    from starlette.responses import Response
 
-    limiter = Limiter(key_func=get_remote_address, default_limits=[default_limit])
+    # headers_enabled: slowapi computes and injects accurate X-RateLimit-* and
+    # Retry-After headers from the limit window — never hard-code a guess.
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=[default_limit],
+        headers_enabled=True,
+    )
     app.state.limiter = limiter
     app.add_middleware(SlowAPIMiddleware)
 
     # Sync on purpose: SlowAPIMiddleware silently swaps async handlers for
     # its default (plain JSON) one — see slowapi.middleware.sync_check_limits.
-    def handle_rate_limited(request: Request, exc: Exception) -> JSONResponse:
+    def handle_rate_limited(request: Request, exc: Exception) -> Response:
         # exc is always RateLimitExceeded (registered below); getattr keeps
         # the broad signature slowapi calls with, without an assert.
         response = problem_response(
@@ -179,7 +198,8 @@ def _install_rate_limiting(app: FastAPI, default_limit: str) -> None:
             title="Too Many Requests",
             detail=f"Rate limit exceeded: {getattr(exc, 'detail', exc)}",
         )
-        response.headers["Retry-After"] = "1"
-        return response
+        # Accurate X-RateLimit-* + Retry-After computed from the limit window
+        # (the same call slowapi's default handler makes) — never a guess.
+        return limiter._inject_headers(response, request.state.view_rate_limit)
 
     app.add_exception_handler(RateLimitExceeded, handle_rate_limited)

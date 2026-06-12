@@ -19,10 +19,12 @@
 
 """``python -m py_launch_blueprint.web`` — run the service with its settings.
 
-Host/port come from :class:`~py_launch_blueprint.web.settings.WebSettings`
-(``<APP_NAME>_WEB_HOST`` / ``_PORT`` env vars), with graceful shutdown
-draining (WEB-31). Dev reload lives in ``just serve``; this entry point is
-the production-shaped one (also used by the Dockerfile).
+Everything is settings-driven, no CLI flags: host, port, and the graceful
+shutdown drain window come from
+:class:`~py_launch_blueprint.web.settings.WebSettings` (``<APP_NAME>_WEB_HOST``
+/ ``_PORT`` / ``_GRACEFUL_SHUTDOWN_SECONDS`` env vars; WEB-30/31). Dev reload
+lives in ``just serve``; this entry point is the production-shaped one (also
+used by the Dockerfile).
 """
 
 import uvicorn
@@ -37,7 +39,7 @@ def main() -> None:
         factory=True,
         host=settings.host,
         port=settings.port,
-        timeout_graceful_shutdown=10,
+        timeout_graceful_shutdown=settings.graceful_shutdown_seconds,
     )
 
 

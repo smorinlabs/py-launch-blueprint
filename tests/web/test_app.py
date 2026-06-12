@@ -205,8 +205,46 @@ def test_rate_limit_429_problem(monkeypatch):
         response = test_client.get("/healthz")
         assert response.status_code == 429
         assert response.headers["content-type"] == PROBLEM_TYPE
-        assert response.headers["retry-after"]
+        # Computed by slowapi (headers_enabled), not hard-coded.
+        assert int(response.headers["retry-after"]) >= 0
+        assert "x-ratelimit-limit" in response.headers
         assert response.json()["title"] == "Too Many Requests"
+        # Short-circuited responses still pass through the outermost
+        # middleware: request id + security headers must be present.
+        assert response.headers["x-request-id"]
+        assert response.headers["x-content-type-options"] == "nosniff"
+
+
+def test_cors_preflight_gets_request_id_and_security_headers(monkeypatch):
+    monkeypatch.delenv("PLBP_TOKEN", raising=False)
+    settings = WebSettings.model_construct(cors_origins=["https://app.example"])
+    with make_client(settings) as test_client:
+        response = test_client.options(
+            "/v1/projects",
+            headers={
+                "origin": "https://app.example",
+                "access-control-request-method": "GET",
+            },
+        )
+        assert response.status_code == 200
+        assert response.headers["x-request-id"]
+        assert response.headers["x-content-type-options"] == "nosniff"
+
+
+def test_readyz_failure_is_a_problem_with_diagnostics(client, monkeypatch):
+    from py_launch_blueprint.core.models import DoctorCheck, DoctorReport
+    from py_launch_blueprint.web import app as app_module
+
+    failing = DoctorReport(
+        checks=[DoctorCheck(name="python", status="error", detail="boom")]
+    )
+    monkeypatch.setattr(app_module, "run_diagnostics", lambda _config: failing)
+    response = client.get("/readyz")
+    assert response.status_code == 503
+    assert response.headers["content-type"] == PROBLEM_TYPE
+    body = response.json()
+    assert body["title"] == "Service Unavailable"
+    assert body["diagnostics"]["checks"][0]["name"] == "python"
 
 
 # --- OpenAPI polish (WEB-04) --------------------------------------------------
@@ -226,3 +264,13 @@ def test_operation_ids_are_tag_prefixed(client):
 
 def test_metrics_not_in_schema(client):
     assert "/metrics" not in client.get("/openapi.json").json()["paths"]
+
+
+def test_422_documented_as_problem_json(client):
+    spec = client.get("/openapi.json").json()
+    listing = spec["paths"]["/v1/projects"]["get"]["responses"]["422"]
+    assert list(listing["content"]) == [PROBLEM_TYPE]
+    assert listing["content"][PROBLEM_TYPE]["schema"]["$ref"].endswith("/Problem")
+    assert "Problem" in spec["components"]["schemas"]
+    # FastAPI's default validation schemas must not linger unreferenced.
+    assert "HTTPValidationError" not in spec["components"]["schemas"]

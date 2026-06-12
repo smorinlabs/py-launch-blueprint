@@ -40,7 +40,14 @@ def list_projects(
     service: ProjectsServiceDep,
     workspace: str | None = None,
 ) -> Page[Project]:
-    """List projects, optionally filtered by workspace name."""
+    """List projects, optionally filtered by workspace name.
+
+    Pagination window note: pages are sliced from one upstream fetch (the
+    service's default limit), so ``total`` reflects the fetched window, not
+    the upstream universe. True pass-through pagination needs cursor support
+    in ``ProjectsService`` — deferred; see "Deliberately deferred" in
+    docs/design/0002-web-api-conventions.md.
+    """
     return paginate(service.list_projects(workspace=workspace))
 
 

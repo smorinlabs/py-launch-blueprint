@@ -46,12 +46,15 @@ pre-commit:
     # ITM-066 — ruff lint + format check on staged Python files.
     # Added after PR #319 hit lint failures in CI that should have been
     # caught locally. `{staged_files}` keeps the check scoped — fast.
+    # --force-exclude: explicitly-passed paths bypass ruff's exclude list
+    # otherwise, so staging an excluded file (docs/source/conf.py) would
+    # fail here while `ruff format --check .` (CI) passes.
     ruff-check:
       glob: "*.py"
-      run: uvx ruff check --output-format=concise {staged_files}
+      run: uvx ruff check --force-exclude --output-format=concise {staged_files}
     ruff-format:
       glob: "*.py"
-      run: uvx ruff format --check {staged_files}
+      run: uvx ruff format --check --force-exclude {staged_files}
 
 # Pre-push stage — per-tool steps land via downstream ITMs.
 pre-push:

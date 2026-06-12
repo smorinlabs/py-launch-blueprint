@@ -20,6 +20,14 @@ DEFAULT_OUT = "docs/api/openapi.json"
 
 
 def export(out: str = DEFAULT_OUT) -> Path:
+    """Generate and write the canonical OpenAPI snapshot.
+
+    Args:
+        out: Output path for the OpenAPI JSON file.
+
+    Returns:
+        The path the snapshot was written to.
+    """
     # model_construct: pure field defaults, no env — the snapshot must not
     # depend on the exporting machine's environment.
     spec = create_app(WebSettings.model_construct()).openapi()

@@ -47,8 +47,13 @@ def instrument_metrics(app: FastAPI) -> None:
 def instrument_tracing(app: FastAPI) -> bool:
     """Set up an OTLP tracer and auto-instrument the app.
 
-    Returns False (with a log line, never a crash) when the ``otel`` extra is
-    not installed — tracing degrades to "off", the service still serves.
+    Args:
+        app: The application to instrument.
+
+    Returns:
+        True when tracing was wired. False (with a log line, never a crash)
+        when the ``otel`` extra is not installed — tracing degrades to "off",
+        the service still serves.
     """
     try:
         sdk_resources = importlib.import_module("opentelemetry.sdk.resources")
