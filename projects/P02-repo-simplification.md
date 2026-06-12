@@ -1,6 +1,6 @@
 # P02 — Repo simplification & organization (SIMP series)
 
-- **Status:** `[~]` in progress — SIMP-01/02/03 merged; SIMP-10 in #407; SIMP-11/06/08/07/09 implemented in PRs #409–#413 (awaiting review/merge); SIMP-04/05/12 dropped or deferred
+- **Status:** `[x]` complete (2026-06-12) — SIMP-01/02/03 merged (#401/#402/#405); SIMP-10 in #407; SIMP-11/06/08/07/09 merged (#409–#413); SIMP-05/12 dropped; SIMP-04 deferred as optional (in-place Justfile reorg only, if ever). Decisions recorded in ADR 0014; lint path-detection validated live in #415/#416.
 - **Captured:** 2026-06-12
 - **Scope:** repo-wide structure & tooling — `Justfile`, `Makefile`, `docs/`,
   `tests/`, `.github/workflows/`, agent-config files, root markdown
