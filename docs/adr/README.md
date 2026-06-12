@@ -31,6 +31,7 @@ Start from [`template.md`](template.md).
 | [0010](0010-rich-row-variant-on-result-models.md) | Terminal niceties via a rich-only row variant on result models | Accepted |
 | [0011](0011-windows-native-paths-xdg-overrides.md) | Windows-native default directories; XDG overrides win everywhere | Accepted |
 | [0012](0012-doctor-bundle-redact-at-collection.md) | `doctor --bundle` redacts at collection time, excludes log contents | Accepted |
+| [0013](0013-web-service-best-practices.md) | Web service: baked-in REST best practices behind the `web` extra | Accepted |
 
 ## Note on historical decisions
 

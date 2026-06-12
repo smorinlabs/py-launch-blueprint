@@ -6,7 +6,10 @@ globs:
 # Your rule content
 
 - @Justfile is used to configure @just commands and has all command to run the project
-- @Makefile is just used to bootstrap the project no new targets should be added there
+- @Makefile is just used to bootstrap the project; no new targets should be
+  added there, except optional dependency installers (`install-*` /
+  `install-*-force`, e.g. docker, flox — see ADR 0005) which belong in the
+  Makefile because they run before `just` is available
 
 # Project Development Rules and Conventions
 

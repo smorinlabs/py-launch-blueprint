@@ -269,12 +269,29 @@ alias ca := check
 # Run the FastAPI dev server (web extra) with auto-reload
 [group('run'), group('dev')]
 @serve host="127.0.0.1" port="8000":
-    uv run --extra web uvicorn {{py_package_name}}.web.app:create_app --factory --host {{host}} --port {{port}} --reload
+    uv run --extra web uvicorn {{py_package_name}}.web.app:create_app --factory --host {{host}} --port {{port}} --reload --timeout-graceful-shutdown 5
 
-# Run web layer tests (installs the web extra; TestClient needs httpx)
+# Run web layer tests incl. slow contract fuzzing (web extra; httpx for TestClient)
 [group('test'), group('dev')]
 @test-web *options:
-    uv run --extra web pytest tests/web {{options}}
+    uv run --extra web pytest tests/web -m "" {{options}}
+
+# Regenerate the committed OpenAPI snapshot (WEB-51). Run after ANY route
+# change — tests/web/test_openapi_snapshot.py fails until you do.
+[group('build'), group('dev')]
+@export-openapi:
+    uv run --extra web python scripts/export_openapi.py
+
+# Generate a typed Python client from the OpenAPI snapshot (WEB-60)
+[group('build')]
+@client-python out="clients/python":
+    uvx openapi-python-client generate --path docs/api/openapi.json --output-path {{out}} --overwrite
+    echo "client written to {{out}}"
+
+# Build the production web-service image (WEB-32)
+[group('build')]
+@docker-web tag="plbp-web:dev": _guard
+    docker build -t {{tag}} .
 
 # Blueprint setup guard — Tier 2 (hard block on the risk subset).
 # Private. Used as a dependency on recipes that produce a wrong artifact,

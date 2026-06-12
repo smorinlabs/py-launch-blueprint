@@ -11,6 +11,8 @@
 - Test single: `pytest tests/test_file.py::test_name`
 - All checks: `just check`
 - Web (FastAPI, behind `web` extra): `just serve` dev server; `just test-web` runs tests/web
+- Web API conventions (problem+json, /v1, pagination, WEB-xx ids): docs/design/0002-web-api-conventions.md
+- After ANY web route change: `just export-openapi` and commit the snapshot (a test + the api-contract workflow enforce it)
 - Hooks: lefthook runs at commit/push ONLY after `just setup` (or `scripts/install-lefthook.sh`) — run it before any commit (see Setup)
 - Manual secret scan: `scripts/check-gitleaks.sh --staged` or `--range`
 

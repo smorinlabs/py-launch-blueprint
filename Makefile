@@ -36,7 +36,7 @@ CHECK := $(GREEN)✓$(NC)
 CROSS := $(RED)✗$(NC)
 DASH := $(GRAY)-$(NC)
 
-.PHONY: all bootstrap check hook-check install-uv install-just install-flox set-path help install-just-force install-uv-force
+.PHONY: all bootstrap check hook-check install-uv install-just install-docker install-docker-force install-flox set-path help install-just-force install-uv-force
 
 all: help
 
@@ -104,6 +104,12 @@ check: ## Check system requirements
 		printf "[$(CROSS)] $${CHECK_CMD_NAME} ($(GREEN)make $${CHECK_CMD_INSTALL}$(NC))\n"; \
 		ERROR_COUNT=$$((ERROR_COUNT + 1)); \
 		MISSING_DEPS="$${CHECK_CMD_NAME}$${MISSING_DEPS:+,} $${MISSING_DEPS}"; \
+	fi; \
+	CHECK_CMD_NAME="docker"; \
+	if [ $(shell command -v docker >/dev/null 2>&1 && echo "0" || echo "1" ) -eq 0 ] ; then \
+		printf "[$(CHECK)] $${CHECK_CMD_NAME} (optional)\n"; \
+	else \
+		printf "[$(DASH)] $${CHECK_CMD_NAME} (optional — only for $(CYAN)just docker-web$(NC); $(GREEN)make install-docker$(NC))\n"; \
 	fi; \
 	if [ "$${ERROR_COUNT}" = "0" ]; then \
 		echo -e "$(GREEN)All dependencies are installed!$(NC)"; \
@@ -186,6 +192,27 @@ install-uv-force: ## Install uv and add it to PATH
 		echo -e "$(CHECK) PATH already contains $${UV_INSTALL_PATH}"; \
 	fi
 	@echo "Please run 'source ~/.zshenv' or open a new terminal to update your PATH if changes were made."
+
+install-docker: ## OPTIONAL — print Docker install instructions (needed only for `just docker-web`)
+	@echo "Docker is OPTIONAL for this project — only the container image build"
+	@echo "(just docker-web) needs it. Everything else runs without Docker."
+	@echo ""
+	@echo "Linux installation command (Docker convenience script):"
+	@echo -e "${CYAN}curl -fsSL https://get.docker.com | sh${NC}"
+	@echo "or"
+	@echo -e "${CYAN}make install-docker-force${NC}"
+	@echo "macOS/Windows: install Docker Desktop — https://docs.docker.com/get-docker/"
+
+install-docker-force: ## OPTIONAL — install Docker engine via convenience script (Linux only)
+	@if [ "$$(uname -s)" != "Linux" ]; then \
+		echo -e "$(RED)install-docker-force supports Linux only.$(NC)"; \
+		echo "macOS/Windows: install Docker Desktop — https://docs.docker.com/get-docker/"; \
+		exit 1; \
+	fi
+	@echo "Installing Docker engine via https://get.docker.com ..."
+	@curl -fsSL https://get.docker.com | sh
+	@echo -e "$(CHECK) Docker installed. You may need to add your user to the docker group:"
+	@echo -e "${CYAN}sudo usermod -aG docker $$USER && newgrp docker${NC}"
 
 # Flox is OPTIONAL — one of the three first-class toolchain provisioners
 # (native installs / mise / flox; see docs/adr/0005). Nothing in the project
