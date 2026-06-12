@@ -246,6 +246,7 @@ about/index
 tasks/index
 tools/index
 tutorials/index
+web/index
 reference/index
 contributing/index
 github-templates

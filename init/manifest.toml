@@ -103,6 +103,7 @@ files = [
   "docs/design/README.md",                              # 2x
   "docs/source/index.md",                               # 14x
   "docs/source/reference/cli_reference.md",             # 1x
+  "docs/source/web/index.md",                           # 1x
   "docs/source/tasks/setting_up_development.md",        # 2x
   "projects/P01-init-rebrand-robustness.md",            # 7x
   "src/py_launch_blueprint/cli/commands/__init__.py",   # 1x
@@ -137,6 +138,7 @@ files = [
   "docs/adr/0001-app-short-name-plbp.md",             # 2x
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
   "docs/source/index.md",                             # 1x
+  "docs/source/web/index.md",                         # 10x
   "POST_INIT.md",                                     # 1x
   "src/py_launch_blueprint/cli/commands/config.py",   # 2x
   "src/py_launch_blueprint/cli/commands/projects.py", # 1x
@@ -184,6 +186,7 @@ files = [
   "docs/source/conf.py",                          # 2x
   "docs/source/contributing/index.md",            # 1x
   "docs/source/index.md",                         # 5x
+  "docs/source/web/index.md",                     # 2x
   "docs/source/reference/configuration_files.md", # 4x
   "docs/source/tasks/setting_up_development.md",  # 1x
   "docs/source/tasks/type_checking_code.md",      # 2x
@@ -259,7 +262,9 @@ files = [
   "src/py_launch_blueprint/web/settings.py",           # 2x
   "src/py_launch_blueprint/web/telemetry.py",          # 2x
   "Dockerfile",                                        # 1x
+  "docs/adr/0005-web-service-best-practices.md",       # 2x
   "docs/design/0002-web-api-conventions.md",           # 2x
+  "docs/source/web/index.md",                          # 1x
   "scripts/export_openapi.py",                         # 2x
   "pyrightconfig.json",                                # 1x
   "release-please-config.json",                        # 1x
@@ -320,6 +325,8 @@ files = [
   "src/py_launch_blueprint/web/__init__.py",      # 1x
   "src/py_launch_blueprint/web/app.py",           # 1x
   "docs/api/openapi.json",                        # 1x
+  "docs/adr/0005-web-service-best-practices.md",  # 1x
+  "docs/source/web/index.md",                     # 2x
 ]
 mode = "text"
 
