@@ -42,7 +42,8 @@ them):
 - Toolchain provisioning (per ADR 0005) — three first-class options, all
   declaring the SAME 10-tool set (python, uv, ruff, taplo, gitleaks, just, bun,
   gh, lefthook, make); keep them in sync when adding/removing a tool:
-  1. Native installs (Justfile `install-*` recipes)
+  1. Native installs (Makefile + Justfile `install-*` targets,
+     `scripts/install-*.sh`)
   2. `mise install` (root `mise.toml`)
   3. `flox activate` (root `.flox/`)
 - Deliberately NOT in `mise.toml`/`.flox`: yamllint, codespell, bandit,
