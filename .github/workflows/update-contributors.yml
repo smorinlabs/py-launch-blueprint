@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
 
       - name: Update contributors
-        uses: smorinlabs/contributors-please-action@v1.0.6
+        uses: smorinlabs/contributors-please-action@v1.1.0
         with:
           app-id: ${{ secrets.CONTRIBUTORS_PLEASE_APP_ID }}
           private-key: ${{ secrets.CONTRIBUTORS_PLEASE_PRIVATE_KEY }}
