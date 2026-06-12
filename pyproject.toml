@@ -81,6 +81,16 @@ dev = [
   "types-requests",
   "types-Pygments",
   "cogapp",
+  # WL-001 — hook/CI tools pinned via uv.lock (run with `uv run`, not floating
+  # `uvx`), so local hooks and CI use the same version and upgrades arrive as
+  # reviewable dependabot PRs instead of surprise breakage.
+  "bandit>=1.8.0",
+  "codespell>=2.4.0",
+  "editorconfig-checker>=3.0.0",
+  "yamllint>=1.35.0",
+  "pip-audit>=2.9.0",  # WL-014 — `just audit` + scheduled dep-audit workflow
+  "twine>=6.1.0",      # WL-004 — dist metadata check in the build-smoke CI job
+  "syrupy>=4.8.0",     # WL-023 — CLI --help snapshot tests
 ]
 
 docs = [

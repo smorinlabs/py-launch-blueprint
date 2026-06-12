@@ -2,11 +2,11 @@
 
 [CLA Assistant](https://cla-assistant.io) is a tool that automates the process of managing Contributor License Agreements (CLAs) for open source projects. It integrates with GitHub to ensure that all contributors have signed the appropriate CLA before their pull requests can be merged.
 
-### Purpose and Problem Solved
+## Purpose and Problem Solved
 CLA Assistant automates the process of managing Contributor License Agreements (CLAs) for open source projects. It ensures that all contributors have signed the appropriate CLA before their pull requests can be merged, helping maintain legal compliance and reducing manual tracking for maintainers.
 
-### Key Benefits and Value Proposition
-- ** maintains legal compliance** and streamlines the contribution process.
+## Key Benefits and Value Proposition
+- **Maintains legal compliance** and streamlines the contribution process.
 - **Automated CLA checks** on every pull request
 - **Streamlined contributor experience** with a simple signing process
 - **Legal protection** for project maintainers and organizations
@@ -72,5 +72,5 @@ CLA Assistant automates the process of managing Contributor License Agreements (
 - [GitHub Marketplace: CLA Assistant](https://github.com/marketplace/cla-assistant)
 - [Individual CLA](../contributing/cla/individual_cla.md)
 - [Corporate CLA](../contributing/cla/corporate_cla.md)
-- [Py Launch Blueprint Contribution Guide](../../../../CONTRIBUTING.md)
+- [Py Launch Blueprint Contribution Guide](https://github.com/smorinlabs/py-launch-blueprint/blob/main/.github/CONTRIBUTING.md)
 - [GitHub Docs: About required status checks](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/about-required-status-checks)

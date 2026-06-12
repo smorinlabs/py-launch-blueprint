@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # Setting Up CLA Assistant with GitHub
 
 This guide walks you through setting up [cla-assistant.io](https://cla-assistant.io) for your GitHub repository, including how to create and configure a Contributor License Agreement (CLA) using a GitHub Gist.

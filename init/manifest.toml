@@ -88,6 +88,7 @@ mode = "structured"
 field = "app_name"
 current = ["plbp"]
 files = [
+  ".github/workflows/ci.yml",                          # build-smoke (WL-004)
   "AGENTS.md",                                          # 1x
   "Dockerfile",                                         # 2x
   "docs/api/openapi.json",                              # 1x
@@ -95,6 +96,7 @@ files = [
   "EXAMPLEWEB.md",                                      # 5x
   "Justfile",                                           # 1x
   "README.md",                                          # 2x
+  "TESTANALYSIS.md",                                   # 5x (wishlist analysis)
   "docs/POST_INIT.md",                                  # 1x
   "docs/adr/0001-app-short-name-plbp.md",               # 5x
   "docs/adr/0002-no-secrets-in-config-file.md",         # 1x
@@ -128,6 +130,7 @@ files = [
   "src/py_launch_blueprint/web/app.py",                 # 1x
   "tests/cli/test_output.py",                           # 4x
   "tests/cli/test_pylb.py",                             # 27x
+  "tests/cli/test_help_snapshots.py",                   # WL-023
   "tests/conftest.py",                                  # 1x
   "tests/core/test_core.py",                            # 19x
   "tests/core/test_logging.py",                         # 8x
@@ -211,6 +214,8 @@ files = [
   "docs/source/tasks/type_checking_code.md",      # 2x
   "docs/source/tools/github_actions.md",          # 1x
   "docs/source/tools/justfiles.md",               # 1x
+  "docs/source/tools/cla-assistant.md",           # WL-021 link fix
+  "docs/source/tools/yaml_lint.md",               # WL-021 link fix
   "docs/source/tools/ty.md",                      # 1x
   "docs/source/tutorials/full_project_setup.md",  # 1x
   "llms.txt",                                     # 9x
@@ -290,6 +295,7 @@ files = [
   "release-please-config.json",                        # 1x
   "tests/cli/test_output.py",                          # 3x
   "tests/cli/test_pylb.py",                            # 6x
+  "tests/cli/test_help_snapshots.py",                  # WL-023
   "tests/core/test_core.py",                           # 9x
   "tests/core/test_format.py",                         # 2x
   "tests/core/test_logging.py",                        # 1x
@@ -341,6 +347,8 @@ files = [
   "docs/source/tasks/type_checking_code.md",      # 2x
   "docs/source/tools/github_actions.md",          # 1x
   "docs/source/tools/justfiles.md",               # 1x
+  "docs/source/tools/cla-assistant.md",           # WL-021 link fix
+  "docs/source/tools/yaml_lint.md",               # WL-021 link fix
   "docs/source/tools/ty.md",                      # 1x
   "docs/source/tutorials/full_project_setup.md",  # 2x
   "llms.txt",                                     # 11x
@@ -428,6 +436,22 @@ command = ["uv", "lock"]
 [[regenerate]]
 path = "bun.lock"
 command = ["bun", "install"]
+
+# CLI --help snapshots (WL-023): regenerated, not text-replaced — help output
+# re-wraps at 80 columns for the renamed program name, which string
+# replacement cannot reproduce. Runs after replaces/renames + uv lock, so the
+# regenerated snapshots reflect the fork's identity.
+[[regenerate]]
+path = "tests/cli/__snapshots__/test_help_snapshots.ambr"
+command = [
+  "uv",
+  "run",
+  "pytest",
+  "tests/cli/test_help_snapshots.py",
+  "--snapshot-update",
+  "-q",
+  "--override-ini=addopts=",
+]
 
 # Reset (not rewrite) on init: CHANGELOG.md accumulates the blueprint's own
 # release history (compare-URLs, `plbp`, `smorinlabs`); a fork starts its own,

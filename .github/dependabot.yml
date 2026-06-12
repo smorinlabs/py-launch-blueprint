@@ -29,11 +29,20 @@ updates:
       runtime:
         patterns: ["click", "pydantic", "structlog", "tomli-w", "requests", "rich"]
       dev-tools:
-        patterns: ["cogapp"]
+        patterns: ["cogapp", "twine", "pip-audit"]
       lint-and-format:
-        patterns: ["ruff", "ty", "types-*"]
+        # WL-001: hook/CI tools now version-locked in uv.lock — updates land
+        # here as grouped, reviewable PRs.
+        patterns:
+          - "ruff"
+          - "ty"
+          - "types-*"
+          - "bandit"
+          - "codespell"
+          - "yamllint"
+          - "editorconfig-checker"
       test:
-        patterns: ["pytest*"]
+        patterns: ["pytest*", "syrupy"]
 
   # ITM-062 - GitHub Actions ecosystem.
   - package-ecosystem: "github-actions"

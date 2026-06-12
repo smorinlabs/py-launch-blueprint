@@ -39,13 +39,17 @@ clones, containers, and remote agent sessions start without it — run
 | All checks | `just check` |
 | Run tests | `pytest` (default excludes `slow`/`live` markers per ITM-046; full: `pytest -m ""`) |
 | Run one test | `pytest tests/test_file.py::test_name` |
-| Lint | `uvx ruff check .` |
-| Format | `just format` or `uvx ruff format src/py_launch_blueprint/` |
-| Format check | `uvx ruff format --check .` |
+| Lint | `uv run ruff check .` |
+| Format | `just format` or `uv run ruff format src/py_launch_blueprint/` |
+| Format check | `uv run ruff format --check .` |
 | Typecheck | `uv run --extra web ty check src/py_launch_blueprint/` (ITM-026 / ADR-03; `--extra web` so web/ imports resolve) |
+| Dependency CVE audit | `just audit` (WL-014; same pipeline as the weekly CI workflow) |
 | Web tests / dev server | `just test-web` / `just serve` (FastAPI, `web` extra) |
 | Secret scan | `scripts/check-gitleaks.sh --staged` or `--range` |
 | Build | `uv build` (uv_build backend per ADR-06) |
+
+Hook/CI tools run from the locked dev group (`uv run`, never floating
+`uvx`) per WL-001 — versions come from `uv.lock`.
 
 Web API conventions (problem+json, `/v1`, pagination, WEB-xx ids):
 `docs/design/0002-web-api-conventions.md`. After ANY web route change:
@@ -108,9 +112,10 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
   2. `mise install` (root `mise.toml`)
   3. `flox activate` (root `.flox/`)
 - Deliberately NOT in `mise.toml`/`.flox`: yamllint, codespell, bandit,
-  editorconfig-checker (run via `uvx`) and commitlint (run via
-  `bunx --bun @commitlint/cli`) — uv/bun fetch them on demand, and a mise
-  `commitlint` shim shadows bun's PATH fallback (see note in lefthook.yml)
+  editorconfig-checker (run via `uv run` from the locked dev group, per WL-001)
+  and commitlint (run via `bunx --bun @commitlint/cli`) — `uv sync`/bun provide
+  them, and a mise `commitlint` shim shadows bun's PATH fallback (see note in
+  lefthook.yml)
 - Build backend: `uv_build` with static `[project] version` (per ADR-06)
 - IDE: VS Code with Ruff, Pyright, EditorConfig extensions
 
