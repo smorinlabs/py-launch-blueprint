@@ -29,7 +29,11 @@ To add a new result type: subclass :class:`CLIResult` and implement
 JSON rendering is automatic via Pydantic's ``model_dump_json``.
 """
 
+from pathlib import Path
+
 from pydantic import BaseModel
+
+from py_launch_blueprint.core.format import rich_link
 
 
 class CLIResult(BaseModel):
@@ -50,6 +54,16 @@ class CLIResult(BaseModel):
     def table_rows(self) -> list[list[str]]:
         """Row cells as strings, aligned with :meth:`table_columns`."""
         return []
+
+    def table_rows_rich(self) -> list[list[str]]:
+        """Row cells for the *text* renderer only — may carry rich markup.
+
+        Override to add terminal niceties (OSC-8 hyperlinks via
+        :func:`core.format.rich_link`, relative times via
+        :func:`core.format.relative_time`). Defaults to :meth:`table_rows`;
+        Markdown and JSON always use the plain representations.
+        """
+        return self.table_rows()
 
     def human_note(self) -> str | None:
         """Optional plain message shown when there is nothing tabular to show."""
@@ -110,6 +124,13 @@ class ConfigPath(CLIResult):
     def table_rows(self) -> list[list[str]]:
         return [[self.path, "yes" if self.exists else "no"]]
 
+    def table_rows_rich(self) -> list[list[str]]:
+        try:
+            uri = Path(self.path).as_uri()
+        except ValueError:  # relative path — no sensible file:// form
+            return self.table_rows()
+        return [[rich_link(self.path, uri), "yes" if self.exists else "no"]]
+
 
 class DoctorCheck(BaseModel):
     """One diagnostic check result."""
@@ -135,3 +156,50 @@ class DoctorReport(CLIResult):
 
     def has_error(self) -> bool:
         return any(c.status == "error" for c in self.checks)
+
+
+class DiagnosticsBundle(CLIResult):
+    """Redacted environment snapshot for bug reports (`doctor --bundle`).
+
+    Everything a maintainer needs to reproduce a setup problem, nothing the
+    user would regret pasting into a public issue: secrets are redacted at
+    collection time (see ``diagnostics.build_bundle``), and log *contents*
+    are deliberately excluded — only the sink path is included.
+    """
+
+    version: str
+    python: str
+    platform: str
+    checks: list[DoctorCheck]
+    settings: dict[str, dict[str, str]]
+    config_path: str
+    config_exists: bool
+    loaded_paths: list[str]
+    token_present: bool
+    token_source: str | None
+    env: dict[str, str]
+    log_file: str
+
+    def table_title(self) -> str | None:
+        return "Diagnostics bundle"
+
+    def table_columns(self) -> list[str]:
+        return ["Field", "Value"]
+
+    def table_rows(self) -> list[list[str]]:
+        ok = sum(1 for c in self.checks if c.status == "ok")
+        warn = sum(1 for c in self.checks if c.status == "warn")
+        error = sum(1 for c in self.checks if c.status == "error")
+        token = f"present ({self.token_source})" if self.token_present else "absent"
+        return [
+            ["version", self.version],
+            ["python", self.python],
+            ["platform", self.platform],
+            ["checks", f"{ok} ok / {warn} warn / {error} error"],
+            ["config path", self.config_path],
+            ["config exists", "yes" if self.config_exists else "no"],
+            ["loaded configs", ", ".join(self.loaded_paths) or "-"],
+            ["token", token],
+            ["env", ", ".join(sorted(self.env)) or "-"],
+            ["log file", self.log_file],
+        ]

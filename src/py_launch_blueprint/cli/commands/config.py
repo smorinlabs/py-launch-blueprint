@@ -27,23 +27,94 @@ file — the token comes from ``--token`` or ``$PLBP_TOKEN`` only.
 import click
 
 from py_launch_blueprint.cli.context import AppContext
+from py_launch_blueprint.cli.groups import SuggestingGroup
 from py_launch_blueprint.cli.options import confirm, global_options, mutation_options
 from py_launch_blueprint.core.config import (
     get_default_config_path,
     read_config_for_write,
     write_config_data,
 )
-from py_launch_blueprint.core.errors import ExitCode
+from py_launch_blueprint.core.errors import ConfigError, ExitCode
 from py_launch_blueprint.core.models import ConfigPath, ConfigValue
-from py_launch_blueprint.core.settings import coerce_value, parse_key, writable_keys
+from py_launch_blueprint.core.settings import (
+    allowed_values,
+    coerce_value,
+    parse_key,
+    writable_keys,
+)
 
 #: Keys `config get` can resolve: every settable key plus the read-only token.
 _GETTABLE_KEYS = sorted([*writable_keys(), "token"])
 
 
-@click.group(name="config")
+@click.group(name="config", cls=SuggestingGroup)
 def config_group() -> None:
     """Inspect and edit CLI configuration."""
+
+
+#: Keys ``config init`` walks through, in prompt order — the settings a
+#: fresh install most plausibly wants to pin down.
+_INIT_KEYS = ["output.format", "output.color", "logging.level"]
+
+
+@config_group.command(name="init")
+@mutation_options
+@global_options
+def config_init(app: AppContext, dry_run: bool, assume_yes: bool) -> None:
+    """Create or update the config file with guided prompts.
+
+    Asks (on stderr, so stdout stays pipe-safe) for the most common settings,
+    offering the currently resolved values as defaults, then writes them to
+    the TOML config file. Secrets are never written — the token stays in
+    --token / $PLBP_TOKEN. Examples:
+
+        plbp config init
+        plbp config init --yes       # accept current values, no prompts
+        plbp config init --dry-run   # preview, write nothing
+    """
+    path = app.config.config_path or get_default_config_path()
+    settings = app.config.settings
+    current: dict[str, str] = {}
+    for dotted in _INIT_KEYS:
+        section, name = parse_key(dotted)
+        current[dotted] = str(getattr(getattr(settings, section), name))
+
+    if assume_yes:
+        chosen = current
+    elif app.no_input:
+        raise ConfigError(
+            "config init cannot prompt (--no-input set)",
+            hint="pass --yes to write the current defaults non-interactively",
+        )
+    else:
+        chosen = {}
+        for dotted, default in current.items():
+            section, name = parse_key(dotted)
+            choices = allowed_values(section, name)
+            chosen[dotted] = click.prompt(
+                dotted,
+                default=default,
+                type=click.Choice(choices) if choices else str,
+                err=True,
+            )
+
+    if dry_run:
+        for dotted, value in chosen.items():
+            app.renderer.message(f"[dry-run] would set {dotted} = {value} in {path}")
+        app.renderer.render(ConfigPath(path=str(path), exists=path.exists()))
+        return
+
+    data = read_config_for_write(path)  # ConfigError if existing+corrupt
+    for dotted, value in chosen.items():
+        section, name = parse_key(dotted)
+        table = data.get(section)
+        if not isinstance(table, dict):
+            table = {}
+        table[name] = coerce_value(section, name, value)
+        data[section] = table
+    write_config_data(path, data)
+    app.renderer.message(f"Wrote {path}")
+    app.renderer.render(ConfigPath(path=str(path), exists=True))
 
 
 @config_group.command(name="path")
