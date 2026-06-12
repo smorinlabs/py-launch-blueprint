@@ -150,11 +150,11 @@ init/setup-github-environments.sh <owner>/<repo>
 Under **Settings**:
 
 - [ ] **Branch protection** on `main`: require status checks anchored on the
-      aggregate gates — `ci-ok` (all of ci.yml), `integration-ok`, `guard`,
+      aggregate gates — `ci-ok` (all of `ci.yml`), `integration-ok`, `guard`,
       `unit-tests`, `commitlint (humans)`, plus the `lint.yml` job names
       (`actionlint`, `bandit`, `codespell`, `editorconfig-check`, `yamllint`;
       safe to require — they report *skipped* rather than never reporting).
-      Avoid listing individual ci.yml jobs: `ci-ok` subsumes them and its
+      Avoid listing individual `ci.yml` jobs: `ci-ok` subsumes them and its
       `needs:` list is versioned in-repo, so job renames never desync the
       settings. Full command in [§3.6](#36-branch-protection).
 - [ ] **Actions → General → Workflow permissions**: enable **"Allow GitHub
@@ -264,7 +264,7 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
   - Set (recommended baseline — aggregate gates + always-reporting linters):
 
     ```bash
-    gh api -X PUT repos/<owner>/<repo>/branches/main/protection --input - <<'JSON'
+    gh api -X PUT /repos/<owner>/<repo>/branches/main/protection --input - <<'JSON'
     {
       "required_status_checks": {
         "strict": false,
