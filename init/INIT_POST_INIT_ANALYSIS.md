@@ -1261,6 +1261,12 @@ Ranked by how much each choice buys you:
 
 # Part 3 — Synthesis &amp; Recommendations
 
+> **Status update (2026-06-12):** these recommendations were reviewed and
+> accepted. The concrete decision record — engine name (**template-press**),
+> the `press/` directory and config-file contracts, the core/TUI/CLI-JSON
+> architecture, and the phased migration map — lives in
+> [TEMPLATE_PRESS_PLAN.md](TEMPLATE_PRESS_PLAN.md).
+
 ## The one-sentence model
 
 **Init is a compiler** (deterministic template→project rewrite, kept honest by
