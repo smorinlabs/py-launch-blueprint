@@ -1,0 +1,140 @@
+# SIMP-09 — consolidated lint workflow. Five formerly standalone
+# single-purpose workflows (actionlint ITM-029, bandit ITM-027, codespell
+# ITM-017, editorconfig-check ITM-011, yamllint ITM-014) run as parallel
+# jobs of one file. Job names are preserved EXACTLY so branch-protection
+# required-check contexts keep matching.
+#
+# actionlint and yamllint keep their old path-filtered behavior via the
+# `lint-changes` job (a workflow-level `paths:` filter can't be applied
+# per-job): on pull requests they are skipped unless matching files
+# changed. A skipped job satisfies a required status check — strictly
+# better than the old design, where a docs-only PR never reported the
+# context at all (which would hang a PR if the check were required).
+# Push events to main run everything (no base to diff against).
+
+name: lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-changes:
+    name: lint-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      workflows: ${{ steps.detect.outputs.workflows }}
+      yaml: ${{ steps.detect.outputs.yaml }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # need the PR base to diff against
+      - name: Detect changed paths
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "${EVENT_NAME}" != "pull_request" ]; then
+            echo "workflows=true" >> "$GITHUB_OUTPUT"
+            echo "yaml=true" >> "$GITHUB_OUTPUT"
+            echo "INFO: ${EVENT_NAME} event - running all lint jobs"
+            exit 0
+          fi
+          changed=$(git diff --name-only "${BASE_SHA}...HEAD")
+          wf=false
+          ym=false
+          # Mirrors the old actionlint.yml filter: .github/workflows/**
+          if grep -qE '^\.github/workflows/' <<<"$changed"; then wf=true; fi
+          # Mirrors the old yamllint.yml filter: **/*.yml, **/*.yaml, .yamllint
+          if grep -qE '\.ya?ml$|^\.yamllint$' <<<"$changed"; then ym=true; fi
+          echo "workflows=$wf" >> "$GITHUB_OUTPUT"
+          echo "yaml=$ym" >> "$GITHUB_OUTPUT"
+          echo "INFO: workflows=$wf yaml=$ym"
+
+  actionlint:
+    name: actionlint
+    needs: lint-changes
+    if: needs.lint-changes.outputs.workflows == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run actionlint
+        # ITM-029 round-3 decision: enable shellcheck (GitHub-hosted runners
+        # ship shellcheck; no install needed).
+        uses: rhysd/actionlint@v1.7.12
+        with:
+          version: "1.7.7"
+
+  yamllint:
+    name: yamllint
+    needs: lint-changes
+    if: needs.lint-changes.outputs.yaml == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Sync locked dev tools
+        # WL-001: locked via uv.lock, matching the pre-commit hook exactly.
+        run: uv sync --locked --only-group dev
+      - name: Run yamllint
+        run: uv run --no-sync yamllint -c .yamllint .
+
+  bandit:
+    name: bandit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Sync locked dev tools
+        # WL-001: locked via uv.lock, matching the pre-push hook exactly.
+        run: uv sync --locked --only-group dev
+      - name: Run bandit
+        # src/ path (post src-layout move); the old flat `py_launch_blueprint/`
+        # path no longer exists, so the scan was silently covering nothing.
+        run: uv run --no-sync bandit -r src/py_launch_blueprint/ -c pyproject.toml
+
+  codespell:
+    name: codespell
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Sync locked dev tools
+        # WL-001: locked via uv.lock, matching the pre-commit hook exactly.
+        run: uv sync --locked --only-group dev
+      - name: Run codespell
+        # Reads [tool.codespell] from pyproject.toml (ITM-015).
+        run: uv run --no-sync codespell --toml pyproject.toml
+
+  editorconfig-check:
+    name: editorconfig-check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run editorconfig-checker
+        # Reads .editorconfig-checker.json (ITM-009).
+        uses: editorconfig-checker/action-editorconfig-checker@v2.2.0
