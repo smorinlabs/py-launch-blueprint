@@ -185,7 +185,6 @@ max-line-length = 88
   "S603",
   "S607",
 ] # init/ wraps gh/just/uv via subprocess; that's the point
-"skill/**" = ["S101"] # skill/ has illustrative example assertions in markdown
 # S101: assert statements removed under -O — security risk if assert is the only gate.
 # S105/S106: hardcoded password strings/variables in code.
 # S603/S607: subprocess module use + partial-path executables — init/ tooling wraps gh/just/uv intentionally.
@@ -216,9 +215,8 @@ strict_markers = true
 # ITM-015 — codespell. US English baseline (default builtin="clear,rare"); empty
 # ignore list — add terms only when intentional. Decided round 9.
 [tool.codespell]
-skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache,*.log,skill/optimization-workspace"
-# *.log + skill/optimization-workspace: the optimization writeup quotes raw
-# eval phrasings (LLM text artifacts) that aren't real typos; skip the tree.
+skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache,*.log"
+# *.log: raw run output, not prose.
 ignore-words-list = "ans,porjects"
 # ans: variable name used in prompt-handling code; codespell wants to "fix"
 # it to "and". Whitelist to keep the short variable name.

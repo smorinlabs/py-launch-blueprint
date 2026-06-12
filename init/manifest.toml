@@ -67,7 +67,7 @@ files = [
   "src/py_launch_blueprint/web/telemetry.py",            # 1x
   "src/py_launch_blueprint/web/versioning.py",           # 1x
   "tests/__init__.py",                                   # 1x
-  "tests/test_version_consistency.py",                   # 1x
+  "tests/meta/test_version_consistency.py",              # 1x
 ]
 mode = "text"
 
@@ -129,13 +129,13 @@ files = [
   "src/py_launch_blueprint/core/models.py",             # 1x
   "src/py_launch_blueprint/core/paths.py",              # 20x
   "src/py_launch_blueprint/web/app.py",                 # 1x
+  "tests/cli/test_output.py",                           # 4x
   "tests/cli/test_pylb.py",                             # 27x
   "tests/cli/test_help_snapshots.py",                   # WL-023
   "tests/conftest.py",                                  # 1x
   "tests/core/test_core.py",                            # 19x
   "tests/core/test_logging.py",                         # 8x
   "tests/core/test_paths.py",                           # 10x
-  "tests/test_output.py",                               # 4x
 ]
 mode = "text"
 
@@ -171,8 +171,8 @@ files = [
   "src/py_launch_blueprint/core/logging.py",          # 1x
   "src/py_launch_blueprint/core/settings.py",         # 1x
   "src/py_launch_blueprint/web/settings.py",          # 1x
+  "tests/cli/test_output.py",                         # 15x
   "tests/cli/test_pylb.py",                           # 38x
-  "tests/test_output.py",                             # 15x
   "tests/web/test_app.py",                            # 2x
   "tests/web/test_settings.py",                       # 5x
   "projects/P01-init-rebrand-robustness.md",          # 11x
@@ -296,14 +296,14 @@ files = [
   "scripts/export_openapi.py",                         # 2x
   "pyrightconfig.json",                                # 1x
   "release-please-config.json",                        # 1x
+  "tests/cli/test_output.py",                          # 3x
   "tests/cli/test_pylb.py",                            # 6x
   "tests/cli/test_help_snapshots.py",                  # WL-023
   "tests/core/test_core.py",                           # 9x
   "tests/core/test_format.py",                         # 2x
   "tests/core/test_logging.py",                        # 1x
   "tests/core/test_paths.py",                          # 1x
-  "tests/test_output.py",                              # 3x
-  "tests/test_version_consistency.py",                 # 2x
+  "tests/meta/test_version_consistency.py",            # 2x
   "tests/web/test_app.py",                             # 6x
   "tests/web/test_contract.py",                        # 2x
   "tests/web/test_idempotency.py",                     # 1x
@@ -414,19 +414,19 @@ path = "CONTRIBUTORS.md"
 reason = "py-launch-blueprint generated contributors file is project-specific"
 
 [[remove]]
-path = "tests/test_contributors_render.py"
+path = "tests/meta/test_contributors_render.py"
 reason = "py-launch-blueprint contributor-state regression is project-specific"
 
 [[remove]]
-path = "tests/test_contributors_state.py"
+path = "tests/meta/test_contributors_state.py"
 reason = "py-launch-blueprint contributor-state regression is project-specific"
 
 [[remove]]
-path = "tests/test_contributors_workflow.py"
+path = "tests/meta/test_contributors_workflow.py"
 reason = "py-launch-blueprint contributor-workflow regression is project-specific"
 
 [[remove]]
-path = "tests/test_justfile.py"
+path = "tests/meta/test_justfile.py"
 reason = "py-launch-blueprint contributor-recipe regression is project-specific"
 
 [[remove]]

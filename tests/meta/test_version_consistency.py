@@ -32,7 +32,7 @@ from pathlib import Path
 
 from py_launch_blueprint import __version__
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def _pyproject_version() -> str:

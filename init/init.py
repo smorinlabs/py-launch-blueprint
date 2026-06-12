@@ -46,6 +46,8 @@ from common import (
     MARKER_PATH,
     PROMPTED_IDENTITY_FIELDS,
     REPO_ROOT,
+    SKILL_DIR,
+    SKILL_LINK,
     Manifest,
     ValidationError,
     load_manifest,
@@ -265,19 +267,37 @@ def prune_init_system() -> None:
         INIT_DIR / "README.md",
         INIT_DIR / "ci",
         INIT_DIR / "tests",
-        REPO_ROOT / "skill",  # agent skill is blueprint-only tooling
+        SKILL_LINK,  # Codex-side symlink first, so it never dangles
+        SKILL_DIR,  # agent skill is blueprint-only tooling
         REPO_ROOT / ".github" / "workflows" / "blueprint-guard.yml",
         REPO_ROOT / ".github" / "workflows" / "init-integration.yml",
     ]
     import shutil
 
     for t in targets:
+        if t.is_symlink():
+            t.unlink()  # never rmtree through a symlink
+            continue
         if not t.exists():
             continue
         if t.is_dir():
             shutil.rmtree(t)
         else:
             t.unlink()
+    # The skill dir/link live under .claude/skills/ and .agents/skills/;
+    # drop those parents too when the skill was the only thing in them.
+    for parent in (
+        SKILL_LINK.parent,
+        SKILL_LINK.parent.parent,
+        SKILL_DIR.parent,
+        SKILL_DIR.parent.parent,
+    ):
+        try:
+            parent.rmdir()  # only succeeds when empty
+        except OSError:
+            # Parent still holds other entries (e.g. user-added skills) or
+            # was already gone — best-effort cleanup, keep it.
+            pass
     print(
         "pruned init/ system. Manually remove `_blueprint_notice`, `_guard`, "
         "`init`, `init-doctor` from Justfile and the .blueprint-contributor line "

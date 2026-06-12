@@ -87,17 +87,22 @@ Trusted Publishing. See [ITM-053..060] for the full chain.
 When the user wants to bootstrap a new Python project from this template
 (phrases like *"create a new project from py-launch-blueprint"*, *"start a
 new Python project from this template"*, *"scaffold a project from the
-blueprint"*), follow the runbook at [`skill/SKILL.md`](skill/SKILL.md).
+blueprint"*), follow the runbook at
+[`.claude/skills/new-python-project/SKILL.md`](.claude/skills/new-python-project/SKILL.md).
+Claude Code discovers it as the project skill `new-python-project`; Codex
+discovers the same directory via the `.agents/skills/new-python-project`
+symlink.
 
 It encodes the full sequence: precondition checks (`gh`/`uv`), identity
-collection, `gh repo create --template` instantiation, `just init` rebrand
-with a dry-run preview, initial commit + push, and an optional handoff to
-`just post-init` for publishing/Codecov/RTD setup. Claude Code's auto-trigger
-on this skill is **unreliable** (empirically 0% recall — Claude tends to do
-the bootstrap directly and skip the skill); for predictable invocation, tell
-the agent explicitly: *"Follow the runbook in `skill/SKILL.md`."* For Codex
-and any agent following this file, the SKILL.md is a direct runbook — every
-step is a copy-pasteable shell block.
+collection, `gh repo create --template` instantiation, the init rebrand
+(`init/init.py`) with a dry-run preview, initial commit + push, and an
+optional handoff to post-init (`init/post_init.py`) for publishing/Codecov/
+RTD setup — `just` is NOT required for the bootstrap. Auto-triggering is
+**unreliable** (empirically 0% recall — agents tend to do the bootstrap
+directly and skip the skill); for predictable invocation, tell the agent
+explicitly: *"Use the `new-python-project` skill."* For any agent following
+this file, the SKILL.md is a direct runbook — every step is a
+copy-pasteable shell block.
 
 ## For generated projects
 
