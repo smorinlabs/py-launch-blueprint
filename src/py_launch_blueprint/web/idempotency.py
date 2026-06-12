@@ -43,8 +43,10 @@ IDEMPOTENCY_HEADER = "idempotency-key"
 REPLAYED_HEADER = "idempotency-replayed"
 _UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH"})
 
-#: (stored_at_monotonic, status_code, headers, body)
-_Entry = tuple[float, int, dict[str, str], bytes]
+#: (stored_at_monotonic, status_code, raw_headers, body)
+#: Headers are kept as raw (name, value) pairs — not a dict — so multi-valued
+#: headers (notably Set-Cookie) survive caching and replay intact.
+_Entry = tuple[float, int, list[tuple[bytes, bytes]], bytes]
 
 
 class IdempotencyMiddleware(BaseHTTPMiddleware):
@@ -73,12 +75,13 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
 
         entry = self._store.get(cache_key)
         if entry is not None:
-            stored_at, status_code, headers, body = entry
+            stored_at, status_code, raw_headers, body = entry
             if now - stored_at < self.ttl_seconds:
                 self._store.move_to_end(cache_key)
-                replay = Response(
-                    content=body, status_code=status_code, headers=headers
-                )
+                replay = Response(content=body, status_code=status_code)
+                # Shallow-copy: the marker append below must not leak into
+                # the cached entry and stack up across replays.
+                replay.raw_headers = list(raw_headers)
                 replay.headers[REPLAYED_HEADER] = "true"
                 return replay
             del self._store[cache_key]
@@ -91,12 +94,10 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
             async for chunk in response.body_iterator  # ty: ignore[unresolved-attribute]
         ]
         body = b"".join(chunks)
-        rebuilt = Response(
-            content=body,
-            status_code=response.status_code,
-            headers=dict(response.headers),
-            media_type=response.media_type,
-        )
+        rebuilt = Response(content=body, status_code=response.status_code)
+        # Raw pairs (not a dict) so multi-valued headers like Set-Cookie are
+        # preserved verbatim; they already include content-type/length.
+        rebuilt.raw_headers = list(response.headers.raw)
         # Re-attach background tasks: rebuilding the response must not silently
         # drop work the endpoint scheduled (cleanup, notifications, ...).
         rebuilt.background = response.background
@@ -106,7 +107,7 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
             self._store[cache_key] = (
                 now,
                 response.status_code,
-                dict(response.headers),
+                list(response.headers.raw),
                 body,
             )
             while len(self._store) > self.max_entries:

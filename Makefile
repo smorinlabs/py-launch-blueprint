@@ -34,7 +34,7 @@ CHECK := $(GREEN)✓$(NC)
 CROSS := $(RED)✗$(NC)
 DASH := $(GRAY)-$(NC)
 
-.PHONY: all check hook-check install-uv install-just install-docker install-docker-force set-path help install-just-force install-uv-force
+.PHONY: all check hook-check install-uv install-just install-docker install-docker-force install-flox set-path help install-just-force install-uv-force
 
 all: help
 
@@ -200,6 +200,26 @@ install-docker-force: ## OPTIONAL — install Docker engine via convenience scri
 	@curl -fsSL https://get.docker.com | sh
 	@echo -e "$(CHECK) Docker installed. You may need to add your user to the docker group:"
 	@echo -e "${CYAN}sudo usermod -aG docker $$USER && newgrp docker${NC}"
+
+# Flox is OPTIONAL — one of the three first-class toolchain provisioners
+# (native installs / mise / flox; see docs/adr/0005). Nothing in the project
+# requires it; `flox activate` simply provisions the same 10-tool set declared
+# in .flox/env/manifest.toml. Installation is platform-specific and may need
+# sudo, so this target prints the commands rather than running them.
+install-flox: ## (Optional) Print flox install instructions (toolchain provisioner; see docs/adr/0005)
+	@echo "flox is OPTIONAL — it provisions the dev toolchain declared in .flox/ (see docs/adr/0005)."
+	@echo ""
+	@echo "macOS (Homebrew):"
+	@echo -e "  ${CYAN}brew install flox${NC}"
+	@echo ""
+	@echo "Linux (Debian/Ubuntu — download the .deb, then):"
+	@echo -e "  ${CYAN}sudo apt install ./flox.x86_64-linux.deb${NC}"
+	@echo "Linux (Fedora/RHEL — download the .rpm, then):"
+	@echo -e "  ${CYAN}sudo dnf install ./flox.x86_64-linux.rpm${NC}"
+	@echo ""
+	@echo "Downloads and all install options (incl. nix profile): https://flox.dev/docs/install-flox/"
+	@echo ""
+	@echo -e "Then run ${YELLOW}flox activate${NC} from the repo root to enter the environment."
 
 set-path: ## Add SET_PATH to PATH in .zshenv if not already present
 	@if [ -z "$(SET_PATH)" ]; then \

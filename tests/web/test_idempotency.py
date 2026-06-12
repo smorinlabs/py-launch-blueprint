@@ -77,6 +77,33 @@ def test_background_tasks_survive_rebuild():
         assert ran == [True]
 
 
+def test_multi_valued_headers_survive_caching_and_replay():
+    """Set-Cookie must not collapse to one value on rebuild or replay."""
+    app = FastAPI()
+    app.add_middleware(IdempotencyMiddleware)
+
+    @app.post("/cookies")
+    def set_cookies():
+        from fastapi import Response
+
+        response = Response(content=b"ok")
+        response.set_cookie("a", "1")
+        response.set_cookie("b", "2")
+        return response
+
+    with TestClient(app) as client:
+        first = client.post("/cookies", headers={"Idempotency-Key": "ck"})
+        replay = client.post("/cookies", headers={"Idempotency-Key": "ck"})
+        third = client.post("/cookies", headers={"Idempotency-Key": "ck"})
+        assert len(first.headers.get_list("set-cookie")) == 2
+        assert replay.headers.get_list("set-cookie") == first.headers.get_list(
+            "set-cookie"
+        )
+        assert replay.headers["idempotency-replayed"] == "true"
+        # The replay marker must not accumulate in the cached entry.
+        assert third.headers.get_list("idempotency-replayed") == ["true"]
+
+
 def test_lru_eviction():
     with TestClient(make_app(max_entries=1)) as client:
         first = client.post("/things", headers={"Idempotency-Key": "k1"})

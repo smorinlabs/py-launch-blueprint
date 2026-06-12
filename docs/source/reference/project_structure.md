@@ -44,6 +44,8 @@ py-launch-blueprint/
 │   ├── __init__.py                 # Test package initialization
 │   ├── cli/                        # CLI tests
 │   └── core/                       # Library tests
+├── .flox/                          # Flox environment (optional toolchain provisioner; ADR 0005)
+│   └── env/manifest.toml           # Declares the 10-tool dev set for `flox activate`
 ├── .gitignore                      # Git ignore file
 ├── .pre-commit-config.yaml         # Pre-commit hooks configuration
 ├── .python-version                 # Python version file
@@ -71,6 +73,7 @@ py-launch-blueprint/
 ├── EXAMPLECLI.md                   # Example CLI documentation
 ├── Justfile                        # Just task runner configuration
 ├── Makefile                        # Makefile for building the project
+├── mise.toml                       # mise toolchain (optional provisioner; ADR 0005)
 ├── PULL_REQUEST_TEMPLATE.md        # Pull request template
 ├── src/py_launch_blueprint/        # Source code for the project
 │   ├── __init__.py                 # Package initialization

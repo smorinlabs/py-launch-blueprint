@@ -45,7 +45,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/DoctorReport"
+                }
               }
             }
           }
@@ -175,6 +177,47 @@
   },
   "components": {
     "schemas": {
+      "DoctorCheck": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "status",
+          "detail"
+        ],
+        "title": "DoctorCheck",
+        "description": "One diagnostic check result."
+      },
+      "DoctorReport": {
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/DoctorCheck"
+            },
+            "type": "array",
+            "title": "Checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "checks"
+        ],
+        "title": "DoctorReport",
+        "description": "Aggregated diagnostics for `plbp doctor`."
+      },
       "Page_Project_": {
         "properties": {
           "items": {

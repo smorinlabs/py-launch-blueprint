@@ -72,6 +72,9 @@ def instrument_tracing(app: FastAPI) -> bool:
         return False
 
     resource = sdk_resources.Resource.create({"service.name": f"{APP_NAME}-web"})
+    # No explicit shutdown wiring needed: TracerProvider defaults to
+    # shutdown_on_exit=True, registering an atexit hook that flushes the
+    # BatchSpanProcessor — pending spans survive graceful shutdown (WEB-31).
     provider = sdk_trace.TracerProvider(resource=resource)
     # Exporter endpoint/headers come from the standard OTEL_EXPORTER_OTLP_*
     # env vars (collector default: http://localhost:4318).

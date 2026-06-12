@@ -262,7 +262,7 @@ files = [
   "src/py_launch_blueprint/web/settings.py",           # 2x
   "src/py_launch_blueprint/web/telemetry.py",          # 2x
   "Dockerfile",                                        # 1x
-  "docs/adr/0005-web-service-best-practices.md",       # 2x
+  "docs/adr/0006-web-service-best-practices.md",       # 2x
   "docs/design/0002-web-api-conventions.md",           # 2x
   "docs/source/web/index.md",                          # 1x
   "scripts/export_openapi.py",                         # 2x
@@ -299,6 +299,7 @@ field = "repo_name"
 current = ["py-launch-blueprint"]
 files = [
   ".devcontainer/devcontainer.json",              # 1x
+  ".flox/env.json",                               # 1x
   ".github/CONTRIBUTING.md",                      # 1x
   ".github/ISSUE_TEMPLATE/config.yml",            # 1x
   ".github/codeql/codeql-config.yml",             # 1x
@@ -325,7 +326,7 @@ files = [
   "src/py_launch_blueprint/web/__init__.py",      # 1x
   "src/py_launch_blueprint/web/app.py",           # 1x
   "docs/api/openapi.json",                        # 1x
-  "docs/adr/0005-web-service-best-practices.md",  # 1x
+  "docs/adr/0006-web-service-best-practices.md",  # 1x
   "docs/source/web/index.md",                     # 2x
 ]
 mode = "text"

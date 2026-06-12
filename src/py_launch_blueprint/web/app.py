@@ -44,7 +44,7 @@ from fastapi_pagination import add_pagination
 
 from py_launch_blueprint import __version__
 from py_launch_blueprint.core.config import load_config
-from py_launch_blueprint.core.diagnostics import run_diagnostics
+from py_launch_blueprint.core.diagnostics import DoctorReport, run_diagnostics
 from py_launch_blueprint.core.logging import configure_logging, get_logger
 from py_launch_blueprint.web.deps import ConfigDep
 from py_launch_blueprint.web.idempotency import IdempotencyMiddleware
@@ -144,8 +144,12 @@ def create_app(settings: WebSettings | None = None) -> FastAPI:
             "python": platform.python_version(),
         }
 
-    @app.get("/readyz", tags=["ops"])
-    async def readyz(request: Request, config: ConfigDep) -> JSONResponse:
+    # response_model declares the 200 shape in OpenAPI (contract safety,
+    # WEB-50): without it the snapshot publishes an empty `{}` schema.
+    @app.get("/readyz", tags=["ops"], response_model=DoctorReport)
+    async def readyz(
+        request: Request, config: ConfigDep
+    ) -> DoctorReport | JSONResponse:
         """Readiness: the same checks as ``plbp doctor`` (503 on any error)."""
         report = run_diagnostics(config)
         if report.has_error():
@@ -158,7 +162,7 @@ def create_app(settings: WebSettings | None = None) -> FastAPI:
                 detail="Readiness checks failed.",
                 extensions={"diagnostics": report.model_dump(mode="json")},
             )
-        return JSONResponse(status_code=200, content=report.model_dump(mode="json"))
+        return report
 
     for router in ROUTERS:
         app.include_router(router, prefix=V1_PREFIX)
