@@ -41,9 +41,9 @@ classifiers = [
 ]
 dependencies = [
   "click>=8.1.0",
-  "pydantic>=2.0.0",    # structured result models (the JSON representation)
-  "structlog>=24.1.0",  # structured logging (human-friendly TTY / JSON otherwise)
-  "tomli-w>=1.0.0",     # writing the TOML config file (`config set`)
+  "pydantic>=2.0.0",   # structured result models (the JSON representation)
+  "structlog>=24.1.0", # structured logging (human-friendly TTY / JSON otherwise)
+  "tomli-w>=1.0.0",    # writing the TOML config file (`config set`)
   "requests>=2.31.0",
   "rich>=13.0.0",
 ]
@@ -56,9 +56,9 @@ dependencies = [
 web = [
   "fastapi>=0.110.0",
   "uvicorn[standard]>=0.29.0",
-  "pydantic-settings>=2.4.0",                # WEB-30 typed env settings
-  "fastapi-pagination>=0.12.26",             # WEB-03 pagination conventions
-  "slowapi>=0.1.9",                          # WEB-22 rate limiting
+  "pydantic-settings>=2.4.0",                 # WEB-30 typed env settings
+  "fastapi-pagination>=0.12.26",              # WEB-03 pagination conventions
+  "slowapi>=0.1.9",                           # WEB-22 rate limiting
   "prometheus-fastapi-instrumentator>=7.0.0", # WEB-11 RED metrics + /metrics
 ]
 otel = [
@@ -74,9 +74,9 @@ otel = [
 dev = [
   "pytest>=7.0.0",
   "pytest-cov>=4.1.0",
-  "ty>=0.0.1a16",      # per ADR-03 (pre-1.0; bump as needed)
+  "ty>=0.0.1a16",        # per ADR-03 (pre-1.0; bump as needed)
   "ruff>=0.1.0",
-  "httpx>=0.27.0",     # fastapi TestClient transport (tests/web; web extra)
+  "httpx>=0.27.0",       # fastapi TestClient transport (tests/web; web extra)
   "schemathesis>=4.0.0", # WEB-50 contract fuzzing from the OpenAPI schema
   "types-requests",
   "types-Pygments",
@@ -88,9 +88,9 @@ dev = [
   "codespell>=2.4.0",
   "editorconfig-checker>=3.0.0",
   "yamllint>=1.35.0",
-  "pip-audit>=2.9.0",  # WL-014 — `just audit` + scheduled dep-audit workflow
-  "twine>=6.1.0",      # WL-004 — dist metadata check in the build-smoke CI job
-  "syrupy>=4.8.0",     # WL-023 — CLI --help snapshot tests
+  "pip-audit>=2.9.0",            # WL-014 — `just audit` + scheduled dep-audit workflow
+  "twine>=6.1.0",                # WL-004 — dist metadata check in the build-smoke CI job
+  "syrupy>=4.8.0",               # WL-023 — CLI --help snapshot tests
 ]
 
 docs = [
@@ -196,6 +196,35 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
 
+# Pyright/Pylance (IDE) strict type checking — formerly pyrightconfig.json.
+# CI typechecking runs ty (ADR-03); this section drives the VS Code Pyright
+# extension and ad-hoc `pyright` runs.
+[tool.pyright]
+include = ["src/py_launch_blueprint", "tests"]
+exclude = ["**/node_modules", "**/__pycache__"]
+defineConstant = { DEBUG = true }
+typeCheckingMode = "strict"
+pythonVersion = "3.12"
+useLibraryCodeForTypes = true
+reportMissingImports = true
+reportMissingTypeStubs = true
+reportUnknownParameterType = true
+reportUnknownArgumentType = true
+reportUnknownLambdaType = true
+reportUnknownVariableType = true
+reportUnknownMemberType = true
+reportMissingTypeArgument = true
+reportInvalidTypeVarUse = true
+reportUnnecessaryIsInstance = true
+reportUnnecessaryCast = true
+reportUnnecessaryComparison = true
+reportDuplicateImport = true
+reportPrivateUsage = "warning"
+reportUnusedImport = true
+reportUnusedVariable = true
+reportUnusedFunction = true
+reportUnusedClass = true
+
 # ITM-027 — bandit config (round 3). Tests legitimately use `assert`
 # (pytest convention) — exclude_dirs covers tests/.
 [tool.bandit]
@@ -224,4 +253,3 @@ ignore-words-list = "ans,porjects"
 # its test ("plbp porjects" must suggest "projects").
 check-filenames = true
 check-hidden = false
-

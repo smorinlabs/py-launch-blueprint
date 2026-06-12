@@ -96,7 +96,7 @@ files = [
   "EXAMPLEWEB.md",                                      # 5x
   "Justfile",                                           # 1x
   "README.md",                                          # 2x
-  "TESTANALYSIS.md",                                   # 5x (wishlist analysis)
+  "docs/research/0002-dev-tooling-wishlist.md",        # 5x (wishlist analysis)
   "docs/POST_INIT.md",                                  # 1x
   "docs/adr/0001-app-short-name-plbp.md",               # 5x
   "docs/adr/0002-no-secrets-in-config-file.md",         # 1x
@@ -227,7 +227,7 @@ mode = "text"
 field = "package_name"
 current = ["py_launch_blueprint"]
 files = [
-  "pyproject.toml", # 5x
+  "pyproject.toml", # 6x (incl. [tool.pyright] include path)
 ]
 mode = "structured"
 
@@ -291,7 +291,6 @@ files = [
   "docs/design/0002-web-api-conventions.md",           # 2x
   "docs/source/web/index.md",                          # 1x
   "scripts/export_openapi.py",                         # 2x
-  "pyrightconfig.json",                                # 1x
   "release-please-config.json",                        # 1x
   "tests/cli/test_output.py",                          # 3x
   "tests/cli/test_pylb.py",                            # 6x
