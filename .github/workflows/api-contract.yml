@@ -25,22 +25,24 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Extract base-branch spec
+        # Written INSIDE the workspace: the oasdiff action is a Docker action
+        # and only /github/workspace is mounted — /tmp would not be visible.
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
           git fetch origin "$BASE_REF" --depth=1
           spec="origin/$BASE_REF:docs/api/openapi.json"
-          if git show "$spec" > /tmp/base-openapi.json 2>/dev/null; then
+          if git show "$spec" > base-openapi.json 2>/dev/null; then
             echo "base spec extracted"
           else
             # First PR to introduce the snapshot: nothing to diff against.
             printf '%s' \
               '{"openapi":"3.1.0","info":{"title":"x","version":"0"},"paths":{}}' \
-              > /tmp/base-openapi.json
+              > base-openapi.json
           fi
       - name: oasdiff breaking changes
         uses: oasdiff/oasdiff-action/breaking@v0.0.57
         with:
-          base: /tmp/base-openapi.json
+          base: base-openapi.json
           revision: docs/api/openapi.json
           fail-on: ERR
