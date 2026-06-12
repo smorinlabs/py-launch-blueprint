@@ -35,17 +35,24 @@ Logs always go to **stderr** (never stdout) so machine-readable results stay
 pipe-safe. Call :func:`configure_logging` once at startup, then
 ``get_logger(__name__)`` anywhere; ``bind_contextvars`` attaches
 command-scoped context.
+
+The shared processor chain (every sink, every front-end) also stamps the
+logger name, joins logs to traces (``trace_id``/``span_id``, when the
+``otel`` extra is active), and redacts secret-bearing keys. Event naming and
+key conventions: ``docs/design/0003-logging-conventions.md``.
 """
 
+import importlib
 import logging
 import sys
 from enum import StrEnum
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from typing import Any
 
 import structlog
 from structlog.contextvars import bind_contextvars, clear_contextvars
-from structlog.typing import Processor
+from structlog.typing import EventDict, Processor
 
 from py_launch_blueprint.core.paths import APP_NAME
 
@@ -77,6 +84,31 @@ ROTATE_MAX_BYTES = 10 * 1024 * 1024
 ROTATE_BACKUP_COUNT = 5
 
 
+#: Replacement value for redacted event keys.
+REDACTED = "[REDACTED]"
+
+#: Key-name fragments that mark a value as sensitive. Redaction is key-based
+#: and lives in the processor chain so EVERY sink inherits it — call sites
+#: never have to remember (the logging analog of ADR-12's redact-at-collection).
+SENSITIVE_KEY_PARTS: tuple[str, ...] = (
+    "token",
+    "password",
+    "secret",
+    "authorization",
+    "api_key",
+    "apikey",
+    "credential",
+    "cookie",
+)
+
+# Soft otel import, cached at module load (same dynamic-import rationale as
+# web/telemetry.py: the `otel` extra is optional and ty must not see it).
+try:
+    _otel_trace: Any = importlib.import_module("opentelemetry.trace")
+except ModuleNotFoundError:
+    _otel_trace = None
+
+
 class LogFormat(StrEnum):
     """How console log lines are rendered."""
 
@@ -92,10 +124,39 @@ def _resolve_format(fmt: LogFormat) -> LogFormat:
     return LogFormat.CONSOLE if sys.stderr.isatty() else LogFormat.JSON
 
 
+def _add_trace_context(
+    logger: Any, method_name: str, event_dict: EventDict
+) -> EventDict:
+    """Stamp ``trace_id``/``span_id`` so logs join with traces (WEB-10).
+
+    No-op unless the ``otel`` extra is installed AND a span is recording.
+    """
+    if _otel_trace is None:
+        return event_dict
+    ctx = _otel_trace.get_current_span().get_span_context()
+    if ctx.is_valid:
+        event_dict["trace_id"] = format(ctx.trace_id, "032x")
+        event_dict["span_id"] = format(ctx.span_id, "016x")
+    return event_dict
+
+
+def _redact_sensitive(
+    logger: Any, method_name: str, event_dict: EventDict
+) -> EventDict:
+    """Mask values whose key looks secret-bearing (see SENSITIVE_KEY_PARTS)."""
+    for key in event_dict:
+        lowered = key.lower()
+        if any(part in lowered for part in SENSITIVE_KEY_PARTS):
+            event_dict[key] = REDACTED
+    return event_dict
+
+
 def _shared_processors() -> list[Processor]:
     return [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        _add_trace_context,
         structlog.processors.StackInfoRenderer(),
         # Render exc_info into the event so tracebacks survive JSON output
         # (ConsoleRenderer formats the resulting "exception" field; without
@@ -103,6 +164,8 @@ def _shared_processors() -> list[Processor]:
         # traceback is lost from exactly the logs meant for machines).
         structlog.processors.format_exc_info,
         structlog.processors.TimeStamper(fmt="iso", utc=True),
+        # Last, so it also sees keys merged from contextvars above.
+        _redact_sensitive,
     ]
 
 
@@ -139,7 +202,9 @@ def configure_logging(
     resolved = _resolve_format(fmt)
     console_renderer: Processor
     if resolved is LogFormat.JSON:
-        console_renderer = structlog.processors.JSONRenderer()
+        # default=str: a non-JSON-native value (Path, datetime, model) must
+        # degrade to its string form, never raise and drop the log line.
+        console_renderer = structlog.processors.JSONRenderer(default=str)
     else:
         console_renderer = structlog.dev.ConsoleRenderer(colors=sys.stderr.isatty())
 
@@ -170,7 +235,7 @@ def configure_logging(
         file_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         file_renderer: Processor
         if file_format == "json":
-            file_renderer = structlog.processors.JSONRenderer()
+            file_renderer = structlog.processors.JSONRenderer(default=str)
         else:
             file_renderer = structlog.dev.ConsoleRenderer(colors=False)
         file_handler = RotatingFileHandler(
