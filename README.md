@@ -27,7 +27,7 @@ Py Launch Blueprint eliminates the setup friction in Python projects by providin
 ## ✨ Features TLDR
 - 🛠️ **Dev Tools**: Ruff (linting/formatting), `ty` (type checking, Astral), lefthook (hooks), commitlint
 - 🔒 **Security**: gitleaks (commit/push), TruffleHog (CI), bandit (pre-push + CI), CodeQL
-- 🧠 **AI Ready**: AGENTS.md + CLAUDE.md, default configs for Cursor, Windsurf, Claude Code
+- 🧠 **AI Ready**: AGENTS.md as the single canonical agent config (CLAUDE.md imports it; Cursor, Windsurf, Codex read it natively) + a project-bootstrap skill
 - 💪 **Production**: Python 3.12+, uv + uv_build, PEP 735 dependency-groups, static version
 - 🚀 **DX - Developer Experience**: VS Code DevContainer, sensible defaults, quality documentation
 - 🔄 **CI/CD**: GitHub Actions workflows, release-please version bumps, OIDC trusted publishing
