@@ -58,6 +58,17 @@ def test_access_event_shape(capsys):
     assert event["logger"] == "py_launch_blueprint.web.middleware"
 
 
+def test_unmatched_route_logs_none(capsys):
+    # 404s must not leak raw URLs into `route` — it is the
+    # bounded-cardinality field; the raw URL stays in `path`.
+    with make_client() as client:
+        client.get("/no/such/route-12345")
+    (event,) = stderr_events(capsys, "http_request")
+    assert event["route"] is None
+    assert event["path"] == "/no/such/route-12345"
+    assert event["status"] == 404
+
+
 def test_access_event_carries_request_id(capsys):
     with make_client() as client:
         response = client.get("/v1/projects", headers={"x-request-id": "rid-123"})

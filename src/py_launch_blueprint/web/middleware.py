@@ -86,13 +86,14 @@ def _log_access(request: Request, *, status_code: int, start: float) -> None:
     """Emit the one-per-request ``http_request`` event (WEB-12)."""
     if request.url.path in ACCESS_LOG_EXCLUDED_PATHS:
         return
-    # The router sets scope["route"] once matched; fall back to the raw path
-    # for 404s. `route` stays the queryable, bounded-cardinality field.
+    # The router sets scope["route"] once matched. Unmatched requests (404s)
+    # log route=None — falling back to the raw path here would let URL spam
+    # blow up the one field kept bounded-cardinality on purpose.
     matched = request.scope.get("route")
     log.info(
         "http_request",
         method=request.method,
-        route=getattr(matched, "path", request.url.path),
+        route=getattr(matched, "path", None),
         path=request.url.path,
         status=status_code,
         duration_ms=round((time.perf_counter() - start) * 1000, 2),

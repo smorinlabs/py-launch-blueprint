@@ -41,7 +41,8 @@ raise. Keep values JSON-native (numbers as numbers: `duration_ms=12.3`, not
 - **Units live in key names**: `duration_ms`, `size_bytes`, `ttl_seconds`.
 - **Bounded cardinality** for queryable fields: the access event's `route`
   is the template (`/v1/projects/{project_id}`), with the raw `path`
-  alongside for debugging.
+  alongside for debugging. Unmatched requests (404s) log `route=null` —
+  never the raw URL, which would unbound the field.
 
 ## Level policy
 

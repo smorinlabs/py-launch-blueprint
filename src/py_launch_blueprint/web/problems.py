@@ -160,8 +160,11 @@ def install_problem_handlers(app: FastAPI) -> None:
         # The catch-all: without it, unexpected errors bypass structlog (no
         # request_id) and answer in plain text, breaking WEB-01. The
         # traceback goes to the logs; the body stays generic — internals
-        # are not for clients. Starlette re-raises after this responds, so
-        # test clients need raise_server_exceptions=False.
+        # are not for clients. Unlike handlers for specific exception
+        # classes, Exception-level handlers run in Starlette's
+        # ServerErrorMiddleware, which ALWAYS re-raises after the response
+        # is sent (so the server can log/crash-report); test clients
+        # therefore need raise_server_exceptions=False.
         log.error("unhandled_error", exc_info=exc)
         return problem_response(
             request,
