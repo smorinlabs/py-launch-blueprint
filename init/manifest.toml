@@ -88,8 +88,7 @@ mode = "structured"
 field = "app_name"
 current = ["plbp"]
 files = [
-  ".windsurfrules",                                     # 1x
-  "CLAUDE.md",                                          # 1x
+  "AGENTS.md",                                          # 1x
   "Dockerfile",                                         # 2x
   "docs/api/openapi.json",                              # 1x
   "EXAMPLECLI.md",                                      # 36x
@@ -143,7 +142,7 @@ mode = "text"
 field = "app_name_upper"
 current = ["PLBP"]
 files = [
-  "CLAUDE.md",                                        # 1x
+  "AGENTS.md",                                        # 1x
   "Dockerfile",                                       # 1x
   "EXAMPLECLI.md",                                    # 12x
   "EXAMPLEWEB.md",                                    # 12x
@@ -235,9 +234,7 @@ files = [
   ".github/workflows/bandit.yml",                      # 1x
   ".github/workflows/ci.yml",                          # 2x
   ".vscode/launch.json",                               # 2x
-  ".windsurfrules",                                    # 1x
-  "AGENTS.md",                                         # 1x
-  "CLAUDE.md",                                         # 4x
+  "AGENTS.md",                                         # 4x
   "EXAMPLECLI.md",                                     # 1x
   "EXAMPLEWEB.md",                                     # 2x
   "Justfile",                                          # 2x
@@ -329,8 +326,7 @@ files = [
   ".github/ISSUE_TEMPLATE/config.yml",            # 1x
   ".github/codeql/codeql-config.yml",             # 1x
   ".github/workflows/blueprint-guard.yml",        # 1x
-  "AGENTS.md",                                    # 1x
-  "CLAUDE.md",                                    # 1x
+  "AGENTS.md",                                    # 2x
   "Justfile",                                     # 1x
   "README.md",                                    # 17x
   "docs/design/0001-plbp-cli-conventions.md",     # 3x
