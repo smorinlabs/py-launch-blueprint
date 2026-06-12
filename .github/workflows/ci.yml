@@ -13,6 +13,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # The merge queue emits merge_group (not pull_request) for its speculative
+  # merge — without this trigger the ci-ok required check never reports and
+  # every queue entry deadlocks at "Expected".
+  merge_group:
 
 permissions: {}
 
