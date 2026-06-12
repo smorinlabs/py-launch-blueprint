@@ -36,7 +36,7 @@ To set up Pyright for your project, follow these steps:
    ```
 
 2. **Configure Pyright**:
-   check [`pyrightconfig.json`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/pyrightconfig.json) file in the root of the project
+   check the `[tool.pyright]` section of [`pyproject.toml`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/pyproject.toml)
 3. **Run Pyright**:
    To check your code with Pyright, run the following command:
    ```bash
