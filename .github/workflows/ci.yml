@@ -46,7 +46,8 @@ jobs:
       - name: ty check
         run: uv run ty check src/py_launch_blueprint/
 
-  # ITM-030 - test matrix: ubuntu + macOS x py3.12/3.13 (decided round 3).
+  # ITM-030 - test matrix: ubuntu + macOS x py3.12/3.13 (decided round 3);
+  # windows added alongside the platform-native default paths (REC-24).
   test:
     name: test (${{ matrix.os }} / py${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
@@ -56,7 +57,7 @@ jobs:
     strategy:
       fail-fast: false  # see all failures, not just the first (round-3)
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v6

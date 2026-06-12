@@ -17,9 +17,9 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""XDG Base Directory resolution with intent-revealing, app-namespaced names.
+"""Platform base-dir resolution with intent-revealing, app-namespaced names.
 
-Follows the `XDG Base Directory Specification
+On POSIX (Linux, macOS) this follows the `XDG Base Directory Specification
 <https://specifications.freedesktop.org/basedir-spec/latest/>`_:
 
 * ``$XDG_CONFIG_HOME`` (default ``~/.config``)      — config
@@ -27,7 +27,16 @@ Follows the `XDG Base Directory Specification
 * ``$XDG_STATE_HOME``  (default ``~/.local/state``) — logs/history (recoverable)
 * ``$XDG_CACHE_HOME``  (default ``~/.cache``)       — regenerable cache
 
-Everything is namespaced under one per-app directory (``<XDG>/plbp/``), and
+On Windows, an XDG variable that is set (and absolute) still wins — one
+override mechanism everywhere keeps behavior predictable and testable — but
+the *defaults* are platform-native (matching ``platformdirs``):
+
+* config — ``%APPDATA%\\plbp``           (roaming)
+* data   — ``%LOCALAPPDATA%\\plbp``
+* state  — ``%LOCALAPPDATA%\\plbp``      (Windows has no data/state split)
+* cache  — ``%LOCALAPPDATA%\\plbp\\Cache``
+
+Everything is namespaced under one per-app directory (``<base>/plbp/``), and
 files are named ``<app>_<kind>.<ext>`` so a stray file on disk announces both
 its owner and its purpose:
 
@@ -42,14 +51,19 @@ paths). Resolve once; never read the raw env vars elsewhere.
 """
 
 import os
+import sys
 from pathlib import Path
 
-#: The CLI/binary name — also the XDG namespace and the filename prefix.
+#: The CLI/binary name — also the base-dir namespace and the filename prefix.
 APP_NAME = "plbp"
 
+#: True on Windows. Module-level so tests can exercise both branches by
+#: monkeypatching, regardless of the OS running the suite.
+_WINDOWS = sys.platform == "win32"
 
-def _xdg_base(env_var: str, default: Path) -> Path:
-    """Return an absolute XDG base dir, falling back to ``default``.
+
+def _xdg_override(env_var: str) -> Path | None:
+    """The XDG variable's value, or None when unset/empty/relative.
 
     Per the spec, a value that is empty or not absolute must be ignored.
     """
@@ -58,38 +72,71 @@ def _xdg_base(env_var: str, default: Path) -> Path:
         candidate = Path(raw)
         if candidate.is_absolute():
             return candidate
-    return default
+    return None
+
+
+def _xdg_base(env_var: str, default: Path) -> Path:
+    """Return an absolute base dir: the XDG override, else ``default``."""
+    return _xdg_override(env_var) or default
 
 
 def _home() -> Path:
     return Path.home()
 
 
+def _windows_env_dir(env_var: str, *fallback_parts: str) -> Path:
+    """A Windows known-folder env var, with its conventional home fallback."""
+    raw = os.environ.get(env_var, "")
+    if raw and Path(raw).is_absolute():
+        return Path(raw)
+    return _home().joinpath(*fallback_parts)
+
+
+def _windows_roaming() -> Path:
+    return _windows_env_dir("APPDATA", "AppData", "Roaming")
+
+
+def _windows_local() -> Path:
+    return _windows_env_dir("LOCALAPPDATA", "AppData", "Local")
+
+
 def config_home() -> Path:
-    return _xdg_base("XDG_CONFIG_HOME", _home() / ".config")
+    default = _windows_roaming() if _WINDOWS else _home() / ".config"
+    return _xdg_base("XDG_CONFIG_HOME", default)
 
 
 def config_dirs() -> list[Path]:
     """System config dirs from ``$XDG_CONFIG_DIRS`` (default ``/etc/xdg``).
 
     Returned highest-precedence first, matching the spec (earlier entries in
-    ``XDG_CONFIG_DIRS`` win). Empty/relative entries are ignored.
+    ``XDG_CONFIG_DIRS`` win). Empty/relative entries are ignored. The Windows
+    default is the machine-wide ``%PROGRAMDATA%``.
     """
     raw = os.environ.get("XDG_CONFIG_DIRS", "")
     dirs = [Path(p) for p in raw.split(os.pathsep) if p and Path(p).is_absolute()]
-    return dirs or [Path("/etc/xdg")]
+    if dirs:
+        return dirs
+    if _WINDOWS:
+        raw_pd = os.environ.get("PROGRAMDATA", "")
+        if raw_pd and Path(raw_pd).is_absolute():
+            return [Path(raw_pd)]
+        return [Path("C:/ProgramData")]
+    return [Path("/etc/xdg")]
 
 
 def data_home() -> Path:
-    return _xdg_base("XDG_DATA_HOME", _home() / ".local" / "share")
+    default = _windows_local() if _WINDOWS else _home() / ".local" / "share"
+    return _xdg_base("XDG_DATA_HOME", default)
 
 
 def state_home() -> Path:
-    return _xdg_base("XDG_STATE_HOME", _home() / ".local" / "state")
+    default = _windows_local() if _WINDOWS else _home() / ".local" / "state"
+    return _xdg_base("XDG_STATE_HOME", default)
 
 
 def cache_home() -> Path:
-    return _xdg_base("XDG_CACHE_HOME", _home() / ".cache")
+    default = _windows_local() if _WINDOWS else _home() / ".cache"
+    return _xdg_base("XDG_CACHE_HOME", default)
 
 
 # -- per-app directories (namespaced under APP_NAME) ----------------------
@@ -108,6 +155,10 @@ def state_dir() -> Path:
 
 
 def cache_dir() -> Path:
+    # Windows-native default nests cache under the app dir (platformdirs
+    # shape); an explicit XDG override keeps the POSIX <base>/plbp shape.
+    if _WINDOWS and _xdg_override("XDG_CACHE_HOME") is None:
+        return cache_home() / APP_NAME / "Cache"
     return cache_home() / APP_NAME
 
 

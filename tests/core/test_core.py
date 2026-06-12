@@ -155,12 +155,15 @@ def test_state_file_naming_under_xdg(tmp_path, monkeypatch):
 
 
 def test_xdg_default_when_unset(monkeypatch):
+    # Pin the POSIX branch: Windows defaults are covered in test_paths.py.
+    monkeypatch.setattr(paths, "_WINDOWS", False)
     monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
     assert paths.config_home() == Path.home() / ".config"
 
 
 def test_xdg_relative_value_ignored(monkeypatch):
     # Spec: a non-absolute XDG value must be ignored in favor of the default.
+    monkeypatch.setattr(paths, "_WINDOWS", False)
     monkeypatch.setenv("XDG_CONFIG_HOME", "relative/not/absolute")
     assert paths.config_home() == Path.home() / ".config"
 
