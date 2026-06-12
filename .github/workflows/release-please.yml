@@ -9,7 +9,7 @@
 #      token from them.
 #   2. Fallback PAT: set RELEASE_PLEASE_APP_TOKEN (fine-grained PAT, Contents +
 #      Pull requests: write).
-# See RELEASE.md for setup. With neither configured, release-please fails fast.
+# See docs/RELEASE.md for setup. With neither configured, release-please fails fast.
 
 name: release-please
 
@@ -53,7 +53,7 @@ jobs:
         uses: googleapis/release-please-action@v5.0.0
         with:
           # Minted App installation token (preferred) or the RELEASE_PLEASE_APP_TOKEN
-          # PAT — both open PRs and trigger downstream workflows. See RELEASE.md.
+          # PAT — both open PRs and trigger downstream workflows. See docs/RELEASE.md.
           token: ${{ steps.app-token.outputs.token || secrets.RELEASE_PLEASE_APP_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json

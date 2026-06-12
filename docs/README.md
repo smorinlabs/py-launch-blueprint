@@ -19,6 +19,12 @@ A research doc often feeds a design doc, which often crystallizes one or more
 ADRs. Cross-link them. Each subdirectory has its own `README.md` with the file
 naming + status conventions.
 
+Two operational guides also live at this level (linked from the root README):
+
+- [`POST_INIT.md`](POST_INIT.md) — the post-init decisions & configuration
+  checklist for projects created from this template.
+- [`RELEASE.md`](RELEASE.md) — the release/publish flow in detail.
+
 > These docs are intentionally outside `docs/source/`, so they are reviewed in
 > PRs and kept with the code without shipping to the rendered documentation
 > site. Wire any into Sphinx later if you want them published.
