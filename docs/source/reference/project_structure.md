@@ -71,6 +71,7 @@ py-launch-blueprint/
 │   │   └── contributing/           # Contribution guidelines
 │   └── build/                      # Built documentation files
 ├── EXAMPLECLI.md                   # Example CLI documentation
+├── EXAMPLEWEB.md                   # Example web service documentation
 ├── Justfile                        # Just task runner configuration
 ├── Makefile                        # Makefile for building the project
 ├── mise.toml                       # mise toolchain (optional provisioner; ADR 0005)
@@ -145,6 +146,10 @@ Provides guidelines for contributing to the project.
 ### EXAMPLECLI.md
 
 Contains documentation for the example CLI tool.
+
+### EXAMPLEWEB.md
+
+Contains documentation for the example FastAPI web service (the `web` extra).
 
 ### Justfile
 

@@ -12,7 +12,7 @@ The package is split into three layers under `src/py_launch_blueprint/`:
 |-------|------|------|
 | Library (`core`) | `core/` | Pure logic + Pydantic models. No printing. Reused by every front-end. |
 | CLI (`cli`) | `cli/` | Thin presentation: formats `core` results. One module per noun in `cli/commands/`. |
-| Web (`web`) | `web/` | Reserved stub for a future FastAPI service (behind the `web` extra). |
+| Web (`web`) | `web/` | Thin adapter: serves `core` results as JSON (behind the `web` extra). See [EXAMPLEWEB.md](EXAMPLEWEB.md). |
 
 The result of every command is a Pydantic model in `core/models.py` — that
 model *is* the JSON representation, and the renderer turns the same object into

@@ -91,6 +91,7 @@ files = [
   "Dockerfile",                                         # 2x
   "docs/api/openapi.json",                              # 1x
   "EXAMPLECLI.md",                                      # 36x
+  "EXAMPLEWEB.md",                                      # 5x
   "Justfile",                                           # 1x
   "POST_INIT.md",                                       # 1x
   "README.md",                                          # 2x
@@ -133,6 +134,7 @@ files = [
   "CLAUDE.md",                                        # 1x
   "Dockerfile",                                       # 1x
   "EXAMPLECLI.md",                                    # 12x
+  "EXAMPLEWEB.md",                                    # 12x
   "docs/design/0001-plbp-cli-conventions.md",         # 26x
   "docs/design/0002-web-api-conventions.md",          # 4x
   "docs/adr/0001-app-short-name-plbp.md",             # 2x
@@ -218,6 +220,7 @@ files = [
   "AGENTS.md",                                         # 1x
   "CLAUDE.md",                                         # 4x
   "EXAMPLECLI.md",                                     # 1x
+  "EXAMPLEWEB.md",                                     # 2x
   "Justfile",                                          # 2x
   "README.md",                                         # 1x
   "docs/source/conf.py",                               # 3x
