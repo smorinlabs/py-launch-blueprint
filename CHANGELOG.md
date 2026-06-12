@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.1.0...v2.1.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* add PyPI fallback for just installation and fix CI skip paths ([#424](https://github.com/smorinlabs/py-launch-blueprint/issues/424)) ([cb983c0](https://github.com/smorinlabs/py-launch-blueprint/commit/cb983c0b453841c6f25fbea5fb39079dbdd1ccbd))
+* **web:** log route=None for unmatched requests; clarify re-raise comment ([fb611be](https://github.com/smorinlabs/py-launch-blueprint/commit/fb611be28fcb62aed2887c79a9e6dba0fd1d6a38))
+
 ## [2.1.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.0.1...v2.1.0) (2026-06-12)
 
 
