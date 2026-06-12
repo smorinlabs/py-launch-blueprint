@@ -31,6 +31,7 @@ Start from [`template.md`](template.md).
 | [0010](0010-rich-row-variant-on-result-models.md) | Terminal niceties via a rich-only row variant on result models | Accepted |
 | [0011](0011-windows-native-paths-xdg-overrides.md) | Windows-native default directories; XDG overrides win everywhere | Accepted |
 | [0012](0012-doctor-bundle-redact-at-collection.md) | `doctor --bundle` redacts at collection time, excludes log contents | Accepted |
+| [0014](0014-repo-simplification-batch.md) | Repo simplification batch — canonical agent config, skill placement, docs & CI layout (SIMP series) | Accepted |
 
 ## Note on historical decisions
 
