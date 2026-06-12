@@ -94,8 +94,8 @@ files = [
   "EXAMPLECLI.md",                                      # 36x
   "EXAMPLEWEB.md",                                      # 5x
   "Justfile",                                           # 1x
-  "POST_INIT.md",                                       # 1x
   "README.md",                                          # 2x
+  "docs/POST_INIT.md",                                  # 1x
   "docs/adr/0001-app-short-name-plbp.md",               # 5x
   "docs/adr/0002-no-secrets-in-config-file.md",         # 1x
   "docs/adr/0003-keep-markdown-output-mode.md",         # 1x
@@ -152,10 +152,10 @@ files = [
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
   "docs/adr/0006-stable-error-codes-hints-crash-log.md", # 5x
   "docs/adr/0008-pager-for-long-text-output.md",      # 2x
+  "docs/POST_INIT.md",                                # 1x
   "docs/source/index.md",                             # 1x
   "docs/source/web/index.md",                         # 10x
   "llms.txt",                                         # 1x
-  "POST_INIT.md",                                     # 1x
   "src/py_launch_blueprint/cli/commands/config.py",   # 2x
   "src/py_launch_blueprint/cli/commands/projects.py", # 1x
   "src/py_launch_blueprint/cli/context.py",           # 9x
