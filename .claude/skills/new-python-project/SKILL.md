@@ -166,7 +166,7 @@ identifier-safe (no hyphens).
 
 Before any GitHub or filesystem mutation, summarize the plan:
 
-```
+```text
 About to create:
   GitHub repo:   <owner>/<repo-name>  (<visibility>)
   Local clone:   <target-dir>
@@ -263,7 +263,7 @@ push goes to the new repo. The `-u` sets upstream tracking.
 
 Tell the user what just happened, then offer post-init:
 
-```
+```text
 ✓ Project initialized at <target-dir>
   Pushed to https://github.com/<owner>/<repo-name>
   Marker:   init/.blueprint-initialized
@@ -278,7 +278,7 @@ Run post-init now? [y/N]
 If yes: `cd <target-dir> && uv run init/post_init.py` — hand control to the
 post-init interactive flow. If no: print the deferred-message:
 
-```
+```text
 Skipped. When ready:
   cd <target-dir>
   uv run init/post_init.py
@@ -295,7 +295,7 @@ workflow additionally uses `just` (task runner) and the lefthook git hooks
 — but installing toolchains on the user's machine is the user's call, not
 this skill's. Recommend, don't execute:
 
-```
+```text
 Your project works with gh + uv alone, but the full dev workflow uses just.
 Inside <target-dir>:
 
