@@ -44,6 +44,11 @@ The committed contract lives at `docs/api/openapi.json` — regenerate with
   Soft-imported; absence degrades to a warning, never a crash.
 - **WEB-11 — Prometheus RED metrics** at `/metrics` (on by default,
   excluded from the schema and from its own measurements).
+- **WEB-12 — structured logging profile.** One canonical `http_request`
+  event per request (route template, status, `duration_ms`, `request_id`);
+  JSON Lines on stderr by default (`PLBP_WEB_LOG_LEVEL` / `_LOG_FORMAT`);
+  uvicorn loggers folded into the same pipeline. Full conventions:
+  `0003-logging-conventions.md`.
 - Request-scoped structlog context (`x-request-id` in, bound to every log
   line, echoed out) predates this doc — see `web/middleware.py`.
 

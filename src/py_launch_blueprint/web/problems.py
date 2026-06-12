@@ -154,3 +154,18 @@ def install_problem_handlers(app: FastAPI) -> None:
             detail="Request validation failed.",
             extensions={"errors": jsonable_encoder(exc.errors())},
         )
+
+    @app.exception_handler(Exception)
+    async def handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
+        # The catch-all: without it, unexpected errors bypass structlog (no
+        # request_id) and answer in plain text, breaking WEB-01. The
+        # traceback goes to the logs; the body stays generic — internals
+        # are not for clients. Starlette re-raises after this responds, so
+        # test clients need raise_server_exceptions=False.
+        log.error("unhandled_error", exc_info=exc)
+        return problem_response(
+            request,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            title="Internal Server Error",
+            detail="An unexpected error occurred.",
+        )

@@ -59,6 +59,7 @@ files = [
   "src/py_launch_blueprint/web/app.py",                  # 1x
   "src/py_launch_blueprint/web/deps.py",                 # 1x
   "src/py_launch_blueprint/web/idempotency.py",          # 1x
+  "src/py_launch_blueprint/web/logging.py",              # 1x
   "src/py_launch_blueprint/web/middleware.py",           # 1x
   "src/py_launch_blueprint/web/problems.py",             # 1x
   "src/py_launch_blueprint/web/routers/__init__.py",     # 1x
@@ -150,7 +151,7 @@ files = [
   "EXAMPLECLI.md",                                    # 12x
   "EXAMPLEWEB.md",                                    # 12x
   "docs/design/0001-plbp-cli-conventions.md",         # 26x
-  "docs/design/0002-web-api-conventions.md",          # 4x
+  "docs/design/0002-web-api-conventions.md",          # 7x
   "docs/adr/0001-app-short-name-plbp.md",             # 2x
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
   "docs/adr/0006-stable-error-codes-hints-crash-log.md", # 5x
@@ -173,6 +174,7 @@ files = [
   "tests/cli/test_output.py",                         # 15x
   "tests/cli/test_pylb.py",                           # 38x
   "tests/web/test_app.py",                            # 2x
+  "tests/web/test_logging.py",                        # 3x
   "tests/web/test_settings.py",                       # 5x
   "projects/P01-init-rebrand-robustness.md",          # 11x
 ]
@@ -278,8 +280,9 @@ files = [
   "src/py_launch_blueprint/core/settings.py",          # 1x
   "src/py_launch_blueprint/web/__init__.py",           # 1x
   "src/py_launch_blueprint/web/__main__.py",           # 4x
-  "src/py_launch_blueprint/web/app.py",                # 14x
+  "src/py_launch_blueprint/web/app.py",                # 15x
   "src/py_launch_blueprint/web/deps.py",               # 4x
+  "src/py_launch_blueprint/web/logging.py",            # 4x
   "src/py_launch_blueprint/web/middleware.py",         # 1x
   "src/py_launch_blueprint/web/problems.py",           # 2x
   "src/py_launch_blueprint/web/routers/__init__.py",   # 1x
@@ -304,6 +307,7 @@ files = [
   "tests/web/test_app.py",                             # 6x
   "tests/web/test_contract.py",                        # 2x
   "tests/web/test_idempotency.py",                     # 1x
+  "tests/web/test_logging.py",                         # 3x
   "tests/web/test_openapi_snapshot.py",                # 2x
   "tests/web/test_settings.py",                        # 1x
   "tests/web/test_versioning.py",                      # 1x
