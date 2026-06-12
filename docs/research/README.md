@@ -17,3 +17,6 @@ itself mandate anything — when a conclusion is reached, capture it in a
 | Doc | Title | Date |
 |-----|-------|------|
 | [0001](0001-skill-trigger-optimization.md) | Trigger optimization for the `new-python-project` agent skill | 2026-06 |
+
+Lint-trigger validation note (SIMP-09): this markdown-only change must leave
+actionlint and yamllint skipped while bandit/codespell/editorconfig still run.
