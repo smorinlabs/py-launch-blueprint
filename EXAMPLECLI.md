@@ -12,7 +12,7 @@ The package is split into three layers under `src/py_launch_blueprint/`:
 |-------|------|------|
 | Library (`core`) | `core/` | Pure logic + Pydantic models. No printing. Reused by every front-end. |
 | CLI (`cli`) | `cli/` | Thin presentation: formats `core` results. One module per noun in `cli/commands/`. |
-| Web (`web`) | `web/` | Reserved stub for a future FastAPI service (behind the `web` extra). |
+| Web (`web`) | `web/` | FastAPI service behind the `web` extra — same models, second front-end (see [EXAMPLEWEB.md](EXAMPLEWEB.md)). |
 
 The result of every command is a Pydantic model in `core/models.py` — that
 model *is* the JSON representation, and the renderer turns the same object into
@@ -103,15 +103,16 @@ plbp doctor
 plbp doctor --json
 plbp doctor --bundle --json   # redacted snapshot to paste into a bug report
 
-# Shell completion
+# Shell completion (bash, zsh, fish)
 plbp completion bash >> ~/.bashrc
 eval "$(plbp completion zsh)"
+plbp completion fish > ~/.config/fish/completions/plbp.fish
 ```
 
-Mutating commands (e.g. `config set`) share a safety pattern: `--dry-run`
-previews the change, an overwrite prompts for confirmation on stderr, and
-`--yes` / `--no-input` make it non-interactive (the latter refuses rather than
-prompting).
+Mutating commands (e.g. `config set`, `config init`) share a safety pattern:
+`--dry-run` previews the change, an overwrite prompts for confirmation on
+stderr, and `--yes` / `--no-input` make it non-interactive (the latter refuses
+rather than prompting).
 
 ## Configuration file (TOML, XDG)
 
