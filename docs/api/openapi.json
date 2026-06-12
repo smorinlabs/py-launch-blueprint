@@ -50,6 +50,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Readiness checks failed (RFC 9457 problem document with a `diagnostics` extension).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
           }
         }
       }

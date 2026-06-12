@@ -77,6 +77,15 @@ def test_background_tasks_survive_rebuild():
         assert ran == [True]
 
 
+def test_same_key_different_query_strings_execute_independently():
+    """The cache key includes the query string — no cross-query replays."""
+    with TestClient(make_app()) as client:
+        a = client.post("/things?a=1", headers={"Idempotency-Key": "q"})
+        b = client.post("/things?a=2", headers={"Idempotency-Key": "q"})
+        assert a.json() != b.json()
+        assert "idempotency-replayed" not in b.headers
+
+
 def test_multi_valued_headers_survive_caching_and_replay():
     """Set-Cookie must not collapse to one value on rebuild or replay."""
     app = FastAPI()

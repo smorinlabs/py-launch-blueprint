@@ -61,7 +61,7 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.ttl_seconds = ttl_seconds
         self.max_entries = max_entries
-        self._store: OrderedDict[tuple[str, str, str], _Entry] = OrderedDict()
+        self._store: OrderedDict[tuple[str, str, str, str], _Entry] = OrderedDict()
 
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
@@ -70,7 +70,10 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
         if not key or request.method not in _UNSAFE_METHODS:
             return await call_next(request)
 
-        cache_key = (request.method, request.url.path, key)
+        # Query string is part of the key: same Idempotency-Key against
+        # /things?a=1 and /things?a=2 are different requests and must not
+        # replay each other's responses.
+        cache_key = (request.method, request.url.path, request.url.query, key)
         now = time.monotonic()
 
         entry = self._store.get(cache_key)

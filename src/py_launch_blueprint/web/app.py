@@ -53,6 +53,7 @@ from py_launch_blueprint.web.middleware import (
     SecurityHeadersMiddleware,
 )
 from py_launch_blueprint.web.problems import (
+    PROBLEM_CONTENT_TYPE,
     declare_problem_responses,
     install_problem_handlers,
     problem_response,
@@ -145,8 +146,27 @@ def create_app(settings: WebSettings | None = None) -> FastAPI:
         }
 
     # response_model declares the 200 shape in OpenAPI (contract safety,
-    # WEB-50): without it the snapshot publishes an empty `{}` schema.
-    @app.get("/readyz", tags=["ops"], response_model=DoctorReport)
+    # WEB-50): without it the snapshot publishes an empty `{}` schema. The
+    # 503 problem document is declared too, so the contract matches the
+    # docstring's "503 on any error".
+    @app.get(
+        "/readyz",
+        tags=["ops"],
+        response_model=DoctorReport,
+        responses={
+            503: {
+                "description": (
+                    "Readiness checks failed (RFC 9457 problem document "
+                    "with a `diagnostics` extension)."
+                ),
+                "content": {
+                    PROBLEM_CONTENT_TYPE: {
+                        "schema": {"$ref": "#/components/schemas/Problem"}
+                    }
+                },
+            }
+        },
+    )
     async def readyz(
         request: Request, config: ConfigDep
     ) -> DoctorReport | JSONResponse:
