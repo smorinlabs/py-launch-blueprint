@@ -16,4 +16,4 @@ itself mandate anything — when a conclusion is reached, capture it in a
 
 | Doc | Title | Date |
 |-----|-------|------|
-| —   | _none yet_ | — |
+| [0002](0002-init-post-init-analysis.md) | Init & post-init systems — asset report & design exploration | 2026-06 |
