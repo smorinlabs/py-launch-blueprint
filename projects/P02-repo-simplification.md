@@ -1,6 +1,6 @@
 # P02 — Repo simplification & organization (SIMP series)
 
-- **Status:** `[~]` in progress — SIMP-01/02/03 merged; SIMP-06/07/08/09/10/11 planned; SIMP-04/05/12 dropped or deferred
+- **Status:** `[~]` in progress — SIMP-01/02/03 merged; SIMP-10 implemented in #407; SIMP-06/07/08/09/11 planned; SIMP-04/05/12 dropped or deferred
 - **Captured:** 2026-06-12
 - **Scope:** repo-wide structure & tooling — `Justfile`, `Makefile`, `docs/`,
   `tests/`, `.github/workflows/`, agent-config files, root markdown
@@ -49,7 +49,7 @@ reviewable and revertible.
 | done | SIMP-01 | Purge dead/legacy Justfile recipes | Dead-code removal | High | ✅ merged #401 |
 | done | SIMP-02 | Fix the broken docs toolchain | Drift fix / consolidation | High | ✅ merged #402 |
 | done | SIMP-03 | Two-level setup (`make bootstrap` + `just setup`) | Consolidation / DX | High | ✅ merged #405 |
-| 1 | SIMP-10 | Single-source CODE_OF_CONDUCT | DRY | Low-Med | Do — files byte-identical |
+| done | SIMP-10 | Single-source CODE_OF_CONDUCT | DRY | Low-Med | ✅ in #407 |
 | 2 | SIMP-11 | Move `skill/optimization-workspace/` out | Organization | Low-Med | Do — + manifest question |
 | 3 | SIMP-06 | Canonical AGENTS.md; thin vendor rules | DRY / consolidation | Med | Do — CI enforces the risk |
 | 4 | SIMP-08 | Group flat test files | Organization | Med | Do — mechanical |
@@ -98,17 +98,16 @@ Makefile didn't run on stock Linux), `just install-dev` silently installing
 zero dev deps (stale `.[dev]` extra), and a stale `bun.lock` (commitlint
 19→21). CLAUDE.md + AGENTS.md document the flow as canonical.
 
+### SIMP-10 — Single-source CODE_OF_CONDUCT (implemented in #407)
+
+`CODE_OF_CONDUCT.md` existed byte-identically in both `.github/` and
+`docs/source/contributing/` (`diff` clean). The Sphinx copy now pulls the
+`.github/` source (which GitHub surfaces natively) via a MyST `{include}`
+wrapper. Verified: docs build succeeds with no new warnings and the rendered
+page contains the CoC content; RTD builds from a full checkout so `.github/`
+is present; neither file is in the init manifest.
+
 ## Planned items
-
-### SIMP-10 — Single-source CODE_OF_CONDUCT (DRY · Low-Med value)
-
-`CODE_OF_CONDUCT.md` exists byte-identically in both `.github/` and
-`docs/source/contributing/` (`diff` clean). Keep `.github/` as the source
-(GitHub surfaces it natively) and have the Sphinx copy pull it in via a MyST
-`{include}`. Verified safe: RTD builds from a full checkout so `.github/` is
-present; neither file is in the init manifest. Only watch-out: Sphinx emits a
-"document outside source directory" warning — harmless unless docs builds turn
-on `-W` (they don't).
 
 ### SIMP-11 — Move `skill/optimization-workspace/` out (Organization · Low-Med)
 
