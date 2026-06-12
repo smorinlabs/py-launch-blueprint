@@ -1,7 +1,8 @@
 # mise toolchain — one of the project's three first-class dev environments,
 # alongside the native per-tool installs (Justfile `install-*` recipes) and the
 # flox env (.flox/env/manifest.toml). All three provision the SAME 10-tool set;
-# keep them in sync when adding or removing a tool.
+# keep them in sync when adding or removing a tool. Decision record:
+# docs/adr/0005-mise-flox-first-class-toolchains.md.
 #
 # Intentionally NOT declared here:
 #   * yamllint, codespell, bandit, editorconfig-checker — invoked via `uvx`

@@ -39,9 +39,9 @@ them):
 ## Developer Environment
 - Python: 3.12+ required (per ITM-033)
 - Package manager: `uv` (dev environment), `bun` (commitlint deps; per ADR-04)
-- Toolchain provisioning — three first-class options, all declaring the SAME
-  10-tool set (python, uv, ruff, taplo, gitleaks, just, bun, gh, lefthook,
-  make); keep them in sync when adding/removing a tool:
+- Toolchain provisioning (per ADR 0005) — three first-class options, all
+  declaring the SAME 10-tool set (python, uv, ruff, taplo, gitleaks, just, bun,
+  gh, lefthook, make); keep them in sync when adding/removing a tool:
   1. Native installs (Justfile `install-*` recipes)
   2. `mise install` (root `mise.toml`)
   3. `flox activate` (root `.flox/`)

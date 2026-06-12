@@ -23,6 +23,7 @@ Start from [`template.md`](template.md).
 | [0002](0002-no-secrets-in-config-file.md) | Secrets are never stored in the config file | Accepted |
 | [0003](0003-keep-markdown-output-mode.md) | Keep `markdown` as a third output format (spec deviation) | Accepted |
 | [0004](0004-config-errors-degrade-to-warnings.md) | Invalid config values degrade to warnings, never crashes | Accepted |
+| [0005](0005-mise-flox-first-class-toolchains.md) | mise and flox are first-class toolchain provisioners (lean 10-tool set) | Accepted |
 
 ## Note on historical decisions
 
