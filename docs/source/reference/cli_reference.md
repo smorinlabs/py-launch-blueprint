@@ -73,6 +73,17 @@ just test [OPTIONS]
 
 ## 3. Dependency Management
 
+### `setup`
+One-command project setup (Level 2). Verifies the base toolchain via the
+Makefile's `make check` (Level 1 — run `make bootstrap` first on a bare
+machine), syncs the dev environment, wires lefthook git hooks, and installs
+the hook toolchain (bun, gitleaks, taplo, yamlfmt). Idempotent.
+
+#### Usage
+```bash
+just setup
+```
+
 ### `install-dev`
 Install the package in editable mode with dev dependencies.
 
