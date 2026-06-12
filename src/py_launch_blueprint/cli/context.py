@@ -29,6 +29,8 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
+import click
+
 from py_launch_blueprint.cli.output import OutputMode, Renderer
 from py_launch_blueprint.core import paths
 from py_launch_blueprint.core.config import Config, load_config
@@ -55,6 +57,7 @@ class AppContext:
     token: str | None
     no_input: bool
     verbose: int
+    quiet: bool = False
 
     _config: Config | None = None
 
@@ -85,7 +88,11 @@ class AppContext:
 
         mode = _resolve_mode(output_mode, json_mode, settings.output.format)
         color = _resolve_color(no_color, settings.output.color)
-        renderer = Renderer(mode=mode, color=color, output_file=output_file)
+        # --no-input also disables the pager: a script that can't answer
+        # prompts can't quit `less` either.
+        renderer = Renderer(
+            mode=mode, color=color, output_file=output_file, paging=not no_input
+        )
         # Non-fatal load problems (invalid values dropped, unreadable
         # discovered layers) are surfaced on stderr, never swallowed.
         for warning in config.warnings:
@@ -115,6 +122,7 @@ class AppContext:
             token=token,
             no_input=no_input,
             verbose=verbose,
+            quiet=quiet,
             _config=config,
         )
 
@@ -126,6 +134,36 @@ class AppContext:
                 config_file=self.config_file, token_override=self.token
             )
         return self._config
+
+
+def maybe_show_first_run_hint(app: AppContext) -> None:
+    """One-time stderr hint pointing fresh installs at ``plbp config init``.
+
+    Fires only when it cannot pollute anything: interactive stderr, prompts
+    allowed, not ``--quiet``, no config file found in any layer (JSON mode is
+    already silent — ``message()`` is a no-op there). A marker file in the
+    XDG state dir makes it once-ever; an unwritable state dir skips the hint
+    rather than repeating or failing the command.
+    """
+    if app.no_input or app.quiet or not app.renderer.err.is_terminal:
+        return
+    if app.config.loaded_paths:
+        return
+    ctx = click.get_current_context(silent=True)
+    if ctx is not None and ctx.command_path.endswith("config init"):
+        return
+    marker = paths.state_file("first_run", "marker")
+    if marker.exists():
+        return
+    try:
+        paths.ensure_dir(marker.parent)
+        marker.touch()
+    except OSError:
+        return
+    app.renderer.message(
+        "Welcome to plbp! Run [bold]plbp config init[/bold] to create a "
+        "config file. (This hint is shown once.)"
+    )
 
 
 def _resolve_mode(

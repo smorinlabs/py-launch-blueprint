@@ -20,17 +20,28 @@
 """Environment/setup diagnostics for `plbp doctor`.
 
 Pure logic: takes a resolved :class:`Config` and inspects the runtime, never
-printing. The CLI renders the returned :class:`DoctorReport`.
+printing. The CLI renders the returned :class:`DoctorReport` (or, for
+``doctor --bundle``, the :class:`DiagnosticsBundle` built here).
 """
 
+import os
 import platform
 import sys
 
+from py_launch_blueprint import __version__
 from py_launch_blueprint.core import paths
 from py_launch_blueprint.core.config import TOKEN_ENV_VAR, Config
-from py_launch_blueprint.core.models import DoctorCheck, DoctorReport
+from py_launch_blueprint.core.models import (
+    DiagnosticsBundle,
+    DoctorCheck,
+    DoctorReport,
+)
 
 MIN_PYTHON = (3, 12)
+
+#: Env-var name fragments whose values are redacted from bundles. Broad on
+#: purpose: a bundle is built to be pasted into a public issue.
+_SENSITIVE_ENV_MARKERS = ("TOKEN", "SECRET", "KEY", "PASSWORD")
 
 
 def run_diagnostics(config: Config) -> DoctorReport:
@@ -79,3 +90,42 @@ def run_diagnostics(config: Config) -> DoctorReport:
         )
 
     return DoctorReport(checks=checks)
+
+
+def _redacted_app_env() -> dict[str, str]:
+    """App-prefixed env vars with anything secret-shaped redacted."""
+    prefix = f"{paths.APP_NAME.upper()}_"
+    env: dict[str, str] = {}
+    for key in sorted(os.environ):
+        if not key.startswith(prefix):
+            continue
+        sensitive = any(marker in key for marker in _SENSITIVE_ENV_MARKERS)
+        env[key] = "<redacted>" if sensitive else os.environ[key]
+    return env
+
+
+def build_bundle(
+    config: Config, report: DoctorReport | None = None
+) -> DiagnosticsBundle:
+    """Collect the redacted diagnostics bundle for ``doctor --bundle``.
+
+    Secrets never enter the model: the token appears only as presence +
+    source, and secret-shaped env values are replaced at collection time.
+    """
+    if report is None:
+        report = run_diagnostics(config)
+    cfg_path = config.config_path or paths.config_file()
+    return DiagnosticsBundle(
+        version=__version__,
+        python=platform.python_version(),
+        platform=platform.platform(),
+        checks=report.checks,
+        settings=config.settings.model_dump(),
+        config_path=str(cfg_path),
+        config_exists=cfg_path.exists(),
+        loaded_paths=[str(p) for p in config.loaded_paths],
+        token_present=config.token is not None,
+        token_source=config.source,
+        env=_redacted_app_env(),
+        log_file=str(paths.log_file()),
+    )
