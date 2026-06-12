@@ -40,3 +40,6 @@ ignore: |
   .readthedocs.yaml
 
   .github/workflows/update-contributors.yml
+
+# lint-trigger validation (SIMP-09): yaml-only change — yamllint must run,
+# actionlint must be skipped. PR is closed after observing the checks.
