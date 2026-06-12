@@ -29,6 +29,8 @@ List values parse from JSON, e.g.::
     PLBP_WEB_CORS_ORIGINS='["https://app.example.com"]'
 """
 
+from typing import Literal
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from py_launch_blueprint.core.paths import APP_NAME
@@ -47,6 +49,14 @@ class WebSettings(BaseSettings):
     port: int = 8000
     #: ASGI root path when served behind a path-stripping proxy.
     root_path: str = ""
+    #: Console (stderr) log level. INFO by default — a server logs its
+    #: lifecycle and one canonical `http_request` event per request (WEB-12),
+    #: unlike the CLI's quiet WARNING default.
+    log_level: Literal["debug", "info", "warning", "error", "critical"] = "info"
+    #: Log render mode: "json" (default — structured JSONL, what collectors
+    #: parse), "console" (pretty, dev; `just serve` sets this), or "auto"
+    #: (TTY-based, the CLI behavior).
+    log_format: Literal["auto", "console", "json"] = "json"
     #: CORS allowlist. Empty (the default) means the CORS middleware is not
     #: installed at all — cross-origin browser calls are opt-in (WEB-23).
     cors_origins: list[str] = []

@@ -1,4 +1,4 @@
-# 0015. App short name becomes an obvious placeholder: `plbp` → `acmeapp`
+# 0016. App short name becomes an obvious placeholder: `plbp` → `acmeapp`
 
 - **Status:** Accepted (implementation pending — the mechanical rename has not
   been applied yet; until it lands, `plbp`/`PLBP` remain the live identity)

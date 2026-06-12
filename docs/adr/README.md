@@ -33,7 +33,8 @@ Start from [`template.md`](template.md).
 | [0012](0012-doctor-bundle-redact-at-collection.md) | `doctor --bundle` redacts at collection time, excludes log contents | Accepted |
 | [0013](0013-web-service-best-practices.md) | Web service: baked-in REST best practices behind the `web` extra | Accepted |
 | [0014](0014-repo-simplification-batch.md) | Repo simplification batch — canonical agent config, skill placement, docs & CI layout (SIMP series) | Accepted |
-| [0015](0015-app-short-name-placeholder.md) | App short name is an obvious placeholder (`acmeapp`), not a brand | Accepted |
+| [0015](0015-one-logging-pipeline-two-profiles.md) | One logging pipeline, two front-end profiles (CLI vs web policy) | Accepted |
+| [0016](0016-app-short-name-placeholder.md) | App short name is an obvious placeholder (`acmeapp`), not a brand | Accepted |
 
 ## Note on historical decisions
 

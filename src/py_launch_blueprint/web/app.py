@@ -45,9 +45,10 @@ from fastapi_pagination import add_pagination
 from py_launch_blueprint import __version__
 from py_launch_blueprint.core.config import load_config
 from py_launch_blueprint.core.diagnostics import DoctorReport, run_diagnostics
-from py_launch_blueprint.core.logging import configure_logging, get_logger
+from py_launch_blueprint.core.logging import get_logger
 from py_launch_blueprint.web.deps import ConfigDep
 from py_launch_blueprint.web.idempotency import IdempotencyMiddleware
+from py_launch_blueprint.web.logging import configure_web_logging
 from py_launch_blueprint.web.middleware import (
     RequestIDMiddleware,
     SecurityHeadersMiddleware,
@@ -79,8 +80,7 @@ def _operation_id(route: APIRoute) -> str:
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Configure logging and load config once for the app's lifetime."""
-    configure_logging()
+    """Load config once for the app's lifetime (logging is set in create_app)."""
     app.state.config = load_config()
     log.info("web_startup", version=__version__)
     yield
@@ -92,6 +92,10 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app(settings: WebSettings | None = None) -> FastAPI:
     """Build the FastAPI application (``uvicorn ... --factory`` entry point)."""
     settings = settings if settings is not None else WebSettings()
+    # First, before anything that can log (telemetry wiring logs during
+    # construction): the invariant is "logging is configured before any
+    # code that may log runs" (WEB-12).
+    configure_web_logging(settings)
 
     app = FastAPI(
         title="py-launch-blueprint",

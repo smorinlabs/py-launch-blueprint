@@ -6,9 +6,12 @@ from logging.handlers import RotatingFileHandler
 
 from py_launch_blueprint.core.logging import (
     LOG_LEVELS,
+    REDACTED,
     ROTATE_BACKUP_COUNT,
     ROTATE_MAX_BYTES,
     LogFormat,
+    bind_contextvars,
+    clear_contextvars,
     configure_logging,
     get_logger,
 )
@@ -98,6 +101,42 @@ def test_json_logs_carry_tracebacks(tmp_path):
     payload = json.loads(line)
     assert "boom-for-logs" in payload.get("exception", "")
     assert "Traceback" in payload.get("exception", "")
+
+
+def test_logger_name_in_output(tmp_path):
+    # add_logger_name: the `__name__` passed to get_logger must be queryable.
+    log_path = tmp_path / "plbp.log"
+    configure_logging(file_path=log_path, file_format="json")
+    get_logger("pkg.module").warning("named")
+    payload = json.loads(log_path.read_text().strip().splitlines()[0])
+    assert payload["logger"] == "pkg.module"
+
+
+def test_sensitive_keys_redacted(tmp_path):
+    # Key-based redaction runs in the shared chain — every sink, including
+    # keys merged from contextvars.
+    log_path = tmp_path / "plbp.log"
+    configure_logging(file_path=log_path, file_format="json")
+    bind_contextvars(api_key="bound-secret")
+    try:
+        get_logger("t").warning("login", token="abc123", username="alice")
+    finally:
+        clear_contextvars()
+    payload = json.loads(log_path.read_text().strip().splitlines()[0])
+    assert payload["token"] == REDACTED
+    assert payload["api_key"] == REDACTED
+    assert payload["username"] == "alice"
+    assert "abc123" not in log_path.read_text()
+
+
+def test_json_sink_serializes_arbitrary_types(tmp_path):
+    # JSONRenderer(default=str): non-JSON-native values degrade to their
+    # string form; the log line must never be lost to a TypeError.
+    log_path = tmp_path / "plbp.log"
+    configure_logging(file_path=log_path, file_format="json")
+    get_logger("t").warning("wrote", target=tmp_path)
+    payload = json.loads(log_path.read_text().strip().splitlines()[0])
+    assert payload["target"] == str(tmp_path)
 
 
 def test_foreign_root_handlers_survive_reconfigure():
