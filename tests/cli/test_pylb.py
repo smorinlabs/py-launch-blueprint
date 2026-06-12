@@ -2,6 +2,7 @@
 
 import json
 import tomllib
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
@@ -123,7 +124,8 @@ def test_config_path(runner, monkeypatch):
     result = runner.invoke(cli, ["config", "path", "--config", "/nope/.env", "--json"])
     assert result.exit_code == 0
     payload = json.loads(result.output)
-    assert payload["path"] == "/nope/.env"
+    # str(Path(...)) so the expectation tracks the platform separator
+    assert payload["path"] == str(Path("/nope/.env"))
     assert payload["exists"] is False
 
 
@@ -413,7 +415,8 @@ def test_log_file_from_config(runner, tmp_path, monkeypatch):
     monkeypatch.delenv("PLBP_LOG_FILE", raising=False)
     log = tmp_path / "cfg.log"
     cfg = tmp_path / "plbp_config.toml"
-    cfg.write_text(f'[logging]\nfile = "{log}"\n')
+    # as_posix(): backslashes would be TOML escape sequences on windows
+    cfg.write_text(f'[logging]\nfile = "{log.as_posix()}"\n')
     result = runner.invoke(cli, ["config", "path", "--config", str(cfg)])
     assert result.exit_code == 0
     assert log.exists()

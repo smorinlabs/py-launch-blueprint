@@ -1,6 +1,7 @@
 """Tests for the core library layer (pure, no CLI)."""
 
 import logging
+import sys
 from pathlib import Path
 
 import pytest
@@ -212,7 +213,8 @@ def test_set_config_value_refuses_corrupt_file(tmp_path):
 def test_set_config_value_restricts_permissions(tmp_path):
     cfg_file = tmp_path / "plbp_config.toml"
     set_config_value(cfg_file, "output.color", "never")
-    assert (cfg_file.stat().st_mode & 0o777) == 0o600
+    if sys.platform != "win32":  # POSIX modes don't exist on windows
+        assert (cfg_file.stat().st_mode & 0o777) == 0o600
 
 
 # -- vocabulary single-sourcing guards (review findings) ---------------------
@@ -248,4 +250,5 @@ def test_write_leaves_no_temp_files(tmp_path):
     set_config_value(cfg_file, "output.color", "never")
     set_config_value(cfg_file, "logging.level", "info")
     assert [p.name for p in tmp_path.iterdir()] == ["plbp_config.toml"]
-    assert (cfg_file.stat().st_mode & 0o777) == 0o600
+    if sys.platform != "win32":  # POSIX modes don't exist on windows
+        assert (cfg_file.stat().st_mode & 0o777) == 0o600

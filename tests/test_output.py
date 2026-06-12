@@ -62,7 +62,7 @@ def test_output_file_json(tmp_path, capsys):
     target = tmp_path / "out.json"
     Renderer(OutputMode.JSON, output_file=str(target)).render(_result())
     assert capsys.readouterr().out == ""  # nothing on stdout
-    payload = json.loads(target.read_text())
+    payload = json.loads(target.read_text(encoding="utf-8"))
     assert payload["projects"][0]["name"] == "Alpha"
 
 
@@ -70,13 +70,13 @@ def test_output_file_markdown(tmp_path, capsys):
     target = tmp_path / "out.md"
     Renderer(OutputMode.MARKDOWN, output_file=str(target)).render(_result())
     assert capsys.readouterr().out == ""
-    assert "| Alpha | WS | 1 |" in target.read_text()
+    assert "| Alpha | WS | 1 |" in target.read_text(encoding="utf-8")
 
 
 def test_output_file_text_has_no_ansi(tmp_path):
     target = tmp_path / "out.txt"
     Renderer(OutputMode.TEXT, output_file=str(target)).render(_result())
-    body = target.read_text()
+    body = target.read_text(encoding="utf-8")
     assert "Alpha" in body
     assert "\x1b[" not in body  # a file is not a TTY: no escape codes
 
