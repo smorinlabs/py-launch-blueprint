@@ -1,6 +1,6 @@
 # P02 — Repo simplification & organization (SIMP series)
 
-- **Status:** `[~]` in progress — SIMP-01/02/03 merged; SIMP-10 implemented in #407; SIMP-06/07/08/09/11 planned; SIMP-04/05/12 dropped or deferred
+- **Status:** `[~]` in progress — SIMP-01/02/03 merged; SIMP-10 in #407; SIMP-11/06/08/07/09 implemented in PRs #409–#413 (awaiting review/merge); SIMP-04/05/12 dropped or deferred
 - **Captured:** 2026-06-12
 - **Scope:** repo-wide structure & tooling — `Justfile`, `Makefile`, `docs/`,
   `tests/`, `.github/workflows/`, agent-config files, root markdown
@@ -50,11 +50,11 @@ reviewable and revertible.
 | done | SIMP-02 | Fix the broken docs toolchain | Drift fix / consolidation | High | ✅ merged #402 |
 | done | SIMP-03 | Two-level setup (`make bootstrap` + `just setup`) | Consolidation / DX | High | ✅ merged #405 |
 | done | SIMP-10 | Single-source CODE_OF_CONDUCT | DRY | Low-Med | ✅ in #407 |
-| 2 | SIMP-11 | Move `skill/optimization-workspace/` out | Organization | Low-Med | Do — + manifest question |
-| 3 | SIMP-06 | Canonical AGENTS.md; thin vendor rules | DRY / consolidation | Med | Do — CI enforces the risk |
-| 4 | SIMP-08 | Group flat test files | Organization | Med | Do — mechanical |
-| 5 | SIMP-07 | Relocate root markdown | Organization | Med | Do — one scope question |
-| 6 | SIMP-09 | Consolidate single-purpose lint workflows | Consolidation | Med | Do last — one external check |
+| done | SIMP-11 | Relocate skill to `.claude/skills/` + Codex symlink; research moved | Organization | Low-Med | 🔄 PR #409 |
+| done | SIMP-06 | AGENTS.md canonical; CLAUDE.md `@`-imports it; vendor rules deleted | DRY / consolidation | Med | 🔄 PR #410 (stacked on #409) |
+| done | SIMP-08 | Group flat test files (`tests/meta/`, `tests/cli/`) | Organization | Med | 🔄 PR #411 |
+| done | SIMP-07 | `POST_INIT.md` + `RELEASE.md` → `docs/`; analysis → research on #408 | Organization | Med | 🔄 PR #412 (stacked on #410) |
+| done | SIMP-09 | Five lint workflows → one `lint.yml` with path-aware jobs | Consolidation | Med | 🔄 PR #413 (stacked on #406) |
 | 7 (opt) | SIMP-04 | Reorganize the Justfile (in place) | Organization | Med | Defer/optional |
 | — | SIMP-05 | Replace the root Makefile | Simplification | — | **Dropped — superseded by SIMP-03** |
 | — | SIMP-12 | Merge the two commitlint configs | DRY | — | **Dropped — split is load-bearing** |
@@ -62,6 +62,23 @@ reviewable and revertible.
 The logic: items 1–3 touch disjoint files (any order; no rebases), 4–5 are the
 manifest-touching moves in increasing size, 6 waits on a repo-settings check
 only the maintainer can do quickly, and 7 is optional polish.
+
+**Corrections discovered during execution** (amending the analysis above):
+
+- SIMP-11's "manifest `[[remove]]` question" was moot — `init/init.py` already
+  prunes `skill/` on `just init` (forks never shipped it). The skill moved to
+  `.claude/skills/new-python-project/` (real Claude Code discovery) with an
+  `.agents/skills/` symlink for Codex, and was de-just'd (#409).
+- SIMP-07's `POST_INIT.md → init/` destination was wrong: `init/` is prunable,
+  scan-excluded bootstrap tooling, while POST_INIT.md is fork-facing and must
+  survive prune. It went to `docs/` instead (#412); `EXAMPLECLI.md` stays at
+  root per maintainer decision.
+- SIMP-08: all five meta tests (not just `test_justfile.py`) resolved the repo
+  root via `parents[1]`/`parent.parent` — all bumped to `parents[2]` (#411).
+- SIMP-09: per maintainer direction, actionlint/yamllint keep their path-
+  filtered behavior via a `lint-changes` detection job (validated against six
+  diff scenarios); skipped jobs satisfy required checks, which the old
+  filtered-out workflows did not (#413, stacked on #406).
 
 ## Completed work
 
