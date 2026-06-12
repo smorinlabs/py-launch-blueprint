@@ -12,7 +12,7 @@ replace them:
 - `just init` — rebrands identity (name, owner, package) across the repo.
 - `just post-init` — automates the publishing / Codecov / Read the Docs wiring.
 - [`RELEASE.md`](RELEASE.md) — the release/publish flow in detail.
-- [`.github/SECURITY.md`](.github/SECURITY.md) — security controls + CodeQL setup.
+- [`.github/SECURITY.md`](../.github/SECURITY.md) — security controls + CodeQL setup.
 
 Legend: **Default** = how the template ships. Each item is a checkbox so you can
 track what you've decided.

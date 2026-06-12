@@ -50,9 +50,13 @@ jobs:
           fi
           # Skip-list: paths that can never affect lint/types/tests/build.
           # Anything NOT matching these patterns counts as a code change.
+          # README.md is markdown but NOT skippable: it's `project.readme`,
+          # a packaging input that build-smoke must validate (CodeRabbit).
           skip='^docs/|^assets/|^\.vscode/|^\.cursor/|^\.windsurf|\.md$'
           skip="$skip|^LICENSE$|^\.github/ISSUE_TEMPLATE/"
-          if git diff --name-only "${BASE_SHA}...HEAD" \
+          changed="$(git diff --name-only "${BASE_SHA}...HEAD")"
+          if printf '%s\n' "$changed" | grep -qx 'README\.md' \
+              || printf '%s\n' "$changed" \
               | grep -vE "$skip" \
               | grep -q .; then
             echo "code=true" >> "$GITHUB_OUTPUT"

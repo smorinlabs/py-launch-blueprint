@@ -1,8 +1,16 @@
-# `skill/` — agent skill for bootstrapping new projects
+# `new-python-project` — agent skill for bootstrapping new projects
 
 A self-contained skill that guides an AI agent (Claude Code, Codex, or
 anything that reads `AGENTS.md`) through creating a new Python project
 from the `py-launch-blueprint` template.
+
+Canonical location: `.claude/skills/new-python-project/` (Claude Code's
+project-skill discovery path). `.agents/skills/new-python-project` is a
+symlink to this directory so Codex discovers it natively too (Codex scans
+`$REPO_ROOT/.agents/skills`). Note for Windows checkouts: without git
+symlink support the `.agents` entry degrades to a text file — Codex then
+won't auto-discover the skill, but the canonical copy still works as a
+runbook.
 
 ## What's here
 
@@ -13,13 +21,15 @@ from the `py-launch-blueprint` template.
 
 ## How agents invoke it
 
-**Claude Code** auto-detects the skill via the YAML frontmatter when the
-user describes the intent (e.g., "I want to start a new project from this
-template"). No explicit invocation needed.
+**Claude Code** discovers it as a project skill (it lives in
+`.claude/skills/`), so it can be invoked directly as `/new-python-project`
+or auto-detected via the YAML frontmatter when the user describes the
+intent (e.g., "I want to start a new project from this template").
 
-**Codex** and other agents that follow `AGENTS.md` discover it via the
-"Creating a new project from this template" section in the repo root's
-`AGENTS.md`, which points here.
+**Codex** discovers it through the `.agents/skills/new-python-project`
+symlink (Codex scans `$REPO_ROOT/.agents/skills`). Other agents that
+follow `AGENTS.md` find it via the "Creating a new project from this
+template" section in the repo root's `AGENTS.md`, which points here.
 
 **Humans** can read `SKILL.md` directly as a manual runbook — every step
 is a copy-pasteable bash block.
@@ -35,10 +45,11 @@ this repo locally, and say something like:
 
 > "Create a new Python repo for me — it's a CLI for parsing X."
 
-Claude will pick up the skill from `skill/SKILL.md` and **first ask**
-whether you want the full template setup or a minimal one (Step 0 in the
-runbook). On confirmation, it walks identity collection → `gh repo create
---template` → `just init` → optional `just post-init`. Total time: about
+Claude will pick up the skill from `.claude/skills/new-python-project/`
+and **first ask** whether you want the full template setup or a minimal
+one (Step 0 in the runbook). On confirmation, it walks identity collection
+→ `gh repo create --template` → the init rebrand (`init/init.py`) →
+optional post-init (`init/post_init.py`). Total time: about
 60–90 seconds for the interactive bits, plus whatever the user spends
 thinking about the name.
 
@@ -59,8 +70,9 @@ have otherwise missed the template option entirely.
 ## When this skill might fail to trigger (and how to force it)
 
 Empirically, this skill **undertriggers reliably** — measured via the
-skill-creator's trigger eval (20 queries × 3 runs each, see
-`optimization-workspace/`), all **six** description versions tested
+skill-creator's trigger eval (20 queries × 3 runs each; findings in
+[`docs/research/0001-skill-trigger-optimization.md`](../../../docs/research/0001-skill-trigger-optimization.md)),
+all **six** description versions tested
 scored 0% recall on should-trigger queries while keeping 100%
 specificity (no false positives). Versions tested:
 
@@ -82,7 +94,7 @@ No amount of description-pushing seems to overcome this evaluation.
 relying on auto-triggering:
 
 ```text
-"Follow the runbook in skill/SKILL.md to bootstrap a new Python project.
+"Use the new-python-project skill to bootstrap a new Python project.
  I want it named X, owner Y, package Z."
 ```
 

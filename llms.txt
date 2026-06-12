@@ -26,5 +26,5 @@ behind the `web` extra — every front-end renders the same result models.
 ## Optional
 
 - [Contributing](https://github.com/smorinlabs/py-launch-blueprint/blob/main/CONTRIBUTORS.md): contributor list and workflow
-- [Release process](https://github.com/smorinlabs/py-launch-blueprint/blob/main/RELEASE.md): release-please + OIDC trusted publishing
-- [Fork/init system](https://github.com/smorinlabs/py-launch-blueprint/blob/main/POST_INIT.md): how `just init` rebrands the template into your own project
+- [Release process](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/RELEASE.md): release-please + OIDC trusted publishing
+- [Fork/init system](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/POST_INIT.md): how `just init` rebrands the template into your own project
