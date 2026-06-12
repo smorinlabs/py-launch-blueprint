@@ -30,6 +30,7 @@ files = [
   ".github/workflows/manual-pr-security-scan.yml",       # 1x
   ".readthedocs.yaml",                                   # 1x
   "LICENSE",                                             # 1x
+  "docs/research/0003-init-post-init-analysis.md",       # 1x
   "docs/source/_templates/base.html",                    # 1x
   "docs/source/conf.py",                                 # 2x
   "src/py_launch_blueprint/__init__.py",                 # 1x
@@ -112,6 +113,7 @@ files = [
   "docs/adr/README.md",                                 # 2x
   "docs/design/0001-plbp-cli-conventions.md",           # 28x
   "docs/design/README.md",                              # 2x
+  "docs/research/0003-init-post-init-analysis.md",      # 5x
   "docs/source/index.md",                               # 14x
   "docs/source/reference/cli_reference.md",             # 1x
   "docs/source/web/index.md",                           # 1x
@@ -159,6 +161,7 @@ files = [
   "docs/adr/0008-pager-for-long-text-output.md",      # 2x
   "docs/adr/0016-app-short-name-placeholder.md",      # 5x
   "docs/POST_INIT.md",                                # 1x
+  "docs/research/0003-init-post-init-analysis.md",    # 1x
   "docs/source/index.md",                             # 1x
   "docs/source/web/index.md",                         # 10x
   "llms.txt",                                         # 1x
@@ -191,6 +194,15 @@ files = [
 ]
 mode = "structured"
 
+# email (text) — 1 occurrences in 1 files
+[[replace]]
+field = "email"
+current = ["steve.morin@gmail.com"]
+files = [
+  "docs/research/0003-init-post-init-analysis.md", # 1x
+]
+mode = "text"
+
 # owner (structured) — 4 occurrences in 1 files
 [[replace]]
 field = "owner"
@@ -209,6 +221,7 @@ files = [
   ".github/ISSUE_TEMPLATE/config.yml",            # 1x
   "Justfile",                                     # 1x
   "README.md",                                    # 5x
+  "docs/research/0003-init-post-init-analysis.md", # 1x
   "docs/source/conf.py",                          # 2x
   "docs/source/contributing/index.md",            # 1x
   "docs/source/index.md",                         # 5x
@@ -248,6 +261,7 @@ files = [
   "EXAMPLEWEB.md",                                     # 2x
   "Justfile",                                          # 2x
   "README.md",                                         # 1x
+  "docs/research/0003-init-post-init-analysis.md",     # 8x
   "docs/source/conf.py",                               # 3x
   "docs/source/index.md",                              # 1x
   "docs/source/reference/project_structure.md",        # 4x
@@ -341,6 +355,7 @@ files = [
   "Justfile",                                     # 1x
   "README.md",                                    # 17x
   "docs/design/0001-plbp-cli-conventions.md",     # 3x
+  "docs/research/0003-init-post-init-analysis.md", # 4x
   "docs/source/_templates/base.html",             # 1x
   "docs/source/conf.py",                          # 3x
   "docs/source/contributing/index.md",            # 1x
