@@ -170,7 +170,13 @@ install-just-force: ## Install just to ~/.local/bin (PyPI fallback if uv present
 	@curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$(HOME)/.local/bin" \
 	|| { \
 		echo "just.systems installer failed — falling back to PyPI (rust-just) via uv..."; \
-		PATH="$(HOME)/.local/bin:$$PATH" uv tool install rust-just; \
+		if PATH="$(HOME)/.local/bin:$$PATH" command -v uv >/dev/null 2>&1; then \
+			PATH="$(HOME)/.local/bin:$$PATH" uv tool install rust-just; \
+		else \
+			echo -e "$(CROSS) uv not found — install it first ($(YELLOW)make install-uv-force$(NC)) and retry,"; \
+			echo "  or see other just install options: https://github.com/casey/just"; \
+			exit 1; \
+		fi; \
 	}
 	@echo -e "If $(HOME)/.local/bin is not on your PATH, add it (bash: ~/.bashrc, zsh:"
 	@echo -e "$(YELLOW)SET_PATH=$(HOME)/.local/bin make set-path$(NC)), then open a new terminal."
