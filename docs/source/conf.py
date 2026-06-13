@@ -9,7 +9,7 @@
 from py_launch_blueprint import __version__
 
 project = 'py-launch-blueprint'
-copyright = '2025, Steve Morin'
+copyright = '2026, Steve Morin'
 author = 'Steve Morin'
 # Single-sourced from pyproject.toml [project] version via the installed
 # package metadata (py_launch_blueprint.__version__); never hardcode here.

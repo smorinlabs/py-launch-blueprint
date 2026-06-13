@@ -414,6 +414,26 @@ path = ".github/workflows/blueprint-guard.yml"
 reason = "guard CI is blueprint-only"
 
 [[remove]]
+path = ".github/workflows/init-integration.yml"
+reason = "init five-mode self-test CI is blueprint-only; fails in a generated repo (already initialized) — P0004 dogfood PROBLEM-10"
+
+[[remove]]
+path = "docs/research/0004-template-press-dogfood-log.md"
+reason = "template-press dogfood development log is blueprint-only history — P0004"
+
+[[remove]]
+path = "docs/superpowers/specs/2026-06-12-template-press-bootstrap-dogfood-design.md"
+reason = "template-press dogfood spec (v1) is blueprint-only history — P0004"
+
+[[remove]]
+path = "docs/superpowers/specs/2026-06-13-template-press-bootstrap-dogfood-v2-design.md"
+reason = "template-press dogfood spec (v2) is blueprint-only history — P0004"
+
+[[remove]]
+path = "docs/superpowers/plans/2026-06-12-template-press-bootstrap-dogfood.md"
+reason = "template-press dogfood plan is blueprint-only history — P0004"
+
+[[remove]]
 path = ".github/workflows/update-contributors.yml"
 reason = "py-launch-blueprint contributors automation is project-specific"
 
@@ -453,9 +473,14 @@ reason = "Phase-0 one-off discovery script"
 path = "uv.lock"
 command = ["uv", "lock"]
 
+# P0004 dogfood PROBLEM-05: plain `bun install` leaves the workspace `name`
+# (e.g. "py-launch-blueprint-tooling") embedded in bun.lock — bun considers
+# the lock satisfiable and won't rewrite it, leaking blueprint identity into
+# every fork. Force a clean regeneration so the renamed package.json name is
+# picked up. (run_regenerates uses argv, no shell, so wrap in `bash -c`.)
 [[regenerate]]
 path = "bun.lock"
-command = ["bun", "install"]
+command = ["bash", "-c", "rm -f bun.lock && bun install"]
 
 # CLI --help snapshots (WL-023): regenerated, not text-replaced — help output
 # re-wraps at 80 columns for the renamed program name, which string

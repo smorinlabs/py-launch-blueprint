@@ -183,18 +183,26 @@ proceed.
 
 ### Step 4 — Bootstrap via `gh repo create --template`
 
+`gh repo create` has **no `--directory` flag** (P0004 dogfood PROBLEM-02);
+`--clone` always clones into a subdirectory of the current working
+directory named after the repo. So run the command from the PARENT of your
+target directory:
+
 ```bash
+cd "$(dirname "<target-dir>")"
 gh repo create "<owner>/<repo-name>" \
     --template smorinlabs/py-launch-blueprint \
     --<visibility> \
-    --clone \
-    --directory "<target-dir>"
+    --clone
+# clone lands at ./<repo-name>; if your target dir name differs, `mv` it.
 ```
 
-This single command creates the repo on GitHub, clones it locally to the
-chosen directory, and configures `origin` correctly. After this completes,
-the user has a fresh repo with the blueprint's identity (`py_launch_blueprint`,
-`py-launch-blueprint`, etc.) — `init` will rebrand it next.
+This creates the repo on GitHub, clones it locally, and configures `origin`
+correctly. After this completes, the user has a fresh repo with the
+blueprint's identity (`py_launch_blueprint`, `py-launch-blueprint`, etc.) —
+`init` will rebrand it next. Note: template generation is async on GitHub's
+side; if the clone is empty or warns, wait a few seconds and retry
+`gh repo clone <owner>/<repo-name> <target-dir>`.
 
 `cd` into the new directory before any further steps.
 
@@ -221,11 +229,15 @@ replace/rename operations.
 Run init in dry-run mode and show the user the plan summary:
 
 ```bash
-uv run init/init.py --config answers.toml --dry-run --yes
+uv run init/init.py --config answers.toml --dry-run --allow-dirty --yes
 ```
 
-This prints the full list of replaces/renames/removes without writing
-anything. The summary at the end will look like `Summary: 2 removes, 97
+`--allow-dirty` is REQUIRED here (P0004 dogfood PROBLEM-04): the
+`answers.toml` you just wrote is an untracked file, which trips init's
+clean-tree precondition. It is safe for `--dry-run` (writes nothing) and
+for the real apply below (the only "dirty" file is the config init itself
+consumes). This prints the full list of replaces/renames/removes without
+writing anything. The summary at the end will look like `Summary: 2 removes, 97
 replaces, 5 renames.` — that's the user's checkpoint to spot anything
 unexpected (e.g., a name that didn't substitute correctly).
 
@@ -238,11 +250,13 @@ On yes: continue.
 ### Step 7 — Apply the rebrand
 
 ```bash
-uv run init/init.py --config answers.toml --yes
+uv run init/init.py --config answers.toml --yes --allow-dirty
 ```
 
-Without `--dry-run` this time. The marker `init/.blueprint-initialized` is
-written on success — verify it exists before proceeding.
+Without `--dry-run` this time (`--allow-dirty` still needed for the
+untracked `answers.toml`, per PROBLEM-04). The marker
+`init/.blueprint-initialized` is written on success — verify it exists
+before proceeding.
 
 If init fails for any reason, the message will instruct the user to recover
 with `git checkout . && git clean -fd`. Don't try to recover silently — the
@@ -302,10 +316,16 @@ Inside <target-dir>:
   make check       # report which base tools are present/missing
   make install-just  # PRINT the just install command (runs nothing)
   make bootstrap   # install just + uv if missing (Level 1 setup)
+  mise trust       # mise users only: trust the repo's mise.toml (see below)
   just setup       # Level 2 — dev env sync, git hooks, hook toolchain
 
 Run `make check` first; it tells you exactly what's missing and how to fix it.
 ```
+
+If you use **mise**, run `mise trust` in the new repo before `just setup`
+(P0004 dogfood PROBLEM-08): mise refuses to load an untrusted `mise.toml`
+on a fresh clone and `just setup` fails with "Config files in mise.toml
+are not trusted." Non-mise users can ignore this.
 
 Do not run `make bootstrap` or `just setup` on the user's behalf — they
 modify the user's machine (`~/.local/bin`, git hooks) beyond the project

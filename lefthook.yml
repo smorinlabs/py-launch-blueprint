@@ -74,12 +74,18 @@ pre-push:
     # "push → CI fails → push again" cycle that PR #319 went through.
     # `uv run --script` (not `uv run python ...`) so PEP 723 inline metadata
     # is honored — check_path_filter.py needs pyyaml from its dep block.
+    # Marker-gate (P0004 dogfood D-v2-3 / PROBLEM-11): these are
+    # blueprint-maintenance checks. In a generated repo the init marker
+    # exists, so `test -f … &&` short-circuits each to a no-op (exit 0) —
+    # forks must not run the blueprint's own drift/wiring/test machinery
+    # (same marker-gating principle as init/guard.sh). The blueprint has no
+    # marker, so all four run unchanged here.
     init-guard-wiring:
-      run: uv run --script init/ci/check_guard_wiring.py
+      run: test -f init/.blueprint-initialized || uv run --script init/ci/check_guard_wiring.py
     init-manifest-drift:
-      run: uv run --script init/ci/check_manifest_drift.py
+      run: test -f init/.blueprint-initialized || uv run --script init/ci/check_manifest_drift.py
     init-path-filter:
-      run: uv run --script init/ci/check_path_filter.py
+      run: test -f init/.blueprint-initialized || uv run --script init/ci/check_path_filter.py
     # Init unit tests (~3s; safe at pre-push, too slow for pre-commit).
     # `--override-ini=addopts=` because the project default excludes
     # slow/live markers — init tests aren't marked so they need explicit
@@ -96,6 +102,7 @@ pre-push:
     # and `init.py` subprocesses uniformly.
     init-tests:
       run: >-
+        test -f init/.blueprint-initialized ||
         env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE
         -u GIT_OBJECT_DIRECTORY -u GIT_COMMON_DIR -u GIT_PREFIX
         uv run pytest init/tests/ --override-ini="addopts=" -q
