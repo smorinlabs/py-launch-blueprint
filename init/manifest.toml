@@ -438,6 +438,22 @@ path = "docs/design/0005-template-press-tui-design.md"
 reason = "template-press engine TUI design is blueprint/engine history — P0004"
 
 [[remove]]
+path = "prototypes/press_tui/decisions.py"
+reason = "template-press TUI prototype is engine history; moves to template_press/ — P0004"
+
+[[remove]]
+path = "prototypes/press_tui/interview.py"
+reason = "template-press TUI prototype is engine history; moves to template_press/ — P0004"
+
+[[remove]]
+path = "prototypes/press_tui/test_decisions.py"
+reason = "template-press TUI prototype is engine history; moves to template_press/ — P0004"
+
+[[remove]]
+path = "prototypes/press_tui/README.md"
+reason = "template-press TUI prototype is engine history; moves to template_press/ — P0004"
+
+[[remove]]
 path = ".github/workflows/update-contributors.yml"
 reason = "py-launch-blueprint contributors automation is project-specific"
 

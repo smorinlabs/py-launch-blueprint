@@ -173,6 +173,7 @@ exclude = [
   "dist",
   "docs/source/conf.py",
   "src/py_launch_blueprint/_version.py",
+  "prototypes",  # P0004 template-press engine prototypes (own lint config in template-press)
 ]
 # Per-file-ignores
 [tool.ruff.lint.pycodestyle]
