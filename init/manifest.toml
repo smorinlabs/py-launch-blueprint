@@ -434,6 +434,10 @@ path = "docs/superpowers/plans/2026-06-12-template-press-bootstrap-dogfood.md"
 reason = "template-press dogfood plan is blueprint-only history — P0004"
 
 [[remove]]
+path = "docs/design/0005-template-press-tui-design.md"
+reason = "template-press engine TUI design is blueprint/engine history — P0004"
+
+[[remove]]
 path = ".github/workflows/update-contributors.yml"
 reason = "py-launch-blueprint contributors automation is project-specific"
 
