@@ -140,6 +140,44 @@ Problems use `PROBLEM-NN` (global numbering across runs): severity
   publishing (`relevant_when pypi==enabled`). Confirms PF-5. Disposition:
   #423 phase 2 (release-please should be an independent decision, not a
   publish sub-decision).
+- **PROBLEM-14** — severity: low/med — committing in the blueprint failed
+  with `commitlint: Cannot find module '@commitlint/types'` because the
+  commit-msg hook runs `bunx --bun @commitlint/cli` and, with no local
+  `node_modules`, bunx fetched `@commitlint/cli@latest` into a temp dir
+  whose dependency tree was broken. Worked earlier in the session (warm
+  cache), then broke. Workaround: `bun install` in the repo so the pinned
+  `^21.0.1` resolves locally instead of `@latest`. Root cause: the hook
+  relies on bunx network/cache state rather than a guaranteed local
+  install; a fresh clone that runs `git commit` before `just setup` (or
+  any cache hiccup) hits it. Disposition: pending triage (lefthook should
+  prefer the locally-installed commitlint, e.g. `bun run`/node_modules
+  bin, not `bunx @latest`); also a fork-onboarding hazard.
+
+## Triage / blueprint fixes applied (between Run 1 and build #1)
+
+PR [#428](https://github.com/smorinlabs/py-launch-blueprint/pull/428),
+commit `00e59f5`. Empirically confirmed: after the marker-gate change, the
+blueprint's OWN pre-push hooks all still run and PASS (guard-wiring,
+path-filter, manifest-drift, bandit, init-tests) — verified on the real
+`git push` of the branch, not just simulated (critique v2 weakness #2
+resolved).
+
+| Problem | Disposition | Where |
+|---|---|---|
+| PROBLEM-02 | fixed | SKILL.md (run from parent dir) |
+| PROBLEM-04 | fixed | SKILL.md (`--allow-dirty`) |
+| PROBLEM-05 | fixed | manifest.toml (clean bun.lock regen) |
+| PROBLEM-07 | fixed | pyproject.toml + conf.py (year 2026) |
+| PROBLEM-08 | fixed | SKILL.md (`mise trust`) |
+| PROBLEM-09 | fixed | secret-scan.yml (no base on push) |
+| PROBLEM-10 | fixed | manifest.toml (`[[remove]]` init-integration.yml) |
+| PROBLEM-11 | fixed | lefthook.yml (marker-gate 4 init hooks) |
+| PROBLEM-01 | accepted (process) | gh GraphQL rate-limit — used REST for PR create |
+| PROBLEM-03 | accepted (process) | permission classifier on handoff publish |
+| PROBLEM-06 | #423 phase 1/3 | same-value identity in drift/doctor (D-v2-4: not a release gate) |
+| PROBLEM-12 | #423 phase 1 | post-init headless/`--config` mode |
+| PROBLEM-13 | #423 phase 2 | release-please/publish decoupling |
+| PROBLEM-14 | pending triage | commitlint via bunx@latest fragility |
 
 | POST_INIT.md item | decision | automated by post_init.py? | how actually done (Run 1) | phase-2 module candidate? | problems |
 |---|---|---|---|---|---|
