@@ -17,8 +17,9 @@ in two runs:
 
 1. **Run 1 — throwaway dry run** (`blueprint-dryrun`): find problems on a
    repo nobody cares about; skip publishing.
-2. **Triage gate:** fix small blueprint defects upstream; map structural
-   findings to #423 phases.
+2. **Triage gate + design review (hard pause):** fix small blueprint
+   defects upstream; map structural findings to #423 phases; then re-review
+   this design with the user against the run-1 log before any run-2 action.
 3. **Run 2 — template-press:** repeat against the improved blueprint, with
    publishing wired to the already-reserved PyPI/TestPyPI names.
 
@@ -140,6 +141,12 @@ disposition (fixed-in-blueprint commit, or #423 phase mapping).
 clear blueprint defect → fix, verify per AGENTS.md flow, conventional
 commit upstream before run 2; or (b) structural → disposition recorded as
 a #423 phase mapping. Run 2 must start from the improved blueprint.
+
+**Design review checkpoint (hard pause — run 2 is gated on it):** after
+triage, present the run-1 log and triage outcomes to the user and
+re-review this design — including the live-log protocol itself (§6) and
+the run-2 sequence — incorporating what run 1 taught. Run 2 starts only
+on explicit user approval of the (possibly revised) design.
 
 **Feedback (after run 2):** log + matrix committed here; summary comment
 on #423 mapping every problem to a phase; phase-3 "create repo" checkbox
