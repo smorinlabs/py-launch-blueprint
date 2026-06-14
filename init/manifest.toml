@@ -112,6 +112,7 @@ files = [
   "docs/adr/0016-app-short-name-placeholder.md",        # 10x
   "docs/adr/README.md",                                 # 2x
   "docs/design/0001-plbp-cli-conventions.md",           # 28x
+  "docs/design/0005-hexagonal-architecture-and-enforcement.md", # plbp refs
   "docs/design/README.md",                              # 2x
   "docs/research/0003-init-post-init-analysis.md",      # 5x
   "docs/source/index.md",                               # 14x
@@ -155,6 +156,7 @@ files = [
   "EXAMPLEWEB.md",                                    # 12x
   "docs/design/0001-plbp-cli-conventions.md",         # 26x
   "docs/design/0002-web-api-conventions.md",          # 7x
+  "docs/design/0005-hexagonal-architecture-and-enforcement.md", # PLBP refs
   "docs/adr/0001-app-short-name-plbp.md",             # 2x
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
   "docs/adr/0006-stable-error-codes-hints-crash-log.md", # 5x
@@ -308,6 +310,7 @@ files = [
   "Dockerfile",                                        # 1x
   "docs/adr/0013-web-service-best-practices.md",       # 2x
   "docs/design/0002-web-api-conventions.md",           # 2x
+  "docs/design/0005-hexagonal-architecture-and-enforcement.md", # py_launch_blueprint import paths
   "docs/source/web/index.md",                          # 1x
   "scripts/export_openapi.py",                         # 2x
   "release-please-config.json",                        # 1x
