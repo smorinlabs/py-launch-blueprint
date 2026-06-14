@@ -54,6 +54,11 @@ files = [
   "src/py_launch_blueprint/core/paths.py",               # 1x
   "src/py_launch_blueprint/core/services/__init__.py",   # 1x
   "src/py_launch_blueprint/core/services/projects.py",   # 1x
+  "src/py_launch_blueprint/composition.py",              # 1x (HEX-04)
+  "src/py_launch_blueprint/core/ports.py",               # 1x (HEX-11)
+  "src/py_launch_blueprint/core/adapters/__init__.py",   # 1x
+  "src/py_launch_blueprint/core/adapters/py_api.py",     # 1x (HEX-13)
+  "src/py_launch_blueprint/core/adapters/in_memory.py",  # 1x (HEX-41)
   "src/py_launch_blueprint/core/settings.py",            # 1x
   "src/py_launch_blueprint/web/__init__.py",             # 1x
   "src/py_launch_blueprint/web/__main__.py",             # 1x
@@ -112,6 +117,7 @@ files = [
   "docs/adr/0016-app-short-name-placeholder.md",        # 10x
   "docs/adr/README.md",                                 # 2x
   "docs/design/0001-plbp-cli-conventions.md",           # 28x
+  "docs/design/0005-hexagonal-architecture-and-enforcement.md", # plbp refs
   "docs/design/README.md",                              # 2x
   "docs/research/0003-init-post-init-analysis.md",      # 5x
   "docs/source/index.md",                               # 14x
@@ -178,6 +184,7 @@ files = [
   "src/py_launch_blueprint/web/settings.py",          # 1x
   "tests/cli/test_output.py",                         # 15x
   "tests/cli/test_pylb.py",                           # 38x
+  "tests/core/test_projects_service.py",              # PLBP005/PLBP006 codes
   "tests/web/test_app.py",                            # 2x
   "tests/web/test_logging.py",                        # 3x
   "tests/web/test_settings.py",                       # 5x
@@ -275,6 +282,7 @@ files = [
   "docs/source/tools/ty.md",                           # 2x
   "docs/source/tutorials/full_project_setup.md",       # 3x
   "lefthook.yml",                                      # 1x
+  "tach.toml",                                         # HEX-31 module paths
   "src/py_launch_blueprint/__init__.py",               # 1x
   "src/py_launch_blueprint/cli/__init__.py",           # 1x
   "src/py_launch_blueprint/core/diagnostics.py",       # 3x
@@ -293,6 +301,12 @@ files = [
   "src/py_launch_blueprint/core/models.py",            # 1x
   "src/py_launch_blueprint/core/services/__init__.py", # 1x
   "src/py_launch_blueprint/core/services/projects.py", # 3x
+  "src/py_launch_blueprint/composition.py",            # HEX-04 composition root
+  "src/py_launch_blueprint/core/ports.py",             # HEX-11 ports
+  "src/py_launch_blueprint/core/adapters/py_api.py",   # HEX-13 http adapter
+  "src/py_launch_blueprint/core/adapters/in_memory.py", # HEX-41 in-memory fake
+  "tests/core/test_projects_service.py",               # ring-2 use-case tests
+  "tests/core/test_py_api_repository.py",              # adapter mapping tests
   "src/py_launch_blueprint/core/settings.py",          # 1x
   "src/py_launch_blueprint/web/__init__.py",           # 1x
   "src/py_launch_blueprint/web/__main__.py",           # 4x
@@ -308,6 +322,7 @@ files = [
   "Dockerfile",                                        # 1x
   "docs/adr/0013-web-service-best-practices.md",       # 2x
   "docs/design/0002-web-api-conventions.md",           # 2x
+  "docs/design/0005-hexagonal-architecture-and-enforcement.md", # py_launch_blueprint import paths
   "docs/source/web/index.md",                          # 1x
   "scripts/export_openapi.py",                         # 2x
   "release-please-config.json",                        # 1x

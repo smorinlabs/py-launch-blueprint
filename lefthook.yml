@@ -69,6 +69,11 @@ pre-push:
     # WL-001: locked via the dev group (`uv run`, not floating `uvx`).
     bandit:
       run: uv run bandit -r src/py_launch_blueprint/ -c pyproject.toml
+    # HEX-30 — architectural import boundaries (import-linter). At pre-push
+    # (not pre-commit) since it builds the whole import graph. WL-001: locked
+    # via the dev group.
+    import-boundaries:
+      run: uv run lint-imports
     # Init-system integrity — these are the checks the blueprint-guard
     # CI workflow runs. Caught locally at pre-push, they prevent the
     # "push → CI fails → push again" cycle that PR #319 went through.

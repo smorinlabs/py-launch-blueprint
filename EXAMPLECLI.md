@@ -70,6 +70,8 @@ line when one exists; JSON carries them as `error_code` / `hint`.
 | 1    | config error | `PLBP001`  | configuration missing/invalid          |
 | 2    | auth error   | `PLBP002`  | token missing/rejected                 |
 | 3    | API error    | `PLBP003`  | remote call failed                     |
+| 3    | API error    | `PLBP005`  | project not found (`projects get`)     |
+| 3    | API error    | `PLBP006`  | workspace not found (`--workspace`)    |
 | 4    | I/O or bug   | `PLBP000`  | unexpected error (see crash log)       |
 | 5    | interrupted  | `PLBP004`  | Ctrl-C / aborted prompt                |
 
