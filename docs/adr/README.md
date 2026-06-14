@@ -35,7 +35,8 @@ Start from [`template.md`](template.md).
 | [0014](0014-repo-simplification-batch.md) | Repo simplification batch — canonical agent config, skill placement, docs & CI layout (SIMP series) | Accepted |
 | [0015](0015-one-logging-pipeline-two-profiles.md) | One logging pipeline, two front-end profiles (CLI vs web policy) | Accepted |
 | [0016](0016-app-short-name-placeholder.md) | App short name is an obvious placeholder (`acmeapp`), not a brand | Accepted |
-| [0017](0017-testing-strategy-and-tooling.md) | Testing strategy & tooling — parallel/timeout/randomized runs, branch coverage, property + port-contract tests, weekly canary | Accepted |
+| [0017](0017-hexagonal-core-and-boundary-enforcement.md) | Hexagonal core with mechanical boundary enforcement | Accepted |
+| [0018](0018-testing-strategy-and-tooling.md) | Testing strategy & tooling — parallel/timeout/randomized runs, branch coverage, property + port-contract tests, weekly canary | Accepted |
 
 ## Note on historical decisions
 

@@ -135,7 +135,7 @@ jobs:
       - name: Run tests with coverage
         # Default skips slow/live markers (ITM-046 addopts); CI runs everything.
         # WL-008: `-n auto` parallelises across the runner's cores; branch
-        # coverage is on via [tool.coverage.run] (ADR-0017). xdist + pytest-cov
+        # coverage is on via [tool.coverage.run] (ADR-0018). xdist + pytest-cov
         # combine coverage from all workers automatically.
         run: uv run --no-sync pytest -m "" -n auto --cov=py_launch_blueprint --cov-report=xml
       - name: Upload coverage to Codecov
