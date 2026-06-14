@@ -30,6 +30,7 @@ files = [
   ".github/workflows/manual-pr-security-scan.yml",       # 1x
   ".readthedocs.yaml",                                   # 1x
   "LICENSE",                                             # 1x
+  "docs/adr/0017-hexagonal-core-and-boundary-enforcement.md", # 1x (Deciders)
   "docs/research/0003-init-post-init-analysis.md",       # 1x
   "docs/source/_templates/base.html",                    # 1x
   "docs/source/conf.py",                                 # 2x
