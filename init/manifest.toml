@@ -414,6 +414,46 @@ path = ".github/workflows/blueprint-guard.yml"
 reason = "guard CI is blueprint-only"
 
 [[remove]]
+path = ".github/workflows/init-integration.yml"
+reason = "init five-mode self-test CI is blueprint-only; fails in a generated repo (already initialized) — P0004 dogfood PROBLEM-10"
+
+[[remove]]
+path = "docs/research/0004-template-press-dogfood-log.md"
+reason = "template-press dogfood development log is blueprint-only history — P0004"
+
+[[remove]]
+path = "docs/superpowers/specs/2026-06-12-template-press-bootstrap-dogfood-design.md"
+reason = "template-press dogfood spec (v1) is blueprint-only history — P0004"
+
+[[remove]]
+path = "docs/superpowers/specs/2026-06-13-template-press-bootstrap-dogfood-v2-design.md"
+reason = "template-press dogfood spec (v2) is blueprint-only history — P0004"
+
+[[remove]]
+path = "docs/superpowers/plans/2026-06-12-template-press-bootstrap-dogfood.md"
+reason = "template-press dogfood plan is blueprint-only history — P0004"
+
+[[remove]]
+path = "docs/design/0005-template-press-tui-design.md"
+reason = "template-press engine TUI design is blueprint/engine history — P0004"
+
+[[remove]]
+path = "prototypes/press_tui/decisions.py"
+reason = "template-press TUI prototype is engine history; moves to template_press/ — P0004"
+
+[[remove]]
+path = "prototypes/press_tui/interview.py"
+reason = "template-press TUI prototype is engine history; moves to template_press/ — P0004"
+
+[[remove]]
+path = "prototypes/press_tui/test_decisions.py"
+reason = "template-press TUI prototype is engine history; moves to template_press/ — P0004"
+
+[[remove]]
+path = "prototypes/press_tui/README.md"
+reason = "template-press TUI prototype is engine history; moves to template_press/ — P0004"
+
+[[remove]]
 path = ".github/workflows/update-contributors.yml"
 reason = "py-launch-blueprint contributors automation is project-specific"
 
@@ -453,9 +493,23 @@ reason = "Phase-0 one-off discovery script"
 path = "uv.lock"
 command = ["uv", "lock"]
 
+# P0004 dogfood PROBLEM-05: plain `bun install` leaves the workspace `name`
+# (e.g. "py-launch-blueprint-tooling") embedded in bun.lock — bun considers
+# the lock satisfiable and won't rewrite it, leaking blueprint identity into
+# every fork. Force a clean regeneration so the renamed package.json name is
+# picked up. run_regenerates executes argv with no shell, so a `bash -c`
+# wrapper would be skipped on Windows checkouts (no bash on PATH). Drive the
+# delete-then-reinstall through Python (guaranteed present, 3.12+ per the
+# repo) so the regen is cross-platform.
 [[regenerate]]
 path = "bun.lock"
-command = ["bun", "install"]
+command = [
+    "uv",
+    "run",
+    "python",
+    "-c",
+    "import pathlib, subprocess; pathlib.Path('bun.lock').unlink(missing_ok=True); subprocess.run(['bun', 'install'], check=True)",
+]
 
 # CLI --help snapshots (WL-023): regenerated, not text-replaced — help output
 # re-wraps at 80 columns for the renamed program name, which string
