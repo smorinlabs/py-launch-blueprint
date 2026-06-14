@@ -430,6 +430,10 @@ path = "docs/superpowers/specs/2026-06-13-template-press-bootstrap-dogfood-v2-de
 reason = "template-press dogfood spec (v2) is blueprint-only history — P0004"
 
 [[remove]]
+path = "docs/superpowers/specs/2026-06-13-template-press-bootstrap-dogfood-v3-design.md"
+reason = "template-press dogfood spec (v3, convergence) is blueprint-only history — P0004"
+
+[[remove]]
 path = "docs/superpowers/plans/2026-06-12-template-press-bootstrap-dogfood.md"
 reason = "template-press dogfood plan is blueprint-only history — P0004"
 
