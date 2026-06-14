@@ -11,11 +11,6 @@
           "type": "toml",
           "path": "pyproject.toml",
           "jsonpath": "$.project.version"
-        },
-        {
-          "type": "json",
-          "path": "docs/api/openapi.json",
-          "jsonpath": "$.info.version"
         }
       ],
       "changelog-sections": [
