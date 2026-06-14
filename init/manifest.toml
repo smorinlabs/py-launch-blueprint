@@ -497,10 +497,19 @@ command = ["uv", "lock"]
 # (e.g. "py-launch-blueprint-tooling") embedded in bun.lock — bun considers
 # the lock satisfiable and won't rewrite it, leaking blueprint identity into
 # every fork. Force a clean regeneration so the renamed package.json name is
-# picked up. (run_regenerates uses argv, no shell, so wrap in `bash -c`.)
+# picked up. run_regenerates executes argv with no shell, so a `bash -c`
+# wrapper would be skipped on Windows checkouts (no bash on PATH). Drive the
+# delete-then-reinstall through Python (guaranteed present, 3.12+ per the
+# repo) so the regen is cross-platform.
 [[regenerate]]
 path = "bun.lock"
-command = ["bash", "-c", "rm -f bun.lock && bun install"]
+command = [
+    "uv",
+    "run",
+    "python",
+    "-c",
+    "import pathlib, subprocess; pathlib.Path('bun.lock').unlink(missing_ok=True); subprocess.run(['bun', 'install'], check=True)",
+]
 
 # CLI --help snapshots (WL-023): regenerated, not text-replaced — help output
 # re-wraps at 80 columns for the renamed program name, which string
