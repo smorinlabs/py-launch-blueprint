@@ -245,6 +245,13 @@ alias tc := typecheck
 
 alias li := lint-imports
 
+# Verify bounded-context boundaries (HEX-31; tach)
+[group('dev')]
+@tach:
+    echo "Checking module boundaries..."
+    echo "  tach (HEX-31)"
+    uv run tach check
+
 # Run tests
 [group('test'), group('dev')]
 @test *options:
@@ -265,7 +272,7 @@ alias t := test
 
 # Run all checks
 [group('test'), group('dev'), group('quick start')]
-@check: test lint typecheck lint-imports check-yaml check-spelling check-editorconfig
+@check: test lint typecheck lint-imports tach check-yaml check-spelling check-editorconfig
     echo "All checks passed!"
 
 alias ca := check

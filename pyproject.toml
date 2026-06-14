@@ -74,9 +74,9 @@ otel = [
 dev = [
   "pytest>=7.0.0",
   "pytest-cov>=4.1.0",
-  "ty>=0.0.1a16",        # per ADR-03 (pre-1.0; bump as needed)
+  "ty>=0.0.1a16", # per ADR-03 (pre-1.0; bump as needed)
   "ruff>=0.1.0",
-  "httpx>=0.27.0",       # fastapi TestClient transport (tests/web; web extra)
+  "httpx>=0.27.0", # fastapi TestClient transport (tests/web; web extra)
   "schemathesis>=4.0.0", # WEB-50 contract fuzzing from the OpenAPI schema
   "types-requests",
   "types-Pygments",
@@ -88,10 +88,11 @@ dev = [
   "codespell>=2.4.0",
   "editorconfig-checker>=3.0.0",
   "yamllint>=1.35.0",
-  "pip-audit>=2.9.0",            # WL-014 — `just audit` + scheduled dep-audit workflow
-  "twine>=6.1.0",                # WL-004 — dist metadata check in the build-smoke CI job
-  "syrupy>=4.8.0",               # WL-023 — CLI --help snapshot tests
-  "import-linter>=2.0",          # HEX-30 — architectural layer/boundary rules
+  "pip-audit>=2.9.0", # WL-014 — `just audit` + scheduled dep-audit workflow
+  "twine>=6.1.0", # WL-004 — dist metadata check in the build-smoke CI job
+  "syrupy>=4.8.0", # WL-023 — CLI --help snapshot tests
+  "import-linter>=2.0", # HEX-30 — architectural layer/boundary rules
+  "tach>=0.35.0",
 ]
 
 docs = [
@@ -160,10 +161,10 @@ lint.ignore = [
   "E501", # line too long (formatter owns this)
   "W293", # whitespace on blank line (formatter owns trim_trailing)
 ]
+lint.unfixable = [] # Rules that should not be fixed automatically
 
 # Allow autofix behavior for specific rules
 fix = true
-lint.unfixable = [] # Rules that should not be fixed automatically
 
 # Exclude files/folders
 exclude = [

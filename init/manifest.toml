@@ -282,6 +282,7 @@ files = [
   "docs/source/tools/ty.md",                           # 2x
   "docs/source/tutorials/full_project_setup.md",       # 3x
   "lefthook.yml",                                      # 1x
+  "tach.toml",                                         # HEX-31 module paths
   "src/py_launch_blueprint/__init__.py",               # 1x
   "src/py_launch_blueprint/cli/__init__.py",           # 1x
   "src/py_launch_blueprint/core/diagnostics.py",       # 3x

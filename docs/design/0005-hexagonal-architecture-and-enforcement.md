@@ -216,11 +216,19 @@ stage that can catch its class of error:
 
 | Tool | Purpose | When |
 |---|---|---|
-| `import-linter` | Layer dependency rules (HEX-01) | `just check` + pre-push hook |
-| `tach` | Bounded-context isolation + strict interfaces (HEX-02) | `just check` (optional; valuable once 2+ contexts) |
-| `ruff` TID251 | Ban framework imports in the wrong layer | pre-commit (already in the hook chain) |
+| `import-linter` | Layer dependency rules + framework-bleed (HEX-01/HEX-32), authoritative | `just check` + pre-push hook |
+| `tach` | Bounded-context isolation (HEX-31) | `just check` |
+| `ruff` TID251 | Fast framework-bleed guard in `core/` (pre-commit first line) | pre-commit (nested `core/ruff.toml`) |
 | `ty` / pyright | Port (`Protocol`) satisfaction | `just check` (already running) |
 | `__all__` | IDE ergonomics + documentation of the public surface | at authoring time |
+
+All four executable checks are wired today against the current layer-first
+layout (`core` / `cli` / `web`): `import-linter` and `tach` run in `just check`
+(import-linter also at pre-push), and `ruff` TID251 rides the existing
+pre-commit ruff hook via a nested `core/ruff.toml`. Framework-bleed is enforced
+in two places on purpose — `ruff` as the fast pre-commit first line scoped to
+`core/`, `import-linter` as the authoritative graph-wide check; `import-linter`
+is the system of record where they overlap.
 
 - **HEX-30 — `import-linter` owns the layer rule.** Its `layers` contract
   expresses HEX-01 in a single declaration; a `forbidden` contract keeps the
@@ -265,17 +273,20 @@ stage that can catch its class of error:
   declared public surface (`ProjectsService`, `Project`), never reach in to
   `projects.adapters.py_api.PyApiProjectsRepository`. This fails *closed*
   (new internal modules are private automatically), where an `import-linter`
-  `forbidden` blacklist fails *open* (you must enumerate each internal). Adopt
-  `tach` when the second context lands; until then HEX-30 suffices.
+  `forbidden` blacklist fails *open* (you must enumerate each internal). It is
+  wired now (`tach.toml`, baselined with `tach sync`, run in `just check`);
+  with one context today it mostly restates the cli/web/core boundaries
+  import-linter already guards, and earns its keep — independence + strict
+  interfaces — at the second context.
 
 - **HEX-32 — `ruff` TID251 is the fast, coarse framework guard.** A
-  `banned-api` rule catches the common framework-bleed cases at pre-commit
-  speed (e.g. nothing outside `interfaces/web` imports `fastapi`, nothing
-  outside `interfaces/cli` imports `click`, nothing outside `adapters`
-  imports `requests`). Per-layer scoping uses a nested `ruff.toml` in the
-  protected subtree; the *precise* "framework X only in layer Y" rule is
-  better expressed as an `import-linter` `forbidden` contract — ruff is the
-  cheap first line, not the system of record.
+  `banned-api` rule catches framework-bleed at pre-commit speed. Because
+  ruff's `banned-api` is global, it is scoped to the layer via a nested
+  `src/py_launch_blueprint/core/ruff.toml` that bans `click`/`fastapi`/
+  `uvicorn` under `core/` (`requests` stays allowed — the HTTP adapter needs
+  it). The authoritative, graph-wide framework-bleed rule remains the
+  `import-linter` contract; ruff is the cheap first line, not the system of
+  record.
 
 - **HEX-33 — `ty` proves the seam.** Structural typing means an adapter
   satisfies a port without inheritance; `ty`/pyright verifies that
@@ -341,9 +352,16 @@ Each step ships independently and leaves `just check` green.
    `interfaces/cli/view_models.py`, updating CLI imports in the same commit so
    the build never breaks.
 4. **Wire enforcement.** Add `import-linter` (HEX-30) to the dev group,
-   `just check`, and the pre-push hook; add the `ruff` TID251 rules (HEX-32).
-5. **Reshape to feature-first** (HEX-02) and adopt `tach` (HEX-31) *when the
-   second capability arrives* — not before.
+   `just check`, and the pre-push hook; add `tach` (HEX-31) to `just check`;
+   add the `ruff` TID251 guard for `core/` (HEX-32). *(Done.)*
+5. **Reshape to feature-first** (HEX-02) *when the second capability arrives* —
+   not before. (`tach` is already wired per step 4; the reshape is what unlocks
+   its per-context independence + strict-interface value.)
+
+Still open after this PR (documented, deliberately deferred): **moving the view
+models to the CLI** (HEX-15) — blocked on decoupling the result-model-as-output
+contract that `core/diagnostics` produces and the web returns (WEB-03); and the
+**feature-first reshape** (step 5).
 
 ## Consequences
 
