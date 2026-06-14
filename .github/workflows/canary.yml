@@ -1,0 +1,52 @@
+# WL-012 - scheduled "canary" run: the FULL suite (incl. the slow/live markers
+# the per-PR run also exercises) against a FRESHLY-RESOLVED dependency graph.
+#
+# Why separate from ci.yml: every other job pins to uv.lock (WL-002) so PRs are
+# reproducible. This one deliberately drops the lock and re-resolves to the
+# newest allowed versions (`uv sync --upgrade`), so an upstream breaking change
+# in a transitive dep (a new pydantic/click/requests release) surfaces in a
+# calm scheduled run we can triage — not inside an unrelated feature PR weeks
+# later. It NEVER gates a PR (schedule + manual dispatch only), so a red canary
+# is a signal, not a blocker.
+
+name: canary
+
+on:
+  schedule:
+    - cron: '0 6 * * 2'  # weekly, Tuesday 06:00 UTC (offset from dep-audit's Monday)
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: canary
+  cancel-in-progress: true
+
+jobs:
+  canary:
+    name: canary (py${{ matrix.python-version }}, latest deps)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false  # report both Python legs even if one breaks
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Re-resolve to the latest allowed dependency versions
+        # --upgrade ignores the committed uv.lock pins and picks the newest
+        # versions satisfying pyproject constraints. This is the whole point of
+        # the canary; do NOT add --locked here.
+        run: uv sync --upgrade --group dev --extra web
+
+      - name: Run the full suite (incl. slow + live markers)
+        # `-m ""` clears the default slow/live exclusion; `-n auto` parallelises.
+        # No coverage upload — the canary is about dependency health, not %.
+        run: uv run --no-sync pytest -m "" -n auto
