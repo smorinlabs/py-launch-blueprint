@@ -50,7 +50,11 @@ def test_completion_bash(runner):
 
 @pytest.fixture
 def mock_service():
-    with patch("py_launch_blueprint.cli.commands.projects.ProjectsService") as mock_cls:
+    # The command builds its service via the composition root; patch that seam
+    # so the CLI exercises real rendering/exit-code paths over a fake service.
+    with patch(
+        "py_launch_blueprint.cli.commands.projects.build_projects_service"
+    ) as mock_build:
         svc = Mock()
         svc.list_projects.return_value = [
             Project(id="1", name="Test Project", workspace="Test WS")
@@ -58,7 +62,7 @@ def mock_service():
         svc.get_project.return_value = Project(
             id="1", name="Test Project", workspace="Test WS"
         )
-        mock_cls.return_value = svc
+        mock_build.return_value = svc
         yield svc
 
 

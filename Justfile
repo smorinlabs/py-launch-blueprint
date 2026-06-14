@@ -236,6 +236,15 @@ alias l := lint
 
 alias tc := typecheck
 
+# Verify architectural import boundaries (HEX-30; import-linter)
+[group('dev')]
+@lint-imports:
+    echo "Checking import boundaries..."
+    echo "  import-linter (HEX-30)"
+    uv run lint-imports
+
+alias li := lint-imports
+
 # Run tests
 [group('test'), group('dev')]
 @test *options:
@@ -256,7 +265,7 @@ alias t := test
 
 # Run all checks
 [group('test'), group('dev'), group('quick start')]
-@check: test lint typecheck check-yaml check-spelling check-editorconfig
+@check: test lint typecheck lint-imports check-yaml check-spelling check-editorconfig
     echo "All checks passed!"
 
 alias ca := check

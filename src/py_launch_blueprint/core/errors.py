@@ -93,3 +93,17 @@ class APIError(PyError):
 
     exit_code = ExitCode.API
     error_code = ERROR_CODE_API
+
+
+class ProjectNotFoundError(APIError):
+    """A requested project does not exist upstream.
+
+    A subclass of :class:`APIError` so the exit-code/HTTP-status taxonomy and
+    every existing handler treat "not found" exactly as the upstream-failure
+    case it descends from; the distinct type lets callers branch when they
+    care (HEX-12).
+    """
+
+
+class WorkspaceNotFoundError(APIError):
+    """A workspace name could not be resolved to a gid (HEX-12)."""

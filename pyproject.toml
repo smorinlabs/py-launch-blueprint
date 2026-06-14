@@ -91,6 +91,7 @@ dev = [
   "pip-audit>=2.9.0",            # WL-014 — `just audit` + scheduled dep-audit workflow
   "twine>=6.1.0",                # WL-004 — dist metadata check in the build-smoke CI job
   "syrupy>=4.8.0",               # WL-023 — CLI --help snapshot tests
+  "import-linter>=2.0",          # HEX-30 — architectural layer/boundary rules
 ]
 
 docs = [
@@ -253,3 +254,53 @@ ignore-words-list = "ans,porjects"
 # its test ("plbp porjects" must suggest "projects").
 check-filenames = true
 check-hidden = false
+
+# HEX-30 — import-linter: enforce the hexagonal boundaries described in
+# docs/design/0005-hexagonal-architecture-and-enforcement.md. Run via
+# `uv run lint-imports` (locked dev group, WL-001); wired into `just check`
+# and the pre-push hook. Contracts match the CURRENT layer-first layout
+# (core / cli / web); the feature-first reshape (HEX-02) + tach come with the
+# second capability.
+[tool.importlinter]
+root_package = "py_launch_blueprint"
+# Required because the framework-bleed contract names external packages
+# (fastapi/click/uvicorn) as forbidden imports.
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "core never imports the front-ends (inward-only, HEX-01)"
+type = "forbidden"
+source_modules = ["py_launch_blueprint.core"]
+forbidden_modules = [
+  "py_launch_blueprint.cli",
+  "py_launch_blueprint.web",
+]
+
+[[tool.importlinter.contracts]]
+name = "cli and web are independent of each other"
+type = "independence"
+modules = [
+  "py_launch_blueprint.cli",
+  "py_launch_blueprint.web",
+]
+
+[[tool.importlinter.contracts]]
+name = "composition root is not imported by core (HEX-04)"
+type = "forbidden"
+source_modules = ["py_launch_blueprint.core"]
+forbidden_modules = ["py_launch_blueprint.composition"]
+
+[[tool.importlinter.contracts]]
+name = "core layering: models < services < adapters (HEX-01)"
+type = "layers"
+layers = [
+  "py_launch_blueprint.core.adapters",
+  "py_launch_blueprint.core.services",
+  "py_launch_blueprint.core.models",
+]
+
+[[tool.importlinter.contracts]]
+name = "core does not import web/cli frameworks (framework-bleed, HEX-32)"
+type = "forbidden"
+source_modules = ["py_launch_blueprint.core"]
+forbidden_modules = ["fastapi", "click", "uvicorn"]

@@ -66,7 +66,7 @@ and `ty` (port satisfaction).
   │   ├── application/
   │   │   ├── ports.py              #   ProjectsRepository  (Protocol)        ← driven port
   │   │   ├── services.py           #   ProjectsService     (use-cases only)
-  │   │   └── errors.py             #   ProjectNotFound, WorkspaceNotFound    ← application errors
+  │   │   └── errors.py             #   ProjectNotFoundError, WorkspaceNotFoundError    ← application errors
   │   └── adapters/
   │       ├── py_api.py             #   PyApiProjectsRepository (requests)    ← driven adapter
   │       └── in_memory.py          #   InMemoryProjectsRepository            ← test/dev adapter
@@ -148,7 +148,7 @@ and `ty` (port satisfaction).
           if workspace:
               gid = self._projects.resolve_workspace_gid(workspace)
               if gid is None:
-                  raise WorkspaceNotFound(f"Workspace not found: {workspace}")
+                  raise WorkspaceNotFoundError(f"Workspace not found: {workspace}")
           return self._projects.list_projects(workspace_gid=gid, limit=limit)
 
       def get_project(self, project_id: str) -> Project:
@@ -184,7 +184,7 @@ and `ty` (port satisfaction).
   the CLI to its `ExitCode`, the web layer to an HTTP status in
   `web/problems.py` (the `PyError → status` table already mirrors the
   `ExitCode` taxonomy). *New* errors specific to a capability
-  (`ProjectNotFound`) live in that capability's `application/errors.py` and
+  (`ProjectNotFoundError`) live in that capability's `application/errors.py` and
   subclass the shared base.
 
 - **HEX-15 — view models are a CLI concern.** `ProjectList`/`CLIResult` with
