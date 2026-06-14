@@ -41,7 +41,7 @@ The TUI is the surface that makes that model low-fatigue for a human.
 
 ## 2. Architecture fit (no new logic in the frontend)
 
-```
+```text
         core (pure)                         TUI frontend (this doc)
   ┌───────────────────────┐          ┌──────────────────────────────┐
   │ schema  (features/*)  │  board   │ interview.py  first run        │
@@ -73,7 +73,7 @@ cost**. Crucially (fixing PROBLEM-12): the interview distinguishes
 confirm step. The decision graph prunes: answering "no" to a parent
 removes its sub-questions entirely.
 
-```
+```text
  ┌─ template-press · setup (first run) ───────────────────────────┐
  │  I'll ask a few questions, then show you a board. "later" is    │
  │  always fine — nothing is written until you confirm.           │
@@ -98,7 +98,7 @@ The second-session question is never "ask me everything again," it's
 "where was I?" The board is the answer. Status glyphs are computed from
 reality on open.
 
-```
+```text
  ┌─ template-press · setup board ───────────────────── checks: 3s ago ─┐
  │                                                                     │
  │  Publishing            ● enabled         2 of 4 done                │
@@ -129,7 +129,7 @@ shown plan + confirm.
 Pressing `enter` on a `⚠ needs-you` task opens a card that **opens the
 page, pre-computes every value, and verifies completion itself**:
 
-```
+```text
  ┌─ PyPI trusted publishing (manual, ~3 min) ──────────────────┐
  │  1. open  https://pypi.org/manage/project/template-press/    │
  │           settings/publishing/                              │

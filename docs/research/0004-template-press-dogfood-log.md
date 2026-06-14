@@ -1,6 +1,8 @@
 # Template-Press Dogfood — Live Log
 
 - **Spec:** ../superpowers/specs/2026-06-12-template-press-bootstrap-dogfood-design.md
+  (superseded for the build loop by the operative v2 design,
+  ../superpowers/specs/2026-06-13-template-press-bootstrap-dogfood-v2-design.md)
 - **Issue:** https://github.com/smorinlabs/py-launch-blueprint/issues/423
 - **Started:** 2026-06-13T01:31:39Z
 

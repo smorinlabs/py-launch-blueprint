@@ -12,7 +12,9 @@ sequence with expected outcomes, followed by a log update. Three phases —
 Run 1 (Tasks 1–12), Triage + design review hard pause (Tasks 13–14), Run 2
 (Tasks 15–21, **provisional**: subject to revision at the Task 14
 checkpoint, which gates them on explicit user approval). Spec:
-`docs/superpowers/specs/2026-06-12-template-press-bootstrap-dogfood-design.md`.
+`docs/superpowers/specs/2026-06-12-template-press-bootstrap-dogfood-design.md`
+(superseded for the build loop by the operative v2 design,
+`docs/superpowers/specs/2026-06-13-template-press-bootstrap-dogfood-v2-design.md`).
 
 **Tech Stack:** gh CLI, uv, just, `init/init.py`, `init/post_init.py`,
 `init/init_doctor.py`, `repo-secrets` skill, GitHub REST via `gh api`.
@@ -29,8 +31,8 @@ step says otherwise; dry-run repo steps run in `~/c/blueprint-dryrun`.
 
 ## Phase A — Run 1: blueprint-dryrun
 
-**Skill invocation note (spec §4 step 2):** Tasks 2–8 are the
-`new-python-project` skill's runbook. The executor MUST invoke that skill
+**Skill invocation note:** Tasks 2–8 implement the `new-python-project`
+skill's runbook. The executor MUST invoke that skill
 explicitly (Skill tool) at the start of Task 2 and follow it; the tasks
 below mirror its steps so progress is trackable and deviations between
 skill text and reality are loggable (the runbook's accuracy is itself
