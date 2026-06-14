@@ -57,7 +57,7 @@ def main() -> None:
     from textual.containers import VerticalScroll
     from textual.widgets import Button, Footer, Header, Label, RadioButton, RadioSet
 
-    CHOICES = (("Yes", "y"), ("No", "n"), ("Later", "l"))
+    CHOICES: tuple[tuple[str, str], ...] = (("Yes", "y"), ("No", "n"), ("Later", "l"))
 
     class InterviewApp(App):
         CSS = "RadioSet { margin: 1 2; } #out { margin: 1 2; }"

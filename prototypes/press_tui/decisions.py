@@ -23,21 +23,20 @@ from dataclasses import dataclass, field
 # Four-state lifecycle (design 0004 D9). ``removed`` is reached only behind a
 # shown plan + confirm and is not an interview answer — the interview offers
 # enabled / dormant(no) / deferred(later); removal happens later on the board.
-ENABLED = "enabled"
-DORMANT = "dormant"
-DEFERRED = "deferred"
-REMOVED = "removed"
+ENABLED: str = "enabled"
+DORMANT: str = "dormant"
+DEFERRED: str = "deferred"
+REMOVED: str = "removed"
 
 # What a single keystroke means. Empty / EOF is deliberately absent here so it
 # falls through to the default (deferred) — that IS the PROBLEM-12 fix.
-ANSWER_TO_STATE = {
+ANSWER_TO_STATE: dict[str, str] = {
     "y": ENABLED,
     "yes": ENABLED,
     "n": DORMANT,
     "no": DORMANT,
     "l": DEFERRED,
     "later": DEFERRED,
-    "": DEFERRED,
 }
 
 
