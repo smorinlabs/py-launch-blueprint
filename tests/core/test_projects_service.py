@@ -48,3 +48,15 @@ def test_get_project_missing_raises():
     svc = _service(projects=[])
     with pytest.raises(ProjectNotFoundError):
         svc.get_project("nope")
+
+
+def test_workspace_resolution_is_case_insensitive():
+    # matches the live adapter, which lowercases both sides
+    projects = [Project(id="1", name="A", workspace="Acme")]
+    svc = _service(projects=projects, workspaces={"Acme": "g1"})
+    assert [p.id for p in svc.list_projects(workspace="acme")] == ["1"]
+
+
+def test_not_found_errors_have_distinct_stable_codes():
+    assert ProjectNotFoundError("x").error_code == "PLBP005"
+    assert WorkspaceNotFoundError("x").error_code == "PLBP006"

@@ -1,10 +1,10 @@
 # 0005 — Hexagonal architecture & boundary enforcement (the HEX-xx baseline)
 
-Status: Proposed.
-Type: Design / convention.
-Created: 2026-06-14.
-Applies to: `src/py_launch_blueprint/` package structure, the CLI and web
-front-ends, and the dev/CI tooling that keeps the boundaries honest.
+- **Status:** Proposed
+- **Type:** Design / convention
+- **Created:** 2026-06-14
+- **Applies to:** `src/py_launch_blueprint/` package structure, the CLI and web
+  front-ends, and the dev/CI tooling that keeps the boundaries honest.
 
 This doc specifies how the core logic is structured so it can be driven from
 multiple front-ends (CLI today, web behind the `web` extra, more later) and

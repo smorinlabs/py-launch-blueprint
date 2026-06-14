@@ -37,7 +37,9 @@ class InMemoryProjectsRepository:
         workspaces: dict[str, str] | None = None,
     ) -> None:
         self._projects = list(projects or [])
-        self._workspaces = dict(workspaces or {})
+        # Keys lowercased to match the live adapter's case-insensitive
+        # workspace-name resolution (avoids adapter drift in service tests).
+        self._workspaces = {k.lower(): v for k, v in (workspaces or {}).items()}
 
     def list_projects(
         self, *, workspace_gid: str | None = None, limit: int = 200
@@ -47,7 +49,7 @@ class InMemoryProjectsRepository:
             items = [
                 p
                 for p in items
-                if self._workspaces.get(p.workspace or "") == workspace_gid
+                if self._workspaces.get((p.workspace or "").lower()) == workspace_gid
             ]
         return items[:limit]
 
@@ -55,4 +57,4 @@ class InMemoryProjectsRepository:
         return next((p for p in self._projects if p.id == project_id), None)
 
     def resolve_workspace_gid(self, name: str) -> str | None:
-        return self._workspaces.get(name)
+        return self._workspaces.get(name.lower())

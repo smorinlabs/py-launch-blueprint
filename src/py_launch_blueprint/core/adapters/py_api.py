@@ -53,11 +53,23 @@ class PyApiProjectsRepository:
             }
         )
 
-    def _request(self, method: str, path: str, **kwargs: Any) -> dict[str, Any]:
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        allow_not_found: bool = False,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         url = f"{self.BASE_URL}/{path.lstrip('/')}"
         log.debug("api_request", method=method, path=path)
         try:
             response = self.session.request(method, url, timeout=self.timeout, **kwargs)
+            # A 404 is a legitimate "absent" answer for by-id lookups, not a
+            # transport failure: surface it as empty data so the caller returns
+            # None and the service raises the domain not-found error (HEX-12).
+            if allow_not_found and response.status_code == 404:
+                return {}
             response.raise_for_status()
             data: dict[str, Any] = response.json()
             return data
@@ -103,9 +115,12 @@ class PyApiProjectsRepository:
 
     def get_project(self, project_id: str) -> Project | None:
         params = {"opt_fields": "name,workspace.name"}
-        raw = self._request("GET", f"/projects/{project_id}", params=params).get(
-            "data", {}
-        )
+        raw = self._request(
+            "GET",
+            f"/projects/{project_id}",
+            params=params,
+            allow_not_found=True,
+        ).get("data", {})
         if not raw:
             return None
         return self._to_project(raw)

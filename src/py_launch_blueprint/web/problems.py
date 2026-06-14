@@ -52,14 +52,14 @@ log = get_logger(__name__)
 PROBLEM_CONTENT_TYPE = "application/problem+json"
 
 # Lookup is by exact type (see ``handle_py_error``), so the ProjectNotFoundError /
-# WorkspaceNotFoundError subclasses are listed explicitly: they map to the same
-# upstream-failure status as their APIError parent, preserving prior behaviour.
+# WorkspaceNotFoundError subclasses are listed explicitly: a missing resource is
+# a client-visible 404, distinct from the 502 their APIError parent maps to.
 ERROR_STATUS: dict[type[PyError], int] = {
     AuthError: status.HTTP_401_UNAUTHORIZED,
     ConfigError: status.HTTP_500_INTERNAL_SERVER_ERROR,
     APIError: status.HTTP_502_BAD_GATEWAY,  # upstream Py API failed
-    ProjectNotFoundError: status.HTTP_502_BAD_GATEWAY,
-    WorkspaceNotFoundError: status.HTTP_502_BAD_GATEWAY,
+    ProjectNotFoundError: status.HTTP_404_NOT_FOUND,
+    WorkspaceNotFoundError: status.HTTP_404_NOT_FOUND,
 }
 
 

@@ -161,7 +161,6 @@ files = [
   "EXAMPLEWEB.md",                                    # 12x
   "docs/design/0001-plbp-cli-conventions.md",         # 26x
   "docs/design/0002-web-api-conventions.md",          # 7x
-  "docs/design/0005-hexagonal-architecture-and-enforcement.md", # PLBP refs
   "docs/adr/0001-app-short-name-plbp.md",             # 2x
   "docs/adr/0002-no-secrets-in-config-file.md",       # 3x
   "docs/adr/0006-stable-error-codes-hints-crash-log.md", # 5x
@@ -185,6 +184,7 @@ files = [
   "src/py_launch_blueprint/web/settings.py",          # 1x
   "tests/cli/test_output.py",                         # 15x
   "tests/cli/test_pylb.py",                           # 38x
+  "tests/core/test_projects_service.py",              # PLBP005/PLBP006 codes
   "tests/web/test_app.py",                            # 2x
   "tests/web/test_logging.py",                        # 3x
   "tests/web/test_settings.py",                       # 5x
