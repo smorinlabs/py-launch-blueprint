@@ -93,6 +93,12 @@ dev = [
   "syrupy>=4.8.0", # WL-023 — CLI --help snapshot tests
   "import-linter>=2.0", # HEX-30 — architectural layer/boundary rules
   "tach>=0.35.0",
+  # Testing-strategy shortlist (ADR-0017).
+  "pytest-xdist>=3.6",     # WL-008 — parallel test execution (`-n auto`)
+  "pytest-timeout>=2.3",   # WL-009 — per-test timeout guard (hung test fails loud)
+  "pytest-randomly>=3.15", # WL-010 — randomized order surfaces inter-test coupling
+  "hypothesis>=6.100",     # WL-013 — property-based tests at parse/serialize seams
+  "responses>=0.25",       # HEX-40 — HTTP mock for the port-contract suite
 ]
 
 docs = [
@@ -243,6 +249,22 @@ python_files = ["test_*.py"]
 markers = ["live: requires external services", "slow: takes >1s"]
 addopts = "-m 'not live and not slow'"
 strict_markers = true
+# WL-009 — a hung test fails loudly instead of burning a CI slot. `thread`
+# method (not the POSIX-only signal default) so the cap also holds on the
+# Windows matrix leg. A genuinely slow test overrides via
+# `@pytest.mark.timeout(N)`.
+timeout = 60
+timeout_method = "thread"
+# WL-010 (pytest-randomly) reorders tests each run with a printed, replayable
+# seed (`-p randomly --randomly-seed=…`) to surface hidden inter-test coupling;
+# it needs no config. Parallelism (WL-008, `-n auto`) is opt-in per invocation
+# (`just test -n auto`, and the CI full-suite + canary runs) rather than in
+# default addopts, so the fast local inner loop keeps clean `-x`/pdb behaviour.
+
+# Branch coverage (ADR-0017): count both-arms of every branch, not just line
+# execution, so the Codecov gate (WL-005) catches untested conditionals.
+[tool.coverage.run]
+branch = true
 
 # ITM-015 — codespell. US English baseline (default builtin="clear,rare"); empty
 # ignore list — add terms only when intentional. Decided round 9.
