@@ -3,10 +3,10 @@
 - **Status:** Accepted
 - **Date:** 2026-06-14
 - **Deciders:** Steve Morin (maintainer)
-- **Related:** design [`0005-hexagonal-architecture-and-enforcement.md`](../design/0005-hexagonal-architecture-and-enforcement.md)
-  (the spec + `HEX-xx` rules); PR #433 (implementation); ADR
-  [0015](0015-one-logging-pipeline-two-profiles.md) (the same CLI-vs-web
-  front-end split)
+- **Related:** design
+  [`0005`](../design/0005-hexagonal-architecture-and-enforcement.md)
+  (spec + `HEX-xx` rules); PR #433 (implementation);
+  ADR [0015](0015-one-logging-pipeline-two-profiles.md) (CLI-vs-web split)
 
 ## Context
 
