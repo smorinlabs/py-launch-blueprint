@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.2.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.1.1...v2.2.0) (2026-06-14)
+
+
+### Features
+
+* **prototype:** template-press post-init TUI interview skeleton ([32b1d27](https://github.com/smorinlabs/py-launch-blueprint/commit/32b1d27caf28077621955086c333bea5e59de559))
+
+
+### Bug Fixes
+
+* **init:** dogfood-driven blueprint fixes for clean generated repos ([00e59f5](https://github.com/smorinlabs/py-launch-blueprint/commit/00e59f549b47eaa2a4e562c28f33b21754aca3ed))
+* **init:** make bun.lock regen cross-platform via python ([d5bbe08](https://github.com/smorinlabs/py-launch-blueprint/commit/d5bbe0812d9cdcb5c520f8c5d0df6a7e98d0ad1c))
+* **lefthook:** correct marker-gate comment and wrap long run lines ([55dadad](https://github.com/smorinlabs/py-launch-blueprint/commit/55dadad6b70ea915f10221203d84e2a612d38c80))
+
+
+### Refactor
+
+* **prototypes:** type interview constants, drop redundant map entry ([6a92716](https://github.com/smorinlabs/py-launch-blueprint/commit/6a927163a75e624f6c977b1c35006cd8bd3de039))
+
 ## [2.1.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.1.0...v2.1.1) (2026-06-12)
 
 

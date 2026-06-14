@@ -3,7 +3,7 @@
   "info": {
     "title": "py-launch-blueprint",
     "description": "REST API over the same core library the CLI uses. Errors are RFC 9457 `application/problem+json`; business routes live under `/v1`; collections paginate with `page`/`size` query params.",
-    "version": "2.1.1"
+    "version": "2.2.0"
   },
   "paths": {
     "/healthz": {
@@ -70,7 +70,7 @@
           "projects"
         ],
         "summary": "List Projects",
-        "description": "List projects, optionally filtered by workspace name.\n\nPagination window note: pages are sliced from one upstream fetch (the\nservice's default limit), so ``total`` reflects the fetched window, not\nthe upstream universe. True pass-through pagination needs cursor support\nin ``ProjectsService`` \u2014 deferred; see \"Deliberately deferred\" in\ndocs/design/0002-web-api-conventions.md.",
+        "description": "List projects, optionally filtered by workspace name.\n\nPagination window note: pages are sliced from one upstream fetch (the\nservice's default limit), so ``total`` reflects the fetched window, not\nthe upstream universe. True pass-through pagination needs cursor support\nin ``ProjectsService`` — deferred; see \"Deliberately deferred\" in\ndocs/design/0002-web-api-conventions.md.",
         "operationId": "projects-list_projects",
         "parameters": [
           {
@@ -239,22 +239,22 @@
           },
           "total": {
             "type": "integer",
-            "minimum": 0.0,
+            "minimum": 0,
             "title": "Total"
           },
           "page": {
             "type": "integer",
-            "minimum": 1.0,
+            "minimum": 1,
             "title": "Page"
           },
           "size": {
             "type": "integer",
-            "minimum": 1.0,
+            "minimum": 1,
             "title": "Size"
           },
           "pages": {
             "type": "integer",
-            "minimum": 0.0,
+            "minimum": 0,
             "title": "Pages"
           }
         },
