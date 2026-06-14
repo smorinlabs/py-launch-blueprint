@@ -36,16 +36,26 @@ scan_staged() {
 
 scan_range() {
     require_gitleaks
-    local upstream
-    if ! upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null); then
-        echo "WARN: no upstream tracking branch; skipping range scan" >&2
-        exit 0
+    local base
+    if base=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null); then
+        : # Prefer the configured upstream tracking branch.
+    else
+        # ADR 0017: no upstream (e.g. the first push of a new branch) used to
+        # skip silently — the staged scans were the only cover for that window.
+        # Fall back to the remote default branch so new commits still get a
+        # range scan. origin/HEAD resolves to it; fall back to origin/main.
+        base=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null) || base="origin/main"
+        if ! git rev-parse --verify --quiet "${base}" >/dev/null 2>&1; then
+            echo "WARN: no upstream and no '${base}' ref to diff against; skipping range scan" >&2
+            exit 0
+        fi
+        echo "INFO: no upstream tracking branch; scanning ${base}..HEAD instead" >&2
     fi
     if gitleaks detect --config "${CONFIG}" --no-banner --redact \
-            --log-opts="${upstream}..HEAD"; then
-        echo "PASS: no secrets in ${upstream}..HEAD"
+            --log-opts="${base}..HEAD"; then
+        echo "PASS: no secrets in ${base}..HEAD"
     else
-        echo "FAIL: gitleaks found secret(s) in ${upstream}..HEAD" >&2
+        echo "FAIL: gitleaks found secret(s) in ${base}..HEAD" >&2
         exit 1
     fi
 }

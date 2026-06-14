@@ -1,9 +1,16 @@
 # ITM-003 — lefthook scaffolding. Hook manager per ADR-01.
-# Stage blocks are intentionally absent — per-tool ITMs add them:
+# Stage blocks are intentionally absent — per-tool ITMs add them.
+# Wired checks (kept in ↔ CI parity per ADR 0017):
 #   commit-msg:  ITM-040 (commitlint)
-#   pre-commit:  ITM-001 (gitleaks), ITM-010 (editorconfig-checker),
-#                ITM-013 (yamllint), ITM-016 (codespell), ITM-066 (ruff/ty/uv-export)
-#   pre-push:    ITM-002 (gitleaks range scan), ITM-032 (bandit)
+#   pre-commit:  ITM-001 (gitleaks staged), ITM-010 (editorconfig-checker),
+#                ITM-013 (yamllint), ITM-016 (codespell),
+#                ITM-066 (ruff check + ruff format), taplo (ADR 0017)
+#   pre-push:    ITM-002 (gitleaks range scan), ITM-032 (bandit),
+#                HEX-30 (import-linter), HEX-31 (tach, ADR 0017),
+#                ty typecheck (ADR-03 / ADR 0017), init-system integrity
+# Tiering: fast staged-scoped checks at pre-commit; slower full-tree checks
+# at pre-push. CI (.github/workflows/ci.yml + lint.yml) is the authority —
+# every correctness gate must also exist there.
 # See lefthook docs: https://lefthook.dev/configuration/
 
 min_version: 1.13.0  # ITM-021 installer floor
@@ -56,6 +63,17 @@ pre-commit:
     ruff-format:
       glob: "*.py"
       run: uv run ruff format --check --force-exclude {staged_files}
+    # ADR 0017 — taplo TOML format check on staged *.toml (mirrors CI's
+    # toml-format job). taplo is NOT in the locked dev group — it ships via
+    # `just install-taplo` (run by `just setup`; also in mise/flox per ADR
+    # 0005). Guard for the binary and fail with guidance rather than skipping
+    # silently, so a stale TOML never slips past to a red CI run.
+    taplo:
+      glob: "*.toml"
+      run: >-
+        command -v taplo >/dev/null 2>&1 ||
+        { echo "FAIL: taplo not on PATH — run just install-taplo" >&2; exit 1; }
+        && taplo check {staged_files} --config .taplo.toml
 
 # Pre-push stage — per-tool steps land via downstream ITMs.
 pre-push:
@@ -69,11 +87,22 @@ pre-push:
     # WL-001: locked via the dev group (`uv run`, not floating `uvx`).
     bandit:
       run: uv run bandit -r src/py_launch_blueprint/ -c pyproject.toml
+    # ADR 0017 — ty typecheck at pre-push, mirroring CI's typecheck job.
+    # Pre-push (not pre-commit) since it is a full-tree check, too slow per
+    # commit (same tier as bandit). `--extra web` so web/ imports resolve
+    # (matches ADR-03 / the just typecheck recipe). WL-001: locked dev group.
+    ty:
+      run: uv run --extra web ty check src/py_launch_blueprint/
     # HEX-30 — architectural import boundaries (import-linter). At pre-push
     # (not pre-commit) since it builds the whole import graph. WL-001: locked
-    # via the dev group.
+    # via the dev group. Now also authoritatively gated in CI (ADR 0017).
     import-boundaries:
       run: uv run lint-imports
+    # HEX-31 — bounded-context boundaries (tach). Added at pre-push alongside
+    # import-linter for local parity with the CI import-boundaries job (ADR
+    # 0017). WL-001: locked via the dev group.
+    module-boundaries:
+      run: uv run tach check
     # Init-system integrity — these are the checks the blueprint-guard
     # CI workflow runs. Caught locally at pre-push, they prevent the
     # "push → CI fails → push again" cycle that PR #319 went through.
