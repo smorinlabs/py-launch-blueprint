@@ -1424,7 +1424,7 @@ wheels = [
 
 [[package]]
 name = "py-launch-blueprint"
-version = "2.1.1"
+version = "2.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
