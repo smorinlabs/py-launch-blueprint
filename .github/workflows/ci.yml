@@ -109,6 +109,30 @@ jobs:
       - name: ty check
         run: uv run --no-sync ty check src/py_launch_blueprint/
 
+  # ADR 0018 - architectural boundary gate. import-linter (HEX-30) and tach
+  # (HEX-31) previously ran ONLY in the pre-push hook / `just check`, so a
+  # --no-verify push or an uninstalled hook could land boundary violations
+  # with no CI gate. Both build an import/module graph, so gate behind the
+  # changes detector (skip docs-only PRs) like typecheck. WL-001: locked via
+  # uv.lock, matching the pre-push hook exactly.
+  import-boundaries:
+    name: import-boundaries
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Sync dev env (graph build needs project deps importable)
+        run: uv sync --locked --group dev --extra web
+      - name: import-linter (HEX-30)
+        run: uv run --no-sync lint-imports
+      - name: tach (HEX-31)
+        run: uv run --no-sync tach check
+
   # ITM-030 - test matrix: ubuntu + macOS x py3.12/3.13 (decided round 3);
   # windows added alongside the platform-native default paths (REC-24).
   test:
@@ -135,7 +159,7 @@ jobs:
       - name: Run tests with coverage
         # Default skips slow/live markers (ITM-046 addopts); CI runs everything.
         # WL-008: `-n auto` parallelises across the runner's cores; branch
-        # coverage is on via [tool.coverage.run] (ADR-0018). xdist + pytest-cov
+        # coverage is on via [tool.coverage.run] (ADR-0019). xdist + pytest-cov
         # combine coverage from all workers automatically.
         run: uv run --no-sync pytest -m "" -n auto --cov=py_launch_blueprint --cov-report=xml
       - name: Upload coverage to Codecov
@@ -220,7 +244,15 @@ jobs:
   ci-ok:
     name: ci-ok
     runs-on: ubuntu-latest
-    needs: [changes, lint, typecheck, test, build-smoke, docs, toml-format]
+    needs:
+      - changes
+      - lint
+      - typecheck
+      - import-boundaries
+      - test
+      - build-smoke
+      - docs
+      - toml-format
     if: always()
     permissions: {}
     steps:

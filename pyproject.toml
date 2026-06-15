@@ -93,7 +93,7 @@ dev = [
   "syrupy>=4.8.0", # WL-023 — CLI --help snapshot tests
   "import-linter>=2.0", # HEX-30 — architectural layer/boundary rules
   "tach>=0.35.0",
-  # Testing-strategy shortlist (ADR-0018).
+  # Testing-strategy shortlist (ADR-0019).
   "pytest-xdist>=3.6",     # WL-008 — parallel test execution (`-n auto`)
   "pytest-timeout>=2.3",   # WL-009 — per-test timeout guard (hung test fails loud)
   "pytest-randomly>=3.15", # WL-010 — randomized order surfaces inter-test coupling
@@ -261,7 +261,7 @@ timeout_method = "thread"
 # (`just test -n auto`, and the CI full-suite + canary runs) rather than in
 # default addopts, so the fast local inner loop keeps clean `-x`/pdb behaviour.
 
-# Branch coverage (ADR-0018): count both-arms of every branch, not just line
+# Branch coverage (ADR-0019): count both-arms of every branch, not just line
 # execution, so the Codecov gate (WL-005) catches untested conditionals.
 [tool.coverage.run]
 branch = true
