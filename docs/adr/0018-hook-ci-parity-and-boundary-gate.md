@@ -73,8 +73,8 @@ We will restore hook ↔ CI parity with CI as the authority:
    actually wired.
 5. **Give `gitleaks --range` a default-branch fallback**: when there is no
    `@{u}`, scan `origin/HEAD` (the remote default branch, falling back to
-   `origin/main`)`..HEAD` instead of skipping. Only when neither ref exists
-   does it warn and skip.
+   `origin/main`) — i.e. `<base>..HEAD` — instead of skipping. Only when
+   neither ref exists does it warn and skip.
 
 A second review pass (same parity lens) settled four more checks:
 

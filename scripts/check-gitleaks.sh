@@ -12,7 +12,8 @@ usage() {
     cat >&2 <<'EOF'
 Usage: scripts/check-gitleaks.sh [--staged|--range]
   --staged   Scan staged changes only (pre-commit hook mode).
-  --range    Scan range upstream..HEAD (pre-push hook mode).
+  --range    Scan range <base>..HEAD (pre-push hook mode; base is the
+             upstream, falling back to origin's default branch).
 EOF
     exit 2
 }

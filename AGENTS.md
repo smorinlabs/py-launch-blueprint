@@ -72,10 +72,13 @@ workflow enforce it).
 4. Stage + commit. Lefthook fires automatically:
    - **commit-msg** → commitlint (Conventional Commits, lowercase subject).
    - **pre-commit** (fast, staged-scoped) → gitleaks + editorconfig-checker
-     + yamllint + codespell + ruff check/format + taplo (TOML).
+     + yamllint + actionlint (workflows) + codespell + ruff check/format
+     + taplo (TOML) + `uv lock --check` (lockfile freshness) + large-files
+     guard (1 MB).
    - **pre-push** (slower, full-tree) → gitleaks range scan + bandit + ty
-     typecheck + import-linter + tach + init-system integrity (guard wiring,
-     manifest drift, path filter, init tests).
+     typecheck + import-linter + tach + openapi-snapshot (web-layer gated)
+     + init-system integrity (guard wiring, manifest drift, path filter,
+     init tests).
 
    Hooks mirror CI; CI is the authority (ADR 0018). Boundaries (import-linter
    + tach) are gated by the `import-boundaries` CI job, so a `--no-verify`
