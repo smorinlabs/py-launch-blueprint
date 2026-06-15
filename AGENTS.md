@@ -109,9 +109,10 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 
 ## Developer environment
 
-- Toolchain provisioning (per ADR 0005) — three first-class options, all
-  declaring the SAME 10-tool set (python, uv, ruff, taplo, gitleaks, just,
-  bun, gh, lefthook, make); keep them in sync when adding/removing a tool:
+- Toolchain provisioning (per ADR 0005, extended by ADR 0017) — three
+  first-class options, all declaring the SAME 11-tool set (python, uv, ruff,
+  taplo, gitleaks, just, bun, gh, lefthook, make, actionlint); keep them in
+  sync when adding/removing a tool:
   1. Native installs (Makefile + Justfile `install-*` targets,
      `scripts/install-*.sh`)
   2. `mise install` (root `mise.toml`)

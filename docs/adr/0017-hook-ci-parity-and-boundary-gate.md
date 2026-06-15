@@ -74,6 +74,31 @@ We will restore hook ↔ CI parity with CI as the authority:
    `origin/main`)`..HEAD` instead of skipping. Only when neither ref exists
    does it warn and skip.
 
+A second review pass (same parity lens) settled four more checks:
+
+6. **Lockfile freshness at pre-commit**: `uv lock --check` when
+   `pyproject.toml`/`uv.lock` are staged, so a forgotten re-lock is caught at
+   commit time instead of failing late in CI's `--locked` heavy jobs.
+7. **OpenAPI snapshot drift at pre-push**, gated on web-layer changes — runs
+   `tests/web/test_openapi_snapshot.py`, mirroring the `api-contract` workflow
+   locally so a route change with a stale `docs/api/openapi.json` is caught
+   before the push.
+8. **Large-file guard at pre-commit**: reject staged files over 1 MB outside
+   `docs/assets/`, the same threshold and allowlist as the `large-file-guard`
+   CI workflow.
+9. **`actionlint` at pre-commit** on staged workflow files, mirroring the
+   `lint.yml` actionlint job. This makes `actionlint` the **11th toolchain
+   tool**, amending ADR 0005's lean 10-tool set: it is a git-hook tool with no
+   `uvx`-style on-demand path (unlike the Python hook tools ADR 0005 keeps out
+   of the toolchain), so all three provisioners (native installers, mise, flox)
+   must declare it — same category as `gitleaks`/`taplo`. A pinned,
+   checksum-verified `scripts/install-actionlint.sh` is added and wired into
+   `just setup`.
+
+Deferred: a `shellcheck` hook + CI job for standalone `*.sh` scripts (today
+linted nowhere). It is the one genuine zero-coverage gap and remains an open
+follow-up, not adopted in this batch.
+
 Tiering principle reaffirmed: pre-commit holds fast, staged-scoped checks;
 pre-push holds the slower full-tree checks (bandit, ty, boundaries, init
 integrity); CI is the authority and every correctness gate must exist there.
@@ -94,6 +119,12 @@ integrity); CI is the authority and every correctness gate must exist there.
   matrix above is the checklist. `tach` and `import-linter` are now in three
   of the four surfaces (`just check`, pre-push, CI); `just check` remains the
   superset for local one-shot verification.
+- Round-2 checks add local mirrors for lockfile freshness, OpenAPI snapshot
+  drift, large files, and workflow lint — each backstopped by an existing CI
+  job/test (CI stays the authority). The toolchain grows to 11 tools; the
+  three provisioners and their doc references move together (ADR 0005 amended).
+- Still open: `shellcheck` for standalone shell scripts — the only check with
+  zero coverage on any surface today.
 
 ## Alternatives considered
 

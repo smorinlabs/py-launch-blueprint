@@ -48,6 +48,17 @@ pre-commit:
     yamllint:
       glob: "*.{yml,yaml}"
       run: uv run yamllint -c .yamllint {staged_files}
+    # ADR 0017 — actionlint on staged workflow files (local mirror of the
+    # lint.yml actionlint job). actionlint is the 11th toolchain tool (ADR
+    # 0005, amended by 0017) — installed by `just setup`; guard + fail with
+    # guidance rather than skipping silently. It auto-uses shellcheck for
+    # embedded run: blocks when present (CI's runner ships it).
+    actionlint:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: >-
+        command -v actionlint >/dev/null 2>&1 ||
+        { echo "FAIL: actionlint missing — run just install-actionlint" >&2; exit 1; }
+        && actionlint {staged_files}
     # ITM-016 — codespell staged files (decided round 9).
     codespell:
       run: uv run codespell --toml pyproject.toml {staged_files}
@@ -74,6 +85,29 @@ pre-commit:
         command -v taplo >/dev/null 2>&1 ||
         { echo "FAIL: taplo not on PATH — run just install-taplo" >&2; exit 1; }
         && taplo check {staged_files} --config .taplo.toml
+    # ADR 0017 — lockfile freshness. CI's `uv sync --locked` fails late (only
+    # in the heavy jobs) when pyproject deps change without a re-lock; catch it
+    # at commit time when those files are staged. `--check` is read-only.
+    uv-lock-check:
+      glob: "{pyproject.toml,uv.lock}"
+      run: uv lock --check
+    # ADR 0017 — local mirror of the large-file-guard CI workflow (ITM-028):
+    # reject staged files over 1 MB unless under docs/assets/. Catches a big
+    # blob before the push round-trip. Same 1 MB threshold + allowlist as CI.
+    large-files:
+      run: |
+        threshold=1048576
+        status=0
+        for f in {staged_files}; do
+          case "$f" in docs/assets/*) continue ;; esac
+          [ -f "$f" ] || continue
+          size=$(wc -c <"$f" | tr -d ' ')
+          if [ "$size" -gt "$threshold" ]; then
+            echo "FAIL: $f is $size bytes (>1MB); use docs/assets/ or drop it" >&2
+            status=1
+          fi
+        done
+        exit $status
 
 # Pre-push stage — per-tool steps land via downstream ITMs.
 pre-push:
@@ -103,6 +137,13 @@ pre-push:
     # 0017). WL-001: locked via the dev group.
     module-boundaries:
       run: uv run tach check
+    # ADR 0017 — OpenAPI snapshot drift. The committed docs/api/openapi.json
+    # must match the live FastAPI schema; the api-contract CI workflow + this
+    # test enforce it. Gated on web-layer changes so non-web pushes skip it;
+    # mirrors `just export-openapi` having been run after a route change.
+    openapi-snapshot:
+      glob: "src/py_launch_blueprint/web/**/*"
+      run: uv run --extra web pytest tests/web/test_openapi_snapshot.py -q
     # Init-system integrity — these are the checks the blueprint-guard
     # CI workflow runs. Caught locally at pre-push, they prevent the
     # "push → CI fails → push again" cycle that PR #319 went through.

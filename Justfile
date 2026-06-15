@@ -99,6 +99,7 @@ check-deps:
     if ! command -v lefthook >/dev/null 2>&1; then echo "{{YELLOW}}WARNING: lefthook is not installed{{NC}}\n RUN {{BLUE}}just setup{{NC}}"; fi
     if ! command -v taplo >/dev/null 2>&1; then echo "{{YELLOW}}Taplo is not installed{{NC}}\n RUN {{BLUE}}just install-taplo{{NC}}"; exit 1; fi
     if ! command -v yamlfmt >/dev/null 2>&1; then echo "{{YELLOW}}yamlfmt is not installed{{NC}}\n RUN {{BLUE}}just install-yamlfmt{{NC}}"; exit 1; fi
+    if ! command -v actionlint >/dev/null 2>&1; then echo "{{YELLOW}}actionlint is not installed{{NC}}\n RUN {{BLUE}}just install-actionlint{{NC}}"; exit 1; fi
     echo "All required tools are installed"
 
 alias c := check-deps
@@ -128,10 +129,11 @@ setup:
     export PATH="$HOME/.local/bin:$HOME/.bun/bin:${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
     echo -e "{{BLUE}}[1/4] Syncing dev environment: uv sync --group dev --extra web{{NC}}"
     uv sync --group dev --extra web
-    echo -e "{{BLUE}}[2/4] Installing hook toolchain (bun, lefthook, gitleaks)...{{NC}}"
+    echo -e "{{BLUE}}[2/4] Installing hook toolchain (bun, lefthook, gitleaks, actionlint)...{{NC}}"
     scripts/install-bun.sh
     scripts/install-lefthook.sh
     scripts/install-gitleaks.sh
+    scripts/install-actionlint.sh
     bun install
     echo -e "{{BLUE}}[3/4] Installing formatters (taplo, yamlfmt)...{{NC}}"
     just install-taplo
@@ -536,6 +538,12 @@ changelog:
 [group('setup'), group('install'), group('pre-commit')]
 install-gitleaks:
     bash scripts/install-gitleaks.sh
+
+# Install actionlint (workflow linter; 11th toolchain tool per ADR 0017).
+# Thin wrapper over the pinned, checksum-verified installer.
+[group('setup'), group('install'), group('pre-commit')]
+install-actionlint:
+    bash scripts/install-actionlint.sh
 
 # Run gitleaks. Use `just check-gitleaks staged` for pre-commit-style checks.
 [group('dev'), group('pre-commit')]

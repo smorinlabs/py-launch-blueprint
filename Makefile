@@ -131,7 +131,7 @@ hook-check: ## ITM-022 — verify lefthook + downstream hook tools on PATH
 	@echo "Checking hook toolchain..."
 	@echo "=== Hook Toolchain Status ==="
 	@ERROR_COUNT=0; MISSING=""; \
-	for TOOL in lefthook gitleaks bun uv editorconfig-checker yamllint codespell; do \
+	for TOOL in lefthook gitleaks bun uv actionlint editorconfig-checker yamllint codespell; do \
 		if command -v $${TOOL} >/dev/null 2>&1; then \
 			printf "[$(CHECK)] %s\n" "$${TOOL}"; \
 		else \
@@ -148,6 +148,7 @@ hook-check: ## ITM-022 — verify lefthook + downstream hook tools on PATH
 		echo "Install via:"; \
 		echo "  scripts/install-lefthook.sh   (lefthook)"; \
 		echo "  scripts/install-gitleaks.sh   (gitleaks)"; \
+		echo "  scripts/install-actionlint.sh (actionlint)"; \
 		echo "  scripts/install-bun.sh        (bun; required for commitlint)"; \
 		echo "  uvx yamllint codespell  (Python tools via uv)"; \
 		echo "  bunx --bun editorconfig-checker  (matches lefthook invocation)"; \
@@ -235,7 +236,7 @@ install-docker-force: ## OPTIONAL — install Docker engine via convenience scri
 
 # Flox is OPTIONAL — one of the three first-class toolchain provisioners
 # (native installs / mise / flox; see docs/adr/0005). Nothing in the project
-# requires it; `flox activate` simply provisions the same 10-tool set declared
+# requires it; `flox activate` simply provisions the same 11-tool set declared
 # in .flox/env/manifest.toml. Installation is platform-specific and may need
 # sudo, so this target prints the commands rather than running them.
 install-flox: ## (Optional) Print flox install instructions (toolchain provisioner; see docs/adr/0005)
