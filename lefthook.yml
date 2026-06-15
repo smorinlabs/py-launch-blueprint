@@ -1,9 +1,16 @@
 # ITM-003 — lefthook scaffolding. Hook manager per ADR-01.
-# Stage blocks are intentionally absent — per-tool ITMs add them:
+# Stage blocks are intentionally absent — per-tool ITMs add them.
+# Wired checks (kept in ↔ CI parity per ADR 0018):
 #   commit-msg:  ITM-040 (commitlint)
-#   pre-commit:  ITM-001 (gitleaks), ITM-010 (editorconfig-checker),
-#                ITM-013 (yamllint), ITM-016 (codespell), ITM-066 (ruff/ty/uv-export)
-#   pre-push:    ITM-002 (gitleaks range scan), ITM-032 (bandit)
+#   pre-commit:  ITM-001 (gitleaks staged), ITM-010 (editorconfig-checker),
+#                ITM-013 (yamllint), ITM-016 (codespell),
+#                ITM-066 (ruff check + ruff format), taplo (ADR 0018)
+#   pre-push:    ITM-002 (gitleaks range scan), ITM-032 (bandit),
+#                HEX-30 (import-linter), HEX-31 (tach, ADR 0018),
+#                ty typecheck (ADR-03 / ADR 0018), init-system integrity
+# Tiering: fast staged-scoped checks at pre-commit; slower full-tree checks
+# at pre-push. CI (.github/workflows/ci.yml + lint.yml) is the authority —
+# every correctness gate must also exist there.
 # See lefthook docs: https://lefthook.dev/configuration/
 
 min_version: 1.13.0  # ITM-021 installer floor
@@ -41,6 +48,17 @@ pre-commit:
     yamllint:
       glob: "*.{yml,yaml}"
       run: uv run yamllint -c .yamllint {staged_files}
+    # ADR 0018 — actionlint on staged workflow files (local mirror of the
+    # lint.yml actionlint job). actionlint is the 11th toolchain tool (ADR
+    # 0005, amended by 0018) — installed by `just setup`; guard + fail with
+    # guidance rather than skipping silently. It auto-uses shellcheck for
+    # embedded run: blocks when present (CI's runner ships it).
+    actionlint:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: >-
+        command -v actionlint >/dev/null 2>&1 ||
+        { echo "FAIL: actionlint missing — run just install-actionlint" >&2; exit 1; }
+        && actionlint {staged_files}
     # ITM-016 — codespell staged files (decided round 9).
     codespell:
       run: uv run codespell --toml pyproject.toml {staged_files}
@@ -56,6 +74,40 @@ pre-commit:
     ruff-format:
       glob: "*.py"
       run: uv run ruff format --check --force-exclude {staged_files}
+    # ADR 0018 — taplo TOML format check on staged *.toml (mirrors CI's
+    # toml-format job). taplo is NOT in the locked dev group — it ships via
+    # `just install-taplo` (run by `just setup`; also in mise/flox per ADR
+    # 0005). Guard for the binary and fail with guidance rather than skipping
+    # silently, so a stale TOML never slips past to a red CI run.
+    taplo:
+      glob: "*.toml"
+      run: >-
+        command -v taplo >/dev/null 2>&1 ||
+        { echo "FAIL: taplo not on PATH — run just install-taplo" >&2; exit 1; }
+        && taplo check {staged_files} --config .taplo.toml
+    # ADR 0018 — lockfile freshness. CI's `uv sync --locked` fails late (only
+    # in the heavy jobs) when pyproject deps change without a re-lock; catch it
+    # at commit time when those files are staged. `--check` is read-only.
+    uv-lock-check:
+      glob: "{pyproject.toml,uv.lock}"
+      run: uv lock --check
+    # ADR 0018 — local mirror of the large-file-guard CI workflow (ITM-028):
+    # reject staged files over 1 MB unless under docs/assets/. Catches a big
+    # blob before the push round-trip. Same 1 MB threshold + allowlist as CI.
+    large-files:
+      run: |
+        threshold=1048576
+        status=0
+        for f in {staged_files}; do
+          case "$f" in docs/assets/*) continue ;; esac
+          [ -f "$f" ] || continue
+          size=$(wc -c <"$f" | tr -d ' ')
+          if [ "$size" -gt "$threshold" ]; then
+            echo "FAIL: $f is $size bytes (>1MB); use docs/assets/ or drop it" >&2
+            status=1
+          fi
+        done
+        exit $status
 
 # Pre-push stage — per-tool steps land via downstream ITMs.
 pre-push:
@@ -69,11 +121,29 @@ pre-push:
     # WL-001: locked via the dev group (`uv run`, not floating `uvx`).
     bandit:
       run: uv run bandit -r src/py_launch_blueprint/ -c pyproject.toml
+    # ADR 0018 — ty typecheck at pre-push, mirroring CI's typecheck job.
+    # Pre-push (not pre-commit) since it is a full-tree check, too slow per
+    # commit (same tier as bandit). `--extra web` so web/ imports resolve
+    # (matches ADR-03 / the just typecheck recipe). WL-001: locked dev group.
+    ty:
+      run: uv run --extra web ty check src/py_launch_blueprint/
     # HEX-30 — architectural import boundaries (import-linter). At pre-push
     # (not pre-commit) since it builds the whole import graph. WL-001: locked
-    # via the dev group.
+    # via the dev group. Now also authoritatively gated in CI (ADR 0018).
     import-boundaries:
       run: uv run lint-imports
+    # HEX-31 — bounded-context boundaries (tach). Added at pre-push alongside
+    # import-linter for local parity with the CI import-boundaries job (ADR
+    # 0018). WL-001: locked via the dev group.
+    module-boundaries:
+      run: uv run tach check
+    # ADR 0018 — OpenAPI snapshot drift. The committed docs/api/openapi.json
+    # must match the live FastAPI schema; the api-contract CI workflow + this
+    # test enforce it. Gated on web-layer changes so non-web pushes skip it;
+    # mirrors `just export-openapi` having been run after a route change.
+    openapi-snapshot:
+      glob: "src/py_launch_blueprint/web/**/*"
+      run: uv run --extra web pytest tests/web/test_openapi_snapshot.py -q
     # Init-system integrity — these are the checks the blueprint-guard
     # CI workflow runs. Caught locally at pre-push, they prevent the
     # "push → CI fails → push again" cycle that PR #319 went through.

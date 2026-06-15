@@ -23,7 +23,7 @@ Start from [`template.md`](template.md).
 | [0002](0002-no-secrets-in-config-file.md) | Secrets are never stored in the config file | Accepted |
 | [0003](0003-keep-markdown-output-mode.md) | Keep `markdown` as a third output format (spec deviation) | Accepted |
 | [0004](0004-config-errors-degrade-to-warnings.md) | Invalid config values degrade to warnings, never crashes | Accepted |
-| [0005](0005-mise-flox-first-class-toolchains.md) | mise and flox are first-class toolchain provisioners (lean 10-tool set) | Accepted |
+| [0005](0005-mise-flox-first-class-toolchains.md) | mise and flox are first-class toolchain provisioners (lean 10-tool set) | Accepted (amended by 0018) |
 | [0006](0006-stable-error-codes-hints-crash-log.md) | Stable error codes, hints, and a crash log | Accepted |
 | [0007](0007-did-you-mean-stdlib-difflib.md) | Did-you-mean suggestions via stdlib difflib | Accepted |
 | [0008](0008-pager-for-long-text-output.md) | Long text output pages through the user's pager | Accepted |
@@ -36,6 +36,7 @@ Start from [`template.md`](template.md).
 | [0015](0015-one-logging-pipeline-two-profiles.md) | One logging pipeline, two front-end profiles (CLI vs web policy) | Accepted |
 | [0016](0016-app-short-name-placeholder.md) | App short name is an obvious placeholder (`acmeapp`), not a brand | Accepted |
 | [0017](0017-hexagonal-core-and-boundary-enforcement.md) | Hexagonal core with mechanical boundary enforcement | Accepted |
+| [0018](0018-hook-ci-parity-and-boundary-gate.md) | Hook ↔ CI parity: gate architectural boundaries in CI, mirror slow checks at pre-push | Accepted |
 
 ## Note on historical decisions
 

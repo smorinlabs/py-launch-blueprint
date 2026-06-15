@@ -45,7 +45,7 @@ py-launch-blueprint/
 │   ├── cli/                        # CLI tests
 │   └── core/                       # Library tests
 ├── .flox/                          # Flox environment (optional toolchain provisioner; ADR 0005)
-│   └── env/manifest.toml           # Declares the 10-tool dev set for `flox activate`
+│   └── env/manifest.toml           # Declares the 11-tool dev set for `flox activate`
 ├── .gitignore                      # Git ignore file
 ├── .pre-commit-config.yaml         # Pre-commit hooks configuration
 ├── .python-version                 # Python version file

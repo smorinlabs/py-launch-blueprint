@@ -269,6 +269,7 @@ files = [
   "EXAMPLEWEB.md",                                     # 2x
   "Justfile",                                          # 2x
   "README.md",                                         # 1x
+  "docs/adr/0018-hook-ci-parity-and-boundary-gate.md", # 1x (ty typecheck path)
   "docs/research/0003-init-post-init-analysis.md",     # 8x
   "docs/source/conf.py",                               # 3x
   "docs/source/index.md",                              # 1x

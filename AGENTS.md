@@ -71,10 +71,18 @@ workflow enforce it).
    - `uv run pytest init/tests/ --override-ini="addopts=" -q`
 4. Stage + commit. Lefthook fires automatically:
    - **commit-msg** → commitlint (Conventional Commits, lowercase subject).
-   - **pre-commit** → gitleaks + editorconfig-checker + yamllint + codespell
-     + ruff check/format on staged Python files.
-   - **pre-push** → gitleaks range scan + bandit + init-system integrity
-     (guard wiring, manifest drift, path filter, init tests).
+   - **pre-commit** (fast, staged-scoped) → gitleaks + editorconfig-checker
+     + yamllint + actionlint (workflows) + codespell + ruff check/format
+     + taplo (TOML) + `uv lock --check` (lockfile freshness) + large-files
+     guard (1 MB).
+   - **pre-push** (slower, full-tree) → gitleaks range scan + bandit + ty
+     typecheck + import-linter + tach + openapi-snapshot (web-layer gated)
+     + init-system integrity (guard wiring, manifest drift, path filter,
+     init tests).
+
+   Hooks mirror CI; CI is the authority (ADR 0018). Boundaries (import-linter
+   + tach) are gated by the `import-boundaries` CI job, so a `--no-verify`
+   push can't bypass them.
 
    If lefthook was not installed (step 1 skipped), the hooks are silent
    no-ops — do NOT push until you have either installed it or run the
@@ -104,9 +112,10 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 
 ## Developer environment
 
-- Toolchain provisioning (per ADR 0005) — three first-class options, all
-  declaring the SAME 10-tool set (python, uv, ruff, taplo, gitleaks, just,
-  bun, gh, lefthook, make); keep them in sync when adding/removing a tool:
+- Toolchain provisioning (per ADR 0005, extended by ADR 0018) — three
+  first-class options, all declaring the SAME 11-tool set (python, uv, ruff,
+  taplo, gitleaks, just, bun, gh, lefthook, make, actionlint); keep them in
+  sync when adding/removing a tool:
   1. Native installs (Makefile + Justfile `install-*` targets,
      `scripts/install-*.sh`)
   2. `mise install` (root `mise.toml`)
