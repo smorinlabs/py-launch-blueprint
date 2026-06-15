@@ -109,7 +109,7 @@ jobs:
       - name: ty check
         run: uv run --no-sync ty check src/py_launch_blueprint/
 
-  # ADR 0017 - architectural boundary gate. import-linter (HEX-30) and tach
+  # ADR 0018 - architectural boundary gate. import-linter (HEX-30) and tach
   # (HEX-31) previously ran ONLY in the pre-push hook / `just check`, so a
   # --no-verify push or an uninstalled hook could land boundary violations
   # with no CI gate. Both build an import/module graph, so gate behind the

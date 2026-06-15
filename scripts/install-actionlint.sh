@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ADR 0017 — actionlint installer (11th toolchain tool; amends ADR 0005).
+# ADR 0018 — actionlint installer (11th toolchain tool; amends ADR 0005).
 # Pins an actionlint release; verifies SHA256 against upstream checksums.txt;
 # installs to ~/.local/bin. Idempotent. Mirrors scripts/install-gitleaks.sh.
 #

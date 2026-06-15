@@ -1,10 +1,12 @@
-# 0017. Hook ↔ CI parity: gate architectural boundaries in CI, mirror slow checks at pre-push
+# 0018. Hook ↔ CI parity: gate architectural boundaries in CI, mirror slow checks at pre-push
 
 - **Status:** Accepted
 - **Date:** 2026-06-14
 - **Deciders:** maintainer (interactive review of the lefthook hook suite)
 - **Related:** ADR-01 (lefthook), ADR-02 (two-layer secret scanning),
-  ADR-03 (ty typecheck), ADR 0005 (toolchain provisioning); HEX-30
+  ADR-03 (ty typecheck), ADR 0005 (toolchain provisioning),
+  [0017](0017-hexagonal-core-and-boundary-enforcement.md) (hexagonal core —
+  source of the HEX-30/HEX-31 boundaries this ADR gates in CI); HEX-30
   (import-linter), HEX-31 (tach); WL-001 (locked tool versions);
   `lefthook.yml`, `.github/workflows/ci.yml`, `scripts/check-gitleaks.sh`
 

@@ -3,7 +3,7 @@
 # scripts/install-*.sh) and the mise toolchain (mise.toml). All three provision
 # the SAME 11-tool set; keep them in sync when adding or removing a tool.
 # Decision records: docs/adr/0005-mise-flox-first-class-toolchains.md (original
-# 10-tool set); docs/adr/0017-hook-ci-parity-and-boundary-gate.md (actionlint).
+# 10-tool set); docs/adr/0018-hook-ci-parity-and-boundary-gate.md (actionlint).
 #
 # Intentionally NOT installed here: yamllint, codespell, bandit,
 # editorconfig-checker (invoked via `uvx`), commitlint (invoked via

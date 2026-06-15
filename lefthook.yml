@@ -1,13 +1,13 @@
 # ITM-003 — lefthook scaffolding. Hook manager per ADR-01.
 # Stage blocks are intentionally absent — per-tool ITMs add them.
-# Wired checks (kept in ↔ CI parity per ADR 0017):
+# Wired checks (kept in ↔ CI parity per ADR 0018):
 #   commit-msg:  ITM-040 (commitlint)
 #   pre-commit:  ITM-001 (gitleaks staged), ITM-010 (editorconfig-checker),
 #                ITM-013 (yamllint), ITM-016 (codespell),
-#                ITM-066 (ruff check + ruff format), taplo (ADR 0017)
+#                ITM-066 (ruff check + ruff format), taplo (ADR 0018)
 #   pre-push:    ITM-002 (gitleaks range scan), ITM-032 (bandit),
-#                HEX-30 (import-linter), HEX-31 (tach, ADR 0017),
-#                ty typecheck (ADR-03 / ADR 0017), init-system integrity
+#                HEX-30 (import-linter), HEX-31 (tach, ADR 0018),
+#                ty typecheck (ADR-03 / ADR 0018), init-system integrity
 # Tiering: fast staged-scoped checks at pre-commit; slower full-tree checks
 # at pre-push. CI (.github/workflows/ci.yml + lint.yml) is the authority —
 # every correctness gate must also exist there.
@@ -48,9 +48,9 @@ pre-commit:
     yamllint:
       glob: "*.{yml,yaml}"
       run: uv run yamllint -c .yamllint {staged_files}
-    # ADR 0017 — actionlint on staged workflow files (local mirror of the
+    # ADR 0018 — actionlint on staged workflow files (local mirror of the
     # lint.yml actionlint job). actionlint is the 11th toolchain tool (ADR
-    # 0005, amended by 0017) — installed by `just setup`; guard + fail with
+    # 0005, amended by 0018) — installed by `just setup`; guard + fail with
     # guidance rather than skipping silently. It auto-uses shellcheck for
     # embedded run: blocks when present (CI's runner ships it).
     actionlint:
@@ -74,7 +74,7 @@ pre-commit:
     ruff-format:
       glob: "*.py"
       run: uv run ruff format --check --force-exclude {staged_files}
-    # ADR 0017 — taplo TOML format check on staged *.toml (mirrors CI's
+    # ADR 0018 — taplo TOML format check on staged *.toml (mirrors CI's
     # toml-format job). taplo is NOT in the locked dev group — it ships via
     # `just install-taplo` (run by `just setup`; also in mise/flox per ADR
     # 0005). Guard for the binary and fail with guidance rather than skipping
@@ -85,13 +85,13 @@ pre-commit:
         command -v taplo >/dev/null 2>&1 ||
         { echo "FAIL: taplo not on PATH — run just install-taplo" >&2; exit 1; }
         && taplo check {staged_files} --config .taplo.toml
-    # ADR 0017 — lockfile freshness. CI's `uv sync --locked` fails late (only
+    # ADR 0018 — lockfile freshness. CI's `uv sync --locked` fails late (only
     # in the heavy jobs) when pyproject deps change without a re-lock; catch it
     # at commit time when those files are staged. `--check` is read-only.
     uv-lock-check:
       glob: "{pyproject.toml,uv.lock}"
       run: uv lock --check
-    # ADR 0017 — local mirror of the large-file-guard CI workflow (ITM-028):
+    # ADR 0018 — local mirror of the large-file-guard CI workflow (ITM-028):
     # reject staged files over 1 MB unless under docs/assets/. Catches a big
     # blob before the push round-trip. Same 1 MB threshold + allowlist as CI.
     large-files:
@@ -121,7 +121,7 @@ pre-push:
     # WL-001: locked via the dev group (`uv run`, not floating `uvx`).
     bandit:
       run: uv run bandit -r src/py_launch_blueprint/ -c pyproject.toml
-    # ADR 0017 — ty typecheck at pre-push, mirroring CI's typecheck job.
+    # ADR 0018 — ty typecheck at pre-push, mirroring CI's typecheck job.
     # Pre-push (not pre-commit) since it is a full-tree check, too slow per
     # commit (same tier as bandit). `--extra web` so web/ imports resolve
     # (matches ADR-03 / the just typecheck recipe). WL-001: locked dev group.
@@ -129,15 +129,15 @@ pre-push:
       run: uv run --extra web ty check src/py_launch_blueprint/
     # HEX-30 — architectural import boundaries (import-linter). At pre-push
     # (not pre-commit) since it builds the whole import graph. WL-001: locked
-    # via the dev group. Now also authoritatively gated in CI (ADR 0017).
+    # via the dev group. Now also authoritatively gated in CI (ADR 0018).
     import-boundaries:
       run: uv run lint-imports
     # HEX-31 — bounded-context boundaries (tach). Added at pre-push alongside
     # import-linter for local parity with the CI import-boundaries job (ADR
-    # 0017). WL-001: locked via the dev group.
+    # 0018). WL-001: locked via the dev group.
     module-boundaries:
       run: uv run tach check
-    # ADR 0017 — OpenAPI snapshot drift. The committed docs/api/openapi.json
+    # ADR 0018 — OpenAPI snapshot drift. The committed docs/api/openapi.json
     # must match the live FastAPI schema; the api-contract CI workflow + this
     # test enforce it. Gated on web-layer changes so non-web pushes skip it;
     # mirrors `just export-openapi` having been run after a route change.

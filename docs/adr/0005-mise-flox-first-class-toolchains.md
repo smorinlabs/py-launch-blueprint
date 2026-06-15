@@ -1,6 +1,6 @@
 # 0005. mise and flox are first-class toolchain provisioners (lean 10-tool set)
 
-- **Status:** Accepted (amended by [0017](0017-hook-ci-parity-and-boundary-gate.md) — tool set grew 10 → 11 with `actionlint`)
+- **Status:** Accepted (amended by [0018](0018-hook-ci-parity-and-boundary-gate.md) — tool set grew 10 → 11 with `actionlint`)
 - **Date:** 2026-06-12
 - **Deciders:** maintainer
 - **Related:** historical ADR-04 (commitlint via bun); the shim note in

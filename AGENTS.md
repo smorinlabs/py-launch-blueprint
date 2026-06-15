@@ -77,7 +77,7 @@ workflow enforce it).
      typecheck + import-linter + tach + init-system integrity (guard wiring,
      manifest drift, path filter, init tests).
 
-   Hooks mirror CI; CI is the authority (ADR 0017). Boundaries (import-linter
+   Hooks mirror CI; CI is the authority (ADR 0018). Boundaries (import-linter
    + tach) are gated by the `import-boundaries` CI job, so a `--no-verify`
    push can't bypass them.
 
@@ -109,7 +109,7 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 
 ## Developer environment
 
-- Toolchain provisioning (per ADR 0005, extended by ADR 0017) — three
+- Toolchain provisioning (per ADR 0005, extended by ADR 0018) — three
   first-class options, all declaring the SAME 11-tool set (python, uv, ruff,
   taplo, gitleaks, just, bun, gh, lefthook, make, actionlint); keep them in
   sync when adding/removing a tool:

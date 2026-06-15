@@ -539,7 +539,7 @@ changelog:
 install-gitleaks:
     bash scripts/install-gitleaks.sh
 
-# Install actionlint (workflow linter; 11th toolchain tool per ADR 0017).
+# Install actionlint (workflow linter; 11th toolchain tool per ADR 0018).
 # Thin wrapper over the pinned, checksum-verified installer.
 [group('setup'), group('install'), group('pre-commit')]
 install-actionlint:

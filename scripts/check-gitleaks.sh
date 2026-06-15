@@ -40,7 +40,7 @@ scan_range() {
     if base=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null); then
         : # Prefer the configured upstream tracking branch.
     else
-        # ADR 0017: no upstream (e.g. the first push of a new branch) used to
+        # ADR 0018: no upstream (e.g. the first push of a new branch) used to
         # skip silently — the staged scans were the only cover for that window.
         # Fall back to the remote default branch so new commits still get a
         # range scan. origin/HEAD resolves to it; fall back to origin/main.
