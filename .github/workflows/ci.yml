@@ -161,7 +161,9 @@ jobs:
         # WL-008: `-n auto` parallelises across the runner's cores; branch
         # coverage is on via [tool.coverage.run] (ADR-0019). xdist + pytest-cov
         # combine coverage from all workers automatically.
-        run: uv run --no-sync pytest -m "" -n auto --cov=py_launch_blueprint --cov-report=xml
+        run: >-
+          uv run --no-sync pytest -m "" -n auto
+          --cov=py_launch_blueprint --cov-report=xml
       - name: Upload coverage to Codecov
         # Single matrix combo uploads (avoids 4x duplicate reports).
         # use_oidc: tokenless upload (public repo). Requires `id-token: write`.
