@@ -164,7 +164,9 @@ def test_api_error_maps_to_502_problem(client):
     body = response.json()
     assert body["status"] == 502
     assert body["instance"] == "/v1/projects/boom"
-    assert "upstream Py API failed" in body["detail"]
+    # SEC-4: the upstream provider's raw error text is NOT relayed to clients.
+    assert body["detail"] == "Upstream service request failed."
+    assert "upstream Py API failed" not in body["detail"]
 
 
 def test_project_not_found_maps_to_404_problem(client):

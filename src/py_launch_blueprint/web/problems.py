@@ -137,11 +137,19 @@ def install_problem_handlers(app: FastAPI) -> None:
     async def handle_py_error(request: Request, exc: PyError) -> JSONResponse:
         status_code = ERROR_STATUS.get(type(exc), 500)
         log.warning("request_failed", error=exc.message, exit_code=int(exc.exit_code))
+        # SEC-4: a bare APIError relays the upstream provider's raw error text —
+        # which can include the constructed upstream URL (via str(exc) in the
+        # adapter's _extract_error) — so it is NOT surfaced to web clients; the
+        # full message is logged server-side above. The not-found subclasses and
+        # other PyErrors only carry app/user-input text, so their detail is safe.
+        detail = (
+            "Upstream service request failed." if type(exc) is APIError else exc.message
+        )
         return problem_response(
             request,
             status_code=status_code,
             title=HTTPStatus(status_code).phrase,
-            detail=exc.message,
+            detail=detail,
         )
 
     @app.exception_handler(StarletteHTTPException)
