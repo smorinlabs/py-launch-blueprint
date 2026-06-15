@@ -37,6 +37,7 @@ Start from [`template.md`](template.md).
 | [0016](0016-app-short-name-placeholder.md) | App short name is an obvious placeholder (`acmeapp`), not a brand | Accepted |
 | [0017](0017-hexagonal-core-and-boundary-enforcement.md) | Hexagonal core with mechanical boundary enforcement | Accepted |
 | [0018](0018-hook-ci-parity-and-boundary-gate.md) | Hook ↔ CI parity: gate architectural boundaries in CI, mirror slow checks at pre-push | Accepted |
+| [0019](0019-testing-strategy-and-tooling.md) | Testing strategy & tooling — parallel/timeout/randomized runs, branch coverage, property + port-contract tests, weekly canary | Accepted |
 
 ## Note on historical decisions
 

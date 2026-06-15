@@ -31,6 +31,7 @@ files = [
   ".readthedocs.yaml",                                   # 1x
   "LICENSE",                                             # 1x
   "docs/adr/0017-hexagonal-core-and-boundary-enforcement.md", # 1x (Deciders)
+  "docs/adr/0019-testing-strategy-and-tooling.md",       # 1x (Deciders)
   "docs/research/0003-init-post-init-analysis.md",       # 1x
   "docs/source/_templates/base.html",                    # 1x
   "docs/source/conf.py",                                 # 2x
@@ -146,6 +147,7 @@ files = [
   "tests/core/test_core.py",                            # 19x
   "tests/core/test_logging.py",                         # 8x
   "tests/core/test_paths.py",                           # 10x
+  "tests/core/test_properties.py",                      # 1x (plbp_config.toml)
 ]
 mode = "text"
 
@@ -335,6 +337,8 @@ files = [
   "tests/core/test_format.py",                         # 2x
   "tests/core/test_logging.py",                        # 1x
   "tests/core/test_paths.py",                          # 1x
+  "tests/core/test_properties.py",                     # 1x
+  "tests/core/test_projects_repository_contract.py",   # imports
   "tests/meta/test_version_consistency.py",            # 2x
   "tests/web/test_app.py",                             # 6x
   "tests/web/test_contract.py",                        # 2x

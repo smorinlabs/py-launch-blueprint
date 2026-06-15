@@ -37,7 +37,7 @@ clones, containers, and remote agent sessions start without it — run
 |---|---|
 | Sync dev env | `uv sync --group dev --extra web` (PEP 735 — not `pip install '.[dev]'`) |
 | All checks | `just check` |
-| Run tests | `pytest` (default excludes `slow`/`live` markers per ITM-046; full: `pytest -m ""`) |
+| Run tests | `pytest` (default excludes `slow`/`live` markers per ITM-046; full: `pytest -m ""`; parallel: add `-n auto`) |
 | Run one test | `pytest tests/test_file.py::test_name` |
 | Lint | `uv run ruff check .` |
 | Format | `just format` or `uv run ruff format src/py_launch_blueprint/` |
