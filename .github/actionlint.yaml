@@ -35,9 +35,9 @@
 #
 # SCOPE
 # -----
-# The suppression is narrowly scoped to the two workflows that use
+# The suppression is narrowly scoped to the workflow that uses
 # `create-github-app-token@v3` with `client-id`. All other actionlint
-# checks remain active, both globally and on these two files.
+# checks remain active, both globally and on this file.
 
 self-hosted-runner:
   labels: []
@@ -50,8 +50,4 @@ paths:
       # False positive: action accepts `client-id` (stale actionlint schema).
       - 'input "client-id" is not defined in action "actions/create-github-app-token@v3"'
       # False positive: `app-id` is only required when `client-id` is absent.
-      - 'missing input "app-id" which is required by action "actions/create-github-app-token@v3"'
-  .github/workflows/update-contributors.yml:
-    ignore:
-      - 'input "client-id" is not defined in action "actions/create-github-app-token@v3"'
       - 'missing input "app-id" which is required by action "actions/create-github-app-token@v3"'

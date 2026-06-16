@@ -26,7 +26,10 @@ jobs:
       - name: Update contributors
         uses: smorinlabs/contributors-please-action@v1.1.0
         with:
-          client-id: ${{ secrets.CONTRIBUTORS_PLEASE_CLIENT_ID }}
+          # Input name is "app-id" (the action's defined input); value is
+          # Client ID, which @octokit/auth-app accepts via
+          # createAppAuth({ appId }).
+          app-id: ${{ secrets.CONTRIBUTORS_PLEASE_CLIENT_ID }}
           private-key: ${{ secrets.CONTRIBUTORS_PLEASE_PRIVATE_KEY }}
           pat: ${{ secrets.CONTRIBUTORS_PLEASE_PAT }}
           output-file: CONTRIBUTORS.md
