@@ -26,7 +26,7 @@ jobs:
       - name: Update contributors
         uses: smorinlabs/contributors-please-action@v1.1.0
         with:
-          app-id: ${{ secrets.CONTRIBUTORS_PLEASE_APP_ID }}
+          client-id: ${{ secrets.CONTRIBUTORS_PLEASE_CLIENT_ID }}
           private-key: ${{ secrets.CONTRIBUTORS_PLEASE_PRIVATE_KEY }}
           pat: ${{ secrets.CONTRIBUTORS_PLEASE_PAT }}
           output-file: CONTRIBUTORS.md

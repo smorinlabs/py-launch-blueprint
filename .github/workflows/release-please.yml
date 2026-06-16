@@ -4,9 +4,10 @@
 # downstream workflows (publish.yml) — GITHUB_TOKEN is intentionally NOT used as
 # a fallback, since it never triggers downstream workflows and may be blocked
 # from opening PRs by org policy:
-#   1. GitHub App (preferred): set RELEASE_PLEASE_APP_ID + RELEASE_PLEASE_PRIVATE_KEY
-#      (App with Contents + Pull requests: write); both jobs mint an installation
-#      token from them.
+#   1. GitHub App (preferred): set RELEASE_PLEASE_CLIENT_ID + RELEASE_PLEASE_PRIVATE_KEY
+#      (App with Contents + Pull requests: write). Client ID is the modern
+#      (non-deprecated) input name for actions/create-github-app-token@v3;
+#      both jobs mint an installation token from these values.
 #   2. Fallback PAT: set RELEASE_PLEASE_APP_TOKEN (fine-grained PAT, Contents +
 #      Pull requests: write).
 # See docs/RELEASE.md for setup. With neither configured, release-please fails fast.
@@ -33,7 +34,7 @@ jobs:
     env:
       # Surfaced so the app-token step's `if:` can test it (secrets are not
       # available directly in `if:` conditions). Empty unless the App is set up.
-      RP_APP_ID: ${{ secrets.RELEASE_PLEASE_APP_ID }}
+      RP_CLIENT_ID: ${{ secrets.RELEASE_PLEASE_CLIENT_ID }}
     outputs:
       release_created: ${{ steps.rp.outputs.release_created }}
       pr: ${{ steps.rp.outputs.pr }}
@@ -42,10 +43,10 @@ jobs:
       # release PR/tag triggers downstream workflows. Skipped otherwise.
       - name: Mint release-please app token
         id: app-token
-        if: ${{ env.RP_APP_ID != '' }}
+        if: ${{ env.RP_CLIENT_ID != '' }}
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ secrets.RELEASE_PLEASE_APP_ID }}
+          client-id: ${{ secrets.RELEASE_PLEASE_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_PLEASE_PRIVATE_KEY }}
 
       - name: release-please
@@ -69,17 +70,17 @@ jobs:
       contents: write
       pull-requests: write
     env:
-      RP_APP_ID: ${{ secrets.RELEASE_PLEASE_APP_ID }}
+      RP_CLIENT_ID: ${{ secrets.RELEASE_PLEASE_CLIENT_ID }}
     steps:
       # Mint a fresh installation token from the same App (a separate token —
       # steps don't cross jobs) so the uv.lock sync commit pushed to the release
       # PR branch also triggers its CI checks.
       - name: Mint release-please app token
         id: app-token
-        if: ${{ env.RP_APP_ID != '' }}
+        if: ${{ env.RP_CLIENT_ID != '' }}
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ secrets.RELEASE_PLEASE_APP_ID }}
+          client-id: ${{ secrets.RELEASE_PLEASE_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_PLEASE_PRIVATE_KEY }}
 
       - name: Checkout release PR branch
