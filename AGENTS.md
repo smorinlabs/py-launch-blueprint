@@ -128,6 +128,27 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 - Build backend: `uv_build` with static `[project] version` (per ADR-06)
 - IDE: VS Code with Ruff, Pyright, EditorConfig extensions
 
+### Python LSP for Claude Code
+
+Python code intelligence for Claude Code comes from the **official Astral
+plugin** (`astral@astral-sh`), enabled by default for this repo in
+`.claude/settings.json` (which also registers the `astral-sh` marketplace,
+`github.com/astral-sh/claude-code-plugins`). The plugin ships a `ty` language
+server (`uvx ty@latest server`) plus `/astral:` skills for uv, ty, and ruff.
+
+`ty` is this repo's type-check authority (ADR-03), so its LSP diagnostics —
+which the plugin leaves **on** by default — agree with what CI gates on rather
+than introducing a second, divergent type-checker voice. No separate binary
+install is needed: `uvx` is provided by `uv`, already in the toolchain.
+
+Activation: collaborators are prompted to install from the `astral-sh`
+marketplace after they accept the workspace-trust dialog; the LSP server starts
+only once the workspace is trusted. Run `/reload-plugins` (or restart) to pick
+it up in an existing session.
+
+Note: the LSP runs `ty@latest` via `uvx`, which can drift from the `ty` version
+pinned in the dev group that CI uses (`uv run ty`); treat CI as authoritative.
+
 ## Releases
 
 `release-please` opens a release PR on every push to `main`; merging the PR
