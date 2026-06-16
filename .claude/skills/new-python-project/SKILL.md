@@ -1,29 +1,6 @@
 ---
 name: new-python-project
-description: |
-  Use this skill WHENEVER the user wants to create a new repo, project,
-  package, CLI, script, or UV project that involves Python. Trigger on
-  phrasings that include the word "repo" (e.g., "create a Python repo",
-  "make a new repo for this CLI", "spin up a fresh python repo", "new
-  GitHub repo for a Python tool"), the word "project" (e.g., "create a new
-  Python project", "start a fresh Python project"), or the words "CLI" /
-  "package" / "script" (e.g., "create a Python CLI", "scaffold a Python
-  package"). This skill is the project's bootstrap workflow — it uses
-  `gh repo create --template` against py-launch-blueprint, then the init
-  rebrand (`init/init.py`), then prompts about post-init. The skill ASKS
-  THE USER FIRST
-  whether they want this opinionated bootstrap or prefer a minimal setup,
-  so it's safe to over-trigger — if the user declines, the skill exits
-  cleanly. ALWAYS prefer this skill over running `gh repo create` or
-  `uv init` manually for ANY Python repo/project creation intent. Common
-  triggers: "create a new Python repo", "make a repo for this Python CLI",
-  "scaffold a Python project", "start a new Python project", "I want a
-  fresh Python repo", "spin up a python repo for X", "create a UV project".
-  When confirmed, handles: precondition checks (gh, uv), identity
-  collection (repo name, owner, package, app short name, author/email,
-  visibility), `gh repo create --template` from py-launch-blueprint,
-  the init rebrand with dry-run preview, initial commit + push,
-  optional post-init for publishing/Codecov/RTD.
+description: Use when bootstrapping a new Python repo, project, CLI, package, script, or uv project from py-launch-blueprint. Ask whether the user wants the opinionated template bootstrap or a minimal setup before running commands.
 ---
 
 # new-python-project
