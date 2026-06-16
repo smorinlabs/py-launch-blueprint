@@ -8,6 +8,7 @@ PLUGIN_ROOT = REPO_ROOT / "plugins" / "astral"
 
 
 def _frontmatter(text: str) -> str:
+    text = text.replace("\r\n", "\n")
     marker = "---\n"
     assert text.startswith(marker)
     _, metadata, _ = text.split(marker, 2)
