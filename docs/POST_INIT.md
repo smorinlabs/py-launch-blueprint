@@ -105,9 +105,9 @@ Add under **Settings → Secrets and variables → Actions** (or org-level).
 
 | Secret | Required by | Needed when | How to get it |
 |---|---|---|---|
-| `RELEASE_PLEASE_APP_ID` + `RELEASE_PLEASE_PRIVATE_KEY` | `release-please.yml` | Using release-please (preferred auth) | Create a GitHub App with **Contents + Pull requests: write**, install it, use its App ID + a generated private key. |
+| `RELEASE_PLEASE_CLIENT_ID` + `RELEASE_PLEASE_PRIVATE_KEY` | `release-please.yml` | Using release-please (preferred auth) | Create a GitHub App with **Contents + Pull requests: write**, install it, use its Client ID (e.g. `Iv23li...`) + a generated private key. |
 | `RELEASE_PLEASE_APP_TOKEN` | `release-please.yml` | release-please fallback (instead of the App) | Fine-grained PAT with **Contents + Pull requests: write**. |
-| `CONTRIBUTORS_PLEASE_APP_ID` + `CONTRIBUTORS_PLEASE_PRIVATE_KEY` + `CONTRIBUTORS_PLEASE_PAT` | `update-contributors.yml` | Using contributors automation | From the contributors-please GitHub App install (+ a PAT). |
+| `CONTRIBUTORS_PLEASE_CLIENT_ID` + `CONTRIBUTORS_PLEASE_PRIVATE_KEY` + `CONTRIBUTORS_PLEASE_PAT` | `update-contributors.yml` | Using contributors automation | From the contributors-please GitHub App install — use its Client ID (e.g. `Iv23li...`) + a generated private key (+ a PAT). |
 | `SAFETY_API_KEY` | `manual-pr-security-scan.yml` | Using the manual Safety review | A Safety (safetycli.com) account API key. |
 | `CODECOV_TOKEN` | `ci.yml` upload | **Private repos only** (public repos upload tokenless via OIDC) | From the repo page on codecov.io. |
 
@@ -223,10 +223,10 @@ Replace `<owner>/<repo>` throughout; `gh` must be authenticated with repo admin.
 List what's present with `gh secret list -R <owner>/<repo>`, then set each one
 you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 
-- [ ] **`RELEASE_PLEASE_APP_ID` + `RELEASE_PLEASE_PRIVATE_KEY`** (or the
+- [ ] **`RELEASE_PLEASE_CLIENT_ID` + `RELEASE_PLEASE_PRIVATE_KEY`** (or the
       `RELEASE_PLEASE_APP_TOKEN` PAT) · *secret* — if keeping release-please.
-  - Set: `gh secret set RELEASE_PLEASE_APP_ID …` / `… RELEASE_PLEASE_PRIVATE_KEY < key.pem`
-- [ ] **`CONTRIBUTORS_PLEASE_APP_ID` + `_PRIVATE_KEY` + `_PAT`** · *secret* — if
+  - Set: `gh secret set RELEASE_PLEASE_CLIENT_ID …` / `… RELEASE_PLEASE_PRIVATE_KEY < key.pem`
+- [ ] **`CONTRIBUTORS_PLEASE_CLIENT_ID` + `_PRIVATE_KEY` + `_PAT`** · *secret* — if
       keeping contributors automation.
 - [ ] **`SAFETY_API_KEY`** · *environment secret* — if keeping the manual scan;
       scope it to the `security-review` environment:

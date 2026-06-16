@@ -290,8 +290,8 @@ Log the coupling observation against PF-5 in Problems + matrix.
 - [ ] **Step 2: Set release-please + contributors secrets via the
   repo-secrets skill** — invoke skill `repo-secrets` with args
   `smorinlabs/blueprint-dryrun` (both apps, values from 1Password).
-  Expected: `RELEASE_PLEASE_APP_ID`, `RELEASE_PLEASE_PRIVATE_KEY`,
-  `CONTRIBUTORS_PLEASE_APP_ID`, `CONTRIBUTORS_PLEASE_PRIVATE_KEY`,
+  Expected: `RELEASE_PLEASE_CLIENT_ID`, `RELEASE_PLEASE_PRIVATE_KEY`,
+  `CONTRIBUTORS_PLEASE_CLIENT_ID`, `CONTRIBUTORS_PLEASE_PRIVATE_KEY`,
   `CONTRIBUTORS_PLEASE_PAT` set.
 
 - [ ] **Step 3: Verify + check app installation coverage**
