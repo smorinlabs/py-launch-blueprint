@@ -1,0 +1,57 @@
+# actionlint configuration
+#
+# WHY THIS FILE EXISTS
+# --------------------
+# actionlint v1.7.12 (latest as of 2026-06) ships with stale bundled
+# metadata for `actions/create-github-app-token@v3`. The action accepts
+# a `client-id` input (the modern, preferred auth path; `app-id` is
+# deprecated), but actionlint's schema still only knows about `app-id`.
+#
+# As a result, every workflow that uses the modern `client-id` form
+# trips TWO false positives from actionlint's `action` check:
+#
+#   1. `input "client-id" is not defined in action
+#      "actions/create-github-app-token@v3"`
+#   2. `missing input "app-id" which is required by action
+#      "actions/create-github-app-token@v3"`
+#
+# Both are the same root-cause stale-metadata bug.
+#
+# UPSTREAM TRACKING
+# -----------------
+# Fixes are in flight upstream but not yet released:
+#   - rhysd/actionlint#652 (PR)
+#   - rhysd/actionlint#668 (PR)
+#   - rhysd/actionlint#648 (issue)
+#   - rhysd/actionlint#669 (issue)
+#
+# EXPIRATION
+# ----------
+# DELETE THIS FILE once a newer actionlint release ships with updated
+# bundled metadata for `actions/create-github-app-token@v3`'s
+# `client-id` input. To check: run `actionlint` against
+# `.github/workflows/release-please.yml` with the new version, with
+# this file removed — it should exit 0.
+#
+# SCOPE
+# -----
+# The suppression is narrowly scoped to the two workflows that use
+# `create-github-app-token@v3` with `client-id`. All other actionlint
+# checks remain active, both globally and on these two files.
+
+self-hosted-runner:
+  labels: []
+
+config-variables: null
+
+paths:
+  .github/workflows/release-please.yml:
+    ignore:
+      # False positive: action accepts `client-id` (stale actionlint schema).
+      - 'input "client-id" is not defined in action "actions/create-github-app-token@v3"'
+      # False positive: `app-id` is only required when `client-id` is absent.
+      - 'missing input "app-id" which is required by action "actions/create-github-app-token@v3"'
+  .github/workflows/update-contributors.yml:
+    ignore:
+      - 'input "client-id" is not defined in action "actions/create-github-app-token@v3"'
+      - 'missing input "app-id" which is required by action "actions/create-github-app-token@v3"'
