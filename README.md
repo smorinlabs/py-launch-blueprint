@@ -46,7 +46,7 @@ Install as a tool: `uvx --from py-launch-blueprint plbp` (uvx needs `--from` bec
 
 The [`plbp` noun-verb CLI](EXAMPLECLI.md) documents the template's CLI conventions: global flags, the text/JSON/Markdown output contract, stable exit & error codes, and layered TOML config.
 
-See [AGENTS.md](AGENTS.md) for the canonical command set, [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the daily workflow, and [docs/RELEASE.md](docs/RELEASE.md) for the release flow.
+See [AGENTS.md](AGENTS.md) for the canonical command set, [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the daily workflow, and [docs/RELEASE.md](docs/RELEASE.md) for the release flow. For the exhaustive rationale behind every tool and configuration choice — what each is, why it was chosen, and the value it brings — see [Design Decisions](docs/source/about/design_decisions.md).
 
 ## Web service (FastAPI)
 

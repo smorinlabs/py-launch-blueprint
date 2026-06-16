@@ -90,7 +90,7 @@ files = [
 ]
 mode = "structured"
 
-# app_name (text) — 313 occurrences in 48 files
+# app_name (text) — 319 occurrences in 49 files
 # NOTE: 4-char token — safe for text mode because "plbp" was invented to be
 # substring-disjoint from real words and every other identity value.
 [[replace]]
@@ -122,6 +122,7 @@ files = [
   "docs/design/0005-hexagonal-architecture-and-enforcement.md", # plbp refs
   "docs/design/README.md",                              # 2x
   "docs/research/0003-init-post-init-analysis.md",      # 5x
+  "docs/source/about/design_decisions.md",              # 6x
   "docs/source/index.md",                               # 14x
   "docs/source/reference/cli_reference.md",             # 1x
   "docs/source/web/index.md",                           # 1x
@@ -151,7 +152,7 @@ files = [
 ]
 mode = "text"
 
-# app_name_upper (text) — 228 occurrences in 32 files
+# app_name_upper (text) — 230 occurrences in 33 files
 # Derived identity (app_name.upper()): the PLBP_* env prefix and the
 # _PLBP_COMPLETE completion var. Never prompted; init derives it.
 [[replace]]
@@ -171,6 +172,7 @@ files = [
   "docs/adr/0016-app-short-name-placeholder.md",      # 5x
   "docs/POST_INIT.md",                                # 1x
   "docs/research/0003-init-post-init-analysis.md",    # 1x
+  "docs/source/about/design_decisions.md",            # 2x
   "docs/source/index.md",                             # 1x
   "docs/source/web/index.md",                         # 10x
   "llms.txt",                                         # 1x
@@ -222,7 +224,7 @@ files = [
 ]
 mode = "structured"
 
-# owner (text) — 27 occurrences in 14 files
+# owner (text) — 77 occurrences in 15 files
 [[replace]]
 field = "owner"
 current = ["smorinlabs"]
@@ -232,6 +234,7 @@ files = [
   "Justfile",                                     # 1x
   "README.md",                                    # 5x
   "docs/research/0003-init-post-init-analysis.md", # 1x
+  "docs/source/about/design_decisions.md",        # 50x
   "docs/source/conf.py",                          # 2x
   "docs/source/contributing/index.md",            # 1x
   "docs/source/index.md",                         # 5x
@@ -258,7 +261,7 @@ files = [
 ]
 mode = "structured"
 
-# package_name (text) — 140 occurrences in 49 files
+# package_name (text) — 142 occurrences in 50 files
 [[replace]]
 field = "package_name"
 current = ["py_launch_blueprint"]
@@ -273,6 +276,7 @@ files = [
   "README.md",                                         # 1x
   "docs/adr/0018-hook-ci-parity-and-boundary-gate.md", # 1x (ty typecheck path)
   "docs/research/0003-init-post-init-analysis.md",     # 8x
+  "docs/source/about/design_decisions.md",             # 2x
   "docs/source/conf.py",                               # 3x
   "docs/source/index.md",                              # 1x
   "docs/source/reference/project_structure.md",        # 4x
@@ -361,7 +365,7 @@ files = [
 ]
 mode = "structured"
 
-# repo_name (text) — 66 occurrences in 24 files
+# repo_name (text) — 117 occurrences in 25 files
 [[replace]]
 field = "repo_name"
 current = ["py-launch-blueprint"]
@@ -378,6 +382,7 @@ files = [
   "docs/design/0001-plbp-cli-conventions.md",     # 3x
   "docs/research/0003-init-post-init-analysis.md", # 4x
   "docs/source/_templates/base.html",             # 1x
+  "docs/source/about/design_decisions.md",        # 51x
   "docs/source/conf.py",                          # 3x
   "docs/source/contributing/index.md",            # 1x
   "docs/source/index.md",                         # 15x
