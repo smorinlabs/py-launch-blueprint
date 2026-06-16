@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "bootstrap-sha": "a58f62dd4fa9c37ad84146dd9e03e5ce938749b1",
+  "pull-request-title-pattern": "chore(release): publish v${version} — review and merge to ship to PyPI",
   "packages": {
     ".": {
       "release-type": "python",
