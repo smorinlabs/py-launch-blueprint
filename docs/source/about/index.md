@@ -9,4 +9,5 @@ maxdepth: 2
 ---
 philosophy
 features
+design_decisions
 ```
