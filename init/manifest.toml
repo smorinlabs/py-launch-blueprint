@@ -365,18 +365,19 @@ files = [
 ]
 mode = "structured"
 
-# repo_name (text) — 117 occurrences in 25 files
+# repo_name (text) — 122 occurrences in 27 files
 [[replace]]
 field = "repo_name"
 current = ["py-launch-blueprint"]
 files = [
+  ".agents/plugins/marketplace.json",             # 2x
   ".devcontainer/devcontainer.json",              # 1x
   ".flox/env.json",                               # 1x
   ".github/CONTRIBUTING.md",                      # 1x
   ".github/ISSUE_TEMPLATE/config.yml",            # 1x
   ".github/codeql/codeql-config.yml",             # 1x
   ".github/workflows/blueprint-guard.yml",        # 1x
-  "AGENTS.md",                                    # 2x
+  "AGENTS.md",                                    # 3x
   "Justfile",                                     # 1x
   "README.md",                                    # 17x
   "docs/design/0001-plbp-cli-conventions.md",     # 3x
@@ -404,6 +405,7 @@ files = [
   "docs/api/openapi.json",                        # 1x
   "docs/adr/0013-web-service-best-practices.md",  # 1x
   "docs/source/web/index.md",                     # 2x
+  "tests/meta/test_codex_astral_plugin.py",       # 2x
 ]
 mode = "text"
 

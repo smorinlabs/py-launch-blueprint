@@ -128,13 +128,22 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 - Build backend: `uv_build` with static `[project] version` (per ADR-06)
 - IDE: VS Code with Ruff, Pyright, EditorConfig extensions
 
-### Python LSP for Claude Code
+### Astral Python tools for Claude Code and Codex
 
 Python code intelligence for Claude Code comes from the **official Astral
 plugin** (`astral@astral-sh`), enabled by default for this repo in
 `.claude/settings.json` (which also registers the `astral-sh` marketplace,
 `github.com/astral-sh/claude-code-plugins`). The plugin ships a `ty` language
 server (`uvx ty@latest server`) plus `/astral:` skills for uv, ty, and ruff.
+
+Codex does not have an official Astral plugin marketplace entry. This repo
+therefore carries a repo-local Codex adapter:
+`.agents/plugins/marketplace.json` registers `astral@py-launch-blueprint`
+from `plugins/astral` with `INSTALLED_BY_DEFAULT`. The adapter is skill-only:
+it vendors Astral's upstream `uv`, `ruff`, and `ty` `SKILL.md` files plus the
+upstream license files. Do not add duplicate `.agents/skills/uv`,
+`.agents/skills/ruff`, or `.agents/skills/ty` entries; keep those skills
+plugin-scoped so Codex has one source of truth.
 
 `ty` is this repo's type-check authority (ADR-03), so its LSP diagnostics —
 which the plugin leaves **on** by default — agree with what CI gates on rather
@@ -148,6 +157,9 @@ it up in an existing session.
 
 Note: the LSP runs `ty@latest` via `uvx`, which can drift from the `ty` version
 pinned in the dev group that CI uses (`uv run ty`); treat CI as authoritative.
+
+When validating the LSP outside Claude Code, smoke-test the same server command
+with JSON-RPC `initialize`/`shutdown` against `uvx ty@latest server`.
 
 ## Releases
 
