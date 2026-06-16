@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.3.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.2.0...v2.3.0) (2026-06-16)
+
+
+### Features
+
+* **lsp:** enable official astral ty language server for claude code ([33dc9db](https://github.com/smorinlabs/py-launch-blueprint/commit/33dc9db31d32a160d1753e168af65a20e4a6b148))
+* **lsp:** enable official Astral ty language server for Claude Code ([#444](https://github.com/smorinlabs/py-launch-blueprint/issues/444)) ([33dc9db](https://github.com/smorinlabs/py-launch-blueprint/commit/33dc9db31d32a160d1753e168af65a20e4a6b148))
+
+
+### Bug Fixes
+
+* **deps:** bump starlette 1.1.0 -&gt; 1.3.1 (CVE-2026-54283, CVE-2026-54282) ([09e03ad](https://github.com/smorinlabs/py-launch-blueprint/commit/09e03ad773fc0244552d6da583a3f15689eac7e9))
+* **deps:** bump starlette 1.1.0 → 1.3.1 (CVE-2026-54283, CVE-2026-54282) ([#445](https://github.com/smorinlabs/py-launch-blueprint/issues/445)) ([09e03ad](https://github.com/smorinlabs/py-launch-blueprint/commit/09e03ad773fc0244552d6da583a3f15689eac7e9))
+* **projects:** address PR review — 404 not-found, distinct error codes, adapter parity ([a384a46](https://github.com/smorinlabs/py-launch-blueprint/commit/a384a462f5cad4e307eef4c8560a329f41ded91d))
+* **web:** do not relay upstream error text in problem detail (SEC-4) ([30d59ce](https://github.com/smorinlabs/py-launch-blueprint/commit/30d59cea547e36e5ec099c42edc223b618c3b3ec))
+
+
+### Refactor
+
+* **core:** split projects service into ports + adapters with import-linter enforcement ([342fc02](https://github.com/smorinlabs/py-launch-blueprint/commit/342fc02de3c0c4da3538d54298642bd69302573e))
+
 ## [2.2.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.1.1...v2.2.0) (2026-06-14)
 
 
