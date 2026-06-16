@@ -10,9 +10,24 @@ PLUGIN_ROOT = REPO_ROOT / "plugins" / "astral"
 def _frontmatter(text: str) -> str:
     text = text.replace("\r\n", "\n")
     marker = "---\n"
-    assert text.startswith(marker)
-    _, metadata, _ = text.split(marker, 2)
+    if not text.startswith(marker):
+        msg = "expected skill text to start with frontmatter marker"
+        raise ValueError(msg)
+    try:
+        _, metadata, _ = text.split(marker, 2)
+    except ValueError as exc:
+        msg = "expected skill text to include closing frontmatter marker"
+        raise ValueError(msg) from exc
     return metadata
+
+
+def _frontmatter_description(text: str) -> str:
+    description_prefix = "description:"
+    for line in _frontmatter(text).splitlines():
+        if line.startswith(description_prefix):
+            return line[len(description_prefix) :].strip()
+    msg = "expected skill frontmatter to include a description field"
+    raise ValueError(msg)
 
 
 def test_repo_marketplace_defaults_astral_plugin_on() -> None:
@@ -79,4 +94,4 @@ def test_repo_project_skill_description_stays_codex_compatible() -> None:
         REPO_ROOT / ".claude" / "skills" / "new-python-project" / "SKILL.md"
     ).read_text()
 
-    assert len(_frontmatter(skill_text)) <= 1024
+    assert len(_frontmatter_description(skill_text)) <= 1024
