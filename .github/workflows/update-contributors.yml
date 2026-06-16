@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
 
       - name: Update contributors
-        uses: smorinlabs/contributors-please-action@v1.1.0
+        uses: smorinlabs/contributors-please-action@v1.3.4
         with:
           # Input name is "app-id" (the action's defined input); value is
           # Client ID, which @octokit/auth-app accepts via
