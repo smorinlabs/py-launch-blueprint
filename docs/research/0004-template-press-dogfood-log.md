@@ -214,6 +214,72 @@ resolved).
 
 (after Run 1)
 
-## Run 2 — template-press
+## Build #1 — template-press (intermediate, "up to the irreversible line")
 
-(gated on design review checkpoint)
+Ran from the IMPROVED blueprint (PR #428 merged to main, `744645d`).
+Repo `smorinlabs/template-press` created via REST template-generate
+(`POST /repos/.../generate`) to dodge GraphQL rate limits (PROBLEM-01).
+
+### Fix validation (the point of building from the improved template)
+
+| Fix | Run 1 (old template) | Build #1 (fixed template) |
+|---|---|---|
+| PROBLEM-11 marker-gate | pre-push FAILED; needed `--no-verify` | **push succeeds WITH hooks**; init checks no-op in 0.01–0.03s each |
+| PROBLEM-05 bun.lock | leaked `py-launch-blueprint-tooling` | **clean** — `grep -c py-launch-blueprint bun.lock` = 0 |
+| PROBLEM-08 mise trust | `just setup` failed (untrusted mise.toml) | **`just setup` first try** (mise trust ran) |
+| PROBLEM-04 --allow-dirty | dry-run failed on untracked answers.toml | runbook documents `--allow-dirty`; clean |
+| PROBLEM-02 --directory | nonexistent flag | runbook fixed; used REST generate here |
+| PROBLEM-09 secret-scan | CI FAILED (base==head first push) | **trufflehog CI ✓** on first push |
+| PROBLEM-10 init-integration | CI FAILED in fork | **no init-integration job** runs (removed in fork) |
+| PF-1 tpress alias | n/a | added by hand; `press` AND `tpress` both work |
+
+CI on the bootstrap+post-init push: all green EXCEPT `release-please`
+(expected — no app secrets yet; the deferred 1Password step). `ci-ok`,
+CodeQL `analyze (python)`, full test matrix, trufflehog: ✓.
+
+### Settings applied (no-credential, via gh api)
+
+CodeQL default-setup confirmed `not-configured`; Actions create/approve
+PRs = on; Dependabot alerts + security updates = on; private vulnerability
+reporting = on; merge strategy = squash-only + delete-branch-on-merge;
+branch protection on `main` with **fork-correct** contexts.
+
+### New finding
+
+- **PROBLEM-15** — severity: med — POST_INIT.md §3.6's branch-protection
+  context list (`ci-ok, integration-ok, guard, unit-tests, commitlint
+  (humans), actionlint, bandit, codespell, editorconfig-check, yamllint`)
+  includes **blueprint-only jobs** (`guard`, `unit-tests` from
+  blueprint-guard.yml; `integration-ok` from init-integration.yml) that do
+  NOT exist in a generated repo (those workflows are `[[remove]]`d). Using
+  the list verbatim makes every fork PR permanently "blocked" on contexts
+  that never report — the exact trap hit on PR #428 of the blueprint
+  itself. Workaround: set protection with only the contexts that actually
+  run in the fork (`ci-ok, trufflehog, commitlint (humans), bandit,
+  actionlint, yamllint, codespell, editorconfig-check`). Disposition:
+  pending triage — POST_INIT.md should give a fork-correct list (drop the
+  blueprint-only jobs), or post-init should set protection programmatically
+  from the repo's actual checks.
+
+### STOPPED at the irreversible line (per user direction)
+
+Deliberately NOT done (left to the user):
+- **release-please / contributors GH App secrets** — `repo-secrets` skill
+  needs 1Password (`RELEASE_PLEASE_APP_ID/_PRIVATE_KEY`,
+  `CONTRIBUTORS_PLEASE_*`). Until set, `release-please.yml` CI fails (only
+  red check).
+- **PyPI/TestPyPI trusted publishers + real publish** — irreversible;
+  `template-press 0.0.0.dev0` already reserved (deviates from plan 0004's
+  `0.0.1` placeholder; `0.0.0.dev0` is the actual reservation). Final step is: add the
+  trusted publisher (owner `smorinlabs`, repo `template-press`, workflow
+  `publish.yml`, env `pypi`/`testpypi`), then merge the release-please PR →
+  tag → `publish.yml` → `0.1.0`.
+
+### Convergence (v2 design D-v2-2)
+
+Build #1 from the fixed template is clean — all 8 code-fixable problems
+validated, CI green but for the credential-gated release-please. There is
+**no material defect left for a "rebuild #2" to fix**, so the loop
+converges here: build #1 IS the kept `smorinlabs/template-press`. A
+delete+recreate would be churn for no gain (and the v2 plan's rebuild
+existed only to prove fixes — now proven). See design v3.
