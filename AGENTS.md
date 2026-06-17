@@ -115,13 +115,14 @@ Conventional Commits with lowercase subject (commitlint enforces):
 Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 `docs`, `style`, `test`, `ci`, `build`.
 
-This format is REQUIRED for **every** commit AND **every** PR title — no
-exceptions for bot or autofix commits (e.g. Copilot's "Potential fix…") or
-for squash-merge titles (which default to the PR title). The required
-`commitlint (humans)` CI check lints every non-merge commit in a PR, so one
-non-conventional commit or PR title blocks the merge. Before merging: reword
-any non-conventional commit (or squash the PR), and always set a conventional
-commit title when squash-merging.
+This format is REQUIRED for **every** commit — no exceptions for bot or
+autofix commits (e.g. Copilot's "Potential fix…"). The required
+`commitlint (humans)` CI check lints every non-merge commit in a PR, so a
+single non-conventional commit blocks the merge; reword it (or squash the PR)
+before merging. PR titles must follow the format too: commitlint does not
+lint the title itself, but it becomes the default squash-merge commit
+subject, so a non-conventional title lands a non-conventional commit on the
+trunk. Always set a conventional title when squash-merging.
 
 ## Code style
 
