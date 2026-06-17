@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.3.0...v2.4.0) (2026-06-17)
+
+
+### Features
+
+* **codex:** add astral plugin adapter ([#448](https://github.com/smorinlabs/py-launch-blueprint/issues/448)) ([2339650](https://github.com/smorinlabs/py-launch-blueprint/commit/2339650c8abebf405760c9ffe9ca2ab8ecc38a21))
+
 ## [2.3.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.2.0...v2.3.0) (2026-06-16)
 
 
