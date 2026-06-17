@@ -17,108 +17,48 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Projects service — talks to the Py API and returns typed models.
+"""Projects use-cases (HEX-12).
 
-This is the library half of the old ``projects.py``: pure logic, no printing,
-no Click. It raises ``APIError`` on failure and returns ``Project`` models on
-success so the same data can be rendered as human text, JSON, or Markdown.
+Orchestration only: depends on a :class:`ProjectsRepository` port, decides that
+absence is a user-facing error, and returns domain models. No HTTP, no Click,
+no FastAPI — the transport lives in
+:mod:`py_launch_blueprint.core.adapters.py_api`, and the front-ends build a
+wired instance via :func:`py_launch_blueprint.composition.build_projects_service`.
 """
 
-from typing import Any
-
-import requests
-
-from py_launch_blueprint.core.errors import APIError
-from py_launch_blueprint.core.logging import get_logger
+from py_launch_blueprint.core.errors import ProjectNotFoundError, WorkspaceNotFoundError
 from py_launch_blueprint.core.models import Project
-
-log = get_logger(__name__)
-
-DEFAULT_TIMEOUT = 30  # seconds
+from py_launch_blueprint.core.ports import ProjectsRepository
 
 
 class ProjectsService:
-    """Client for the Py projects API."""
+    """Application service coordinating a ``ProjectsRepository``."""
 
-    BASE_URL = "https://app.py.com/api/1.0"
-
-    def __init__(self, token: str, timeout: int = DEFAULT_TIMEOUT) -> None:
-        self.timeout = timeout
-        self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/json",
-            }
-        )
-
-    def _request(self, method: str, path: str, **kwargs: Any) -> dict[str, Any]:
-        url = f"{self.BASE_URL}/{path.lstrip('/')}"
-        log.debug("api_request", method=method, path=path)
-        try:
-            response = self.session.request(method, url, timeout=self.timeout, **kwargs)
-            response.raise_for_status()
-            data: dict[str, Any] = response.json()
-            return data
-        except requests.exceptions.RequestException as exc:
-            message = self._extract_error(exc)
-            log.warning("api_request_failed", path=path, error=message)
-            raise APIError(f"API request failed: {message}") from exc
-
-    @staticmethod
-    def _extract_error(exc: requests.exceptions.RequestException) -> str:
-        response = exc.response
-        if response is None:
-            return str(exc)
-        try:
-            payload = response.json()
-        except ValueError:
-            return str(exc)
-        errors = payload.get("errors") or [{}]
-        first = errors[0] if errors else {}
-        message: str = first.get("message", str(exc))
-        return message
-
-    def _resolve_workspace_gid(self, workspace_name: str) -> str:
-        workspaces = self._request("GET", "/workspaces").get("data", [])
-        match = next(
-            (w for w in workspaces if w["name"].lower() == workspace_name.lower()),
-            None,
-        )
-        if not match:
-            raise APIError(f"Workspace not found: {workspace_name}")
-        gid: str = match["gid"]
-        return gid
+    def __init__(self, repository: ProjectsRepository) -> None:
+        self._repo = repository
 
     def list_projects(
         self, workspace: str | None = None, limit: int = 200
     ) -> list[Project]:
-        """List projects, optionally filtered by workspace name."""
-        params: dict[str, Any] = {
-            "limit": limit,
-            "opt_fields": "name,workspace.name",
-        }
-        if workspace:
-            params["workspace"] = self._resolve_workspace_gid(workspace)
+        """List projects, optionally filtered by workspace name.
 
-        raw = self._request("GET", "/projects", params=params).get("data", [])
-        return [self._to_project(item) for item in raw]
+        Raises :class:`WorkspaceNotFoundError` when a workspace name cannot be
+        resolved — the absence the repository reports as ``None`` becomes a
+        user-facing error here, not in the adapter.
+        """
+        workspace_gid: str | None = None
+        if workspace:
+            workspace_gid = self._repo.resolve_workspace_gid(workspace)
+            if workspace_gid is None:
+                raise WorkspaceNotFoundError(f"Workspace not found: {workspace}")
+        return self._repo.list_projects(workspace_gid=workspace_gid, limit=limit)
 
     def get_project(self, project_id: str) -> Project:
-        """Fetch a single project by its gid."""
-        params = {"opt_fields": "name,workspace.name"}
-        raw = self._request("GET", f"/projects/{project_id}", params=params).get(
-            "data", {}
-        )
-        if not raw:
-            raise APIError(f"Project not found: {project_id}")
-        return self._to_project(raw)
+        """Fetch a single project by its gid.
 
-    @staticmethod
-    def _to_project(item: dict[str, Any]) -> Project:
-        workspace = item.get("workspace") or {}
-        return Project(
-            id=str(item.get("gid", item.get("id", ""))),
-            name=item.get("name", ""),
-            workspace=workspace.get("name"),
-        )
+        Raises :class:`ProjectNotFoundError` when the repository reports absence.
+        """
+        project = self._repo.get_project(project_id)
+        if project is None:
+            raise ProjectNotFoundError(f"Project not found: {project_id}")
+        return project

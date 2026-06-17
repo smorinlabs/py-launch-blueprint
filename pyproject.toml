@@ -20,7 +20,7 @@
 [project]
 name = "py_launch_blueprint"
 # ITM-070 — static version (ADR-06 cutover). release-please bumps this.
-version = "2.1.1"
+version = "2.3.0"
 description = "CLI tools for interacting with Py, including project search functionality"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -74,9 +74,9 @@ otel = [
 dev = [
   "pytest>=7.0.0",
   "pytest-cov>=4.1.0",
-  "ty>=0.0.1a16",        # per ADR-03 (pre-1.0; bump as needed)
+  "ty>=0.0.1a16", # per ADR-03 (pre-1.0; bump as needed)
   "ruff>=0.1.0",
-  "httpx>=0.27.0",       # fastapi TestClient transport (tests/web; web extra)
+  "httpx>=0.27.0", # fastapi TestClient transport (tests/web; web extra)
   "schemathesis>=4.0.0", # WEB-50 contract fuzzing from the OpenAPI schema
   "types-requests",
   "types-Pygments",
@@ -88,9 +88,17 @@ dev = [
   "codespell>=2.4.0",
   "editorconfig-checker>=3.0.0",
   "yamllint>=1.35.0",
-  "pip-audit>=2.9.0",            # WL-014 — `just audit` + scheduled dep-audit workflow
-  "twine>=6.1.0",                # WL-004 — dist metadata check in the build-smoke CI job
-  "syrupy>=4.8.0",               # WL-023 — CLI --help snapshot tests
+  "pip-audit>=2.9.0", # WL-014 — `just audit` + scheduled dep-audit workflow
+  "twine>=6.1.0", # WL-004 — dist metadata check in the build-smoke CI job
+  "syrupy>=4.8.0", # WL-023 — CLI --help snapshot tests
+  "import-linter>=2.0", # HEX-30 — architectural layer/boundary rules
+  "tach>=0.35.0",
+  # Testing-strategy shortlist (ADR-0019).
+  "pytest-xdist>=3.6",     # WL-008 — parallel test execution (`-n auto`)
+  "pytest-timeout>=2.3",   # WL-009 — per-test timeout guard (hung test fails loud)
+  "pytest-randomly>=3.15", # WL-010 — randomized order surfaces inter-test coupling
+  "hypothesis>=6.100",     # WL-013 — property-based tests at parse/serialize seams
+  "responses>=0.25",       # HEX-40 — HTTP mock for the port-contract suite
 ]
 
 docs = [
@@ -159,10 +167,10 @@ lint.ignore = [
   "E501", # line too long (formatter owns this)
   "W293", # whitespace on blank line (formatter owns trim_trailing)
 ]
+lint.unfixable = [] # Rules that should not be fixed automatically
 
 # Allow autofix behavior for specific rules
 fix = true
-lint.unfixable = [] # Rules that should not be fixed automatically
 
 # Exclude files/folders
 exclude = [
@@ -241,6 +249,22 @@ python_files = ["test_*.py"]
 markers = ["live: requires external services", "slow: takes >1s"]
 addopts = "-m 'not live and not slow'"
 strict_markers = true
+# WL-009 — a hung test fails loudly instead of burning a CI slot. `thread`
+# method (not the POSIX-only signal default) so the cap also holds on the
+# Windows matrix leg. A genuinely slow test overrides via
+# `@pytest.mark.timeout(N)`.
+timeout = 60
+timeout_method = "thread"
+# WL-010 (pytest-randomly) reorders tests each run with a printed, replayable
+# seed (`-p randomly --randomly-seed=…`) to surface hidden inter-test coupling;
+# it needs no config. Parallelism (WL-008, `-n auto`) is opt-in per invocation
+# (`just test -n auto`, and the CI full-suite + canary runs) rather than in
+# default addopts, so the fast local inner loop keeps clean `-x`/pdb behaviour.
+
+# Branch coverage (ADR-0019): count both-arms of every branch, not just line
+# execution, so the Codecov gate (WL-005) catches untested conditionals.
+[tool.coverage.run]
+branch = true
 
 # ITM-015 — codespell. US English baseline (default builtin="clear,rare"); empty
 # ignore list — add terms only when intentional. Decided round 9.
@@ -254,3 +278,53 @@ ignore-words-list = "ans,porjects"
 # its test ("plbp porjects" must suggest "projects").
 check-filenames = true
 check-hidden = false
+
+# HEX-30 — import-linter: enforce the hexagonal boundaries described in
+# docs/design/0005-hexagonal-architecture-and-enforcement.md. Run via
+# `uv run lint-imports` (locked dev group, WL-001); wired into `just check`
+# and the pre-push hook. Contracts match the CURRENT layer-first layout
+# (core / cli / web); the feature-first reshape (HEX-02) + tach come with the
+# second capability.
+[tool.importlinter]
+root_package = "py_launch_blueprint"
+# Required because the framework-bleed contract names external packages
+# (fastapi/click/uvicorn) as forbidden imports.
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "core never imports the front-ends (inward-only, HEX-01)"
+type = "forbidden"
+source_modules = ["py_launch_blueprint.core"]
+forbidden_modules = [
+  "py_launch_blueprint.cli",
+  "py_launch_blueprint.web",
+]
+
+[[tool.importlinter.contracts]]
+name = "cli and web are independent of each other"
+type = "independence"
+modules = [
+  "py_launch_blueprint.cli",
+  "py_launch_blueprint.web",
+]
+
+[[tool.importlinter.contracts]]
+name = "composition root is not imported by core (HEX-04)"
+type = "forbidden"
+source_modules = ["py_launch_blueprint.core"]
+forbidden_modules = ["py_launch_blueprint.composition"]
+
+[[tool.importlinter.contracts]]
+name = "core layering: models < services < adapters (HEX-01)"
+type = "layers"
+layers = [
+  "py_launch_blueprint.core.adapters",
+  "py_launch_blueprint.core.services",
+  "py_launch_blueprint.core.models",
+]
+
+[[tool.importlinter.contracts]]
+name = "core does not import web/cli frameworks (framework-bleed, HEX-32)"
+type = "forbidden"
+source_modules = ["py_launch_blueprint.core"]
+forbidden_modules = ["fastapi", "click", "uvicorn"]

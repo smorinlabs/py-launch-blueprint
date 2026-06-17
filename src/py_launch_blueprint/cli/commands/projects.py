@@ -28,6 +28,7 @@ import click
 from py_launch_blueprint.cli.context import AppContext
 from py_launch_blueprint.cli.groups import SuggestingGroup
 from py_launch_blueprint.cli.options import global_options
+from py_launch_blueprint.composition import build_projects_service
 from py_launch_blueprint.core.errors import AuthError
 from py_launch_blueprint.core.models import ProjectList
 from py_launch_blueprint.core.services import ProjectsService
@@ -46,7 +47,7 @@ def _service(app: AppContext) -> ProjectsService:
             "No Py token found (never stored in the config file).",
             hint="supply it via --token or $PLBP_TOKEN; `plbp doctor` checks setup",
         )
-    return ProjectsService(token)
+    return build_projects_service(token)
 
 
 @projects_group.command(name="list")

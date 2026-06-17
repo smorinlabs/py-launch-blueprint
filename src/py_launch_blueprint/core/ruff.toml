@@ -1,0 +1,18 @@
+# HEX-32 — framework-bleed guard for the core layer (fast, at pre-commit).
+#
+# import-linter is the authoritative framework-bleed check (the
+# "core does not import web/cli frameworks" contract, run at `just check` +
+# pre-push). This nested config is the fast first line: a stray `import
+# fastapi`/`click`/`uvicorn` anywhere under core/ is flagged by ruff at commit
+# time, scoped to this subtree because ruff's banned-api is otherwise global.
+# requests is deliberately NOT banned — the HTTP adapter (core/adapters) uses
+# it; that boundary is enforced by import-linter's core layering contract.
+extend = "../../../pyproject.toml"
+
+[lint]
+extend-select = ["TID251"]
+
+[lint.flake8-tidy-imports.banned-api]
+"click".msg = "core is framework-agnostic — keep click in the cli layer (HEX-32)."
+"fastapi".msg = "core is framework-agnostic — keep fastapi in the web layer (HEX-32)."
+"uvicorn".msg = "core is framework-agnostic — keep uvicorn in the web layer (HEX-32)."

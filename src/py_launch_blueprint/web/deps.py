@@ -28,6 +28,7 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
+from py_launch_blueprint.composition import build_projects_service
 from py_launch_blueprint.core.config import TOKEN_ENV_VAR, Config, load_config
 from py_launch_blueprint.core.errors import AuthError
 from py_launch_blueprint.core.services.projects import ProjectsService
@@ -53,7 +54,7 @@ def get_projects_service(config: ConfigDep) -> ProjectsService:
     """A :class:`ProjectsService` for the resolved token (401 when missing)."""
     if not config.token:
         raise AuthError(f"no API token configured (set ${TOKEN_ENV_VAR})")
-    return ProjectsService(token=config.token)
+    return build_projects_service(config.token)
 
 
 ProjectsServiceDep = Annotated[ProjectsService, Depends(get_projects_service)]

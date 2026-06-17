@@ -10,8 +10,8 @@ make check
 ### (Optional) Provision the whole toolchain with mise or flox
 
 Instead of installing each tool natively, you can provision the project's full
-10-tool set (python, uv, ruff, taplo, gitleaks, just, bun, gh, lefthook, make)
-with a single command — both manifests live at the repo root and are kept in
+11-tool set (python, uv, ruff, taplo, gitleaks, just, bun, gh, lefthook, make,
+actionlint) with a single command — both manifests live at the repo root and are kept in
 sync with the native installers (see
 [ADR 0005](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/adr/0005-mise-flox-first-class-toolchains.md)):
 

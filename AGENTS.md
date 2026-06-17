@@ -37,7 +37,7 @@ clones, containers, and remote agent sessions start without it — run
 |---|---|
 | Sync dev env | `uv sync --group dev --extra web` (PEP 735 — not `pip install '.[dev]'`) |
 | All checks | `just check` |
-| Run tests | `pytest` (default excludes `slow`/`live` markers per ITM-046; full: `pytest -m ""`) |
+| Run tests | `pytest` (default excludes `slow`/`live` markers per ITM-046; full: `pytest -m ""`; parallel: add `-n auto`) |
 | Run one test | `pytest tests/test_file.py::test_name` |
 | Lint | `uv run ruff check .` |
 | Format | `just format` or `uv run ruff format src/py_launch_blueprint/` |
@@ -71,10 +71,18 @@ workflow enforce it).
    - `uv run pytest init/tests/ --override-ini="addopts=" -q`
 4. Stage + commit. Lefthook fires automatically:
    - **commit-msg** → commitlint (Conventional Commits, lowercase subject).
-   - **pre-commit** → gitleaks + editorconfig-checker + yamllint + codespell
-     + ruff check/format on staged Python files.
-   - **pre-push** → gitleaks range scan + bandit + init-system integrity
-     (guard wiring, manifest drift, path filter, init tests).
+   - **pre-commit** (fast, staged-scoped) → gitleaks + editorconfig-checker
+     + yamllint + actionlint (workflows) + codespell + ruff check/format
+     + taplo (TOML) + `uv lock --check` (lockfile freshness) + large-files
+     guard (1 MB).
+   - **pre-push** (slower, full-tree) → gitleaks range scan + bandit + ty
+     typecheck + import-linter + tach + openapi-snapshot (web-layer gated)
+     + init-system integrity (guard wiring, manifest drift, path filter,
+     init tests).
+
+   Hooks mirror CI; CI is the authority (ADR 0018). Boundaries (import-linter
+   + tach) are gated by the `import-boundaries` CI job, so a `--no-verify`
+   push can't bypass them.
 
    If lefthook was not installed (step 1 skipped), the hooks are silent
    no-ops — do NOT push until you have either installed it or run the
@@ -104,9 +112,10 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 
 ## Developer environment
 
-- Toolchain provisioning (per ADR 0005) — three first-class options, all
-  declaring the SAME 10-tool set (python, uv, ruff, taplo, gitleaks, just,
-  bun, gh, lefthook, make); keep them in sync when adding/removing a tool:
+- Toolchain provisioning (per ADR 0005, extended by ADR 0018) — three
+  first-class options, all declaring the SAME 11-tool set (python, uv, ruff,
+  taplo, gitleaks, just, bun, gh, lefthook, make, actionlint); keep them in
+  sync when adding/removing a tool:
   1. Native installs (Makefile + Justfile `install-*` targets,
      `scripts/install-*.sh`)
   2. `mise install` (root `mise.toml`)
@@ -118,6 +127,39 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
   lefthook.yml)
 - Build backend: `uv_build` with static `[project] version` (per ADR-06)
 - IDE: VS Code with Ruff, Pyright, EditorConfig extensions
+
+### Astral Python tools for Claude Code and Codex
+
+Python code intelligence for Claude Code comes from the **official Astral
+plugin** (`astral@astral-sh`), enabled by default for this repo in
+`.claude/settings.json` (which also registers the `astral-sh` marketplace,
+`github.com/astral-sh/claude-code-plugins`). The plugin ships a `ty` language
+server (`uvx ty@latest server`) plus `/astral:` skills for uv, ty, and ruff.
+
+Codex does not have an official Astral plugin marketplace entry. This repo
+therefore carries a repo-local Codex adapter:
+`.agents/plugins/marketplace.json` registers `astral@py-launch-blueprint`
+from `plugins/astral` with `INSTALLED_BY_DEFAULT`. The adapter is skill-only:
+it vendors Astral's upstream `uv`, `ruff`, and `ty` `SKILL.md` files plus the
+upstream license files. Do not add duplicate `.agents/skills/uv`,
+`.agents/skills/ruff`, or `.agents/skills/ty` entries; keep those skills
+plugin-scoped so Codex has one source of truth.
+
+`ty` is this repo's type-check authority (ADR-03), so its LSP diagnostics —
+which the plugin leaves **on** by default — agree with what CI gates on rather
+than introducing a second, divergent type-checker voice. No separate binary
+install is needed: `uvx` is provided by `uv`, already in the toolchain.
+
+Activation: collaborators are prompted to install from the `astral-sh`
+marketplace after they accept the workspace-trust dialog; the LSP server starts
+only once the workspace is trusted. Run `/reload-plugins` (or restart) to pick
+it up in an existing session.
+
+Note: the LSP runs `ty@latest` via `uvx`, which can drift from the `ty` version
+pinned in the dev group that CI uses (`uv run ty`); treat CI as authoritative.
+
+When validating the LSP outside Claude Code, smoke-test the same server command
+with JSON-RPC `initialize`/`shutdown` against `uvx ty@latest server`.
 
 ## Releases
 

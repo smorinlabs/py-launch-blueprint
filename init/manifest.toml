@@ -30,6 +30,8 @@ files = [
   ".github/workflows/manual-pr-security-scan.yml",       # 1x
   ".readthedocs.yaml",                                   # 1x
   "LICENSE",                                             # 1x
+  "docs/adr/0017-hexagonal-core-and-boundary-enforcement.md", # 1x (Deciders)
+  "docs/adr/0019-testing-strategy-and-tooling.md",       # 1x (Deciders)
   "docs/research/0003-init-post-init-analysis.md",       # 1x
   "docs/source/_templates/base.html",                    # 1x
   "docs/source/conf.py",                                 # 2x
@@ -54,6 +56,11 @@ files = [
   "src/py_launch_blueprint/core/paths.py",               # 1x
   "src/py_launch_blueprint/core/services/__init__.py",   # 1x
   "src/py_launch_blueprint/core/services/projects.py",   # 1x
+  "src/py_launch_blueprint/composition.py",              # 1x (HEX-04)
+  "src/py_launch_blueprint/core/ports.py",               # 1x (HEX-11)
+  "src/py_launch_blueprint/core/adapters/__init__.py",   # 1x
+  "src/py_launch_blueprint/core/adapters/py_api.py",     # 1x (HEX-13)
+  "src/py_launch_blueprint/core/adapters/in_memory.py",  # 1x (HEX-41)
   "src/py_launch_blueprint/core/settings.py",            # 1x
   "src/py_launch_blueprint/web/__init__.py",             # 1x
   "src/py_launch_blueprint/web/__main__.py",             # 1x
@@ -83,7 +90,7 @@ files = [
 ]
 mode = "structured"
 
-# app_name (text) — 313 occurrences in 48 files
+# app_name (text) — 319 occurrences in 49 files
 # NOTE: 4-char token — safe for text mode because "plbp" was invented to be
 # substring-disjoint from real words and every other identity value.
 [[replace]]
@@ -112,8 +119,10 @@ files = [
   "docs/adr/0016-app-short-name-placeholder.md",        # 10x
   "docs/adr/README.md",                                 # 2x
   "docs/design/0001-plbp-cli-conventions.md",           # 28x
+  "docs/design/0005-hexagonal-architecture-and-enforcement.md", # plbp refs
   "docs/design/README.md",                              # 2x
   "docs/research/0003-init-post-init-analysis.md",      # 5x
+  "docs/source/about/design_decisions.md",              # 6x
   "docs/source/index.md",                               # 14x
   "docs/source/reference/cli_reference.md",             # 1x
   "docs/source/web/index.md",                           # 1x
@@ -139,10 +148,11 @@ files = [
   "tests/core/test_core.py",                            # 19x
   "tests/core/test_logging.py",                         # 8x
   "tests/core/test_paths.py",                           # 10x
+  "tests/core/test_properties.py",                      # 1x (plbp_config.toml)
 ]
 mode = "text"
 
-# app_name_upper (text) — 228 occurrences in 32 files
+# app_name_upper (text) — 230 occurrences in 33 files
 # Derived identity (app_name.upper()): the PLBP_* env prefix and the
 # _PLBP_COMPLETE completion var. Never prompted; init derives it.
 [[replace]]
@@ -162,6 +172,7 @@ files = [
   "docs/adr/0016-app-short-name-placeholder.md",      # 5x
   "docs/POST_INIT.md",                                # 1x
   "docs/research/0003-init-post-init-analysis.md",    # 1x
+  "docs/source/about/design_decisions.md",            # 2x
   "docs/source/index.md",                             # 1x
   "docs/source/web/index.md",                         # 10x
   "llms.txt",                                         # 1x
@@ -178,6 +189,7 @@ files = [
   "src/py_launch_blueprint/web/settings.py",          # 1x
   "tests/cli/test_output.py",                         # 15x
   "tests/cli/test_pylb.py",                           # 38x
+  "tests/core/test_projects_service.py",              # PLBP005/PLBP006 codes
   "tests/web/test_app.py",                            # 2x
   "tests/web/test_logging.py",                        # 3x
   "tests/web/test_settings.py",                       # 5x
@@ -212,7 +224,7 @@ files = [
 ]
 mode = "structured"
 
-# owner (text) — 27 occurrences in 14 files
+# owner (text) — 77 occurrences in 15 files
 [[replace]]
 field = "owner"
 current = ["smorinlabs"]
@@ -222,6 +234,7 @@ files = [
   "Justfile",                                     # 1x
   "README.md",                                    # 5x
   "docs/research/0003-init-post-init-analysis.md", # 1x
+  "docs/source/about/design_decisions.md",        # 50x
   "docs/source/conf.py",                          # 2x
   "docs/source/contributing/index.md",            # 1x
   "docs/source/index.md",                         # 5x
@@ -248,7 +261,7 @@ files = [
 ]
 mode = "structured"
 
-# package_name (text) — 140 occurrences in 49 files
+# package_name (text) — 142 occurrences in 50 files
 [[replace]]
 field = "package_name"
 current = ["py_launch_blueprint"]
@@ -261,7 +274,9 @@ files = [
   "EXAMPLEWEB.md",                                     # 2x
   "Justfile",                                          # 2x
   "README.md",                                         # 1x
+  "docs/adr/0018-hook-ci-parity-and-boundary-gate.md", # 1x (ty typecheck path)
   "docs/research/0003-init-post-init-analysis.md",     # 8x
+  "docs/source/about/design_decisions.md",             # 2x
   "docs/source/conf.py",                               # 3x
   "docs/source/index.md",                              # 1x
   "docs/source/reference/project_structure.md",        # 4x
@@ -275,6 +290,7 @@ files = [
   "docs/source/tools/ty.md",                           # 2x
   "docs/source/tutorials/full_project_setup.md",       # 3x
   "lefthook.yml",                                      # 1x
+  "tach.toml",                                         # HEX-31 module paths
   "src/py_launch_blueprint/__init__.py",               # 1x
   "src/py_launch_blueprint/cli/__init__.py",           # 1x
   "src/py_launch_blueprint/core/diagnostics.py",       # 3x
@@ -293,6 +309,12 @@ files = [
   "src/py_launch_blueprint/core/models.py",            # 1x
   "src/py_launch_blueprint/core/services/__init__.py", # 1x
   "src/py_launch_blueprint/core/services/projects.py", # 3x
+  "src/py_launch_blueprint/composition.py",            # HEX-04 composition root
+  "src/py_launch_blueprint/core/ports.py",             # HEX-11 ports
+  "src/py_launch_blueprint/core/adapters/py_api.py",   # HEX-13 http adapter
+  "src/py_launch_blueprint/core/adapters/in_memory.py", # HEX-41 in-memory fake
+  "tests/core/test_projects_service.py",               # ring-2 use-case tests
+  "tests/core/test_py_api_repository.py",              # adapter mapping tests
   "src/py_launch_blueprint/core/settings.py",          # 1x
   "src/py_launch_blueprint/web/__init__.py",           # 1x
   "src/py_launch_blueprint/web/__main__.py",           # 4x
@@ -308,6 +330,7 @@ files = [
   "Dockerfile",                                        # 1x
   "docs/adr/0013-web-service-best-practices.md",       # 2x
   "docs/design/0002-web-api-conventions.md",           # 2x
+  "docs/design/0005-hexagonal-architecture-and-enforcement.md", # py_launch_blueprint import paths
   "docs/source/web/index.md",                          # 1x
   "scripts/export_openapi.py",                         # 2x
   "release-please-config.json",                        # 1x
@@ -318,6 +341,8 @@ files = [
   "tests/core/test_format.py",                         # 2x
   "tests/core/test_logging.py",                        # 1x
   "tests/core/test_paths.py",                          # 1x
+  "tests/core/test_properties.py",                     # 1x
+  "tests/core/test_projects_repository_contract.py",   # imports
   "tests/meta/test_version_consistency.py",            # 2x
   "tests/web/test_app.py",                             # 6x
   "tests/web/test_contract.py",                        # 2x
@@ -340,23 +365,25 @@ files = [
 ]
 mode = "structured"
 
-# repo_name (text) — 66 occurrences in 24 files
+# repo_name (text) — 122 occurrences in 27 files
 [[replace]]
 field = "repo_name"
 current = ["py-launch-blueprint"]
 files = [
+  ".agents/plugins/marketplace.json",             # 2x
   ".devcontainer/devcontainer.json",              # 1x
   ".flox/env.json",                               # 1x
   ".github/CONTRIBUTING.md",                      # 1x
   ".github/ISSUE_TEMPLATE/config.yml",            # 1x
   ".github/codeql/codeql-config.yml",             # 1x
   ".github/workflows/blueprint-guard.yml",        # 1x
-  "AGENTS.md",                                    # 2x
+  "AGENTS.md",                                    # 3x
   "Justfile",                                     # 1x
   "README.md",                                    # 17x
   "docs/design/0001-plbp-cli-conventions.md",     # 3x
   "docs/research/0003-init-post-init-analysis.md", # 4x
   "docs/source/_templates/base.html",             # 1x
+  "docs/source/about/design_decisions.md",        # 51x
   "docs/source/conf.py",                          # 3x
   "docs/source/contributing/index.md",            # 1x
   "docs/source/index.md",                         # 15x
@@ -378,6 +405,7 @@ files = [
   "docs/api/openapi.json",                        # 1x
   "docs/adr/0013-web-service-best-practices.md",  # 1x
   "docs/source/web/index.md",                     # 2x
+  "tests/meta/test_codex_astral_plugin.py",       # 2x
 ]
 mode = "text"
 

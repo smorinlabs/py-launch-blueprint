@@ -1,0 +1,37 @@
+# tach.toml — bounded-context isolation (HEX-31).
+#
+# One real capability today (projects, under core/), so this mostly restates
+# the cli/web/core boundaries import-linter already guards; its value grows
+# with a second bounded context, where per-context isolation + strict public
+# interfaces (deny-internals-by-default) become the thing import-linter cannot
+# express. Run via `uv run tach check` (wired into `just check`).
+source_roots = ["src"]
+exclude = [
+  "tests",
+  "init",
+  "docs",
+  "scripts",
+  "build",
+  "dist",
+  ".venv",
+]
+
+[[modules]]
+path = "py_launch_blueprint"
+depends_on = []
+
+[[modules]]
+path = "py_launch_blueprint.core"
+depends_on = ["py_launch_blueprint"]
+
+[[modules]]
+path = "py_launch_blueprint.composition"
+depends_on = ["py_launch_blueprint.core"]
+
+[[modules]]
+path = "py_launch_blueprint.cli"
+depends_on = ["py_launch_blueprint.composition", "py_launch_blueprint.core", "py_launch_blueprint"]
+
+[[modules]]
+path = "py_launch_blueprint.web"
+depends_on = ["py_launch_blueprint.core", "py_launch_blueprint.composition", "py_launch_blueprint"]

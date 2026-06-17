@@ -53,6 +53,8 @@ ERROR_CODE_CONFIG = "PLBP001"
 ERROR_CODE_AUTH = "PLBP002"
 ERROR_CODE_API = "PLBP003"
 ERROR_CODE_INTERRUPT = "PLBP004"
+ERROR_CODE_PROJECT_NOT_FOUND = "PLBP005"
+ERROR_CODE_WORKSPACE_NOT_FOUND = "PLBP006"
 
 
 class PyError(Exception):
@@ -93,3 +95,21 @@ class APIError(PyError):
 
     exit_code = ExitCode.API
     error_code = ERROR_CODE_API
+
+
+class ProjectNotFoundError(APIError):
+    """A requested project does not exist upstream.
+
+    A subclass of :class:`APIError` so it inherits the API exit code, but with
+    its own stable ``error_code`` and a 404 web mapping (a missing resource is
+    a client-visible "not found", not an upstream failure); the distinct type
+    lets callers branch when they care (HEX-12).
+    """
+
+    error_code = ERROR_CODE_PROJECT_NOT_FOUND
+
+
+class WorkspaceNotFoundError(APIError):
+    """A workspace name could not be resolved to a gid (HEX-12)."""
+
+    error_code = ERROR_CODE_WORKSPACE_NOT_FOUND

@@ -40,7 +40,7 @@ of these two mechanisms instead:
 
 1. **GitHub App (preferred).** Create a GitHub App with **Contents** and
    **Pull requests: write**, install it on this repo, then add two secrets:
-   - `RELEASE_PLEASE_APP_ID` — the App's numeric ID
+   - `RELEASE_PLEASE_CLIENT_ID` — the App's Client ID (e.g. `Iv23li...`)
    - `RELEASE_PLEASE_PRIVATE_KEY` — the App's private key (`.pem` contents)
 
    Both jobs mint a short-lived installation token from these.

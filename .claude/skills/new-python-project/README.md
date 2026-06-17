@@ -55,17 +55,21 @@ thinking about the name.
 
 ## The "filter-after-trigger" design
 
-V6 of the skill description casts a deliberately wide net — it triggers
-on ANY Python project/repo/CLI/script creation intent, not just on
-explicit template mentions. The SKILL.md body's **Step 0** then asks the
-user whether they want the full template or a minimal setup. If declined,
-the skill exits cleanly; if confirmed, the rest of the runbook runs.
+The skill description casts a deliberately wide net — it triggers on
+Python project/repo/CLI/script creation intent, not just on explicit
+template mentions. The SKILL.md body's **Step 0** then asks the user
+whether they want the full template or a minimal setup. If declined, the
+skill exits cleanly; if confirmed, the rest of the runbook runs.
 
 This is intentional: rather than try (and fail) to thread a precise
 trigger that fires only when the user wants this template specifically,
 the skill triggers liberally and uses the conversation itself as the
 filter. Costs the user one extra Y/n prompt; gains everyone who would
 have otherwise missed the template option entirely.
+
+The frontmatter description must stay concise because Codex rejects skill
+descriptions over 1024 characters. Put detailed trigger rationale here in
+the README or in the SKILL.md body, not in the YAML description.
 
 ## When this skill might fail to trigger (and how to force it)
 
@@ -81,7 +85,9 @@ specificity (no false positives). Versions tested:
 - V3: CRITICAL framing + named failure modes
 - V4: broad Python intent + ask-first framing
 - V5: mandatory-prerequisite ("You MUST consult... NEVER bootstrap without")
-- V6: "repo" emphasis + ask-first framing (currently shipped)
+- V6: "repo" emphasis + ask-first framing
+- V7: concise Codex-compatible description with the ask-first workflow in
+  the skill body (currently shipped)
 
 The root cause is structural, not phrasing: per the skill-creator's own
 documentation, *"Claude only consults skills for tasks it can't easily

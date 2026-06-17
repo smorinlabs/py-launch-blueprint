@@ -1,0 +1,40 @@
+{
+  "name": "astral",
+  "version": "0.1.0",
+  "description": "Repo-local Codex adapter for Astral's official Python tool skills.",
+  "author": {
+    "name": "Astral",
+    "url": "https://astral.sh"
+  },
+  "homepage": "https://astral.sh",
+  "repository": "https://github.com/astral-sh/claude-code-plugins",
+  "license": "MIT",
+  "keywords": [
+    "python",
+    "astral",
+    "uv",
+    "ruff",
+    "ty",
+    "package-manager",
+    "linter",
+    "formatter",
+    "type-checker"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Astral",
+    "shortDescription": "Use Astral's uv, ruff, and ty guidance in Codex.",
+    "longDescription": "Repo-local Codex adapter for Astral's official Claude Code skills for uv, ruff, and ty. The skill text is copied from astral-sh/claude-code-plugins so this repo can expose equivalent Python tooling guidance to Codex.",
+    "developerName": "Astral",
+    "category": "Development",
+    "capabilities": [
+      "Code"
+    ],
+    "websiteURL": "https://astral.sh",
+    "defaultPrompt": [
+      "Use uv for this Python project.",
+      "Run ruff linting and formatting.",
+      "Check Python types with ty."
+    ]
+  }
+}

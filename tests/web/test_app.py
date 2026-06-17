@@ -10,7 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from py_launch_blueprint import __version__
-from py_launch_blueprint.core.errors import APIError
+from py_launch_blueprint.core.errors import APIError, ProjectNotFoundError
 from py_launch_blueprint.core.models import Project
 from py_launch_blueprint.web.app import create_app
 from py_launch_blueprint.web.deps import get_projects_service
@@ -27,7 +27,9 @@ class FakeProjectsService:
 
     def get_project(self, project_id):
         if project_id == "missing":
-            raise APIError(f"Project not found: {project_id}")
+            raise ProjectNotFoundError(f"Project not found: {project_id}")
+        if project_id == "boom":
+            raise APIError("upstream Py API failed")
         return Project(id=project_id, name="alpha", workspace="w1")
 
 
@@ -156,11 +158,23 @@ def test_old_unversioned_path_is_gone(client):
 
 
 def test_api_error_maps_to_502_problem(client):
-    response = client.get("/v1/projects/missing")
+    response = client.get("/v1/projects/boom")
     assert response.status_code == 502
     assert response.headers["content-type"] == PROBLEM_TYPE
     body = response.json()
     assert body["status"] == 502
+    assert body["instance"] == "/v1/projects/boom"
+    # SEC-4: the upstream provider's raw error text is NOT relayed to clients.
+    assert body["detail"] == "Upstream service request failed."
+    assert "upstream Py API failed" not in body["detail"]
+
+
+def test_project_not_found_maps_to_404_problem(client):
+    response = client.get("/v1/projects/missing")
+    assert response.status_code == 404
+    assert response.headers["content-type"] == PROBLEM_TYPE
+    body = response.json()
+    assert body["status"] == 404
     assert body["instance"] == "/v1/projects/missing"
     assert "Project not found" in body["detail"]
 
