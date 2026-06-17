@@ -90,9 +90,10 @@ workflow enforce it).
 
 ## Pull request review comments
 
-Before merging ANY PR, every review comment must be validated/analyzed and
-then either fixed-and-resolved or closed — none may be left dangling. For
-each comment (human or bot — Copilot, CodeRabbit, etc.):
+Before merging ANY PR, every review comment must be validated against the actual
+code/docs and then either fixed-and-resolved or replied-to-and-resolved (or
+dismissed) — none may be left dangling. For each comment (human or bot —
+Copilot, CodeRabbit, etc.):
 
 - Analyze it against the actual code/docs to decide whether it is valid.
 - If valid, fix the underlying issue and mark the thread resolved.
