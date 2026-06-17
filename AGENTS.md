@@ -88,6 +88,21 @@ workflow enforce it).
    no-ops — do NOT push until you have either installed it or run the
    step-3 checks manually.
 
+## Pull request review comments
+
+Before merging ANY PR, every review comment must be validated/analyzed and
+then either fixed-and-resolved or closed — none may be left dangling. For
+each comment (human or bot — Copilot, CodeRabbit, etc.):
+
+- Analyze it against the actual code/docs to decide whether it is valid.
+- If valid, fix the underlying issue and mark the thread resolved.
+- If invalid or intentional, reply with the rationale and resolve (or
+  dismiss) the thread.
+
+Purely informational bot comments (e.g. the dependency-review ✅ summary)
+need no action. Do not merge a PR while it still has unresolved actionable
+threads.
+
 ## Commit message format
 
 Conventional Commits with lowercase subject (commitlint enforces):
