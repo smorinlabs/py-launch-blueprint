@@ -53,7 +53,8 @@ speculation.
 2. **PyPI/TestPyPI trusted publishers + real publish** (irreversible):
    add the publisher (owner `smorinlabs`, repo `template-press`, workflow
    `publish.yml`, env `pypi` / `testpypi`), then merge the release-please
-   PR → tag → `publish.yml` → `0.1.0` over the reserved `0.0.0.dev0`.
+   PR → tag → `publish.yml` → `0.1.0` over the reserved `0.0.0.dev0`
+   (the actual reservation; plan 0004 had specified a `0.0.1` placeholder).
 
 ### Engine extraction (#423 — out of scope for this dogfood)
 Phases 1–3 of design 0004: formalize post-init headless mode (PROBLEM-12),

@@ -269,7 +269,8 @@ Deliberately NOT done (left to the user):
   `CONTRIBUTORS_PLEASE_*`). Until set, `release-please.yml` CI fails (only
   red check).
 - **PyPI/TestPyPI trusted publishers + real publish** — irreversible;
-  `template-press 0.0.0.dev0` already reserved. Final step is: add the
+  `template-press 0.0.0.dev0` already reserved (deviates from plan 0004's
+  `0.0.1` placeholder; `0.0.0.dev0` is the actual reservation). Final step is: add the
   trusted publisher (owner `smorinlabs`, repo `template-press`, workflow
   `publish.yml`, env `pypi`/`testpypi`), then merge the release-please PR →
   tag → `publish.yml` → `0.1.0`.
