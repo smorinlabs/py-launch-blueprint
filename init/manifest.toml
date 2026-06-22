@@ -266,8 +266,10 @@ mode = "structured"
 field = "package_name"
 current = ["py_launch_blueprint"]
 files = [
+  ".coderabbit.yaml",                                  # 1x (import convention)
   ".github/workflows/ci.yml",                          # 2x
   ".github/workflows/lint.yml",                        # 2x (bandit job)
+  ".greptile/rules.md",                                # 1x (import convention)
   ".vscode/launch.json",                               # 2x
   "AGENTS.md",                                         # 4x
   "EXAMPLECLI.md",                                     # 1x
@@ -377,6 +379,7 @@ files = [
   ".github/ISSUE_TEMPLATE/config.yml",            # 1x
   ".github/codeql/codeql-config.yml",             # 1x
   ".github/workflows/blueprint-guard.yml",        # 1x
+  ".greptile/rules.md",                           # 1x (import convention)
   "AGENTS.md",                                    # 3x
   "Justfile",                                     # 1x
   "README.md",                                    # 17x

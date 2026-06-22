@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "docs/adr/*.md"
+
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  auto_review:
+    enabled: true
+  path_instructions:
+    - path: "**/*.py"
+      instructions: |
+        Treat AGENTS.md and CLAUDE.md as the source of truth for this repo.
+        Enforce: strict typing (ty), ruff lint + format at line length 88,
+        absolute intra-package imports (from py_launch_blueprint...), explicit
+        error handling over assertions, and no hardcoded credentials (bandit).
+        Focus on production changes; ignore test-only scaffolding unless it
+        makes production behavior worse.
+    - path: "**/*.{yml,yaml}"
+      instructions: |
+        For GitHub Actions workflows and project config, flag pinning and
+        supply-chain risks, secret exposure, and drift from the conventions in
+        AGENTS.md (hook/CI tools run from the locked dev group via uv run).
