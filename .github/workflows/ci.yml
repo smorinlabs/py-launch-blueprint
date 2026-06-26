@@ -146,7 +146,7 @@ jobs:
     strategy:
       fail-fast: false  # see all failures, not just the first (round-3)
       matrix:
-        os: [blacksmith-4vcpu-ubuntu-2404, macos-latest, blacksmith-4vcpu-windows-2025]
+        os: [blacksmith-4vcpu-ubuntu-2404, blacksmith-6vcpu-macos-latest, blacksmith-4vcpu-windows-2025]
         python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v6
