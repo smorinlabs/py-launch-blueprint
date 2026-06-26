@@ -19,7 +19,7 @@ concurrency:
 jobs:
   breaking:
     name: oasdiff-breaking
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:

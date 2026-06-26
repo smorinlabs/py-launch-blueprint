@@ -35,7 +35,7 @@ permissions: {}
 
 jobs:
   security-review:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     environment: security-review
     permissions:
       contents: read

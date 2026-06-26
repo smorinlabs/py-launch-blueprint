@@ -29,7 +29,7 @@ concurrency:
 jobs:
   lint-changes:
     name: lint-changes
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     outputs:
@@ -67,7 +67,7 @@ jobs:
     name: actionlint
     needs: lint-changes
     if: needs.lint-changes.outputs.workflows == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -83,7 +83,7 @@ jobs:
     name: yamllint
     needs: lint-changes
     if: needs.lint-changes.outputs.yaml == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -98,7 +98,7 @@ jobs:
 
   bandit:
     name: bandit
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -115,7 +115,7 @@ jobs:
 
   codespell:
     name: codespell
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -131,7 +131,7 @@ jobs:
 
   editorconfig-check:
     name: editorconfig-check
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:

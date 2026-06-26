@@ -18,7 +18,7 @@ jobs:
   # upload dist/ as artifact for downstream jobs.
   build:
     name: build
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -66,37 +66,32 @@ jobs:
           if-no-files-found: error
 
   # ITM-050 - publish-testpypi: OIDC Trusted Publishing to TestPyPI.
-  # TEMPORARILY DISABLED (for now): the whole publish-testpypi job is commented
-  # out so releases publish straight to PyPI, and publish-pypi depends directly
-  # on build (see below). To restore the TestPyPI smoke test, uncomment this job
-  # and change publish-pypi's `needs:` back to `publish-testpypi`.
-  # publish-testpypi:
-  #   name: publish-testpypi
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   environment: testpypi
-  #   permissions:
-  #     id-token: write  # Trusted Publishing only needs this
-  #   steps:
-  #     - name: Download dist/
-  #       uses: actions/download-artifact@v8
-  #       with:
-  #         name: dist
-  #         path: dist/
-  #     - name: Install uv
-  #       uses: astral-sh/setup-uv@v8.2.0
-  #     - name: Publish to TestPyPI
-  #       run: |
-  #         uv publish --trusted-publishing always \
-  #           --publish-url https://test.pypi.org/legacy/ \
-  #           --check-url https://test.pypi.org/simple/
+  publish-testpypi:
+    name: publish-testpypi
+    needs: build
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
+    environment: testpypi
+    permissions:
+      id-token: write  # Trusted Publishing only needs this
+    steps:
+      - name: Download dist/
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.2.0
+      - name: Publish to TestPyPI
+        run: |
+          uv publish --trusted-publishing always \
+            --publish-url https://test.pypi.org/legacy/ \
+            --check-url https://test.pypi.org/simple/
 
   # ITM-051 - publish-pypi: OIDC Trusted Publishing to PyPI.
-  # Depends directly on build while publish-testpypi is disabled (see above).
   publish-pypi:
     name: publish-pypi
-    needs: build
-    runs-on: ubuntu-latest
+    needs: publish-testpypi
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     environment: pypi
     permissions:
       id-token: write

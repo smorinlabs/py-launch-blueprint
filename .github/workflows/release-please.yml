@@ -27,7 +27,7 @@ concurrency:
 jobs:
   release-please:
     name: release-please
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: write
       pull-requests: write
@@ -65,7 +65,7 @@ jobs:
     name: sync-uv-lock
     needs: release-please
     if: ${{ needs.release-please.outputs.pr != '' }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: write
       pull-requests: write

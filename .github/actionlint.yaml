@@ -1,7 +1,17 @@
 # actionlint configuration
 #
-# WHY THIS FILE EXISTS
-# --------------------
+# This file serves two independent purposes:
+#
+#   1. Declares the Blacksmith self-hosted runner labels used across these
+#      workflows (see `self-hosted-runner.labels` below). PERMANENT: without
+#      it, actionlint's [runner-label] check flags every `blacksmith-*`
+#      `runs-on:` tag as an unknown label.
+#   2. Suppresses a stale-metadata false positive for
+#      `actions/create-github-app-token@v3` (see `paths:` below). TEMPORARY:
+#      remove only that block once actionlint ships fixed metadata.
+#
+# WHY THE create-github-app-token SUPPRESSION EXISTS
+# --------------------------------------------------
 # actionlint v1.7.12 (latest as of 2026-06) ships with stale bundled
 # metadata for `actions/create-github-app-token@v3`. The action accepts
 # a `client-id` input (the modern, preferred auth path; `app-id` is
@@ -27,11 +37,12 @@
 #
 # EXPIRATION
 # ----------
-# DELETE THIS FILE once a newer actionlint release ships with updated
-# bundled metadata for `actions/create-github-app-token@v3`'s
-# `client-id` input. To check: run `actionlint` against
-# `.github/workflows/release-please.yml` with the new version, with
-# this file removed — it should exit 0.
+# Remove ONLY the `paths:` suppression block below (NOT the whole file, and
+# NOT `self-hosted-runner.labels`, which the Blacksmith runners depend on)
+# once a newer actionlint release ships with updated bundled metadata for
+# `actions/create-github-app-token@v3`'s `client-id` input. To check: run
+# `actionlint` against `.github/workflows/release-please.yml` with the new
+# version and the suppression block removed; it should exit 0.
 #
 # SCOPE
 # -----
@@ -39,10 +50,19 @@
 # `create-github-app-token@v3` with `client-id`. All other actionlint
 # checks remain active, both globally and on this file.
 
+# Blacksmith runners use custom `runs-on:` labels that actionlint (which only
+# knows GitHub-hosted labels) cannot recognize. Declare every Blacksmith label
+# used in .github/workflows/ here so the [runner-label] check passes.
 self-hosted-runner:
-  labels: []
+  labels:
+    - blacksmith-4vcpu-ubuntu-2404
+    - blacksmith-4vcpu-windows-2025
+    - blacksmith-6vcpu-macos-latest
 
-config-variables: null
+config-variables:
+  - RUNNER_UBUNTU
+  - RUNNER_MACOS
+  - RUNNER_WINDOWS
 
 paths:
   .github/workflows/release-please.yml:
