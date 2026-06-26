@@ -138,7 +138,12 @@ jobs:
   test:
     name: test (${{ matrix.os }} / py${{ matrix.python-version }})
     runs-on: >-
-      ${{ matrix.os == 'ubuntu' && (vars.RUNNER_UBUNTU || 'ubuntu-latest') || matrix.os }}
+      ${{
+        matrix.os == 'ubuntu' && (vars.RUNNER_UBUNTU || 'ubuntu-latest') ||
+        matrix.os == 'macos' && (vars.RUNNER_MACOS || 'macos-latest') ||
+        matrix.os == 'windows' && (vars.RUNNER_WINDOWS || 'windows-latest') ||
+        matrix.os
+      }}
     needs: changes
     if: needs.changes.outputs.code == 'true'
     permissions:
@@ -147,7 +152,7 @@ jobs:
     strategy:
       fail-fast: false  # see all failures, not just the first (round-3)
       matrix:
-        os: [ubuntu, blacksmith-6vcpu-macos-latest, blacksmith-4vcpu-windows-2025]
+        os: [ubuntu, macos, windows]
         python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v6

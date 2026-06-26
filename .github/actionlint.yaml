@@ -61,6 +61,8 @@ self-hosted-runner:
 
 config-variables:
   - RUNNER_UBUNTU
+  - RUNNER_MACOS
+  - RUNNER_WINDOWS
 
 paths:
   .github/workflows/release-please.yml:
