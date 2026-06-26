@@ -218,6 +218,22 @@ class TestCiYmlCodecovGate:
         assert "secrets.CODECOV_TOKEN == ''" in text
         assert "post-init: codecov-gated" in text
 
+    def test_gate_warning_matches_codecov_os_condition(self, with_ci):
+        blacksmith_ci = _SAMPLE_CI_YML.replace(
+            "os: [ubuntu-latest, macos-latest]",
+            "os: [ubuntu, blacksmith-6vcpu-macos-latest]",
+        ).replace(
+            "if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'",
+            "if: matrix.os == 'ubuntu' && matrix.python-version == '3.12'",
+        )
+        with_ci.write_text(blacksmith_ci, encoding="utf-8")
+        post_init.edit_ci_yml_codecov_gate()
+        text = with_ci.read_text()
+        assert (
+            "if: matrix.os == 'ubuntu' && matrix.python-version == '3.12' "
+            "&& secrets.CODECOV_TOKEN == ''"
+        ) in text
+
     def test_gate_is_idempotent(self, with_ci):
         post_init.edit_ci_yml_codecov_gate()
         first = with_ci.read_text()

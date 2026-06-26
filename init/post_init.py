@@ -410,6 +410,7 @@ def edit_ci_yml_codecov_gate() -> bool:
     new_lines: list[str] = []
     gated = False
     warning_step_added = False
+    codecov_if_cond: str | None = None
     for i, ln in enumerate(lines):
         # The codecov step's `if:` precedes `uses: codecov/codecov-action`.
         # Detect the pattern: gate the existing `if:` on this step.
@@ -419,6 +420,7 @@ def edit_ci_yml_codecov_gate() -> bool:
             and i + 1 < len(lines)
             and "codecov/codecov-action" in lines[i + 1]
         ):
+            codecov_if_cond = ln.split(":", 1)[1].strip()
             new_lines.append(ln + " && secrets.CODECOV_TOKEN != ''")
             gated = True
             continue
@@ -457,10 +459,18 @@ def edit_ci_yml_codecov_gate() -> bool:
                     end_idx += 1
                 # Insert the warning step at end_idx (before the next step / job end).
                 pad = " " * step_indent
+                warn_if = (
+                    f"{codecov_if_cond} && secrets.CODECOV_TOKEN == ''"
+                    if codecov_if_cond
+                    else (
+                        "matrix.os == 'ubuntu-latest' && matrix.python-version == "
+                        "'3.12' && secrets.CODECOV_TOKEN == ''"
+                    )
+                )
                 snippet = [
                     "",
                     f"{pad}- name: Codecov upload dormant warning  {_CODECOV_GATE_MARKER}",
-                    f"{pad}  if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' && secrets.CODECOV_TOKEN == ''",
+                    f"{pad}  if: {warn_if}",
                     f"{pad}  run: |",
                     f'{pad}    echo "::warning::Codecov uploads dormant — set CODECOV_TOKEN repo secret to enable."',
                 ]

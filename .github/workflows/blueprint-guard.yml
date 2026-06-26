@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   guard:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6
@@ -78,7 +78,7 @@ jobs:
     # the 5 §4.7 instantiation modes (subprocess against tmp fixtures) plus
     # the manifest schema and doctor checks. ~5s locally; expect ~30-60s here
     # once uv has provisioned the PEP-723 script deps (questionary/rich/tomlkit).
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6

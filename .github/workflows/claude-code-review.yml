@@ -17,7 +17,7 @@ jobs:
     # every external contributor's PR.
     if: github.event.pull_request.head.repo.full_name == github.repository
 
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
       pull-requests: read

@@ -31,7 +31,7 @@ jobs:
   # On push to main everything always runs.
   changes:
     name: changes
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     outputs:
@@ -78,7 +78,7 @@ jobs:
   # Always runs (fast) - ruff also lints docs snippets and init/ tooling.
   lint:
     name: lint
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -95,7 +95,7 @@ jobs:
   # ITM-026 - typecheck job (ty, per ADR-03). Decided round 3 direct switch.
   typecheck:
     name: typecheck
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     needs: changes
     if: needs.changes.outputs.code == 'true'
     permissions:
@@ -117,7 +117,7 @@ jobs:
   # uv.lock, matching the pre-push hook exactly.
   import-boundaries:
     name: import-boundaries
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     needs: changes
     if: needs.changes.outputs.code == 'true'
     permissions:
@@ -137,7 +137,8 @@ jobs:
   # windows added alongside the platform-native default paths (REC-24).
   test:
     name: test (${{ matrix.os }} / py${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
+    runs-on: >-
+      ${{ matrix.os == 'ubuntu' && (vars.RUNNER_UBUNTU || 'ubuntu-latest') || matrix.os }}
     needs: changes
     if: needs.changes.outputs.code == 'true'
     permissions:
@@ -146,7 +147,7 @@ jobs:
     strategy:
       fail-fast: false  # see all failures, not just the first (round-3)
       matrix:
-        os: [blacksmith-4vcpu-ubuntu-2404, blacksmith-6vcpu-macos-latest, blacksmith-4vcpu-windows-2025]
+        os: [ubuntu, blacksmith-6vcpu-macos-latest, blacksmith-4vcpu-windows-2025]
         python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v6
@@ -167,7 +168,7 @@ jobs:
       - name: Upload coverage to Codecov
         # Single matrix combo uploads (avoids 4x duplicate reports).
         # use_oidc: tokenless upload (public repo). Requires `id-token: write`.
-        if: matrix.os == 'blacksmith-4vcpu-ubuntu-2404' && matrix.python-version == '3.12'
+        if: matrix.os == 'ubuntu' && matrix.python-version == '3.12'
         uses: codecov/codecov-action@v7.0.0
         with:
           use_oidc: true
@@ -181,7 +182,7 @@ jobs:
   # dev group) -> install wheel AND sdist into fresh envs and run the CLI.
   build-smoke:
     name: build-smoke
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     needs: changes
     if: needs.changes.outputs.code == 'true'
     permissions:
@@ -207,7 +208,7 @@ jobs:
   # workflow (dep-audit.yml) instead of here.
   docs:
     name: docs
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -223,7 +224,7 @@ jobs:
   # justfile + add a dedicated workflow if needed.
   toml-format:
     name: toml-format-check
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -245,7 +246,7 @@ jobs:
   # failed or was cancelled fails the gate.
   ci-ok:
     name: ci-ok
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     needs:
       - changes
       - lint

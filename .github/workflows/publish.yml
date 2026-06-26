@@ -18,7 +18,7 @@ jobs:
   # upload dist/ as artifact for downstream jobs.
   build:
     name: build
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -73,7 +73,7 @@ jobs:
   # publish-testpypi:
   #   name: publish-testpypi
   #   needs: build
-  #   runs-on: ubuntu-latest
+  #   runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
   #   environment: testpypi
   #   permissions:
   #     id-token: write  # Trusted Publishing only needs this
@@ -96,7 +96,7 @@ jobs:
   publish-pypi:
     name: publish-pypi
     needs: build
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     environment: pypi
     permissions:
       id-token: write

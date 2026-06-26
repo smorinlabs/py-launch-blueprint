@@ -59,7 +59,8 @@ self-hosted-runner:
     - blacksmith-4vcpu-windows-2025
     - blacksmith-6vcpu-macos-latest
 
-config-variables: null
+config-variables:
+  - RUNNER_UBUNTU
 
 paths:
   .github/workflows/release-please.yml:
