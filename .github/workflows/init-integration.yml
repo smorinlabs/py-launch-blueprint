@@ -46,7 +46,7 @@ permissions:
 
 jobs:
   matrix:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 15
     strategy:
       fail-fast: false  # show all 5 mode failures, not just the first
@@ -90,7 +90,7 @@ jobs:
   integration-ok:
     needs: matrix
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: All 5 modes passed
         env:
