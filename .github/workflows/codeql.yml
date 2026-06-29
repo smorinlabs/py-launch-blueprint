@@ -32,7 +32,7 @@ jobs:
       security-events: write
       actions: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Init CodeQL
         uses: github/codeql-action/init@v4.36.2
