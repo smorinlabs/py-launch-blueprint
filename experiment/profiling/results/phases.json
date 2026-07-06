@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "os": "macos",
+    "arch": "arm64",
+    "cache": "cold",
+    "flox_version": "1.12.1",
+    "env": "profiling",
+    "ts": "2026-06-02T05:01:21.618243+00:00"
+  },
+  "phases": [
+    {
+      "name": "lock-eval",
+      "seconds": 1.156,
+      "max_rss_mb": 22.6,
+      "io_read_mb": 0.0,
+      "io_write_mb": 0.0
+    },
+    {
+      "name": "realize-activate",
+      "seconds": 0.099,
+      "max_rss_mb": 1.2,
+      "io_read_mb": 0.0,
+      "io_write_mb": 0.0
+    }
+  ],
+  "artifacts": {
+    "flamegraphs": []
+  }
+}
