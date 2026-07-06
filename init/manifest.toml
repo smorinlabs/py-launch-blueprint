@@ -493,6 +493,10 @@ path = ".github/workflows/update-contributors.yml"
 reason = "py-launch-blueprint contributors automation is project-specific"
 
 [[remove]]
+path = ".github/workflows/difftree.yml"
+reason = "py-launch-blueprint PR diff-tree comment workflow is project-specific"
+
+[[remove]]
 path = ".contributors.yml"
 reason = "py-launch-blueprint contributor config is project-specific"
 

@@ -1,0 +1,26 @@
+name: PR Diff Tree
+
+on:
+  pull_request:
+
+# One run per PR so overlapping runs can't race to post the sticky comment.
+concurrency:
+  group: difftree-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  difftree:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # REQUIRED — difftree --pr needs full base history
+
+      - name: Post PR diff-tree comment
+        uses: smorinlabs/difftree-action@v0.1.0
