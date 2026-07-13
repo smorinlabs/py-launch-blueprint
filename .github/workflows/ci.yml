@@ -37,7 +37,7 @@ jobs:
     outputs:
       code: ${{ steps.detect.outputs.code }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # need the PR base to diff against
       - name: Detect code changes
@@ -82,9 +82,9 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
       - name: Sync locked dev tools
         run: uv sync --locked --only-group dev
       - name: Ruff check
@@ -101,9 +101,9 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
       - name: Sync dev env (ty needs project deps on the python path)
         run: uv sync --locked --group dev --extra web
       - name: ty check
@@ -123,9 +123,9 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
       - name: Sync dev env (graph build needs project deps importable)
         run: uv sync --locked --group dev --extra web
       - name: import-linter (HEX-30)
@@ -155,9 +155,9 @@ jobs:
         os: [ubuntu, macos, windows]
         python-version: ["3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
         with:
           python-version: ${{ matrix.python-version }}
       - name: Sync dev env
@@ -193,9 +193,9 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
       - name: Build sdist + wheel
         run: uv build
       - name: Sync locked dev tools
@@ -217,9 +217,9 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
       - name: Sync docs env (web extra so autodoc imports resolve)
         run: uv sync --locked --group docs --extra web
       - name: Sphinx build (warnings are errors)
@@ -233,7 +233,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install just
         uses: extractions/setup-just@v4
       # `just install-taplo` now downloads the upstream pre-built binary
