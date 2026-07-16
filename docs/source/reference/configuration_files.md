@@ -13,13 +13,3 @@ The `.pre-commit-config.yaml` file is used to configure pre-commit hooks. These 
 ## [tool.pyright] (in pyproject.toml)
 
 The `[tool.pyright]` section of `pyproject.toml` configures the Pyright static type checker. It specifies settings such as included and excluded directories, defined constants, the Python version to target, and various reporting options for type-related issues. This section allows you to customize how strictly Pyright checks your code for type errors. See [pyproject.toml](https://github.com/smorinlabs/py-launch-blueprint/blob/main/pyproject.toml) for more details.
-
-## cog.toml
-
-The `cog.toml` file configures the `cog` tool, which is used to generate changelog content locally and validate changelog generation in CI. It defines settings such as:
-
-- **Changelog Path**: Defines the generated changelog file.
-- **Remote Links**: Links changelog entries to the GitHub repository.
-- **Author Mapping**: Maps local git signatures to GitHub usernames for changelog links.
-
-Contributor list updates are handled by `smorinlabs/contributors-please-action` and `.contributors.yml`; `cog.toml` is only used for changelog generation.

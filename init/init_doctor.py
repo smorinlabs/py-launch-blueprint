@@ -289,7 +289,7 @@ def run_migration_checks() -> list[Finding]:
 # Environment checks
 # ──────────────────────────────────────────────────────────────
 
-REQUIRED_TOOLS = ("just", "uv", "git", "bun", "lefthook", "gitleaks", "cog")
+REQUIRED_TOOLS = ("just", "uv", "git", "bun", "lefthook", "gitleaks")
 
 
 def check_tool(name: str) -> Finding:

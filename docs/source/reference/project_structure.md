@@ -82,7 +82,6 @@ py-launch-blueprint/
 │   ├── core/                       # Library: logic + Pydantic models
 │   └── web/                        # FastAPI web service (behind the `web` extra)
 ├── pyproject.toml                  # Project configuration file
-├── cog.toml                        # Cog configuration file
 ├── CONTRIBUTORS.md                 # Project contributors
 ├── README.md                       # Project overview and navigation
 ├── SECURITY.md                     # Security policy
@@ -165,9 +164,6 @@ Template for pull requests to ensure consistency and completeness.
 ### pyproject.toml
 
 Configuration file for the project, including dependencies and build settings.
-
-### cog.toml
-Configuration file for COG (Cocogitto), used for changelog generation.
 
 ### CONTRIBUTORS.md
 Auto-generated file that lists the project contributors.
