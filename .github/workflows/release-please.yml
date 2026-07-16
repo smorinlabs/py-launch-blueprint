@@ -84,13 +84,13 @@ jobs:
           private-key: ${{ secrets.RELEASE_PLEASE_PRIVATE_KEY }}
 
       - name: Checkout release PR branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ fromJson(needs.release-please.outputs.pr).headBranchName }}
           token: ${{ steps.app-token.outputs.token || secrets.RELEASE_PLEASE_APP_TOKEN }}
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
 
       - name: Regenerate uv.lock
         run: uv lock

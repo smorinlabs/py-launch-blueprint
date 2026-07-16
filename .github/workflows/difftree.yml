@@ -18,9 +18,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # REQUIRED — difftree --pr needs full base history
 
       - name: Post PR diff-tree comment
-        uses: smorinlabs/difftree-action@v0.1.0
+        uses: smorinlabs/difftree-action@v0.2.0

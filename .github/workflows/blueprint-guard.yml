@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install just
         uses: extractions/setup-just@v4
@@ -30,7 +30,7 @@ jobs:
           just-version: '1.51.0'  # pin — Tier-1 depends on eager :=
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
 
       - name: Check 1 — marker absence (no `init` was run on the blueprint)
         # $GITHUB_REPOSITORY is auto-set by Actions; check_no_marker.sh reads it.
@@ -81,10 +81,10 @@ jobs:
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.2
 
       - name: Install just
         # Needed because some fixtures shell out to `just` (Tier-1 banner tests).
