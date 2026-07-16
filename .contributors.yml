@@ -18,6 +18,7 @@ ignore:
   - github-actions[bot]
   - dependabot[bot]
   - release-please-smorinlabs[bot]
+  - blacksmith-sh[bot]
 
 classification:
   categories:
