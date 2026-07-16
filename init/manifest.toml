@@ -469,6 +469,10 @@ path = "docs/superpowers/plans/2026-06-12-template-press-bootstrap-dogfood.md"
 reason = "template-press dogfood plan is blueprint-only history — P0004"
 
 [[remove]]
+path = "docs/superpowers/specs/2026-07-16-init-template-press-cleanup-design.md"
+reason = "init/template-press cleanup design is blueprint-only migration history"
+
+[[remove]]
 path = "docs/design/0005-template-press-tui-design.md"
 reason = "template-press engine TUI design is blueprint/engine history — P0004"
 
