@@ -251,7 +251,7 @@ any error (CI-usable).
   year and owner consistent across `LICENSE` / `pyproject.toml` / `conf.py`.
 
 **Environment checks:**
-- Required tools on PATH: `just`, `uv`, `git`, `bun`, `lefthook`, `gitleaks`, `cog`.
+- Required tools on PATH: `just`, `uv`, `git`, `bun`, `lefthook`, `gitleaks`.
 - Project installed (`uv sync` done / venv present / CLI importable).
 - Git hooks installed (lefthook); `origin` configured; Python ≥ 3.12.
 

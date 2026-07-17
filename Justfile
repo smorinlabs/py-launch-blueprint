@@ -490,50 +490,6 @@ verify-commits start="HEAD~10" end="HEAD":
 # - release-please opens version-bump PRs automatically (ADR-05).
 # - Use `git commit -m "feat: ..."` directly; commitlint enforces format.
 
-# Install COG (Cocogitto) for changelog and commit management
-[group('install'), group('releases')]
-install-cog:
-    echo "Installing Cocogitto (cog)..."
-    case "$(uname -s)" in \
-    Linux*) \
-        if command -v cargo >/dev/null 2>&1; then \
-            cargo install --force cocogitto; \
-        else \
-            echo "{{YELLOW}}Please install Rust's cargo to install cog{{NC}}"; \
-            echo "Visit https://www.rust-lang.org/tools/install"; \
-        fi \
-        ;; \
-    Darwin*) \
-        if command -v brew >/dev/null 2>&1; then \
-            brew install cocogitto; \
-        else \
-            echo "{{YELLOW}}Please install Homebrew to install cog{{NC}}"; \
-            echo "Visit https://brew.sh/"; \
-        fi \
-        ;; \
-    CYGWIN*|MINGW*|MSYS*|Windows*) \
-        echo "{{YELLOW}}On Windows, please install from https://github.com/cocogitto/cocogitto/releases{{NC}}"; \
-        ;; \
-    *) \
-        echo "{{RED}}Unknown OS, please install manually from https://github.com/cocogitto/cocogitto{{NC}}"; \
-        ;; \
-    esac
-    command -v cog >/dev/null 2>&1 && echo "{{GREEN}}✓{{NC}} Cocogitto installed successfully" || echo "{{RED}}✗{{NC}} Failed to install Cocogitto"
-
-# Check if COG is installed and setup pre-commit hook for commit message verification
-[group('setup'), group('pre-commit')]
-setup-cog-hooks:
-    command -v cog >/dev/null 2>&1 || { echo "{{RED}}Error: Cocogitto (cog) is not installed{{NC}}"; just install-cog; }
-    cog install-hook commit-msg
-    echo "{{GREEN}}✓{{NC}} Commit message hook installed"
-
-# Generate the changelog locally
-[group('releases')]
-changelog:
-    command -v cog >/dev/null 2>&1 || { echo "{{RED}}Error: Cocogitto (cog) is not installed{{NC}}"; exit 1; }
-    cog changelog > CHANGELOG.md
-    echo "{{GREEN}}✓{{NC}} CHANGELOG.md updated"
-
 # Install gitleaks for local secret scanning
 [group('setup'), group('install'), group('pre-commit')]
 install-gitleaks:

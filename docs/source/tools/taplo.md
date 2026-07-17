@@ -1,7 +1,7 @@
 # Taplo: A Fast TOML Formatter & Linter
 
 ## Introduction
-Taplo is used to automatically format and validate project files like pyproject.toml and cog.toml, ensuring consistent structure and preventing syntax errors across the codebase.
+Taplo is used to automatically format and validate project files like pyproject.toml and tach.toml, ensuring consistent structure and preventing syntax errors across the codebase.
 
 ---
 
