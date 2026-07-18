@@ -41,7 +41,7 @@ jobs:
               > base-openapi.json
           fi
       - name: oasdiff breaking changes
-        uses: oasdiff/oasdiff-action/breaking@v0.1.5
+        uses: oasdiff/oasdiff-action/breaking@v0.1.6
         with:
           base: base-openapi.json
           revision: docs/api/openapi.json
