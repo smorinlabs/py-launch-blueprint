@@ -33,7 +33,7 @@ single-flighted; that also needs the shared store.
 import time
 from collections import OrderedDict
 from collections.abc import Awaitable, Callable
-from typing import override
+from typing import NamedTuple, override
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -44,10 +44,33 @@ IDEMPOTENCY_HEADER = "idempotency-key"
 REPLAYED_HEADER = "idempotency-replayed"
 _UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH"})
 
-#: (stored_at_monotonic, status_code, raw_headers, body)
-#: Headers are kept as raw (name, value) pairs — not a dict — so multi-valued
-#: headers (notably Set-Cookie) survive caching and replay intact.
-_Entry = tuple[float, int, list[tuple[bytes, bytes]], bytes]
+
+class _CacheKey(NamedTuple):
+    """What makes two requests "the same" request for replay purposes.
+
+    Four same-typed strings: naming them means a transposed construction
+    (``path`` and ``method`` swapped, say) is a type error instead of a cache
+    that silently shards on the wrong key.
+    """
+
+    method: str
+    path: str
+    query: str
+    idempotency_key: str
+
+
+class _Entry(NamedTuple):
+    """A cached response. This shape is the contract a future Redis-backed
+    store must round-trip, so the fields are named rather than positional.
+
+    Headers are kept as raw (name, value) pairs — not a dict — so multi-valued
+    headers (notably Set-Cookie) survive caching and replay intact.
+    """
+
+    stored_at: float  # time.monotonic() at cache time
+    status_code: int
+    raw_headers: list[tuple[bytes, bytes]]
+    body: bytes
 
 
 class IdempotencyMiddleware(BaseHTTPMiddleware):
@@ -62,7 +85,7 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.ttl_seconds = ttl_seconds
         self.max_entries = max_entries
-        self._store: OrderedDict[tuple[str, str, str, str], _Entry] = OrderedDict()
+        self._store: OrderedDict[_CacheKey, _Entry] = OrderedDict()
 
     @override
     async def dispatch(
@@ -75,18 +98,22 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
         # Query string is part of the key: same Idempotency-Key against
         # /things?a=1 and /things?a=2 are different requests and must not
         # replay each other's responses.
-        cache_key = (request.method, request.url.path, request.url.query, key)
+        cache_key = _CacheKey(
+            method=request.method,
+            path=request.url.path,
+            query=request.url.query,
+            idempotency_key=key,
+        )
         now = time.monotonic()
 
         entry = self._store.get(cache_key)
         if entry is not None:
-            stored_at, status_code, raw_headers, body = entry
-            if now - stored_at < self.ttl_seconds:
+            if now - entry.stored_at < self.ttl_seconds:
                 self._store.move_to_end(cache_key)
-                replay = Response(content=body, status_code=status_code)
+                replay = Response(content=entry.body, status_code=entry.status_code)
                 # Shallow-copy: the marker append below must not leak into
                 # the cached entry and stack up across replays.
-                replay.raw_headers = list(raw_headers)
+                replay.raw_headers = list(entry.raw_headers)
                 replay.headers[REPLAYED_HEADER] = "true"
                 return replay
             del self._store[cache_key]
@@ -109,11 +136,11 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
         # Only successful outcomes are replayable; errors should be retried
         # for real (the Stripe semantics).
         if 200 <= response.status_code < 300:
-            self._store[cache_key] = (
-                now,
-                response.status_code,
-                list(response.headers.raw),
-                body,
+            self._store[cache_key] = _Entry(
+                stored_at=now,
+                status_code=response.status_code,
+                raw_headers=list(response.headers.raw),
+                body=body,
             )
             while len(self._store) > self.max_entries:
                 self._store.popitem(last=False)

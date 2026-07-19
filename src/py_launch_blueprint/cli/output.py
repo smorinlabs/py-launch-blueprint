@@ -34,6 +34,7 @@ import subprocess  # nosec B404 — only ever runs the user's own pager
 import sys
 from enum import StrEnum
 from pathlib import Path
+from typing import assert_never
 
 import click
 from rich.console import Console
@@ -152,12 +153,18 @@ class Renderer:
         if self.output_file:
             self._render_to_file(result)
             return
-        if self.mode is OutputMode.JSON:
-            click.echo(result.model_dump_json(indent=2))
-        elif self.mode is OutputMode.MARKDOWN:
-            click.echo(self._to_markdown(result))
-        else:
-            self._render_text_paged(result)
+        # Exhaustive by construction: adding an OutputMode member without
+        # handling it here fails the type check at `assert_never` instead of
+        # silently falling through to text.
+        match self.mode:
+            case OutputMode.JSON:
+                click.echo(result.model_dump_json(indent=2))
+            case OutputMode.MARKDOWN:
+                click.echo(self._to_markdown(result))
+            case OutputMode.TEXT:
+                self._render_text_paged(result)
+            case _:  # pragma: no cover — unreachable while the match is exhaustive
+                assert_never(self.mode)
 
     def _render_text_paged(self, result: CLIResult) -> None:
         """Text mode: pipe through the user's pager when output won't fit.
@@ -197,19 +204,22 @@ class Renderer:
         if self.output_file is None:  # pragma: no cover — guarded by render()
             return
         with self.output_file.open("w", encoding="utf-8") as handle:
-            if self.mode is OutputMode.JSON:
-                handle.write(result.model_dump_json(indent=2) + "\n")
-            elif self.mode is OutputMode.MARKDOWN:
-                handle.write(self._to_markdown(result) + "\n")
-            else:
-                # A file is not a TTY: color only if explicitly "always".
-                file_console = Console(
-                    file=handle,
-                    highlight=False,
-                    force_terminal=(self.color == "always"),
-                    no_color=(self.color != "always"),
-                )
-                self._render_text(result, file_console)
+            match self.mode:
+                case OutputMode.JSON:
+                    handle.write(result.model_dump_json(indent=2) + "\n")
+                case OutputMode.MARKDOWN:
+                    handle.write(self._to_markdown(result) + "\n")
+                case OutputMode.TEXT:
+                    # A file is not a TTY: color only if explicitly "always".
+                    file_console = Console(
+                        file=handle,
+                        highlight=False,
+                        force_terminal=(self.color == "always"),
+                        no_color=(self.color != "always"),
+                    )
+                    self._render_text(result, file_console)
+                case _:  # pragma: no cover — unreachable while the match is exhaustive
+                    assert_never(self.mode)
 
     def _render_text(self, result: CLIResult, console: Console) -> None:
         columns = result.table_columns()
