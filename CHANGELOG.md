@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.4.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.4.0...v2.4.1) (2026-07-19)
+
+
+### Refactor
+
+* remove dead cocogitto recipes and references ([#468](https://github.com/smorinlabs/py-launch-blueprint/issues/468)) ([d8dd5e6](https://github.com/smorinlabs/py-launch-blueprint/commit/d8dd5e69c614451870429c666884a6344de61f12))
+* **types:** type-precision uplevel + ty 0.0.61 enforcement ([#479](https://github.com/smorinlabs/py-launch-blueprint/issues/479)) ([2433582](https://github.com/smorinlabs/py-launch-blueprint/commit/243358280b466b856aa1ebf0af328e88772b4aa1))
+
 ## [2.4.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.3.0...v2.4.0) (2026-06-17)
 
 
