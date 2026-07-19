@@ -241,17 +241,17 @@ reportUnusedClass = true
 # ty (Astral) is the CI type-check authority (ADR-03). ty is rule-based, not
 # strict-mode-based: its correctness core already defaults to `error`, so this
 # block only promotes the handful of quality rules that ship below `error`.
-# All six were verified against the pinned ty (see uv.lock): running
+# Each was verified against the pinned ty (see uv.lock, 0.0.61): running
 # `ty check --error <rule> src/py_launch_blueprint/` passes for each.
-# Deliberately NOT set: `blanket-ignore-comment` (unknown rule in the pinned ty),
-# `strict-literal-narrowing` (unsupported), `error-on-warning` (left at default
-# so a dependency `deprecated` warning does not fail every fork's CI). See
-# projects/P03-type-precision-uplevel.md and research/reference/.
+# Deliberately left at default: `error-on-warning` (so a dependency `deprecated`
+# warning does not fail every fork's CI). `strict-literal-narrowing` is left off
+# as an optional stricter knob. See projects/P03-type-precision-uplevel.md.
 [tool.ty.environment]
 python-version = "3.12" # matches requires-python floor; explicit for determinism
 
 [tool.ty.rules]
 ambiguous-protocol-member = "error"      # core/ports.py exposes Protocol ports
+blanket-ignore-comment = "error"         # every `# ty: ignore` must name its rule
 invalid-ignore-comment = "error"
 ignore-comment-unknown-rule = "error"
 ineffective-final = "error"
