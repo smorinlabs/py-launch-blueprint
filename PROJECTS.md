@@ -24,6 +24,7 @@ file by hand — see Conventions.
 |-----|-------|------------------------------------------------------------------------|
 | P01 | `[x]` | [Init app-name rebrand robustness](projects/P01-init-rebrand-robustness.md) — per-field drift coverage (B) + derive non-contract internals (C) |
 | P02 | `[x]` | [Repo simplification & organization (SIMP series)](projects/P02-repo-simplification.md) — single-purpose PRs to simplify/consolidate Justfile, docs, setup, tests, workflows, agent configs |
+| P03 | `[~]` | [Type Precision Uplevel](projects/P03-type-precision-uplevel.md) — eliminate leaking/overly-general types + verified ty rule promotions + scoped ruff ANN, from a Fable×Codex two-lens audit |
 
 ## Conventions
 

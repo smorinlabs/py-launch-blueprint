@@ -135,6 +135,29 @@ trunk. Always set a conventional title when squash-merging.
 - Tests: type annotations optional for test files
 - Security: no hardcoded credentials, follow bandit rules
 
+## Typing conventions
+
+`ty` (type correctness) + ruff `ANN` (annotation presence) enforce the
+mechanical rules in CI/hooks — the durable guardrails; `ty` deliberately does
+not flag missing annotations, so `ANN` owns that half. The judgment calls below
+are what tooling can't check:
+
+- **Validate at the boundary, narrow inward.** External data (HTTP/JSON, TOML,
+  env, untrusted input) arrives as `Any`/`dict[str, Any]`; validate it once at
+  the edge (Pydantic model / `TypeIs`) and pass *precise* types in. Never let
+  boundary `Any` leak into `core/`.
+- **Boundary `Any` is fine; a function that *returns* `Any` into the core/CLI
+  is a bug** — give it a real return type.
+- **Encode closed domains** as `Literal`/`StrEnum`, not `str` (a comment
+  listing the allowed values IS the type — write it as one).
+- **`@override` every nominal override** (PEP 698) so a renamed base method
+  fails the check instead of silently degrading.
+- **Precise over general, without over-churn:** `ParamSpec` for pass-through
+  decorators, parameterized generics over bare `dict`/`list`; a
+  signature-changing decorator may legitimately keep a `cast`.
+
+Deep-dive + rationale: [`projects/P03-type-precision-uplevel.md`](projects/P03-type-precision-uplevel.md).
+
 ## Developer environment
 
 - Toolchain provisioning (per ADR 0005, extended by ADR 0018) — three
