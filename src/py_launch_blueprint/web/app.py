@@ -35,12 +35,14 @@ or the Dockerfile::
 import platform
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Literal
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from fastapi_pagination import add_pagination
+from pydantic import BaseModel
 
 from py_launch_blueprint import __version__
 from py_launch_blueprint.core.config import load_config
@@ -87,6 +89,14 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Shutdown side of graceful termination (WEB-31): uvicorn stops accepting,
     # drains in-flight requests (--timeout-graceful-shutdown), then runs this.
     log.info("web_shutdown")
+
+
+class Health(BaseModel):
+    """`/healthz` liveness payload — the web analog of ``--version``."""
+
+    status: Literal["ok"]
+    version: str
+    python: str
 
 
 def create_app(settings: WebSettings | None = None) -> FastAPI:
@@ -141,13 +151,13 @@ def create_app(settings: WebSettings | None = None) -> FastAPI:
         instrument_tracing(app)
 
     @app.get("/healthz", tags=["ops"])
-    async def healthz() -> dict[str, str]:
+    async def healthz() -> Health:
         """Liveness + build info (the web analog of ``--version``)."""
-        return {
-            "status": "ok",
-            "version": __version__,
-            "python": platform.python_version(),
-        }
+        return Health(
+            status="ok",
+            version=__version__,
+            python=platform.python_version(),
+        )
 
     # response_model declares the 200 shape in OpenAPI (contract safety,
     # WEB-50): without it the snapshot publishes an empty `{}` schema. The

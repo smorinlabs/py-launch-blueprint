@@ -30,6 +30,7 @@ request with the route *template* (bounded cardinality), status, and
 import time
 import uuid
 from collections.abc import Awaitable, Callable
+from typing import override
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -63,6 +64,7 @@ SECURITY_HEADERS: dict[str, str] = {
 class RequestIDMiddleware(BaseHTTPMiddleware):
     """Bind a request id, emit the access event, echo the id as a header."""
 
+    @override
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
@@ -104,6 +106,7 @@ def _log_access(request: Request, *, status_code: int, start: float) -> None:
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Stamp the standard security headers on every response."""
 
+    @override
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:

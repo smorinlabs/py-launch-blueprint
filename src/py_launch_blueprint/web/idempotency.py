@@ -33,6 +33,7 @@ single-flighted; that also needs the shared store.
 import time
 from collections import OrderedDict
 from collections.abc import Awaitable, Callable
+from typing import override
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -63,6 +64,7 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
         self.max_entries = max_entries
         self._store: OrderedDict[tuple[str, str, str, str], _Entry] = OrderedDict()
 
+    @override
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:

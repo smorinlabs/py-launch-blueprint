@@ -156,7 +156,7 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
 
     @functools.wraps(func)
     def wrapper(
-        *args: Any,
+        *args: Any,  # noqa: ANN401 — Click injects positional/keyword args dynamically
         output_mode: str | None,
         json_mode: bool,
         output_file: str | None,
@@ -168,8 +168,8 @@ def global_options[F: Callable[..., Any]](func: F) -> F:
         config_file: str | None,
         token: str | None,
         no_input: bool,
-        **kwargs: Any,
-    ) -> Any:
+        **kwargs: Any,  # noqa: ANN401 — forwarded verbatim to the wrapped command
+    ) -> Any:  # noqa: ANN401 — signature-changing decorator; see F9 (keep the cast)
         # create() does real work now (config load, logging setup), so its
         # failures must be rendered, not tracebacked. Errors here are
         # configuration-shaped by construction -> ExitCode.CONFIG.

@@ -25,6 +25,7 @@ returns ``None`` for absence and raises :class:`APIError` on transport failure
 (HEX-12/HEX-13); the application service turns absence into a domain error.
 """
 
+from collections.abc import Mapping
 from typing import Any
 
 import requests
@@ -59,12 +60,14 @@ class PyApiProjectsRepository:
         path: str,
         *,
         allow_not_found: bool = False,
-        **kwargs: Any,
+        params: Mapping[str, str | int] | None = None,
     ) -> dict[str, Any]:
         url = f"{self.BASE_URL}/{path.lstrip('/')}"
         log.debug("api_request", method=method, path=path)
         try:
-            response = self.session.request(method, url, timeout=self.timeout, **kwargs)
+            response = self.session.request(
+                method, url, timeout=self.timeout, params=params
+            )
             # A 404 is a legitimate "absent" answer for by-id lookups, not a
             # transport failure: surface it as empty data so the caller returns
             # None and the service raises the domain not-found error (HEX-12).
@@ -103,7 +106,7 @@ class PyApiProjectsRepository:
     def list_projects(
         self, *, workspace_gid: str | None = None, limit: int = 200
     ) -> list[Project]:
-        params: dict[str, Any] = {
+        params: dict[str, str | int] = {
             "limit": limit,
             "opt_fields": "name,workspace.name",
         }

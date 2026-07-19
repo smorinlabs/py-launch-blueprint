@@ -20,11 +20,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object",
-                  "title": "Response Ops-Healthz"
+                  "$ref": "#/components/schemas/Health"
                 }
               }
             }
@@ -187,6 +183,14 @@
   },
   "components": {
     "schemas": {
+      "CheckStatus": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "warn",
+          "error"
+        ]
+      },
       "DoctorCheck": {
         "properties": {
           "name": {
@@ -194,8 +198,7 @@
             "title": "Name"
           },
           "status": {
-            "type": "string",
-            "title": "Status"
+            "$ref": "#/components/schemas/CheckStatus"
           },
           "detail": {
             "type": "string",
@@ -227,6 +230,31 @@
         ],
         "title": "DoctorReport",
         "description": "Aggregated diagnostics for `plbp doctor`."
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "python": {
+            "type": "string",
+            "title": "Python"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "version",
+          "python"
+        ],
+        "title": "Health",
+        "description": "`/healthz` liveness payload \u2014 the web analog of ``--version``."
       },
       "Page_Project_": {
         "properties": {

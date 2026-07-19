@@ -158,6 +158,9 @@ lint.select = [
   "W",   # pycodestyle warnings
   "YTT", # flake8-2020
   "S",   # flake8-bandit
+  "ANN", # flake8-annotations — enforce annotation *presence* (P03; the gap ty
+         # deliberately does NOT check). Scoped to the package via
+         # per-file-ignores below; tests/ and init/ are exempt.
 ]
 
 # Source's ignore rationale (round-2): line-length handled by formatter;
@@ -188,11 +191,12 @@ exclude = [
 max-line-length = 88
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"] # Ignore unused imports in __init__.py files
-"tests/*" = ["S101", "S105", "S106"] # Ignore assert statements in tests
-"init/tests/**" = ["S101", "S105", "S106"] # same exemption — pytest convention
+"tests/*" = ["S101", "S105", "S106", "ANN"] # asserts + annotations optional in tests
+"init/tests/**" = ["S101", "S105", "S106", "ANN"] # same exemption — pytest convention
 "init/**" = [
   "S603",
   "S607",
+  "ANN", # ANN (P03) gates the package only; init/ is rebrand tooling, its own follow-up
 ] # init/ wraps gh/just/uv via subprocess; that's the point
 # S101: assert statements removed under -O — security risk if assert is the only gate.
 # S105/S106: hardcoded password strings/variables in code.
@@ -233,6 +237,26 @@ reportUnusedImport = true
 reportUnusedVariable = true
 reportUnusedFunction = true
 reportUnusedClass = true
+
+# ty (Astral) is the CI type-check authority (ADR-03). ty is rule-based, not
+# strict-mode-based: its correctness core already defaults to `error`, so this
+# block only promotes the handful of quality rules that ship below `error`.
+# All six were verified against the pinned ty (see uv.lock): running
+# `ty check --error <rule> src/py_launch_blueprint/` passes for each.
+# Deliberately NOT set: `blanket-ignore-comment` (unknown rule in the pinned ty),
+# `strict-literal-narrowing` (unsupported), `error-on-warning` (left at default
+# so a dependency `deprecated` warning does not fail every fork's CI). See
+# projects/P03-type-precision-uplevel.md and research/reference/.
+[tool.ty.environment]
+python-version = "3.12" # matches requires-python floor; explicit for determinism
+
+[tool.ty.rules]
+ambiguous-protocol-member = "error"      # core/ports.py exposes Protocol ports
+invalid-ignore-comment = "error"
+ignore-comment-unknown-rule = "error"
+ineffective-final = "error"
+invalid-enum-member-annotation = "error"
+invalid-named-tuple-override = "error"
 
 # ITM-027 — bandit config (round 3). Tests legitimately use `assert`
 # (pytest convention) — exclude_dirs covers tests/.

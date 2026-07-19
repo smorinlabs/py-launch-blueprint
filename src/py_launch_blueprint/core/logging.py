@@ -52,7 +52,7 @@ from typing import Any
 
 import structlog
 from structlog.contextvars import bind_contextvars, clear_contextvars
-from structlog.typing import EventDict, Processor
+from structlog.typing import EventDict, Processor, WrappedLogger
 
 from py_launch_blueprint.core.paths import APP_NAME
 
@@ -125,7 +125,7 @@ def _resolve_format(fmt: LogFormat) -> LogFormat:
 
 
 def _add_trace_context(
-    logger: Any, method_name: str, event_dict: EventDict
+    logger: WrappedLogger, method_name: str, event_dict: EventDict
 ) -> EventDict:
     """Stamp ``trace_id``/``span_id`` so logs join with traces (WEB-10).
 
@@ -141,7 +141,7 @@ def _add_trace_context(
 
 
 def _redact_sensitive(
-    logger: Any, method_name: str, event_dict: EventDict
+    logger: WrappedLogger, method_name: str, event_dict: EventDict
 ) -> EventDict:
     """Mask values whose key looks secret-bearing (see SENSITIVE_KEY_PARTS)."""
     for key in event_dict:
