@@ -28,15 +28,20 @@ src `ANN401` fell 9→3, the 3 legitimate Click slots `# noqa`'d)** · Tier E (T
 `blanket-ignore-comment = "error"` was **re-added** (it exists in 0.0.61, was
 merely absent in 0.0.39) — now 7 promoted rules. Re-verified `just check` green.
 
-**Deferred this pass** (still open, with reasons):
+**Second pass (2026-07-19):** **T11** (idempotency `NamedTuple`s) and **F04**
+(`assert_never` on `OutputMode` dispatch) landed together — no behavior change;
+ty now proves both `assert_never` branches unreachable, i.e. the exhaustiveness
+guarantee is live. **F02, F03, F05 closed as won't-do** (see Decisions below).
+
+**Still open, with reasons:**
 - **T05** (mode `Literal`s) — ripples to local-variable annotations +
   `_resolve_log_format` needs a narrowing restructure; not a clean mechanical
-  flip. Do next with per-site care.
-- **T11** (idempotency `NamedTuple`s) — contained; skipped only to bound this
-  pass. Low risk when resumed.
+  flip. Do opportunistically, per-site, when next in those files.
 - **T12** (`mutation_options` `ParamSpec`) — verify-and-maybe-revert; wants its
-  own ty + CLI-test loop.
-- **F01–F06** — genuine decisions / larger refactors (see below).
+  own ty + CLI-test loop. Low value (drops one `cast`).
+- **F01** — the highest-value item left, and the one place the repo violates its
+  own AGENTS.md boundary rule. Needs a decision: silent-default vs fail-loud.
+- **F06** — ruff `TC`; only with the `runtime-evaluated-base-classes` guardrail.
 
 ## Audit provenance
 
@@ -105,7 +110,7 @@ merely absent in 0.0.39) — now 7 promoted rules. Re-verified `just check` gree
 - [x] [P03-T09] structlog processors `logger: Any` → `WrappedLogger`.
 - [x] [P03-T10] `cli/main.py` `comp: Any` → drop annotation / `ShellComplete`
       (confirm with one `ty check`).
-- [ ] [P03-T11] `web/idempotency.py` `_Entry` + cache key → `NamedTuple`s.
+- [x] [P03-T11] `web/idempotency.py` `_Entry` + cache key → `NamedTuple`s.
 - [ ] [P03-T12] `mutation_options` → `ParamSpec [**P, R]` (verify ty + CLI tests;
       revert to `cast` if either objects).
 - [x] [P03-TS03] `just check` green; CLI tests pass.
@@ -121,19 +126,57 @@ merely absent in 0.0.39) — now 7 promoted rules. Re-verified `just check` gree
 - [x] [P03-T14] `/healthz -> dict[str,str]` → `Health` BaseModel response_model.
 - [x] [P03-TS05] Regenerate OpenAPI snapshot; `just check` green.
 
-### Deferred follow-ups (documented; NOT executed — need decisions)
+### Deferred follow-ups
 - [ ] [P03-F01] Py-API boundary validation with Pydantic models (Codex C1 /
       Fable F8) — **behavior change** (silent empty-`Project` → fail-loud
-      `APIError`). Design decision.
-- [ ] [P03-F02] Recursive `TomlValue` alias across config read/merge/write (C5-7).
-- [ ] [P03-F03] `global_options` `Concatenate[AppContext, P]` typing (C12) —
-      Fable×Codex disagreement; verify against every decorated command.
-- [ ] [P03-F04] `assert_never` exhaustiveness for `OutputMode` dispatch (F10).
-- [ ] [P03-F05] Optional-OTel `_TraceApi` Protocol (C15).
+      `APIError`). Design decision; **still open**.
+- [-] [P03-F02] Recursive `TomlValue` alias across config read/merge/write (C5-7)
+      — **won't do**; see Decisions below.
+- [-] [P03-F03] `global_options` `Concatenate[AppContext, P]` typing (C12)
+      — **won't do**; see Decisions below.
+- [x] [P03-F04] `assert_never` exhaustiveness for `OutputMode` dispatch (F10).
+- [-] [P03-F05] Optional-OTel `_TraceApi` Protocol (C15)
+      — **won't do**; see Decisions below.
 - [ ] [P03-F06] ruff `TC` rollout: configure
       `flake8-type-checking.runtime-evaluated-base-classes =
       ["pydantic.BaseModel","pydantic_settings.BaseSettings"]`, fix 2 `TC006`
       (quote `cast("F", …)`), review 3 unsafe `TC003`, pass `--no-fix` in audits.
+
+## Decisions — won't do (recorded 2026-07-19)
+
+Recorded so future audits (human or AI) don't re-open them. Common thread: each
+would replace a **truthful** `Any`/`cast` at a boundary with something that is
+unrepresentable, unenforceable, or a maintenance liability.
+
+### F03 — `global_options` → `Concatenate`: won't do
+`global_options` is a *signature-changing* decorator — it consumes ~eleven
+keyword arguments Click injects (`output_mode`, `json_mode`, `verbose`, …) **and**
+prepends an `AppContext` positional. **PEP 612 cannot express that**:
+`Concatenate` adds/removes only *positional* parameters, and `P.kwargs` is
+all-or-nothing, so there is no way to say "consume these named keywords, forward
+the rest." The proposed signature is unrepresentable rather than merely awkward,
+and any attempt collapses back to a `cast`. The existing PEP 695
+`[F: Callable[..., Any]]` + `functools.wraps` + `cast` is the state-of-the-art
+shape for Click decorator stacks. (Fable F9 vs Codex C12 — Fable is correct.)
+
+### F02 — recursive `TomlValue` alias: won't do
+`dict[str, Any]` is the **honest** type here: this layer's job is to round-trip
+arbitrary user TOML *including keys it does not know about*. It is already
+disciplined — every path into the core narrows through `Settings.model_validate`
+within one hop, which is exactly the boundary rule in AGENTS.md. The alias buys
+type-shape *documentation*, not safety (the data still arrives as `Any`; a cast
+bridges it), while touching read/merge/write plumbing.
+**Revisit if** config handling grows logic that inspects nested TOML
+structurally instead of handing it to Pydantic.
+
+### F05 — optional-OTel `_TraceApi` Protocol: won't do
+This is a deliberately invisible optional-extra boundary — OpenTelemetry may not
+be installed at all. Local Protocols would hand-maintain a mirror of an upstream
+API we do not control: when OTel changes shape, the Protocol becomes a lie that
+still type-checks. That trades a truthful `Any` for a stale abstraction, to
+document five attribute accesses in one function. Unlike structlog (which ships
+`WrappedLogger`), OTel provides no alias to adopt, so a comment naming the
+surface used is the right level of investment.
 
 ## Automated Verification
 - `uv run --extra web ty check src/py_launch_blueprint/` passes after every tier.
