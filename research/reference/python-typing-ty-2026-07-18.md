@@ -35,7 +35,7 @@ Division of labor:
 |---|---|---|
 | Type *correctness* (bad assignments, unresolved refs, wrong arg types, Protocol conformance) | **ty** (CI authority, ADR-03) | Already errors by default; stricter than mypy/pyright in body-checking |
 | Annotation *presence* (every def/param/return annotated) | **ruff `ANN`** | ty deliberately does not check this |
-| Annotation *style*/import hygiene (type-only imports, `X | None`) | **ruff `TC`, `UP`, `RUF`** | Lint-level, complements ty |
+| Annotation *style*/import hygiene (type-only imports, `X \| None`) | **ruff `TC`, `UP`, `RUF`** | Lint-level, complements ty |
 | Runtime validation at I/O edges | **Pydantic v2** | Static types can't validate external data |
 
 ---
