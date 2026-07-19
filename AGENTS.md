@@ -88,21 +88,37 @@ workflow enforce it).
    no-ops — do NOT push until you have either installed it or run the
    step-3 checks manually.
 
-## Pull request review comments
+## Pull request review comments — MERGE GUARD (hard, enforced)
 
-Before merging ANY PR, every review comment must be validated against the actual
-code/docs and then either fixed-and-resolved or replied-to-and-resolved (or
-dismissed) — none may be left dangling. For each comment (human or bot —
-Copilot, CodeRabbit, etc.):
+**This is a hard gate, not a guideline.** This repo has an active ruleset
+("CodeQL & PR Enforcement") with `required_review_thread_resolution: true`, so
+**a PR with ANY unresolved review thread CANNOT be merged — GitHub blocks it.**
+A PR will sit silently `blocked` on a single dangling bot thread. (Do not be
+misled by classic branch protection reporting
+`required_conversation_resolution: false` — the *ruleset* is the real enforcer;
+verify with `gh api "repos/<owner>/<repo>/rulesets"`.)
 
-- Analyze it against the actual code/docs to decide whether it is valid.
-- If valid, fix the underlying issue and mark the thread resolved.
-- If invalid or intentional, reply with the rationale and resolve (or
-  dismiss) the thread.
+Because of this guard, treat review comments as blocking work that must be kept
+current **before opening a PR and continuously while it is open** — bots
+(Copilot, CodeRabbit, Codex, Greptile, …) re-review on every push and add fresh
+threads, so a PR that was clean can become blocked again after a commit.
 
-Purely informational bot comments (e.g. the dependency-review ✅ summary)
-need no action. Do not merge a PR while it still has unresolved actionable
-threads.
+For **every** review comment (human or bot), do all three steps — never skip to
+merge:
+
+1. **Pre-validate** it against the actual code/docs — decide valid or invalid.
+   Do not take a comment (especially a bot's) at face value; confirm it.
+2. **Reply** with a comment recording the verdict and the action taken:
+   - valid → fix the underlying issue *in the PR*, then reply noting the fix;
+   - invalid or intentional → reply with the concrete rationale.
+3. **Resolve** the thread — always, after step 2. Resolving requires the GraphQL
+   `resolveReviewThread` mutation; there is no REST equivalent, so a GraphQL
+   rate-limit (common on some machines) can block *resolution* even when the PR
+   is otherwise green. Plan for that; do not merge around it.
+
+Only purely informational bot comments (e.g. the dependency-review ✅ summary)
+need no action. Never merge — and never assume a PR is mergeable — while any
+actionable thread is unresolved.
 
 ## Commit message format
 
