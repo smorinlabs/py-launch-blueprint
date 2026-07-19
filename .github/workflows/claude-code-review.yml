@@ -12,10 +12,21 @@ on:
 
 jobs:
   claude-review:
-    # Only run on same-repo PRs. Forked-PR runs don't receive repo secrets, so
-    # CLAUDE_CODE_OAUTH_TOKEN would be empty and the job would error noisily on
-    # every external contributor's PR.
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Only run on same-repo, non-bot PRs.
+    #  - Forked-PR runs don't receive repo secrets (CLAUDE_CODE_OAUTH_TOKEN would
+    #    be empty), so they'd error on every external contributor's PR.
+    #  - Bot-involved PRs (release-please, dependabot, …) are mechanical and don't
+    #    need an AI code review; the action also aborts on non-human actors
+    #    ("Workflow initiated by non-human actor …"), which showed as a false red
+    #    check on the v2.4.1 release PR (#470). Skip when EITHER the PR author OR
+    #    the run's initiator (sender — e.g. a bot pushing a commit to a human's
+    #    PR on `synchronize`) is a bot: the action aborts on the initiator, so
+    #    the author check alone isn't enough. Skipping is a neutral (non-failing)
+    #    outcome for this non-required job.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && github.event.pull_request.user.type != 'Bot'
+      && github.event.sender.type != 'Bot'
 
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
