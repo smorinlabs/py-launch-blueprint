@@ -25,7 +25,6 @@ every noun group. Adding a noun is one import + one entry in ``COMMAND_GROUPS``
 """
 
 import platform
-from typing import Any
 
 import click
 from click.shell_completion import get_completion_class
@@ -97,7 +96,7 @@ def completion(shell: str) -> None:
     comp_cls = get_completion_class(shell)
     if comp_cls is None:  # pragma: no cover - click ships all three
         raise click.ClickException(f"Unsupported shell: {shell}")
-    comp: Any = comp_cls(cli, {}, _PROG_NAME, _COMPLETE_VAR)
+    comp = comp_cls(cli, {}, _PROG_NAME, _COMPLETE_VAR)
     click.echo(comp.source())
 
 

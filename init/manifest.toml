@@ -354,6 +354,12 @@ files = [
   "tests/web/test_settings.py",                        # 1x
   "tests/web/test_versioning.py",                      # 1x
   "projects/P01-init-rebrand-robustness.md",           # 1x
+  "projects/P03-type-precision-uplevel.md",            # 5x
+  "research/reference/python-typing-ty-2026-07-18.md", # 1x
+  "research/topics/01-python-typing-best-practices/baseline.md", # 1x
+  "research/topics/01-python-typing-best-practices/audit-fable.md", # 13x
+  "research/topics/01-python-typing-best-practices/audit-codex.md", # 24x
+  "research/topics/01-python-typing-best-practices/prompts/01-python-typing.framing.md", # 1x
 ]
 mode = "text"
 

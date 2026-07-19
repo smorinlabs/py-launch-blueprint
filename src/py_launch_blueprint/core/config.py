@@ -183,7 +183,7 @@ def load_config(
     )
 
 
-def get_file_value(config_path: Path, dotted_key: str) -> Any:
+def get_file_value(config_path: Path, dotted_key: str) -> object:
     """Return the value of ``section.key`` as stored in ``config_path``, or None."""
     section, key = parse_key(dotted_key)
     table = _read_toml(config_path).get(section)
@@ -236,7 +236,7 @@ def write_config_data(config_path: Path, data: dict[str, Any]) -> None:
         raise
 
 
-def set_config_value(config_path: Path, dotted_key: str, raw_value: str) -> Any:
+def set_config_value(config_path: Path, dotted_key: str, raw_value: str) -> str:
     """Validate + write one ``section.key`` into the TOML file, preserving rest.
 
     Returns the coerced value. Raises :class:`ConfigError` for unknown keys,

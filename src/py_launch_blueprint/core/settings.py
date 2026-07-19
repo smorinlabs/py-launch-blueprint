@@ -102,7 +102,7 @@ def parse_key(dotted: str) -> tuple[str, str]:
     return section, key
 
 
-def coerce_value(section: str, key: str, raw: str) -> Any:
+def coerce_value(section: str, key: str, raw: str) -> str:
     """Validate + coerce a raw string against the field's type/allowed values."""
     model = _SECTIONS[section]
     try:

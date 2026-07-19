@@ -30,6 +30,7 @@ JSON rendering is automatic via Pydantic's ``model_dump_json``.
 """
 
 from pathlib import Path
+from typing import Literal, override
 
 from pydantic import BaseModel
 
@@ -83,15 +84,19 @@ class ProjectList(CLIResult):
 
     projects: list[Project]
 
+    @override
     def table_title(self) -> str | None:
         return f"Projects ({len(self.projects)})"
 
+    @override
     def table_columns(self) -> list[str]:
         return ["Name", "Workspace", "ID"]
 
+    @override
     def table_rows(self) -> list[list[str]]:
         return [[p.name, p.workspace or "-", p.id] for p in self.projects]
 
+    @override
     def human_note(self) -> str | None:
         return "No projects found." if not self.projects else None
 
@@ -103,9 +108,11 @@ class ConfigValue(CLIResult):
     value: str | None = None
     source: str | None = None
 
+    @override
     def table_columns(self) -> list[str]:
         return ["Key", "Value", "Source"]
 
+    @override
     def table_rows(self) -> list[list[str]]:
         return [
             [self.key, self.value if self.value is not None else "", self.source or "-"]
@@ -118,12 +125,15 @@ class ConfigPath(CLIResult):
     path: str
     exists: bool
 
+    @override
     def table_columns(self) -> list[str]:
         return ["Config path", "Exists"]
 
+    @override
     def table_rows(self) -> list[list[str]]:
         return [[self.path, "yes" if self.exists else "no"]]
 
+    @override
     def table_rows_rich(self) -> list[list[str]]:
         try:
             uri = Path(self.path).as_uri()
@@ -132,11 +142,14 @@ class ConfigPath(CLIResult):
         return [[rich_link(self.path, uri), "yes" if self.exists else "no"]]
 
 
+type CheckStatus = Literal["ok", "warn", "error"]
+
+
 class DoctorCheck(BaseModel):
     """One diagnostic check result."""
 
     name: str
-    status: str  # "ok" | "warn" | "error"
+    status: CheckStatus
     detail: str
 
 
@@ -145,12 +158,15 @@ class DoctorReport(CLIResult):
 
     checks: list[DoctorCheck]
 
+    @override
     def table_title(self) -> str | None:
         return "Diagnostics"
 
+    @override
     def table_columns(self) -> list[str]:
         return ["Check", "Status", "Detail"]
 
+    @override
     def table_rows(self) -> list[list[str]]:
         return [[c.name, c.status, c.detail] for c in self.checks]
 
@@ -180,12 +196,15 @@ class DiagnosticsBundle(CLIResult):
     env: dict[str, str]
     log_file: str
 
+    @override
     def table_title(self) -> str | None:
         return "Diagnostics bundle"
 
+    @override
     def table_columns(self) -> list[str]:
         return ["Field", "Value"]
 
+    @override
     def table_rows(self) -> list[list[str]]:
         ok = sum(1 for c in self.checks if c.status == "ok")
         warn = sum(1 for c in self.checks if c.status == "warn")

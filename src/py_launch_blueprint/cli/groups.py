@@ -25,6 +25,7 @@ Used by the root group and every noun group, so ``plbp porjects list`` and
 """
 
 import difflib
+from typing import override
 
 import click
 
@@ -36,6 +37,7 @@ _CUTOFF = 0.6
 class SuggestingGroup(click.Group):
     """``click.Group`` whose unknown-command error proposes close matches."""
 
+    @override
     def resolve_command(
         self, ctx: click.Context, args: list[str]
     ) -> tuple[str | None, click.Command | None, list[str]]:
