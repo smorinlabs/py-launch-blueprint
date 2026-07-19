@@ -74,9 +74,9 @@ otel = [
 dev = [
   "pytest>=7.0.0",
   "pytest-cov>=4.1.0",
-  "ty>=0.0.1a16", # per ADR-03 (pre-1.0; bump as needed)
+  "ty>=0.0.1a16",        # per ADR-03 (pre-1.0; bump as needed)
   "ruff>=0.1.0",
-  "httpx>=0.27.0", # fastapi TestClient transport (tests/web; web extra)
+  "httpx>=0.27.0",       # fastapi TestClient transport (tests/web; web extra)
   "schemathesis>=4.0.0", # WEB-50 contract fuzzing from the OpenAPI schema
   "types-requests",
   "types-Pygments",
@@ -88,10 +88,10 @@ dev = [
   "codespell>=2.4.0",
   "editorconfig-checker>=3.0.0",
   "yamllint>=1.35.0",
-  "pip-audit>=2.9.0", # WL-014 — `just audit` + scheduled dep-audit workflow
-  "twine>=6.1.0", # WL-004 — dist metadata check in the build-smoke CI job
-  "syrupy>=4.8.0", # WL-023 — CLI --help snapshot tests
-  "import-linter>=2.0", # HEX-30 — architectural layer/boundary rules
+  "pip-audit>=2.9.0",            # WL-014 — `just audit` + scheduled dep-audit workflow
+  "twine>=6.1.0",                # WL-004 — dist metadata check in the build-smoke CI job
+  "syrupy>=4.8.0",               # WL-023 — CLI --help snapshot tests
+  "import-linter>=2.0",          # HEX-30 — architectural layer/boundary rules
   "tach>=0.35.0",
   # Testing-strategy shortlist (ADR-0019).
   "pytest-xdist>=3.6",     # WL-008 — parallel test execution (`-n auto`)
@@ -159,8 +159,8 @@ lint.select = [
   "YTT", # flake8-2020
   "S",   # flake8-bandit
   "ANN", # flake8-annotations — enforce annotation *presence* (P03; the gap ty
-         # deliberately does NOT check). Scoped to the package via
-         # per-file-ignores below; tests/ and init/ are exempt.
+  # deliberately does NOT check). Scoped to the package via
+  # per-file-ignores below; tests/ and init/ are exempt.
 ]
 
 # Source's ignore rationale (round-2): line-length handled by formatter;
@@ -184,19 +184,29 @@ exclude = [
   "dist",
   "docs/source/conf.py",
   "src/py_launch_blueprint/_version.py",
-  "prototypes",  # P0004 template-press engine prototypes (own lint config in template-press)
+  "prototypes",                          # P0004 template-press engine prototypes (own lint config in template-press)
 ]
 # Per-file-ignores
 [tool.ruff.lint.pycodestyle]
 max-line-length = 88
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"] # Ignore unused imports in __init__.py files
-"tests/*" = ["S101", "S105", "S106", "ANN"] # asserts + annotations optional in tests
-"init/tests/**" = ["S101", "S105", "S106", "ANN"] # same exemption — pytest convention
+"tests/*" = [
+  "S101",
+  "S105",
+  "S106",
+  "ANN",
+] # asserts + annotations optional in tests
+"init/tests/**" = [
+  "S101",
+  "S105",
+  "S106",
+  "ANN",
+] # same exemption — pytest convention
 "init/**" = [
   "S603",
   "S607",
-  "ANN", # ANN (P03) gates the package only; init/ is rebrand tooling, its own follow-up
+  "ANN",  # ANN (P03) gates the package only; init/ is rebrand tooling, its own follow-up
 ] # init/ wraps gh/just/uv via subprocess; that's the point
 # S101: assert statements removed under -O — security risk if assert is the only gate.
 # S105/S106: hardcoded password strings/variables in code.
@@ -243,9 +253,11 @@ reportUnusedClass = true
 # block only promotes the handful of quality rules that ship below `error`.
 # Each was verified against the pinned ty (see uv.lock, 0.0.61): running
 # `ty check --error <rule> src/py_launch_blueprint/` passes for each.
-# Deliberately left at default: `error-on-warning` (so a dependency `deprecated`
-# warning does not fail every fork's CI). `strict-literal-narrowing` is left off
-# as an optional stricter knob. See projects/P03-type-precision-uplevel.md.
+# `error-on-warning` is set explicitly to false below (not left implicit): a
+# dependency `deprecated` warning must not fail every fork's CI, and pinning the
+# value keeps CI deterministic across ty upgrades (its default is version-
+# sensitive pre-1.0). `strict-literal-narrowing` is left off as an optional
+# stricter knob. See projects/P03-type-precision-uplevel.md.
 [tool.ty.environment]
 python-version = "3.12" # matches requires-python floor; explicit for determinism
 
@@ -257,6 +269,9 @@ ignore-comment-unknown-rule = "error"
 ineffective-final = "error"
 invalid-enum-member-annotation = "error"
 invalid-named-tuple-override = "error"
+
+[tool.ty.terminal]
+error-on-warning = false # warnings (e.g. `deprecated`) inform; they don't gate CI
 
 # ITM-027 — bandit config (round 3). Tests legitimately use `assert`
 # (pytest convention) — exclude_dirs covers tests/.
@@ -319,18 +334,12 @@ include_external_packages = true
 name = "core never imports the front-ends (inward-only, HEX-01)"
 type = "forbidden"
 source_modules = ["py_launch_blueprint.core"]
-forbidden_modules = [
-  "py_launch_blueprint.cli",
-  "py_launch_blueprint.web",
-]
+forbidden_modules = ["py_launch_blueprint.cli", "py_launch_blueprint.web"]
 
 [[tool.importlinter.contracts]]
 name = "cli and web are independent of each other"
 type = "independence"
-modules = [
-  "py_launch_blueprint.cli",
-  "py_launch_blueprint.web",
-]
+modules = ["py_launch_blueprint.cli", "py_launch_blueprint.web"]
 
 [[tool.importlinter.contracts]]
 name = "composition root is not imported by core (HEX-04)"
