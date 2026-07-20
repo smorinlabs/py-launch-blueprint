@@ -48,9 +48,12 @@ _UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH"})
 class _CacheKey(NamedTuple):
     """What makes two requests "the same" request for replay purposes.
 
-    Four same-typed strings: naming them means a transposed construction
-    (``path`` and ``method`` swapped, say) is a type error instead of a cache
-    that silently shards on the wrong key.
+    Four same-typed strings, so naming them does NOT make a transposition a
+    type error — ``str`` is ``str``, and a ``NamedTuple`` still accepts
+    positional construction. What it buys is keyword construction and
+    attribute access at the read sites, so a ``path``/``method`` swap is
+    visible in review rather than hidden behind ``key[1]``. ``_Entry`` below,
+    whose fields differ in type, does get the checked guarantee.
     """
 
     method: str
