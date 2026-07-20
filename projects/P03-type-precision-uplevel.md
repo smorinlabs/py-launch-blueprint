@@ -39,9 +39,13 @@ guarantee is live. **F02, F03, F05 closed as won't-do** (see Decisions below).
   flip. Do opportunistically, per-site, when next in those files.
 - **T12** (`mutation_options` `ParamSpec`) — verify-and-maybe-revert; wants its
   own ty + CLI-test loop. Low value (drops one `cast`).
-- **F01** — the highest-value item left, and the one place the repo violates its
-  own AGENTS.md boundary rule. Needs a decision: silent-default vs fail-loud.
 - **F06** — ruff `TC`; only with the `runtime-evaluated-base-classes` guardrail.
+
+**Third pass (2026-07-19):** **F01** — the highest-value item and the one place
+the repo violated its own AGENTS.md boundary rule — was promoted out of P03 to
+**[P04](P04-py-api-boundary-validation.md)** and implemented there. The open
+question it carried (silent-default vs fail-loud) was resolved as **fail-loud**;
+see P04's Decisions block for the four calls that shaped it.
 
 ## Audit provenance
 
@@ -127,9 +131,12 @@ guarantee is live. **F02, F03, F05 closed as won't-do** (see Decisions below).
 - [x] [P03-TS05] Regenerate OpenAPI snapshot; `just check` green.
 
 ### Deferred follow-ups
-- [ ] [P03-F01] Py-API boundary validation with Pydantic models (Codex C1 /
+- [>] [P03-F01] Py-API boundary validation with Pydantic models (Codex C1 /
       Fable F8) — **behavior change** (silent empty-`Project` → fail-loud
-      `APIError`). Design decision; **still open**.
+      `APIError`). Proceeded to **[P04 — Py-API Boundary
+      Validation](P04-py-api-boundary-validation.md)**, where the design
+      decision was taken and implemented; P03's non-goals had already scoped
+      this out.
 - [-] [P03-F02] Recursive `TomlValue` alias across config read/merge/write (C5-7)
       — **won't do**; see Decisions below.
 - [-] [P03-F03] `global_options` `Concatenate[AppContext, P]` typing (C12)
