@@ -33,13 +33,13 @@ as "no projects found".
 """
 
 from collections.abc import Mapping
-from typing import Literal, overload
+from typing import Annotated, Literal, overload
 
 import requests
 from pydantic import (
     AliasChoices,
     BaseModel,
-    ConfigDict,
+    BeforeValidator,
     Field,
     ValidationError,
     field_validator,
@@ -57,6 +57,21 @@ DEFAULT_TIMEOUT = 30  # seconds
 # --- boundary models: the upstream wire format, not the domain ---------------
 
 
+def _numeric_to_str(value: object) -> object:
+    """Accept a numeric gid where the upstream normally sends a string.
+
+    Applied per *field* rather than model-wide (`coerce_numbers_to_str`),
+    because the old code's `str(...)` only ever wrapped the gid: a numeric
+    `name` is drift and must still fail.
+    """
+    if isinstance(value, bool):  # bool subclasses int, but is never a gid
+        return value
+    return str(value) if isinstance(value, int | float) else value
+
+
+_Gid = Annotated[str, BeforeValidator(_numeric_to_str)]
+
+
 class _WorkspaceRef(BaseModel):
     """The nested workspace stub carried inside a project payload."""
 
@@ -71,12 +86,7 @@ class _ProjectPayload(BaseModel):
     empty string that looks like a real project downstream.
     """
 
-    # Upstream returns gids as strings, but tolerate a numeric one rather than
-    # regress the old ``str(item.get("gid", ...))`` coercion. Numbers only —
-    # this is not a general "accept anything" switch.
-    model_config = ConfigDict(coerce_numbers_to_str=True)
-
-    id: str = Field(validation_alias=AliasChoices("gid", "id"))
+    id: _Gid = Field(validation_alias=AliasChoices("gid", "id"))
     name: str
     workspace: _WorkspaceRef | None = None
 
@@ -85,17 +95,17 @@ class _ProjectPayload(BaseModel):
     def _empty_workspace_is_absent(cls, value: object) -> object:
         # Upstream sends {} — not a missing key — for a project with no
         # workspace, which is what the old ``item.get("workspace") or {}``
-        # absorbed. Keep absorbing it. A *present* workspace still needs a
-        # name, so a typo'd key is drift rather than a silent None.
-        return value if value else None
+        # absorbed. Absorb exactly that, plus null. Other falsy values ("", [],
+        # 0, false) are the wrong *type* for this field rather than an empty
+        # one, so they fall through to the model and raise: "lenient on empty"
+        # is not "lenient on anything that happens to be falsy".
+        return None if value is None or value == {} else value
 
 
 class _Workspace(BaseModel):
     """A workspace from ``/workspaces`` — unlike the nested ref, it has a gid."""
 
-    model_config = ConfigDict(coerce_numbers_to_str=True)
-
-    gid: str
+    gid: _Gid
     name: str
 
 

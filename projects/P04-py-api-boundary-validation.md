@@ -49,10 +49,21 @@ Confirmed 2026-07-19, before implementation:
 1. **A malformed item fails the whole list call.** No skip-and-warn: returning
    the good rows and logging the bad one reintroduces exactly the quiet
    degradation this project exists to remove.
-2. **Lenient on an empty workspace, strict on a present one.** `{}` and a
-   missing key both mean absent (mirroring the old
-   `item.get("workspace") or {}`, which the port-contract fixture relies on),
-   but `{"nayme": "typo"}` is drift rather than a silent `None`.
+2. **Lenient on an empty workspace, strict on a present one.** `{}`, `null`
+   and a missing key mean absent (the port-contract fixture sends `{}`), but
+   `{"nayme": "typo"}` is drift rather than a silent `None`.
+   **Sharpened after review** (Greptile P1, Copilot, Codex P2 all flagged it):
+   the first implementation used `value if value else None`, which absorbed
+   *every* falsy value. `""`, `[]`, `0` and `false` are the wrong **type** for
+   this field rather than an empty one — "lenient on empty" is not "lenient on
+   anything falsy" — so they now raise. The original mirrored the old
+   `or {}` exactly, which is precisely the silent degradation this project
+   exists to remove.
+5. **Numeric coercion is per-field, not model-wide.** `coerce_numbers_to_str`
+   on the model also coerced `name`, so `{"name": 12345}` would have been
+   silently accepted. Replaced with a `_Gid` annotated type applied only to the
+   id fields — matching what the old `str(...)` actually wrapped. `bool` is
+   excluded explicitly, since it subclasses `int` but is never a gid.
 3. **The allowed-404 path is typed with `@overload` on
    `Literal[True]`/`Literal[False]`.** The two callers that don't opt in get a
    non-optional `T` instead of a dead `None` branch. A legitimate 404 is now

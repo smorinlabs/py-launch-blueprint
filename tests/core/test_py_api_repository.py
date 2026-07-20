@@ -75,6 +75,29 @@ def test_present_workspace_without_a_name_is_rejected():
         )
 
 
+@pytest.mark.parametrize("wrong", ["", [], 0, False, "acme"])
+def test_falsy_but_non_empty_workspace_is_drift_not_absence(wrong):
+    """ "Lenient on empty" is not "lenient on anything falsy".
+
+    ``""``/``[]``/``0``/``False`` are the wrong *type* for this field rather
+    than an empty one, so they must raise instead of silently becoming None.
+    """
+    with pytest.raises(ValidationError):
+        _ProjectPayload.model_validate({"gid": "1", "name": "X", "workspace": wrong})
+
+
+def test_numeric_name_is_drift_even_though_numeric_gid_is_not():
+    """The gid coercion is per-field, so it must not leak onto ``name``."""
+    with pytest.raises(ValidationError):
+        _ProjectPayload.model_validate({"gid": "1", "name": 12345})
+
+
+def test_boolean_gid_is_drift():
+    """``bool`` subclasses ``int``; it is still not a gid."""
+    with pytest.raises(ValidationError):
+        _ProjectPayload.model_validate({"gid": True, "name": "X"})
+
+
 # --- the boundary: drift is loud ---------------------------------------------
 
 
