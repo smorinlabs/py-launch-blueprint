@@ -138,8 +138,8 @@ single non-conventional commit blocks the merge; reword it before merging.
 This matters more under merge commits than it did under squash: the branch's
 individual commits land on the trunk, and release-please parses *those* —
 not the PR title. The merge commit's own subject is left deliberately
-non-conventional (`merge_commit_title=MERGE_MESSAGE`, i.e. `Merge pull
-request #N from …`) precisely so release-please skips it and counts each
+non-conventional (`merge_commit_title=MERGE_MESSAGE`, i.e.
+`Merge pull request #N from …`) precisely so release-please skips it and counts each
 change exactly once. Conventional PR titles are still expected for review
 legibility; they are simply not what the changelog is built from.
 
