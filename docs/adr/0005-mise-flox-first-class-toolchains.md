@@ -100,7 +100,7 @@ Only the invocation changed. `bunx --bun @commitlint/cli` pins no version, so
 it resolved `@latest` into bun's ephemeral cache, landed on a
 `@commitlint/config-conventional` newer than this repo's pin, and failed to
 link `conventional-changelog-conventionalcommits` — breaking every commit. The
-hook now runs `bun run commitlint`.
+hook now runs `bun ./node_modules/@commitlint/cli/cli.js`.
 
 It must go through Bun. This ADR's own point 1 is the reason: mise and flox
 provision Bun and neither provisions Node, while the installed

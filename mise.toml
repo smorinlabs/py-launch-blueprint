@@ -9,7 +9,8 @@
 # Intentionally NOT declared here:
 #   * yamllint, codespell, bandit, editorconfig-checker — invoked via `uvx`
 #     (lefthook.yml / Justfile), fetched on demand by uv.
-#   * commitlint — invoked as `bun run commitlint`, so bun.lock is the single
+#   * commitlint — invoked as `bun ./node_modules/@commitlint/cli/cli.js`,
+#     so bun.lock is the single
 #     version source and no global install is required. It goes through Bun
 #     because nothing here provisions `node`, and the CLI shim is
 #     `#!/usr/bin/env node`. It formerly

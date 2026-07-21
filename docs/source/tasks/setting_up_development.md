@@ -27,7 +27,7 @@ flox activate
 
 Note: yamllint, codespell, bandit, editorconfig-checker, and commitlint are
 deliberately not in these manifests. The first four are fetched on demand via
-`uvx`; commitlint runs via `bun run commitlint`, so run
+`uvx`; commitlint runs via `bun ./node_modules/@commitlint/cli/cli.js`, so run
 `bun install` before your first commit or the commit-msg hook cannot find it.
 
 # Setup Development Environment

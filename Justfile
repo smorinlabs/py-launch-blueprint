@@ -484,7 +484,7 @@ update-contributors:
 [group('hooks')]
 verify-commits start="HEAD~10" end="HEAD":
     echo "Verifying commit messages with commitlint..."
-    bun run commitlint --from={{start}} --to={{end}}
+    bun ./node_modules/@commitlint/cli/cli.js --from={{start}} --to={{end}}
 
 # Version-bump and create-commit recipes (cog) retired in ITM-044:
 # - release-please opens version-bump PRs automatically (ADR-05).

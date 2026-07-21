@@ -7,7 +7,7 @@
 #
 # Intentionally NOT installed here: yamllint, codespell, bandit,
 # editorconfig-checker (invoked via `uvx`), commitlint (invoked as
-# `bun run commitlint`; see the note in lefthook.yml), and
+# `bun ./node_modules/@commitlint/cli/cli.js`; see lefthook.yml), and
 # ty/pytest (project dev deps, provided by `uv run`).
 schema-version = "1.12.0"
 
