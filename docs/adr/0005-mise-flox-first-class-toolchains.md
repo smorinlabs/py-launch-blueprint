@@ -20,7 +20,8 @@ Auditing that set against actual usage surfaced two problems:
 
 1. **Duplicate version sources.** yamllint, codespell, bandit, and
    editorconfig-checker are invoked via `uvx`, and commitlint via
-   `bunx --bun @commitlint/cli` (historical ADR-04) — uv/bun fetch them on
+   `bunx --bun @commitlint/cli` (historical ADR-04; superseded 2026-07-21 —
+   see the note at the end of this ADR) — uv/bun fetch them on
    demand. Declaring them in a provisioner manifest creates a second,
    independently-drifting source of versions that the hooks never use.
 2. **An active defect.** The mise `commitlint` shim shadowed bun's PATH
@@ -89,3 +90,19 @@ Supporting choices:
 - **Executing the flox installer from `make install-flox`** — rejected:
   platform-specific packages plus sudo make a curl-pipe-style force target
   riskier than the print-only convention used for just/uv.
+
+## Note — 2026-07-21: commitlint invocation superseded
+
+The *decision* recorded here still holds: commitlint stays out of `mise.toml`
+and `.flox` so bun.lock remains its single version source.
+
+Only the invocation changed. `bunx --bun @commitlint/cli` pins no version, so
+it resolved `@latest` into bun's ephemeral cache, landed on a
+`@commitlint/config-conventional` newer than this repo's pin, and failed to
+link `conventional-changelog-conventionalcommits` — breaking every commit. The
+hook now runs `./node_modules/.bin/commitlint`.
+
+The "active defect" in point 2 (the mise shim shadowing bun's PATH fallback)
+was fixed upstream and no longer motivates anything here. A bare `commitlint`
+was considered and rejected: it depends on a global mise pin that this repo
+does not declare, and exits 127 on machines without one.

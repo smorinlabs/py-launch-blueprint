@@ -26,8 +26,9 @@ flox activate
 ```
 
 Note: yamllint, codespell, bandit, editorconfig-checker, and commitlint are
-deliberately not in these manifests — they are fetched on demand via
-`uvx`/`bunx` by the git hooks and Justfile recipes.
+deliberately not in these manifests. The first four are fetched on demand via
+`uvx`; commitlint runs from `./node_modules/.bin/commitlint`, so run
+`bun install` before your first commit or the commit-msg hook cannot find it.
 
 # Setup Development Environment
 

@@ -16,25 +16,29 @@
 min_version: 1.13.0  # ITM-021 installer floor
 
 # ITM-040 — commitlint commit-msg step. Revised 2026-07-21.
-# Runs bare `commitlint`, resolved through the mise pin that smorin-bootstrap
-# owns (`npm:@commitlint/cli`, currently 21.0.2).
+# Runs the repo-local binary `./node_modules/.bin/commitlint`, so the version
+# comes from bun.lock and the hook works in every supported toolchain path
+# (native `just setup`, mise, flox) with no dependency on any global install.
 #
-# It previously ran `bunx --bun @commitlint/cli` to avoid an unconfigured mise
-# shim ("No version is set for shim: commitlint"). That shim was fixed
-# upstream, but the bunx call was never revisited — and because it pins no
-# version, bunx resolved `@latest` into its own ephemeral cache, landing on a
-# `@commitlint/config-conventional` newer than this repo's pin and failing to
-# link `conventional-changelog-conventionalcommits`. The package was present
-# in node_modules the whole time; only bunx's resolution context could not see
-# it. That broke every commit in this repo.
+# It previously ran `bunx --bun @commitlint/cli`. That pins no version, so bunx
+# resolved `@latest` into its own ephemeral cache, landed on a
+# `@commitlint/config-conventional` newer than this repo's pin, and failed to
+# link `conventional-changelog-conventionalcommits`. The package was in
+# node_modules the whole time — only bunx's resolution context could not see
+# it. Every commit in this repo failed.
 #
-# Requires `bun install` in fresh checkouts and worktrees, so
-# `commitlint.config.mjs` can resolve `@commitlint/config-conventional` from
-# node_modules. That is true of any invocation method, not just this one.
+# A bare `commitlint` was tried first and rejected in review: it resolves only
+# where a global mise pin happens to exist, and exits 127 on any machine
+# without one — failing every commit regardless of message validity. Measured:
+# bare -> 127/127 on a PATH without that pin; ./node_modules/.bin -> 0 for a
+# valid message, 1 for an invalid one.
+#
+# Requires `bun install` in fresh checkouts and worktrees, both for the binary
+# and so `commitlint.config.mjs` can resolve `@commitlint/config-conventional`.
 commit-msg:
   commands:
     commitlint:
-      run: commitlint --edit {1}
+      run: ./node_modules/.bin/commitlint --edit {1}
 
 # Pre-commit stage — per-tool steps land via downstream ITMs.
 pre-commit:

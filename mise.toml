@@ -9,14 +9,13 @@
 # Intentionally NOT declared here:
 #   * yamllint, codespell, bandit, editorconfig-checker — invoked via `uvx`
 #     (lefthook.yml / Justfile), fetched on demand by uv.
-#   * commitlint — invoked as bare `commitlint`, resolved through the mise pin
-#     in smorin-bootstrap (`npm:@commitlint/cli`). It previously went through
-#     `bunx --bun @commitlint/cli` to dodge an unconfigured mise shim; that
-#     shim was fixed upstream, while the unpinned `bunx` call kept resolving
-#     `@latest` from bun's global cache and failing to link
-#     `conventional-changelog-conventionalcommits`. Requires `bun install`
-#     in fresh checkouts/worktrees so `commitlint.config.mjs` can resolve
-#     `@commitlint/config-conventional` from node_modules.
+#   * commitlint — invoked as `./node_modules/.bin/commitlint`, so bun.lock is
+#     the single version source and no global install is required. It formerly
+#     used `bunx --bun @commitlint/cli`, whose unpinned `@latest` resolution
+#     picked a mismatched `@commitlint/config-conventional` from bun's global
+#     cache and broke every commit. Still deliberately absent from [tools]:
+#     the version lives in bun.lock, and duplicating it here would reintroduce
+#     the drift WL-001 warns about. Requires `bun install` in fresh checkouts.
 #   * ty, pytest — project dev deps, provided by `uv run`.
 [tools]
 python = "3.12"
