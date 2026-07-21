@@ -1,6 +1,6 @@
 # P04 — Py-API Boundary Validation
 
-**Status**: `[~]` in progress (v0.1.0)
+**Status**: `[x]` complete (v0.1.0) — merged to `main` 2026-07-20 via #483
 **Goal**: Validate every Py-API response into private Pydantic models at the
 adapter edge, so upstream schema drift raises `APIError` instead of degrading
 into an empty-id `Project` or an empty list that reads to the user as "no
@@ -104,7 +104,25 @@ Confirmed 2026-07-19, before implementation:
 - [x] [P04-T06] Register the project file in `init/manifest.toml` under
       `py_launch_blueprint`, so a fork's `just init` rewrites it rather than
       shipping half-renamed (caught by `check_manifest_drift.py`, as designed).
-- [ ] [P04-TS04] PR opened, review threads resolved, merged.
+- [x] [P04-TS04] PR opened, review threads resolved, merged — #483 (stacked on
+      #482, retargeted to `main` on its merge). Six review findings from four
+      independent bots: five valid and fixed, one refuted with evidence (see
+      Review outcomes).
+
+## Review outcomes
+
+Greptile, Copilot and Codex independently flagged that the first
+empty-workspace validator (`value if value else None`) absorbed *every* falsy
+value. All three were right, and the reasoning that produced it — "mirror the
+old `or {}` exactly" — was the defect: that old behaviour *is* the silent
+degradation this project removes. Fixed in `e8fb025`; see Decision 2.
+
+`github-code-quality` flagged the `@overload` stub bodies (`...`) as
+"statement has no effect". **Refuted and dismissed as a false positive**: PEP
+484 specifies `...` for overload stubs, and having no effect is the point. An
+AST census of this project's stdlib + site-packages found **722 `...` vs 47
+`pass`** (94%); ruff is neutral between the two, so the suggestion was purely
+stylistic and pointed away from the dominant convention.
 
 ## Automated Verification
 
