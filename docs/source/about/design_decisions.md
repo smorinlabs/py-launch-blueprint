@@ -623,7 +623,7 @@ minutes — a poor first-clone experience.
 
 ### Some tools deliberately run from their own lockfile, not the toolchain
 **What** — yamllint, codespell, bandit, editorconfig-checker (locked `dev` group
-via `uv run`) and commitlint (`./node_modules/.bin/commitlint`) are intentionally
+via `uv run`) and commitlint (`bun run commitlint`) are intentionally
 *not* in `mise.toml`/`.flox`.
 **Why** — these are pinned by `uv.lock`/`bun.lock` already (WL-001); duplicating
 them in the toolchain creates a second, independently-drifting version source

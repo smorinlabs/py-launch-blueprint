@@ -9,8 +9,10 @@
 # Intentionally NOT declared here:
 #   * yamllint, codespell, bandit, editorconfig-checker — invoked via `uvx`
 #     (lefthook.yml / Justfile), fetched on demand by uv.
-#   * commitlint — invoked as `./node_modules/.bin/commitlint`, so bun.lock is
-#     the single version source and no global install is required. It formerly
+#   * commitlint — invoked as `bun run commitlint`, so bun.lock is the single
+#     version source and no global install is required. It goes through Bun
+#     because nothing here provisions `node`, and the CLI shim is
+#     `#!/usr/bin/env node`. It formerly
 #     used `bunx --bun @commitlint/cli`, whose unpinned `@latest` resolution
 #     picked a mismatched `@commitlint/config-conventional` from bun's global
 #     cache and broke every commit. Still deliberately absent from [tools]:
