@@ -134,11 +134,14 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `revert`, `deps`, `chore`,
 This format is REQUIRED for **every** commit — no exceptions for bot or
 autofix commits (e.g. Copilot's "Potential fix…"). The required
 `commitlint (humans)` CI check lints every non-merge commit in a PR, so a
-single non-conventional commit blocks the merge; reword it (or squash the PR)
-before merging. PR titles must follow the format too: commitlint does not
-lint the title itself, but it becomes the default squash-merge commit
-subject, so a non-conventional title lands a non-conventional commit on the
-trunk. Always set a conventional title when squash-merging.
+single non-conventional commit blocks the merge; reword it before merging.
+This matters more under merge commits than it did under squash: the branch's
+individual commits land on the trunk, and release-please parses *those* —
+not the PR title. The merge commit's own subject is left deliberately
+non-conventional (`merge_commit_title=MERGE_MESSAGE`, i.e.
+`Merge pull request #N from …`) precisely so release-please skips it and counts each
+change exactly once. Conventional PR titles are still expected for review
+legibility; they are simply not what the changelog is built from.
 
 ## Code style
 
