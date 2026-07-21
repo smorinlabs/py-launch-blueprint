@@ -12,6 +12,14 @@ knowledge_base:
 reviews:
   profile: assertive
   request_changes_workflow: false
+  # A reviewer's own quota is not a build failure. When CodeRabbit cannot
+  # review — plan rate limit, transient error — leave the commit status alone
+  # instead of setting it to 'failure'. A red mark that no build produced
+  # misleads humans and merge automation alike: it reads as "the code is
+  # broken" when it means "the reviewer was busy".
+  fail_commit_status: false
+  # Keep the honest signal: 'pending' while reviewing, 'success' when done.
+  commit_status: true
   auto_review:
     enabled: true
   path_instructions:
