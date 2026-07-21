@@ -15,16 +15,26 @@
 
 min_version: 1.13.0  # ITM-021 installer floor
 
-# ITM-040 — commitlint commit-msg step. Decided round 7.
-# Use the full package name `@commitlint/cli`, not bare `commitlint`. On a cold
-# bun cache, `bunx --bun commitlint` is ambiguous (the bin and an unrelated
-# mise shim share the name), and bun falls through to PATH where the mise
-# shim wins and fails with "No version is set for shim: commitlint". Naming
-# the scoped package up-front forces bun to resolve via npm before PATH.
+# ITM-040 — commitlint commit-msg step. Revised 2026-07-21.
+# Runs bare `commitlint`, resolved through the mise pin that smorin-bootstrap
+# owns (`npm:@commitlint/cli`, currently 21.0.2).
+#
+# It previously ran `bunx --bun @commitlint/cli` to avoid an unconfigured mise
+# shim ("No version is set for shim: commitlint"). That shim was fixed
+# upstream, but the bunx call was never revisited — and because it pins no
+# version, bunx resolved `@latest` into its own ephemeral cache, landing on a
+# `@commitlint/config-conventional` newer than this repo's pin and failing to
+# link `conventional-changelog-conventionalcommits`. The package was present
+# in node_modules the whole time; only bunx's resolution context could not see
+# it. That broke every commit in this repo.
+#
+# Requires `bun install` in fresh checkouts and worktrees, so
+# `commitlint.config.mjs` can resolve `@commitlint/config-conventional` from
+# node_modules. That is true of any invocation method, not just this one.
 commit-msg:
   commands:
     commitlint:
-      run: bunx --bun @commitlint/cli --edit {1}
+      run: commitlint --edit {1}
 
 # Pre-commit stage — per-tool steps land via downstream ITMs.
 pre-commit:

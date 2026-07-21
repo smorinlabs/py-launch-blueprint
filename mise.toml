@@ -9,9 +9,14 @@
 # Intentionally NOT declared here:
 #   * yamllint, codespell, bandit, editorconfig-checker — invoked via `uvx`
 #     (lefthook.yml / Justfile), fetched on demand by uv.
-#   * commitlint — invoked via `bunx --bun @commitlint/cli` (ADR-04); a mise
-#     shim named `commitlint` shadows bun's PATH fallback and breaks the
-#     commit-msg hook on a cold bun cache (see the note in lefthook.yml).
+#   * commitlint — invoked as bare `commitlint`, resolved through the mise pin
+#     in smorin-bootstrap (`npm:@commitlint/cli`). It previously went through
+#     `bunx --bun @commitlint/cli` to dodge an unconfigured mise shim; that
+#     shim was fixed upstream, while the unpinned `bunx` call kept resolving
+#     `@latest` from bun's global cache and failing to link
+#     `conventional-changelog-conventionalcommits`. Requires `bun install`
+#     in fresh checkouts/worktrees so `commitlint.config.mjs` can resolve
+#     `@commitlint/config-conventional` from node_modules.
 #   * ty, pytest — project dev deps, provided by `uv run`.
 [tools]
 python = "3.12"
