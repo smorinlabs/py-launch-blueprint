@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.4.2](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.4.1...v2.4.2) (2026-07-21)
+
+
+### Bug Fixes
+
+* **adapters:** narrow workspace leniency and scope gid coercion per field ([e8fb025](https://github.com/smorinlabs/py-launch-blueprint/commit/e8fb025760fa3e54645ff16f558071bf8e74db77))
+* **adapters:** validate py-api responses at the boundary ([367b06d](https://github.com/smorinlabs/py-launch-blueprint/commit/367b06d873bfb8012966ddcecaee8a92a5bec9c7))
+* **adapters:** validate py-api responses at the boundary ([#483](https://github.com/smorinlabs/py-launch-blueprint/issues/483)) ([b44457b](https://github.com/smorinlabs/py-launch-blueprint/commit/b44457bea91e4ca8ed5f3e5378df030ed030a8b4))
+* do not report a CodeRabbit rate limit as a commit-status failure ([3aadc24](https://github.com/smorinlabs/py-launch-blueprint/commit/3aadc24961da21bd9e0776aaa5e7797ea4f3c124))
+* stop reporting CodeRabbit rate limits as commit-status failures ([a4b013a](https://github.com/smorinlabs/py-launch-blueprint/commit/a4b013a438b0aac4f3df5032e4c70438b9eb4498))
+
+
+### Refactor
+
+* **types:** name idempotency tuples, make OutputMode dispatch exhaustive ([6e44ab3](https://github.com/smorinlabs/py-launch-blueprint/commit/6e44ab31ef9c51bd48d980745714e58515773511))
+* **types:** name idempotency tuples, make OutputMode dispatch exhaustive ([#482](https://github.com/smorinlabs/py-launch-blueprint/issues/482)) ([ce19818](https://github.com/smorinlabs/py-launch-blueprint/commit/ce1981804832708c241dc36e295d33c0c1c16400))
+
 ## [2.4.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.4.0...v2.4.1) (2026-07-19)
 
 
