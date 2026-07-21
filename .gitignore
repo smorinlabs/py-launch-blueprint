@@ -7,6 +7,9 @@ wheels/
 *.egg-info
 .ropeproject
 .coverage
+# pytest-cov + xdist parallel mode writes one file per worker as
+# .coverage.<host>.<pid>.<random>; plain `.coverage` does not match them.
+.coverage.*
 coverage.xml
 htmlcov/
 docs/build/

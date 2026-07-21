@@ -162,7 +162,20 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Sync dev env
         run: uv sync --locked --group dev --extra web  # PEP 735; web extra covers web/
+      # Coverage runs only on the one matrix cell that uploads it. Every other
+      # cell used to compute coverage and discard it — the Codecov step below
+      # has always been gated to ubuntu/3.12 — while still paying for the
+      # pytest-cov + xdist combine step. That combine is where
+      # `coverage.exceptions.DataError: no such table: other_db.file` came from:
+      # one worker's .coverage.* SQLite file is unreadable, the worker dies, and
+      # xdist then reports the downstream `KeyError: <WorkerController gwN>`.
+      # It is a known pytest-cov/xdist issue, flaky at roughly 12% of runs
+      # (measured: 14 pass / 2 fail over 16 runs of test (macos / py3.13)).
+      # Not running coverage where nothing consumes it removes the exposure on
+      # five of six cells and makes those jobs faster. There is no fail_under
+      # and nothing else reads coverage.xml, so no signal is lost.
       - name: Run tests with coverage
+        if: matrix.os == 'ubuntu' && matrix.python-version == '3.12'
         # Default skips slow/live markers (ITM-046 addopts); CI runs everything.
         # WL-008: `-n auto` parallelises across the runner's cores; branch
         # coverage is on via [tool.coverage.run] (ADR-0019). xdist + pytest-cov
@@ -170,6 +183,9 @@ jobs:
         run: >-
           uv run --no-sync pytest -m "" -n auto
           --cov=py_launch_blueprint --cov-report=xml
+      - name: Run tests
+        if: ${{ !(matrix.os == 'ubuntu' && matrix.python-version == '3.12') }}
+        run: uv run --no-sync pytest -m "" -n auto
       - name: Upload coverage to Codecov
         # Single matrix combo uploads (avoids 4x duplicate reports).
         # use_oidc: tokenless upload (public repo). Requires `id-token: write`.
