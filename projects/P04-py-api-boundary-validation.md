@@ -1,6 +1,6 @@
 # P04 — Py-API Boundary Validation
 
-**Status**: `[~]` in progress (v0.1.0)
+**Status**: `[x]` complete (v0.1.0) — merged to `main` 2026-07-20 via #483
 **Goal**: Validate every Py-API response into private Pydantic models at the
 adapter edge, so upstream schema drift raises `APIError` instead of degrading
 into an empty-id `Project` or an empty list that reads to the user as "no
@@ -104,7 +104,32 @@ Confirmed 2026-07-19, before implementation:
 - [x] [P04-T06] Register the project file in `init/manifest.toml` under
       `py_launch_blueprint`, so a fork's `just init` rewrites it rather than
       shipping half-renamed (caught by `check_manifest_drift.py`, as designed).
-- [ ] [P04-TS04] PR opened, review threads resolved, merged.
+- [x] [P04-TS04] PR opened, review threads resolved, merged — #483 (stacked on
+      #482, retargeted to `main` on its merge). Six review threads from four
+      independent bots: four valid and fixed, two refuted with evidence (see
+      Review outcomes).
+
+## Review outcomes
+
+Six threads, four bots. **Four valid** — Greptile (`py_api.py:90`), Copilot
+(`:90` and `:100`) and Codex (`:90`) — all converging on two defects:
+
+1. The first empty-workspace validator (`value if value else None`) absorbed
+   *every* falsy value. The reasoning that produced it — "mirror the old
+   `or {}` exactly" — was itself the defect: that old behavior **is** the
+   silent degradation this project removes.
+2. `ConfigDict(coerce_numbers_to_str=True)` was model-wide, so a numeric
+   `name` would have been silently stringified.
+
+Both fixed in `e8fb025`; see Decisions 2 and 5.
+
+**Two refuted** — `github-code-quality` (`:155`, `:166`) flagged the
+`@overload` stub bodies (`...`) as "statement has no effect" and suggested
+`pass`. Dismissed as a **false positive**: PEP 484 specifies `...` for overload
+stubs, and having no effect is the point. An AST census of the interpreter's
+standard library plus this project's installed site-packages found **722 `...`
+vs 47 `pass`** (94%); ruff is neutral between the two, so the suggestion was
+purely stylistic and pointed away from the dominant convention.
 
 ## Automated Verification
 
