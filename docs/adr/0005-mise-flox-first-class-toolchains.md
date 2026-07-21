@@ -100,9 +100,19 @@ Only the invocation changed. `bunx --bun @commitlint/cli` pins no version, so
 it resolved `@latest` into bun's ephemeral cache, landed on a
 `@commitlint/config-conventional` newer than this repo's pin, and failed to
 link `conventional-changelog-conventionalcommits` — breaking every commit. The
-hook now runs `./node_modules/.bin/commitlint`.
+hook now runs `bun run commitlint`.
+
+It must go through Bun. This ADR's own point 1 is the reason: mise and flox
+provision Bun and neither provisions Node, while the installed
+`@commitlint/cli` shim is `#!/usr/bin/env node`. Invoking the binary directly
+yields `env: node: No such file or directory` on exactly the environments this
+ADR describes. `bun run` additionally resolves `node_modules/.bin` without the
+network fallback that `bun x`/`bunx` carry — that fallback is what broke the
+hook in the first place.
 
 The "active defect" in point 2 (the mise shim shadowing bun's PATH fallback)
-was fixed upstream and no longer motivates anything here. A bare `commitlint`
-was considered and rejected: it depends on a global mise pin that this repo
-does not declare, and exits 127 on machines without one.
+was fixed upstream and no longer motivates anything here. Two invocations were
+considered and rejected, both measured: a bare `commitlint` depends on a global
+mise pin this repo does not declare and exits 127 without one; the direct
+`./node_modules/.bin/commitlint` exits 127 wherever Node is absent, which is
+every supported setup path.
