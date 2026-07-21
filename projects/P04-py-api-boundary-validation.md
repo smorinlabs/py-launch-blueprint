@@ -105,24 +105,31 @@ Confirmed 2026-07-19, before implementation:
       `py_launch_blueprint`, so a fork's `just init` rewrites it rather than
       shipping half-renamed (caught by `check_manifest_drift.py`, as designed).
 - [x] [P04-TS04] PR opened, review threads resolved, merged — #483 (stacked on
-      #482, retargeted to `main` on its merge). Six review findings from four
-      independent bots: five valid and fixed, one refuted with evidence (see
+      #482, retargeted to `main` on its merge). Six review threads from four
+      independent bots: four valid and fixed, two refuted with evidence (see
       Review outcomes).
 
 ## Review outcomes
 
-Greptile, Copilot and Codex independently flagged that the first
-empty-workspace validator (`value if value else None`) absorbed *every* falsy
-value. All three were right, and the reasoning that produced it — "mirror the
-old `or {}` exactly" — was the defect: that old behaviour *is* the silent
-degradation this project removes. Fixed in `e8fb025`; see Decision 2.
+Six threads, four bots. **Four valid** — Greptile (`py_api.py:90`), Copilot
+(`:90` and `:100`) and Codex (`:90`) — all converging on two defects:
 
-`github-code-quality` flagged the `@overload` stub bodies (`...`) as
-"statement has no effect". **Refuted and dismissed as a false positive**: PEP
-484 specifies `...` for overload stubs, and having no effect is the point. An
-AST census of this project's stdlib + site-packages found **722 `...` vs 47
-`pass`** (94%); ruff is neutral between the two, so the suggestion was purely
-stylistic and pointed away from the dominant convention.
+1. The first empty-workspace validator (`value if value else None`) absorbed
+   *every* falsy value. The reasoning that produced it — "mirror the old
+   `or {}` exactly" — was itself the defect: that old behavior **is** the
+   silent degradation this project removes.
+2. `ConfigDict(coerce_numbers_to_str=True)` was model-wide, so a numeric
+   `name` would have been silently stringified.
+
+Both fixed in `e8fb025`; see Decisions 2 and 5.
+
+**Two refuted** — `github-code-quality` (`:155`, `:166`) flagged the
+`@overload` stub bodies (`...`) as "statement has no effect" and suggested
+`pass`. Dismissed as a **false positive**: PEP 484 specifies `...` for overload
+stubs, and having no effect is the point. An AST census of the interpreter's
+standard library plus this project's installed site-packages found **722 `...`
+vs 47 `pass`** (94%); ruff is neutral between the two, so the suggestion was
+purely stylistic and pointed away from the dominant convention.
 
 ## Automated Verification
 
