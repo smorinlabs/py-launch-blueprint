@@ -621,14 +621,17 @@ minutes — a poor first-clone experience.
 **Value** — fast, reliable setup on the common platforms.
 **Refs** — `Justfile`, `scripts/install-*.sh`; ITM-042.
 
-### Some tools deliberately run via `uv run` / `bunx`, not the toolchain
+### Some tools deliberately run from their own lockfile, not the toolchain
 **What** — yamllint, codespell, bandit, editorconfig-checker (locked `dev` group
-via `uv run`) and commitlint (`bunx --bun @commitlint/cli`) are intentionally
+via `uv run`) and commitlint (`bun ./node_modules/@commitlint/cli/cli.js`) are intentionally
 *not* in `mise.toml`/`.flox`.
-**Why** — these are pinned by `uv.lock`/`bun` already (WL-001); duplicating them
-in the toolchain risks version drift, and a mise `commitlint` shim would shadow
-bun's resolution.
-**Value** — one source of truth per tool version; no shadowing surprises.
+**Why** — these are pinned by `uv.lock`/`bun.lock` already (WL-001); duplicating
+them in the toolchain creates a second, independently-drifting version source
+that the hooks never consult. Invoking commitlint by its repo-local path also
+keeps the hook working on every supported setup path without depending on a
+global install being present.
+**Value** — one source of truth per tool version; hooks that work on a fresh
+clone without a global install.
 **Refs** — AGENTS.md, `lefthook.yml`, `package.json`.
 
 ---

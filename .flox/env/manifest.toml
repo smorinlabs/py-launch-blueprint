@@ -6,8 +6,8 @@
 # 10-tool set); docs/adr/0018-hook-ci-parity-and-boundary-gate.md (actionlint).
 #
 # Intentionally NOT installed here: yamllint, codespell, bandit,
-# editorconfig-checker (invoked via `uvx`), commitlint (invoked via
-# `bunx --bun @commitlint/cli`; see the shim note in lefthook.yml), and
+# editorconfig-checker (invoked via `uvx`), commitlint (invoked as
+# `bun ./node_modules/@commitlint/cli/cli.js`; see lefthook.yml), and
 # ty/pytest (project dev deps, provided by `uv run`).
 schema-version = "1.12.0"
 

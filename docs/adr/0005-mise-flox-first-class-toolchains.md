@@ -20,7 +20,8 @@ Auditing that set against actual usage surfaced two problems:
 
 1. **Duplicate version sources.** yamllint, codespell, bandit, and
    editorconfig-checker are invoked via `uvx`, and commitlint via
-   `bunx --bun @commitlint/cli` (historical ADR-04) — uv/bun fetch them on
+   `bunx --bun @commitlint/cli` (historical ADR-04; superseded 2026-07-21 —
+   see the note at the end of this ADR) — uv/bun fetch them on
    demand. Declaring them in a provisioner manifest creates a second,
    independently-drifting source of versions that the hooks never use.
 2. **An active defect.** The mise `commitlint` shim shadowed bun's PATH
@@ -89,3 +90,29 @@ Supporting choices:
 - **Executing the flox installer from `make install-flox`** — rejected:
   platform-specific packages plus sudo make a curl-pipe-style force target
   riskier than the print-only convention used for just/uv.
+
+## Note — 2026-07-21: commitlint invocation superseded
+
+The *decision* recorded here still holds: commitlint stays out of `mise.toml`
+and `.flox` so bun.lock remains its single version source.
+
+Only the invocation changed. `bunx --bun @commitlint/cli` pins no version, so
+it resolved `@latest` into bun's ephemeral cache, landed on a
+`@commitlint/config-conventional` newer than this repo's pin, and failed to
+link `conventional-changelog-conventionalcommits` — breaking every commit. The
+hook now runs `bun ./node_modules/@commitlint/cli/cli.js`.
+
+It must go through Bun. This ADR's own point 1 is the reason: mise and flox
+provision Bun and neither provisions Node, while the installed
+`@commitlint/cli` shim is `#!/usr/bin/env node`. Invoking the binary directly
+yields `env: node: No such file or directory` on exactly the environments this
+ADR describes. `bun run` additionally resolves `node_modules/.bin` without the
+network fallback that `bun x`/`bunx` carry — that fallback is what broke the
+hook in the first place.
+
+The "active defect" in point 2 (the mise shim shadowing bun's PATH fallback)
+was fixed upstream and no longer motivates anything here. Two invocations were
+considered and rejected, both measured: a bare `commitlint` depends on a global
+mise pin this repo does not declare and exits 127 without one; the direct
+`./node_modules/.bin/commitlint` exits 127 wherever Node is absent, which is
+every supported setup path.

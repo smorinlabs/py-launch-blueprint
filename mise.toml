@@ -9,9 +9,16 @@
 # Intentionally NOT declared here:
 #   * yamllint, codespell, bandit, editorconfig-checker — invoked via `uvx`
 #     (lefthook.yml / Justfile), fetched on demand by uv.
-#   * commitlint — invoked via `bunx --bun @commitlint/cli` (ADR-04); a mise
-#     shim named `commitlint` shadows bun's PATH fallback and breaks the
-#     commit-msg hook on a cold bun cache (see the note in lefthook.yml).
+#   * commitlint — invoked as `bun ./node_modules/@commitlint/cli/cli.js`,
+#     so bun.lock is the single
+#     version source and no global install is required. It goes through Bun
+#     because nothing here provisions `node`, and the CLI shim is
+#     `#!/usr/bin/env node`. It formerly
+#     used `bunx --bun @commitlint/cli`, whose unpinned `@latest` resolution
+#     picked a mismatched `@commitlint/config-conventional` from bun's global
+#     cache and broke every commit. Still deliberately absent from [tools]:
+#     the version lives in bun.lock, and duplicating it here would reintroduce
+#     the drift WL-001 warns about. Requires `bun install` in fresh checkouts.
 #   * ty, pytest — project dev deps, provided by `uv run`.
 [tools]
 python = "3.12"

@@ -189,8 +189,8 @@ Deep-dive + rationale: [`projects/P03-type-precision-uplevel.md`](projects/P03-t
   3. `flox activate` (root `.flox/`)
 - Deliberately NOT in `mise.toml`/`.flox`: yamllint, codespell, bandit,
   editorconfig-checker (run via `uv run` from the locked dev group, per WL-001)
-  and commitlint (run via `bunx --bun @commitlint/cli`) — `uv sync`/bun provide
-  them, and a mise `commitlint` shim shadows bun's PATH fallback (see note in
+  and commitlint (run as `bun ./node_modules/@commitlint/cli/cli.js`) — `uv sync`/bun
+  provide them, and bun.lock stays the single version source (see note in
   lefthook.yml)
 - Build backend: `uv_build` with static `[project] version` (per ADR-06)
 - IDE: VS Code with Ruff, Pyright, EditorConfig extensions

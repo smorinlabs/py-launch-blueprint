@@ -15,16 +15,54 @@
 
 min_version: 1.13.0  # ITM-021 installer floor
 
-# ITM-040 — commitlint commit-msg step. Decided round 7.
-# Use the full package name `@commitlint/cli`, not bare `commitlint`. On a cold
-# bun cache, `bunx --bun commitlint` is ambiguous (the bin and an unrelated
-# mise shim share the name), and bun falls through to PATH where the mise
-# shim wins and fails with "No version is set for shim: commitlint". Naming
-# the scoped package up-front forces bun to resolve via npm before PATH.
+# ITM-040 — commitlint commit-msg step. Revised 2026-07-21.
+# Invokes the installed CLI by explicit path through Bun. That combination is
+# load-bearing in three ways, each measured:
+#
+#   through Bun          the shim is `#!/usr/bin/env node`, and mise/.flox
+#                        provision bun and not node -> direct exec exits 127
+#   by explicit path     `bun run commitlint` runs a package.json script of that
+#                        name if one exists; a permissive `scripts.commitlint`
+#                        wrapper let an invalid message through with exit 0
+#   not a bare name      `bun run commitlint` also falls back to a global
+#                        commitlint on PATH when node_modules is missing,
+#                        silently validating with a different version and
+#                        defeating the bun.lock guarantee
+#
+# The explicit path is immune to both: it cannot resolve a script, cannot reach
+# PATH, and exits 1 with "Module not found" when the package is absent — which
+# is the correct failure, not a silent pass.
+#
+# It must go through Bun, not the binary directly: mise.toml and .flox both
+# provision `bun` and neither provisions `node`, while the installed
+# `@commitlint/cli` shim carries `#!/usr/bin/env node`. Running it directly
+# exits 127 with "env: node: No such file or directory" on a clean setup.
+# `bun run` also never reaches the network — unlike `bun x`/`bunx`, which fall
+# back to fetching when the package is absent locally. That fallback is what
+# broke this hook originally.
+#
+# It previously ran `bunx --bun @commitlint/cli`. That pins no version, so bunx
+# resolved `@latest` into its own ephemeral cache, landed on a
+# `@commitlint/config-conventional` newer than this repo's pin, and failed to
+# link `conventional-changelog-conventionalcommits`. The package was in
+# node_modules the whole time — only bunx's resolution context could not see
+# it. Every commit in this repo failed.
+#
+# Rejected in review, all measured:
+#   bare `commitlint`               127/127 without a global mise pin
+#   ./node_modules/.bin/commitlint  127 with bun but no node (env: node)
+#   bun run commitlint              0 for an INVALID message when a
+#                                   scripts.commitlint entry shadows it; and
+#                                   silently uses a global CLI when
+#                                   node_modules is absent
+#   bun <path>/cli.js               0 valid / 1 invalid, immune to both
+#
+# Requires `bun install` in fresh checkouts and worktrees, both for the binary
+# and so `commitlint.config.mjs` can resolve `@commitlint/config-conventional`.
 commit-msg:
   commands:
     commitlint:
-      run: bunx --bun @commitlint/cli --edit {1}
+      run: bun ./node_modules/@commitlint/cli/cli.js --edit {1}
 
 # Pre-commit stage — per-tool steps land via downstream ITMs.
 pre-commit:
