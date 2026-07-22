@@ -6,6 +6,8 @@
 # CodeQL config. The repo's "default setup" (Settings > Code security) must
 # stay disabled, or the SARIF upload is rejected with a configuration error.
 # See SECURITY.md > Code Scanning Setup. This applies to every fork too.
+# GitHub Code Security is unavailable to unlicensed private repositories, so
+# the job stays skipped until the repository becomes public.
 
 name: CodeQL
 
@@ -16,6 +18,7 @@ on:
     branches: [main]
   schedule:
     - cron: '0 4 * * 0'  # weekly, Sunday 04:00 UTC
+  public:
 
 permissions: {}
 
@@ -25,6 +28,7 @@ concurrency:
 
 jobs:
   analyze:
+    if: ${{ github.event.repository.private == false }}
     name: analyze (python)
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
