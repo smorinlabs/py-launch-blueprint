@@ -27,8 +27,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  repository-visibility:
+    name: inspect repository visibility
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+    outputs:
+      is-public: ${{ steps.visibility.outputs.is-public }}
+    steps:
+      - name: Inspect repository visibility
+        id: visibility
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          is_public="$(gh api "repos/${REPOSITORY}" --jq '.visibility == "public"')"
+          echo "is-public=${is_public}" >> "${GITHUB_OUTPUT}"
+
   analyze:
-    if: ${{ github.event.repository.private == false }}
+    needs: repository-visibility
+    if: ${{ needs.repository-visibility.outputs.is-public == 'true' }}
     name: analyze (python)
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:

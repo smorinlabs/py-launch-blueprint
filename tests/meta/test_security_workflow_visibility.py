@@ -2,11 +2,12 @@
 
 from pathlib import Path
 
-import pytest
-
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_DIR = ROOT / ".github" / "workflows"
-PUBLIC_REPOSITORY_CONDITION = "${{ github.event.repository.private == false }}"
+PULL_REQUEST_PUBLIC_CONDITION = "${{ github.event.repository.private == false }}"
+CODEQL_PUBLIC_CONDITION = (
+    "${{ needs.repository-visibility.outputs.is-public == 'true' }}"
+)
 
 
 def _job_block(workflow: str, job_name: str) -> str:
@@ -26,17 +27,24 @@ def _job_block(workflow: str, job_name: str) -> str:
     return "".join(lines[: next_job_offsets[0]])
 
 
-@pytest.mark.parametrize(
-    ("workflow_name", "job_name"),
-    [("codeql.yml", "analyze"), ("dependency-review.yml", "dependency-review")],
-)
-def test_security_workflow_jobs_skip_private_repositories(
-    workflow_name: str, job_name: str
-) -> None:
-    """Unavailable GitHub security products must not fail private repos."""
-    workflow = (WORKFLOW_DIR / workflow_name).read_text(encoding="utf-8")
+def test_dependency_review_skips_private_repositories() -> None:
+    """Dependency Review must not fail private pull requests."""
+    workflow = (WORKFLOW_DIR / "dependency-review.yml").read_text(encoding="utf-8")
 
-    assert f"    if: {PUBLIC_REPOSITORY_CONDITION}\n" in _job_block(workflow, job_name)
+    assert f"    if: {PULL_REQUEST_PUBLIC_CONDITION}\n" in _job_block(
+        workflow, "dependency-review"
+    )
+
+
+def test_codeql_uses_trigger_independent_repository_visibility() -> None:
+    """CodeQL must gate every trigger, including schedule, on API visibility."""
+    workflow = (WORKFLOW_DIR / "codeql.yml").read_text(encoding="utf-8")
+    visibility_job = _job_block(workflow, "repository-visibility")
+    analyze_job = _job_block(workflow, "analyze")
+
+    assert 'gh api "repos/${REPOSITORY}"' in visibility_job
+    assert "    needs: repository-visibility\n" in analyze_job
+    assert f"    if: {CODEQL_PUBLIC_CONDITION}\n" in analyze_job
 
 
 def test_codeql_runs_when_repository_becomes_public() -> None:
