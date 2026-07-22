@@ -42,12 +42,14 @@ UV_LOCK_UPDATER = {
 
 
 def _pyproject_version() -> str:
-    data = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     return data["project"]["version"]
 
 
 def _manifest_version() -> str:
-    data = json.loads((ROOT / ".release-please-manifest.json").read_text())
+    data = json.loads(
+        (ROOT / ".release-please-manifest.json").read_text(encoding="utf-8")
+    )
     return data["."]
 
 
@@ -58,7 +60,7 @@ def test_manifest_matches_pyproject():
 
 def test_uv_lock_matches_pyproject():
     """The editable root package metadata must match the source version."""
-    data = tomllib.loads((ROOT / "uv.lock").read_text())
+    data = tomllib.loads((ROOT / "uv.lock").read_text(encoding="utf-8"))
     editable_packages = [
         package
         for package in data["package"]
@@ -71,7 +73,9 @@ def test_uv_lock_matches_pyproject():
 
 def test_release_please_updates_uv_lock_atomically():
     """The release commit must include uv.lock before the PR becomes visible."""
-    config = json.loads((ROOT / "release-please-config.json").read_text())
+    config = json.loads(
+        (ROOT / "release-please-config.json").read_text(encoding="utf-8")
+    )
     assert UV_LOCK_UPDATER in config["packages"]["."]["extra-files"]
 
 
