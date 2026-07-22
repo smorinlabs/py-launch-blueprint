@@ -16,7 +16,7 @@
         {
           "type": "toml",
           "path": "uv.lock",
-          "jsonpath": "$.package[?(@.name.value=='py-launch-blueprint' && @.source.editable.value=='.')].version"
+          "jsonpath": "$.package[?(@.source && @.source.editable && @.source.editable.value=='.')].version"
         }
       ],
       "changelog-sections": [

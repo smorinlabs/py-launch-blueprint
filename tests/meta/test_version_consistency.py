@@ -36,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[2]
 UV_LOCK_UPDATER = {
     "type": "toml",
     "path": "uv.lock",
-    "jsonpath": "$.package[?(@.name.value=='py-launch-blueprint' && "
+    "jsonpath": "$.package[?(@.source && @.source.editable && "
     "@.source.editable.value=='.')].version",
 }
 
@@ -62,8 +62,7 @@ def test_uv_lock_matches_pyproject():
     editable_packages = [
         package
         for package in data["package"]
-        if package["name"] == "py-launch-blueprint"
-        and package.get("source", {}).get("editable") == "."
+        if package.get("source", {}).get("editable") == "."
     ]
 
     assert len(editable_packages) == 1
