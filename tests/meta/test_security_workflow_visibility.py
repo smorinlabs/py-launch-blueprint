@@ -4,7 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_DIR = ROOT / ".github" / "workflows"
-PULL_REQUEST_PUBLIC_CONDITION = "${{ github.event.repository.private == false }}"
+PULL_REQUEST_PUBLIC_CONDITION = "${{ github.event.repository.visibility == 'public' }}"
 CODEQL_PUBLIC_CONDITION = (
     "${{ needs.repository-visibility.outputs.is-public == 'true' }}"
 )

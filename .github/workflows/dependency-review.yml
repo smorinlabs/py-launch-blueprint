@@ -46,7 +46,7 @@ permissions:
 
 jobs:
   dependency-review:
-    if: ${{ github.event.repository.private == false }}
+    if: ${{ github.event.repository.visibility == 'public' }}
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     steps:
       - name: 'Checkout repository'
