@@ -20,10 +20,10 @@
 """Guard that the project version stays single-sourced.
 
 ``pyproject.toml`` ``[project] version`` is the single source of truth (ADR-06).
-release-please bumps it together with ``.release-please-manifest.json``, and the
-CLI/docs derive their version from the installed package metadata
-(``py_launch_blueprint.__version__``). These tests fail if any of those copies
-drift apart.
+release-please bumps it together with ``.release-please-manifest.json`` and the
+editable root entry in ``uv.lock``. The CLI/docs derive their version from the
+installed package metadata (``py_launch_blueprint.__version__``). These tests
+fail if any copy or the atomic release updater drifts.
 """
 
 import json
@@ -33,21 +33,50 @@ from pathlib import Path
 from py_launch_blueprint import __version__
 
 ROOT = Path(__file__).resolve().parents[2]
+UV_LOCK_UPDATER = {
+    "type": "toml",
+    "path": "uv.lock",
+    "jsonpath": "$.package[?(@.source && @.source.editable && "
+    "@.source.editable.value=='.')].version",
+}
 
 
 def _pyproject_version() -> str:
-    data = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     return data["project"]["version"]
 
 
 def _manifest_version() -> str:
-    data = json.loads((ROOT / ".release-please-manifest.json").read_text())
+    data = json.loads(
+        (ROOT / ".release-please-manifest.json").read_text(encoding="utf-8")
+    )
     return data["."]
 
 
 def test_manifest_matches_pyproject():
     """release-please bumps both; they must never diverge."""
     assert _manifest_version() == _pyproject_version()
+
+
+def test_uv_lock_matches_pyproject():
+    """The editable root package metadata must match the source version."""
+    data = tomllib.loads((ROOT / "uv.lock").read_text(encoding="utf-8"))
+    editable_packages = [
+        package
+        for package in data["package"]
+        if package.get("source", {}).get("editable") == "."
+    ]
+
+    assert len(editable_packages) == 1
+    assert editable_packages[0]["version"] == _pyproject_version()
+
+
+def test_release_please_updates_uv_lock_atomically():
+    """The release commit must include uv.lock before the PR becomes visible."""
+    config = json.loads(
+        (ROOT / "release-please-config.json").read_text(encoding="utf-8")
+    )
+    assert UV_LOCK_UPDATER in config["packages"]["."]["extra-files"]
 
 
 def test_installed_version_matches_pyproject():
