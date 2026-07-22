@@ -36,7 +36,8 @@ ROOT = Path(__file__).resolve().parents[2]
 UV_LOCK_UPDATER = {
     "type": "toml",
     "path": "uv.lock",
-    "jsonpath": "$.package[?(@.name.value=='py-launch-blueprint')].version",
+    "jsonpath": "$.package[?(@.name.value=='py-launch-blueprint' && "
+    "@.source.editable.value=='.')].version",
 }
 
 
