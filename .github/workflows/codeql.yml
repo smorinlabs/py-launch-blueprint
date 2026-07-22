@@ -33,16 +33,16 @@ jobs:
     permissions:
       contents: read
     outputs:
-      is-public: ${{ steps.visibility.outputs.is-public }}
+      is-public: ${{ steps.visibility.outputs.result }}
     steps:
       - name: Inspect repository visibility
         id: visibility
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          is_public="$(gh api "repos/${REPOSITORY}" --jq '.visibility == "public"')"
-          echo "is-public=${is_public}" >> "${GITHUB_OUTPUT}"
+        uses: actions/github-script@v9
+        with:
+          result-encoding: string
+          script: |
+            const { data: repository } = await github.rest.repos.get(context.repo);
+            return repository.visibility === "public";
 
   analyze:
     needs: repository-visibility

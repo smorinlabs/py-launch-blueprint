@@ -42,7 +42,8 @@ def test_codeql_uses_trigger_independent_repository_visibility() -> None:
     visibility_job = _job_block(workflow, "repository-visibility")
     analyze_job = _job_block(workflow, "analyze")
 
-    assert 'gh api "repos/${REPOSITORY}"' in visibility_job
+    assert "uses: actions/github-script@v9" in visibility_job
+    assert 'repository.visibility === "public"' in visibility_job
     assert "    needs: repository-visibility\n" in analyze_job
     assert f"    if: {CODEQL_PUBLIC_CONDITION}\n" in analyze_job
 
