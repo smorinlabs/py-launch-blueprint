@@ -12,8 +12,8 @@ PUBLIC_REPOSITORY_CONDITION = "${{ github.event.repository.private == false }}"
 def _job_block(workflow: str, job_name: str) -> str:
     """Return one top-level job block from a workflow's raw YAML."""
     marker = f"  {job_name}:\n"
-    start = workflow.index(marker)
-    remainder = workflow[start + len(marker) :]
+    _, separator, remainder = workflow.partition(marker)
+    assert separator, f"workflow job {job_name!r} was not found"
     next_job_offsets = [
         offset
         for offset, line in enumerate(remainder.splitlines(keepends=True))
@@ -42,8 +42,9 @@ def test_security_workflow_jobs_skip_private_repositories(
 def test_codeql_runs_when_repository_becomes_public() -> None:
     """The visibility change must trigger the first public CodeQL scan."""
     workflow = (WORKFLOW_DIR / "codeql.yml").read_text(encoding="utf-8")
-    triggers = workflow.split("\non:\n", maxsplit=1)[1].split(
-        "\npermissions:", maxsplit=1
-    )[0]
+    _, on_separator, after_on = workflow.partition("\non:\n")
+    assert on_separator, "codeql.yml has no top-level on block"
+    triggers, permissions_separator, _ = after_on.partition("\npermissions:")
+    assert permissions_separator, "codeql.yml has no top-level permissions block"
 
     assert "\n  public:\n" in triggers
