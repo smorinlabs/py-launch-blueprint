@@ -20,10 +20,10 @@
 """Guard that the project version stays single-sourced.
 
 ``pyproject.toml`` ``[project] version`` is the single source of truth (ADR-06).
-release-please bumps it together with ``.release-please-manifest.json``, and the
-CLI/docs derive their version from the installed package metadata
-(``py_launch_blueprint.__version__``). These tests fail if any of those copies
-drift apart.
+release-please bumps it together with ``.release-please-manifest.json`` and the
+editable root entry in ``uv.lock``. The CLI/docs derive their version from the
+installed package metadata (``py_launch_blueprint.__version__``). These tests
+fail if any copy or the atomic release updater drifts.
 """
 
 import json
@@ -33,6 +33,11 @@ from pathlib import Path
 from py_launch_blueprint import __version__
 
 ROOT = Path(__file__).resolve().parents[2]
+UV_LOCK_UPDATER = {
+    "type": "toml",
+    "path": "uv.lock",
+    "jsonpath": "$.package[?(@.name.value=='py-launch-blueprint')].version",
+}
 
 
 def _pyproject_version() -> str:
@@ -48,6 +53,26 @@ def _manifest_version() -> str:
 def test_manifest_matches_pyproject():
     """release-please bumps both; they must never diverge."""
     assert _manifest_version() == _pyproject_version()
+
+
+def test_uv_lock_matches_pyproject():
+    """The editable root package metadata must match the source version."""
+    data = tomllib.loads((ROOT / "uv.lock").read_text())
+    editable_packages = [
+        package
+        for package in data["package"]
+        if package["name"] == "py-launch-blueprint"
+        and package.get("source", {}).get("editable") == "."
+    ]
+
+    assert len(editable_packages) == 1
+    assert editable_packages[0]["version"] == _pyproject_version()
+
+
+def test_release_please_updates_uv_lock_atomically():
+    """The release commit must include uv.lock before the PR becomes visible."""
+    config = json.loads((ROOT / "release-please-config.json").read_text())
+    assert UV_LOCK_UPDATER in config["packages"]["."]["extra-files"]
 
 
 def test_installed_version_matches_pyproject():

@@ -555,11 +555,15 @@ removes manual, error-prone release bookkeeping.
 `.github/workflows/release-please.yml`; ADR-05 (per AGENTS.md), ITM-052/053/054.
 
 ### Lockfile stays in sync on the release PR
-**What** — a `sync-uv-lock` job regenerates `uv.lock` on the release PR.
-**Why** — the version bump changes package metadata; regenerating the lock on the
-same PR keeps it consistent at the moment of release.
-**Value** — the tagged commit always has a matching lockfile.
-**Refs** — `.github/workflows/release-please.yml`; ITM-054.
+**What** — release-please's TOML updater changes the editable project entry in
+`uv.lock` in the same generated commit that bumps `pyproject.toml`.
+**Why** — a follow-up workflow commit left a window where CI and reviewers saw
+stale locked metadata. Generating both version surfaces atomically removes that
+race while `uv lock --check` remains the independent freshness gate.
+**Value** — every revision of a release PR, including the first, has a matching
+lockfile; no repair commit or force-push is required.
+**Refs** — `release-please-config.json`, `.github/workflows/release-please.yml`;
+ITM-054.
 
 ### Publishing via OIDC Trusted Publishing
 **What** — on a `v*` tag, `publish.yml` verifies the tag is on `main` and that

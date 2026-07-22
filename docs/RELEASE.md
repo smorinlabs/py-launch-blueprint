@@ -7,13 +7,14 @@ Release flow per ADR-05 + ADR-06 + ADR-07. See
 
 1. Merge `feat:` / `fix:` / `perf:` commits to `main`.
 2. The `release-please` workflow opens (or updates) a release PR
-   proposing the next semver bump + a `CHANGELOG.md` entry.
+   proposing the next semver bump + a `CHANGELOG.md` entry. Its generated
+   commit updates `pyproject.toml` and the editable root entry in `uv.lock`
+   atomically, so the PR is internally consistent from its first revision.
 3. Merge the release PR. release-please pushes a `v*` tag.
 4. The `publish` workflow fires on the tag:
    - `build` job: tag-reachability + version-matches-tag, then `uv build`.
    - `publish-testpypi`: OIDC upload to TestPyPI (env `testpypi`).
    - `publish-pypi`: OIDC upload to PyPI (env `pypi`).
-   - `sync-uv-lock` job (in release-please workflow) keeps `uv.lock` current.
 
 ## Disabling release-please (downstream projects)
 
@@ -43,7 +44,7 @@ of these two mechanisms instead:
    - `RELEASE_PLEASE_CLIENT_ID` — the App's Client ID (e.g. `Iv23li...`)
    - `RELEASE_PLEASE_PRIVATE_KEY` — the App's private key (`.pem` contents)
 
-   Both jobs mint a short-lived installation token from these.
+   The workflow mints a short-lived installation token from these.
 
 2. **Fallback PAT.** Create a fine-grained Personal Access Token scoped to this
    repo with **Contents** and **Pull requests: write**, stored as the

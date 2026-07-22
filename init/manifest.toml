@@ -390,6 +390,7 @@ files = [
   "AGENTS.md",                                    # 3x
   "Justfile",                                     # 1x
   "README.md",                                    # 17x
+  "release-please-config.json",                   # 1x (uv.lock package selector)
   "docs/design/0001-plbp-cli-conventions.md",     # 3x
   "docs/research/0003-init-post-init-analysis.md", # 4x
   "docs/source/_templates/base.html",             # 1x
@@ -416,6 +417,7 @@ files = [
   "docs/adr/0013-web-service-best-practices.md",  # 1x
   "docs/source/web/index.md",                     # 2x
   "tests/meta/test_codex_astral_plugin.py",       # 2x
+  "tests/meta/test_version_consistency.py",       # 1x (release updater guard)
 ]
 mode = "text"
 
