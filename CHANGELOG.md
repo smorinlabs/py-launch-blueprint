@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.4.3](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.4.2...v2.4.3) (2026-07-23)
+
+
+### Bug Fixes
+
+* **ci:** exclude internal repositories ([7161d85](https://github.com/smorinlabs/py-launch-blueprint/commit/7161d858203648a348c3cf04ced9368479878577))
+* **ci:** remove runner cli dependency ([7bb296c](https://github.com/smorinlabs/py-launch-blueprint/commit/7bb296ccd92a64082f0125d59459640a78c86855))
+* **ci:** use trigger-independent visibility ([2f38073](https://github.com/smorinlabs/py-launch-blueprint/commit/2f380733f51a349185cedfe0d71731a922d0ce0f))
+* **hooks:** invoke commitlint by explicit path, not a resolvable name ([35395a1](https://github.com/smorinlabs/py-launch-blueprint/commit/35395a11a18e10aa804870617bc6acef02c55ac1))
+* **hooks:** run commitlint from node_modules, not bunx or a global shim ([b6b3b32](https://github.com/smorinlabs/py-launch-blueprint/commit/b6b3b3264edab444254b647cb33e59d25218f3ad))
+* **hooks:** run commitlint through Bun from the repo's own lockfile ([6b26809](https://github.com/smorinlabs/py-launch-blueprint/commit/6b2680966d8947169644af4cbd437f59678dd7ba))
+* **hooks:** run commitlint through Bun, which is the only runtime provisioned ([8019bfe](https://github.com/smorinlabs/py-launch-blueprint/commit/8019bfe8f4761bf69b7a7dbd120a6208a667eef6))
+* **hooks:** run commitlint via the mise pin instead of unpinned bunx ([4a1d000](https://github.com/smorinlabs/py-launch-blueprint/commit/4a1d00016428bb8159d0d8863e3c5268010bfc56))
+* **release:** scope uv.lock updater ([1567113](https://github.com/smorinlabs/py-launch-blueprint/commit/15671136436e46055b4ba3e2a0da837831b3d0c5))
+* **release:** target editable lock package ([41d3367](https://github.com/smorinlabs/py-launch-blueprint/commit/41d3367254726539dd1296fe12c375b90f35b738))
+* **release:** update uv.lock atomically ([46c744f](https://github.com/smorinlabs/py-launch-blueprint/commit/46c744f6c2fb1c424ee0bcf0306d2d2c874d3a30))
+* **release:** update uv.lock atomically ([0a3a657](https://github.com/smorinlabs/py-launch-blueprint/commit/0a3a6578db43621d885828a4744a952a84324448))
+
 ## [2.4.2](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.4.1...v2.4.2) (2026-07-21)
 
 
