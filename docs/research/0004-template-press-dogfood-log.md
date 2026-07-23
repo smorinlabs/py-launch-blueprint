@@ -283,3 +283,65 @@ validated, CI green but for the credential-gated release-please. There is
 converges here: build #1 IS the kept `smorinlabs/template-press`. A
 delete+recreate would be churn for no gain (and the v2 plan's rebuild
 existed only to prove fixes — now proven). See design v3.
+
+## Run 3 — external `press verify` (v3.2.0) vs py-launch-blueprint @ 1649334 (2026-07-23)
+
+**Context.** dogfood-v3 / #423 engine extraction. Ran the **released** external
+`press` engine (template-press `v3.2.0`, `origin/main` `e9b188c`) against
+py-launch-blueprint to test the conform + drop-`init/` acceptance gate. The
+full root-cause register — code refs, proposed fixes, acceptance tests — lives
+in **template-press `docs/research/0004-py-launch-blueprint-conformance-gaps.md`**
+(branch `docs/plbp-conformance-gaps`); this entry is the consumer-side pointer.
+
+**Setup.** Wrote `press/press-source.toml` (`[identity]`: package
+`py_launch_blueprint`, repo `py-launch-blueprint`, app `plbp`, author Steve
+Morin, email steve.morin@gmail.com, owner smorinlabs). Accepted by v3.2.0 (no
+exit 2). Identity cross-checked against `pyproject.toml` + `init/manifest.toml`.
+
+**Result.** `uv run press verify --target <plbp> --json` → **exit 1**, **784
+surviving findings across 39 files**. Not "plbp is broken" — five capability
+gaps where v3.2.0's `press` engine is *less capable at rebranding plbp than the
+old `init/` engine*, plus one architectural interaction. 86% of findings are a
+single file (`CHANGELOG.md`).
+
+**Decision (dogfood-v3).** **PAUSE** the plbp conform. Do **not** delete `init/`
+on a verify-green-via-ignores signal — that would ship a rebrand regression.
+**Enhance `press` to `init/` parity first**, per the register. Key insight:
+*`verify` green (via ignores) ≠ `press rebrand` at `init/` parity*, because the
+ignore list would document press's capability gaps as if they were deliberate
+choices. CI-sourcing note: v3.2.0 is now on PyPI with `verify`, so the later
+conform can use unpinned `uvx template-press` (≥3.2.0).
+
+### New findings
+
+- **PROBLEM-16** — high — `CHANGELOG.md` retains all identity (owner/repo/pkg)
+  after a hermetic press (678 findings). Root cause: `CHANGELOG.md` is in
+  press `DEFAULT_RULES.exclude_files` (not rewritten) but is neither reset nor
+  scan-excluded, so every token survives the scan. `init/` had a `[[reset]]`
+  stub. Disposition: template-press — add a reset rule kind (register **G1**).
+- **PROBLEM-17** — low — `bun.lock` retains `py-launch-blueprint-tooling`
+  (2 findings). **Recurrence of Run-1 PROBLEM-05, now root-caused:** `bun.lock`
+  is in `exclude_files` but not in `regenerate` (only `uv.lock` is), so stale
+  identity survives. Disposition: template-press — regenerate `bun.lock`
+  (register **G2**).
+- **PROBLEM-18** — med — app_name boundary variants survive: `_plbp_owned`
+  (tests), `plbp-web` (Dockerfile/Justfile) (16 findings). Root cause: the
+  rewriter deliberately protects a leading `_`/`-` and trailing `-`; the verify
+  scanner does not → asymmetry. `init/` used app_name text-mode substring
+  replace. Disposition: template-press — opt-in substring rewrite mode
+  (register **G3**).
+- **PROBLEM-19** — med — humanized display name "Py Launch Blueprint" survives
+  across 24 docs (74 findings). Root cause: verify's space/case-variant matcher
+  flags it; the rewriter can't (no display-name field). **Pre-existing** —
+  `init/` never handled it either; verify is just the first tool to surface it.
+  Disposition: **design decision** — add a `display_name` identity field, or
+  accept the residual with a first-class ignore (register **G4**).
+- **PROBLEM-20** — low — doc filenames `0001-app-short-name-plbp.md`,
+  `0001-plbp-cli-conventions.md` (+ content refs) carry the app token; renamed
+  by neither engine's defaults (2 + 4 findings). Disposition: template-press —
+  filename rename rule, or accept 2 ignores (register **G5**).
+- **(architectural)** any `exclude_files` entry containing identity tokens that
+  is neither regenerated nor reset will *always* leak — G1 + G2 are instances;
+  `press verify` cannot reach exit 0 on any repo with a `CHANGELOG.md` without
+  target-side ignores. Disposition: template-press — reconcile the
+  exclude/reset/regenerate/scan contract (register **§6**).
