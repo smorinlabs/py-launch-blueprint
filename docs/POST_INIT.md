@@ -91,12 +91,14 @@ setup in [§2](#2-checks--configuration).
 - [ ] **Issue/PR templates, Code of Conduct, Contributing** — *Default: on.*
       Files under `.github/`. Edit to taste.
 
-### Template-only machinery (recommended: remove for a real project)
+### Retained machinery (no action needed)
 
-- [ ] **Fork guard** — *Default: silenced by the press receipt.* File:
-      `scripts/guard.sh` (wired via the `Justfile`). It warns/blocks only
-      while a clone still wears the template's identity, so a pressed
-      project needs no action.
+- **Fork guard** — *Default: silenced by your press receipt.* File:
+      `scripts/guard.sh`, executed by the `Justfile` on every recipe. Do
+      NOT delete it — `just` shells it at parse time, so removing the
+      file breaks every recipe. It stays silent in a pressed project and
+      only ever fires if this project is itself used as an un-pressed
+      template.
 
 ---
 
@@ -323,7 +325,7 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 ## Quick start (typical public OSS project)
 
 1. `uvx --from 'template-press>=3.6.0' press rebrand` → rebrand identity.
-2. Remove template-only machinery (§1, last group).
+2. Review §1 — most rows are decisions, and the retained machinery needs no action.
 3. Decide release/publish: keep release-please + `publish.yml`, set the
    release-please App secrets (§2.1), run `setup-github-environments.sh` (§2.2),
    add the PyPI trusted publisher (§2.3).
