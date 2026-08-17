@@ -23,4 +23,4 @@ jobs:
           fetch-depth: 0 # REQUIRED — difftree --pr needs full base history
 
       - name: Post PR diff-tree comment
-        uses: smorinlabs/difftree-action@v0.2.0
+        uses: smorinlabs/difftree-action@v0.3.0
