@@ -399,3 +399,18 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   the success path (`cli.py` ~471 vs ~575). Diagnosing PROBLEM-22 required
   monkeypatching a spy around `execute_regenerations`. Disposition:
   template-press fix — print skipped entries on the failure path too.
+| 2026-08-17T05:28:18Z | TS03.5 (check-tools) | press check-tools on instance | PASS exit 0 (git, uv, regen script). Negative case n/a by design: check-tools resolves the declared script, not tools inside it — the script fails loud at run time instead |
+| 2026-08-17T05:28:18Z | TS03.6 (instance stands alone) | mise trust && make check && just setup && just check | FAIL first run: 2 syrupy help-snapshot tests (bpd config set/get) — PROBLEM-24. After snapshot refresh: just check PASS exit 0 (267+11 tests; instance hooks wired and firing) |
+- **PROBLEM-24** — med — blueprint: CLI help-snapshot tests (WL-023, syrupy
+  `.ambr`) fail in a pressed fork whenever the app name changes length —
+  the press rewrites snapshot text faithfully, but argparse/click re-wraps
+  usage lines at COLUMNS=80, so the wrap points move (`plbp`→`bpd` shifts
+  `format|` across a line break). No text rewriter can fix generated
+  wrapped text. Proven fix: regenerate, not rewrite — running the
+  documented `uv run pytest tests/cli/test_help_snapshots.py
+  --snapshot-update` in the instance turns 2 failed into 11 passed.
+  Disposition: blueprint — declare the `.ambr` under `[[regenerate]]` in
+  press-rules.toml (press-native: identity-dependent generated artifacts
+  regenerate). Caveat to evaluate: the command needs the fork's uv env
+  (first run syncs deps, may need network) inside the press's
+  deny-by-default command env.
