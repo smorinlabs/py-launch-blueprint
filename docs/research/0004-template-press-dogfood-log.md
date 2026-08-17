@@ -439,3 +439,15 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   same class as PROBLEM-24 (length-sensitive artifacts vs text rewrite).
   Disposition: fork runs `just format` post-press (hand-fixed on the
   instance); folds into the post-press normalization story with P24.
+- **PROBLEM-28** — med — template-press: the hermetic-verify regeneration
+  exemption is a hardcoded filename allowlist
+  (`pathing.REGENERATE_EXEMPTIBLE = {"uv.lock", "bun.lock"}`). Any other
+  declared `[[regenerate]]` output — e.g. the help-snapshot `.ambr`
+  (PROBLEM-24) — makes `press verify` structurally exit 1: excluded from
+  rewrite, not exempt from the scan, and the sandbox never runs commands.
+  Empirically the real press handles the same declaration fine (exit 0,
+  post-command scan certifies the output). Disposition: template-press
+  design decision — widen the cap to any declared regeneration (exemption
+  is already "earned by result" at real-press time) or add a declared
+  exemption schema; until then PROBLEM-24 falls back to the documented
+  post-press step (docs/POST_INIT.md).

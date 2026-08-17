@@ -326,3 +326,23 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 6. Set branch protection + Actions PR permissions (§2.4).
 7. Decide CLA, contributors automation, funding (§1).
 8. Local: run the `scripts/install-*` + `uv sync` steps (§2.5).
+
+## After a `press rebrand` (external template-press)
+
+Two artifacts are length-sensitive and cannot be fixed by text rewriting —
+normalize them once, right after the press (run 4 PROBLEM-24/-27):
+
+```bash
+uv run pytest tests/cli/test_help_snapshots.py --snapshot-update --override-ini=addopts=
+just format
+git add -A && git commit -m "chore: normalize length-sensitive artifacts post-press"
+```
+
+- The CLI help snapshots re-wrap at the new name's length (a shorter or
+  longer app name moves the 80-column wrap points).
+- `ruff format` re-wraps any rewritten lines the longer identity pushed past
+  the 88-character limit.
+
+A declared `[[regenerate]]` for the snapshots is the intended automation, but
+`press verify`'s exemption cap currently covers only `uv.lock`/`bun.lock`
+(template-press PROBLEM-28) — until that widens, this manual step stands.
