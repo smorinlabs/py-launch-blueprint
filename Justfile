@@ -336,25 +336,6 @@ audit:
 @_guard:
     bash scripts/guard.sh block
 
-# Run the blueprint init walkthrough (re-brands this project).
-# `init` and `init-doctor` deliberately OMIT the _guard dependency — they are
-# the escape hatch and must always be runnable.
-[group('setup'), group('init')]
-init *args=args:
-    uv run init/init.py {{args}}
-
-# Audit blueprint migration completeness and environment readiness.
-[group('setup'), group('init')]
-init-doctor *args=args:
-    uv run init/init_doctor.py {{args}}
-
-# Post-init walkthrough: configure publishing (PyPI/release-please),
-# Codecov uploads, and ReadTheDocs. Run AFTER `just init` and after the
-# first push to GitHub (or with --skip-remote for local-only changes).
-[group('setup'), group('init')]
-post-init *args=args:
-    uv run init/post_init.py {{args}}
-
 # Build package
 [group('build'), group('dev')]
 @build: _guard check

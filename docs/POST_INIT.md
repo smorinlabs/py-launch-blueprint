@@ -2,14 +2,15 @@
 
 A single place to track everything that needs a **decision** or **configuration**
 after you create a project from this template (`gh repo create --template …`,
-then `just init` to rebrand). It is a *living registry*: as features are added
+then a press rebrand). It is a *living registry*: as features are added
 to the template, add a row here so downstream forks know they exist and how to
 turn them on or off.
 
 This complements the automated paths and the deeper per-topic docs — it does not
 replace them:
 
-- `just init` — rebrands identity (name, owner, package) across the repo.
+- `uvx template-press press rebrand` — rebrands identity (name, owner,
+  package, display name) across the repo; see the `new-python-project` skill.
 - `just post-init` — automates the publishing / Codecov / Read the Docs wiring.
 - [`RELEASE.md`](RELEASE.md) — the release/publish flow in detail.
 - [`.github/SECURITY.md`](../.github/SECURITY.md) — security controls + CodeQL setup.
@@ -89,7 +90,7 @@ setup in [§2](#2-checks--configuration).
 
 ### Template-only machinery (recommended: remove for a real project)
 
-- [ ] **Blueprint guard** — *Default: removed by `just init`.* File:
+- [ ] **Blueprint guard** — *Default: silenced by the press receipt.* File:
       `.github/workflows/blueprint-guard.yml`. It is blueprint-only.
 
 ---
@@ -316,7 +317,7 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 
 ## Quick start (typical public OSS project)
 
-1. `just init` → rebrand identity.
+1. `uvx template-press press rebrand` → rebrand identity.
 2. Remove template-only machinery (§1, last group).
 3. Decide release/publish: keep release-please + `publish.yml`, set the
    release-please App secrets (§2.1), run `setup-github-environments.sh` (§2.2),
