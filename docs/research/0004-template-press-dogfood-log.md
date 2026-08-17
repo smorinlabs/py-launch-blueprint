@@ -405,7 +405,8 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   exact per-file reason, e.g. the PROBLEM-22 scan hit) is printed only on
   the success path (`cli.py` ~471 vs ~575). Diagnosing PROBLEM-22 required
   monkeypatching a spy around `execute_regenerations`. Disposition:
-  template-press fix — print skipped entries on the failure path too.
+  FIXED+MERGED — template-press PR #82: the failure path now prints the
+  skipped entries.
 - **PROBLEM-24** — med — blueprint: CLI help-snapshot tests (WL-023, syrupy
   `.ambr`) fail in a pressed fork whenever the app name changes length —
   the press rewrites snapshot text faithfully, but argparse/click re-wraps
