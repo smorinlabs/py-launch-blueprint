@@ -489,3 +489,18 @@ released uvx for CI/hooks — release in flight). Base: origin/main @ e36ecb9.
   file joins the [[remove]] set; instance re-check green (277+15 pass).
   Reference sweep found no other breaking holders (Justfile recipe and a
   lint-exclude are no-ops in forks).
+
+### Merge & post-merge gates
+
+| time (UTC) | step | command / action | outcome |
+|---|---|---|---|
+| 2026-08-17 | merge | PR #521 via merge queue (merge commit 986eafa7); branch protection required contexts updated to press-verify beforehand | MERGED; init/ engine gone from main (30 files) |
+| 2026-08-17 | fresh-main gate | fresh clone of main → `uvx --from 'template-press>=3.6.0' press verify` and `press check-tools` | PASS: both exit 0 against the released press — no local template-press checkout involved |
+| 2026-08-17 | close-out | #423 auto-closed by the merge; P06 flipped to `[x]` (trunk + project file) | campaign complete |
+
+**Run 5 verdict.** Full conform achieved: the blueprint's only rebrand
+engine is the released template-press (>= 3.6.0 from PyPI); drift
+detection is `press verify` in CI (press-verify.yml), hooks (lefthook
+pre-push), and the fork's own CI (the workflow ships). One new finding
+(PROBLEM-29, fixed in-flight). Cumulative campaign findings: PROBLEM-21
+through PROBLEM-29, all dispositioned.
