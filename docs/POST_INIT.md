@@ -334,14 +334,19 @@ normalize them once, right after the press (run 4 PROBLEM-24/-27):
 
 ```bash
 uv run pytest tests/cli/test_help_snapshots.py --snapshot-update --override-ini=addopts=
-just format
-git add -A && git commit -m "chore: normalize length-sensitive artifacts post-press"
+uv run ruff format .
+git add tests/cli/__snapshots__/test_help_snapshots.ambr
+git add -u
+git commit -m "chore: normalize length-sensitive artifacts post-press"
 ```
 
 - The CLI help snapshots re-wrap at the new name's length (a shorter or
   longer app name moves the 80-column wrap points).
-- `ruff format` re-wraps any rewritten lines the longer identity pushed past
-  the 88-character limit.
+- `uv run ruff format .` (the FULL tree — `just format` covers only the
+  package dir) re-wraps any rewritten lines the new identity pushed past the
+  88-character limit; run 4 saw this in `tests/` and `init/tests/`.
+- `git add -u` stages only tracked modifications (plus the snapshot file
+  explicitly), so unrelated untracked files are never swept into the commit.
 
 A declared `[[regenerate]]` for the snapshots is the intended automation, but
 `press verify`'s exemption cap currently covers only `uv.lock`/`bun.lock`

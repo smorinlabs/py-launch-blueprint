@@ -377,6 +377,11 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
 | 2026-08-17T05:26:08Z | TS03.2 (apply) | press rebrand apply → blueprint-press-dryrun | PASS exit 0: receipt written, source refreshed, 5 binary/symlink review-skips. Independent grep audit CLEAN (content+paths); CHANGELOG stub; bun.lock/uv.lock carry new identity |
 | 2026-08-17T05:26:08Z | TS03.3 (re-press guards) | re-press same identity; wrong-origin source | PASS both refuse exit 2 correctly (receipt guard; discovery mismatch guard — origin must be re-pointed first, plan-order note) |
 | 2026-08-17T05:26:08Z | TS03.4 (forced re-press to 2nd identity) | press --force on copy → press-dryrun-two | FAIL exit 1 → PROBLEM-22/23 below. Receipt invalidation itself fired correctly; incomplete-state contract (no receipt, loud recovery) correct |
+| 2026-08-17T05:50:00Z | TS03.4b (forced re-press, retest) | same forced re-press with the PROBLEM-22 fix branch (template-press fix/run4-regen-scan-policy) + `scan = "boundary"` declared on the copy's bun.lock regens | PASS exit 0: prior receipt invalidated, new receipt written, verified. Battery item closes on this evidence; the engine fix is in a template-press PR (merge pending) |
+| 2026-08-17T05:28:18Z | TS03.5 (check-tools) | press check-tools on instance | PASS exit 0 (git, uv, regen script). Negative case n/a by design: check-tools resolves the declared script, not tools inside it — the script fails loud at run time instead |
+| 2026-08-17T05:28:18Z | TS03.6 (instance stands alone) | mise trust && make check && just setup && just check | FAIL first run: 2 syrupy help-snapshot tests (bpd config set/get) — PROBLEM-24. After snapshot refresh: just check PASS exit 0 (267+11 tests; instance hooks wired and firing) |
+| 2026-08-17T05:45:53Z | T13 (publish) | gh repo create smorinlabs/blueprint-press-dryrun (user-authorized); git push | First push BLOCKED by fork's own pre-push init-integrity gates (PROBLEM-25); after receipt-gate hand-fix, push OK. CI wave 1: blueprint-guard + init-integration FAIL (PROBLEM-26), ruff format FAIL (PROBLEM-27), dependency-review FAIL (repo provisioning: dependency graph off — observation, accepted for throwaway). Hand-fixes (logged): just format; delete the two blueprint-only workflows |
+| 2026-08-17T05:48:49Z | T13 (publish, final) | CI on fixed head 5c42cec | GREEN: CI/CD, lint, CodeQL, secret-scan, commitlint, large-file-guard all pass. Only reds: release-please + Update Contributors — both "Provide either app-id + private-key, or pat" (credential-gated app workflows, pre-accepted class per spec §5). Publish exit criterion MET |
 
 ### New findings
 
@@ -399,8 +404,6 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   the success path (`cli.py` ~471 vs ~575). Diagnosing PROBLEM-22 required
   monkeypatching a spy around `execute_regenerations`. Disposition:
   template-press fix — print skipped entries on the failure path too.
-| 2026-08-17T05:28:18Z | TS03.5 (check-tools) | press check-tools on instance | PASS exit 0 (git, uv, regen script). Negative case n/a by design: check-tools resolves the declared script, not tools inside it — the script fails loud at run time instead |
-| 2026-08-17T05:28:18Z | TS03.6 (instance stands alone) | mise trust && make check && just setup && just check | FAIL first run: 2 syrupy help-snapshot tests (bpd config set/get) — PROBLEM-24. After snapshot refresh: just check PASS exit 0 (267+11 tests; instance hooks wired and firing) |
 - **PROBLEM-24** — med — blueprint: CLI help-snapshot tests (WL-023, syrupy
   `.ambr`) fail in a pressed fork whenever the app name changes length —
   the press rewrites snapshot text faithfully, but argparse/click re-wraps
@@ -414,7 +417,6 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   regenerate). Caveat to evaluate: the command needs the fork's uv env
   (first run syncs deps, may need network) inside the press's
   deny-by-default command env.
-| 2026-08-17T05:45:53Z | T13 (publish) | gh repo create smorinlabs/blueprint-press-dryrun (user-authorized); git push | First push BLOCKED by fork's own pre-push init-integrity gates (PROBLEM-25); after receipt-gate hand-fix, push OK. CI wave 1: blueprint-guard + init-integration FAIL (PROBLEM-26), ruff format FAIL (PROBLEM-27), dependency-review FAIL (repo provisioning: dependency graph off — observation, accepted for throwaway). Hand-fixes (logged): just format; delete the two blueprint-only workflows |
 - **PROBLEM-21** — low — blueprint: press control files are not rewritten by
   design, so identity tokens embedded in `press/press-rules.toml` COMMENTS
   ship stale into every pressed fork (the G3 comment named the app token
@@ -451,4 +453,3 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   is already "earned by result" at real-press time) or add a declared
   exemption schema; until then PROBLEM-24 falls back to the documented
   post-press step (docs/POST_INIT.md).
-| 2026-08-17T05:48:49Z | T13 (publish, final) | CI on fixed head 5c42cec | GREEN: CI/CD, lint, CodeQL, secret-scan, commitlint, large-file-guard all pass. Only reds: release-please + Update Contributors — both "Provide either app-id + private-key, or pat" (credential-gated app workflows, pre-accepted class per spec §5). Publish exit criterion MET |
