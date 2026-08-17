@@ -160,7 +160,7 @@ lint.select = [
   "S",   # flake8-bandit
   "ANN", # flake8-annotations — enforce annotation *presence* (P03; the gap ty
   # deliberately does NOT check). Scoped to the package via
-  # per-file-ignores below; tests/ and init/ are exempt.
+  # per-file-ignores below; tests/ are exempt.
 ]
 
 # Source's ignore rationale (round-2): line-length handled by formatter;

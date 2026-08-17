@@ -460,3 +460,19 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   is already "earned by result" at real-press time) or add a declared
   exemption schema; until then PROBLEM-24 falls back to the documented
   post-press step (docs/POST_INIT.md).
+
+## Run 5 — full conform (P06, 2026-08-17)
+
+**Context.** Spec docs/superpowers/specs/2026-08-17-full-conform-design.md.
+Press: v3.6.0 line (local template-press main @ post-#85 for iteration;
+released uvx for CI/hooks — release in flight). Base: origin/main @ e36ecb9.
+
+### Steps
+
+| time (UTC) | step | command / action | outcome |
+|---|---|---|---|
+| 2026-08-17T15:34:32Z | T01 (config) | scan=boundary ×2; .ambr [[regenerate]] + verify_exempt; 15 [[remove]] entries (2 handoff docs dropped from the plan — they exist only in the user's unpushed local commit) | PASS: check-tools 0; verify 0 with .ambr exempt (declared reason), removals modeled |
+| 2026-08-17T15:34:32Z | T02 (guard) | git mv init/guard.sh scripts/guard.sh; 3 conditions (marker dropped per D-P06-1); Justfile + .gitignore re-point; tests/test_guard.py | PASS: 11 guard tests incl. legacy-marker-no-longer-silences pin |
+| 2026-08-17T15:34:32Z | T03 (ci cutover) | press-verify.yml added (receipt guard + uvx verify); blueprint-guard.yml + init-integration.yml deleted; lefthook 4 gates → press-verify | PASS: yamllint + actionlint clean |
+| 2026-08-17T15:34:32Z | T04 (deletion) | git rm -r init/ (30 files); Justfile recipes; AGENTS.md/SKILL.md/POST_INIT rewrites; pyproject init blocks | PASS: just check green end-to-end with no engine; operational grep sweep clean (historical docs retain references by design) |
+| 2026-08-17T15:34:32Z | TS01 (branch gates) | just check; press verify; press check-tools | PASS all (verify/tools exit 0 vs template-press main) |
