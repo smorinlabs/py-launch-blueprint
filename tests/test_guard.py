@@ -11,9 +11,18 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
+
+# The guard is a POSIX shell script; Windows users run it through Git Bash
+# via `just`, but subprocess-spawned `bash` on Windows CI runners resolves
+# WSL/System32 bash with different path semantics — the suite validates the
+# script's contract on the platforms that execute it natively.
+pytestmark = pytest.mark.skipif(
+    sys.platform == "win32", reason="guard.sh contract is validated on POSIX"
+)
 
 GUARD = Path(__file__).parents[1] / "scripts" / "guard.sh"
 
