@@ -80,9 +80,12 @@ setup in [§2](#2-checks--configuration).
 ### Community / project automation (optional)
 
 - [ ] **Contributors automation** (contributors-please app generates
-      `CONTRIBUTORS.md`) — *Default: present, needs secrets.* Files:
-      `.github/workflows/update-contributors.yml`, `.contributors.yml`,
-      `.contributors.jsonl`. Remove all three to disable.
+      `CONTRIBUTORS.md`) — *Default: NOT shipped — the press removes
+      `.github/workflows/update-contributors.yml` (it needs app secrets a
+      fork does not have).* To adopt it: copy the workflow from the
+      blueprint repo, keep `.contributors.yml` + `.contributors.jsonl`
+      (which do ship), and set the contributors-please app secrets. The
+      manual path `just update-contributors` works without the workflow.
 - [ ] **Funding / Sponsor button** — *Default: points at the template author.*
       File: `.github/FUNDING.yml`. Set your own handle or delete the file.
 - [ ] **Issue/PR templates, Code of Conduct, Contributing** — *Default: on.*
@@ -124,7 +127,7 @@ provisioned automatically:
 
 ```bash
 # Creates the `pypi` + `testpypi` environments, restricted to main + release/*
-init/setup-github-environments.sh <owner>/<repo>
+scripts/setup-github-environments.sh <owner>/<repo>
 # Requires: gh CLI authenticated with admin (repo scope / Administration: write)
 ```
 
@@ -153,8 +156,8 @@ init/setup-github-environments.sh <owner>/<repo>
 Under **Settings**:
 
 - [ ] **Branch protection** on `main`: require status checks anchored on the
-      aggregate gates — `ci-ok` (all of `ci.yml`), `integration-ok`, `guard`,
-      `unit-tests`, `commitlint (humans)`, plus the `lint.yml` job names
+      aggregate gates — `ci-ok` (all of `ci.yml`), `press-verify` (the
+      rebrand drift guard), `commitlint (humans)`, plus the `lint.yml` job names
       (`actionlint`, `bandit`, `codespell`, `editorconfig-check`, `yamllint`;
       safe to require — they report *skipped* rather than never reporting).
       Avoid listing individual `ci.yml` jobs: `ci-ok` subsumes them and its
@@ -241,7 +244,7 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 
 - [ ] **`pypi` (and `testpypi`) exist** · *environment* — if publishing.
   - Check: `gh api /repos/<owner>/<repo>/environments --jq '.environments[].name'`
-  - Set: `init/setup-github-environments.sh <owner>/<repo>`
+  - Set: `scripts/setup-github-environments.sh <owner>/<repo>`
 - [ ] **`security-review` exists** · *environment* — if keeping the manual scan
       (created implicitly when you add its env secret, or via the script).
 
@@ -272,7 +275,7 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
       "required_status_checks": {
         "strict": false,
         "contexts": [
-          "ci-ok", "integration-ok", "guard", "unit-tests",
+          "ci-ok", "press-verify",
           "commitlint (humans)",
           "actionlint", "bandit", "codespell", "editorconfig-check", "yamllint"
         ]

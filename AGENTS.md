@@ -246,7 +246,7 @@ symlink.
 
 It encodes the full sequence: precondition checks (`gh`/`uv`), identity
 collection, `gh repo create --template` instantiation, the press rebrand
-(`uvx template-press press rebrand`) with a dry-run preview, the post-press
+(`uvx --from 'template-press>=3.6.0' press rebrand`) with a dry-run preview, the post-press
 normalization step (`docs/POST_INIT.md`), initial commit + push, and the
 POST_INIT decision checklist for publishing/Codecov/RTD setup — `just` is
 NOT required for the bootstrap. Auto-triggering is

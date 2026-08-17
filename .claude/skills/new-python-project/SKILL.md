@@ -130,6 +130,7 @@ than collecting everything and failing at the end.
 | App short name (CLI command) | `<package_name>` | `^[a-z][a-z0-9_]*$` (Python identifier) |
 | Author name | `git config user.name` | non-empty |
 | Author email | `git config user.email` | `^[^@\s]+@[^@\s]+\.[^@\s]+$` |
+| Display name (product name in prose) | `<repo-name>` title-cased, `-` → spaces | non-empty; shown in docs/README prose, so confirm it reads as a product name |
 
 The two name conventions matter and are independent: PyPI distribution
 names use kebab-case (`my-project`), Python import names use snake_case
@@ -149,6 +150,7 @@ About to create:
   Local clone:   <target-dir>
   Package name:  <package_name>
   App name:      <app_name>  (CLI command + <APP_NAME>_* env prefix)
+  Display name:  <display_name>  (product name in docs/README prose)
   Author:        <author> <<email>>
 
 Proceed? [Y/n]

@@ -187,4 +187,4 @@ pre-push:
     # for surviving identity; runs in generated projects too (a pressed
     # fork is itself a valid press target, so this IS its drift guard).
     press-verify:
-      run: uvx --from 'template-press>=3.6.0' press verify
+      run: uv run press verify
