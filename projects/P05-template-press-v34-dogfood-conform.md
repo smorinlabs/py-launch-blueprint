@@ -1,4 +1,7 @@
-## [x] Project P05: Template-press v3.4 dogfood & conform (v1.0.0)
+# P05 — Template-press v3.4 dogfood & conform
+
+**Status:** `[x]` complete (v1.0.0)
+
 **Goal/Requirement**: Test template-press main @ bd52085 against this repo and
 bring this repo's press config in sync — verify exit 0 via declarations, a
 rebranded instance passes its own checks, and an instance publishes to a
