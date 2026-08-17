@@ -336,25 +336,20 @@ normalize them once, right after the press (run 4 PROBLEM-24/-27).
 modifications left are the normalization itself:
 
 ```bash
-uv run pytest tests/cli/test_help_snapshots.py --snapshot-update --override-ini=addopts=
 uv run ruff format .
 just check
-git add tests/cli/__snapshots__/test_help_snapshots.ambr
 git add -u
-git commit -m "chore: normalize length-sensitive artifacts post-press"
+git commit -m "chore: normalize formatting post-press"
 ```
 
-- The CLI help snapshots re-wrap at the new name's length (a shorter or
-  longer app name moves the 80-column wrap points).
+- The CLI help snapshots regenerate automatically during the press since
+  the `[[regenerate]]` declaration in `press/press-rules.toml`
+  (template-press >= 3.6.0) — no manual snapshot step remains.
 - `uv run ruff format .` (the FULL tree — `just format` covers only the
   package dir) re-wraps any rewritten lines the new identity pushed past the
-  88-character limit; run 4 saw this in `tests/` and `init/tests/`.
-- `just check` proves the normalization landed (run 4: the snapshot suite
-  went 2 failed → all pass) before anything is committed.
-- With the press committed first, `git add -u` stages exactly the
-  normalization deltas (formatter output is not a fixed file list), and the
-  explicit snapshot path covers the one file syrupy may rewrite in place.
+  88-character limit; run 4 saw this in `tests/`.
+- `just check` proves the normalization landed before anything is
+  committed; with the press committed first, `git add -u` stages exactly
+  the formatting deltas.
 
-A declared `[[regenerate]]` for the snapshots is the intended automation, but
-`press verify`'s exemption cap currently covers only `uv.lock`/`bun.lock`
-(template-press PROBLEM-28) — until that widens, this manual step stands.
+
