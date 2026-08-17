@@ -415,11 +415,13 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   wrapped text. Proven fix: regenerate, not rewrite — running the
   documented `uv run pytest tests/cli/test_help_snapshots.py
   --snapshot-update` in the instance turns 2 failed into 11 passed.
-  Disposition: blueprint — declare the `.ambr` under `[[regenerate]]` in
-  press-rules.toml (press-native: identity-dependent generated artifacts
-  regenerate). Caveat to evaluate: the command needs the fork's uv env
-  (first run syncs deps, may need network) inside the press's
-  deny-by-default command env.
+  Disposition: ACCEPTED with fallback — the documented post-press step in
+  docs/POST_INIT.md (snapshot update + full-tree format; landed PR #519).
+  The press-native `[[regenerate]]` declaration was proven to work in the
+  real press (empirical run: exit 0, fresh `.ambr`) but is BLOCKED on
+  template-press#81 — the hermetic-verify exemption cap covers only
+  uv.lock/bun.lock, so declaring it makes `press verify` structurally
+  exit 1 (PROBLEM-28). Revisit when #81 lands.
 - **PROBLEM-21** — low — blueprint: press control files are not rewritten by
   design, so identity tokens embedded in `press/press-rules.toml` COMMENTS
   ship stale into every pressed fork (the G3 comment named the app token
