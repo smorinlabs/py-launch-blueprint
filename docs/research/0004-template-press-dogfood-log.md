@@ -370,3 +370,32 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
 | 2026-08-17T04:51:12Z | T08 (scope gate) | user decision at gate | DECIDED: full conform (init/ deletion + CI cutover) deferred to a follow-up plan AFTER publish proof (Tasks 10–13); PR #505 authorized to merge now. Run-3 pause condition discharged (green via declarations). |
 | 2026-08-17T04:58:43Z | T10.1 (init integrity) | added press/spec/plan/P05 files to init/manifest.toml ([[replace]] text blocks + 2 [[remove]] entries); check_manifest_drift + init tests | PASS: drift ok; 82 passed; press verify re-run exit 0 after manifest edits |
 | 2026-08-17T04:58:43Z | T10.2 (full gate) | make check && just check | PASS (pre-existing non-fatal yamllint line-length warnings only, per Run 1 precedent) |
+| 2026-08-17T05:26:08Z | T09/T06 (pr #505) | 4 review threads triaged (2 codex, 2 coderabbit): all valid, fixed (spec 4th condition, check_no_marker receipt rejection, containment wording, origin alias); merged via merge queue b135492 | PASS |
+| 2026-08-17T05:26:08Z | T10/T07 (pr #518, round-1) | 5 bot threads over 2 waves: ps1 fail-loud fixed; display_name legacy-init gap deferred x2 (tracked in P05); path/nit declined; manifest-sync partially fixed | MERGED 6f99b76 |
+| 2026-08-17T05:26:08Z | T11 (fresh-main gate) | clone main; press verify + check-tools | PASS both exit 0 (uv.lock/bun.lock exemptions listed by design) |
+| 2026-08-17T05:26:08Z | TS03.1 (dry-run) | press rebrand --dry-run → plan | PASS exit 0: G5 renames, pkg dir rename, regens w/ resolved executables, CHANGELOG 328→stub |
+| 2026-08-17T05:26:08Z | TS03.2 (apply) | press rebrand apply → blueprint-press-dryrun | PASS exit 0: receipt written, source refreshed, 5 binary/symlink review-skips. Independent grep audit CLEAN (content+paths); CHANGELOG stub; bun.lock/uv.lock carry new identity |
+| 2026-08-17T05:26:08Z | TS03.3 (re-press guards) | re-press same identity; wrong-origin source | PASS both refuse exit 2 correctly (receipt guard; discovery mismatch guard — origin must be re-pointed first, plan-order note) |
+| 2026-08-17T05:26:08Z | TS03.4 (forced re-press to 2nd identity) | press --force on copy → press-dryrun-two | FAIL exit 1 → PROBLEM-22/23 below. Receipt invalidation itself fired correctly; incomplete-state contract (no receipt, loud recovery) correct |
+
+### New findings
+
+- **PROBLEM-22** — med — template-press: post-regeneration changed-fields scan
+  false-positives on base64 hash material in regenerated lockfiles. Repro:
+  forced re-press blueprint-press-dryrun → press-dryrun-two; bun.lock
+  regenerates CLEAN (zero real identity tokens) but the scan reports
+  `output still carries source app_name 'bpd'` — the case-glued substring
+  matcher hits `Bpd` inside integrity hash `…x/2Xp/Bpdl…`. Structural for
+  short app names in substring mode (3 chars ≈ guaranteed in a large lock);
+  first press succeeded by luck (`plbp` variants absent). Workaround: none
+  target-side (D-v4-5: no ignores for engine gaps). Root cause:
+  `scan_regenerated_output` applies the strictest matcher (case/separator-
+  glued substring) to hash-dense regenerated artifacts. Disposition:
+  template-press fix, design options to user (scan-policy per regen rule vs
+  case-sensitive substring in regen scans vs entropy-aware exclusion).
+- **PROBLEM-23** — low — template-press: the regen-failure path prints only
+  the error banner and summary counts; `report.skipped` (which carries the
+  exact per-file reason, e.g. the PROBLEM-22 scan hit) is printed only on
+  the success path (`cli.py` ~471 vs ~575). Diagnosing PROBLEM-22 required
+  monkeypatching a spy around `execute_regenerations`. Disposition:
+  template-press fix — print skipped entries on the failure path too.
