@@ -18,8 +18,8 @@ generated projects, so this link resolves only in the blueprint itself)
 - [x] [P05-TS01] press check-tools exits 0 against the worktree
 - [x] [P05-TS02] press verify reaches exit 0, zero ignores
 - [x] [P05-T05] Scope gate decision recorded (user)
-- [ ] [P05-T06] PR #505 merged (user-confirmed)
-- [ ] [P05-T07] Round-1 PR merged; verify green from fresh main clone
+- [x] [P05-T06] PR #505 merged (user-confirmed)
+- [x] [P05-T07] Round-1 PR merged; verify green from fresh main clone
 - [x] [P05-TS03] Local rebrand battery passes (dry-run/apply/re-press/check-tools/instance checks)
 - [x] [P05-T08] Instance published to throwaway repo; CI triaged (user-gated)
 - [ ] [P05-T09] Close-out: dispositions, cleanup, report
