@@ -414,3 +414,28 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   regenerate). Caveat to evaluate: the command needs the fork's uv env
   (first run syncs deps, may need network) inside the press's
   deny-by-default command env.
+| 2026-08-17T05:45:53Z | T13 (publish) | gh repo create smorinlabs/blueprint-press-dryrun (user-authorized); git push | First push BLOCKED by fork's own pre-push init-integrity gates (PROBLEM-25); after receipt-gate hand-fix, push OK. CI wave 1: blueprint-guard + init-integration FAIL (PROBLEM-26), ruff format FAIL (PROBLEM-27), dependency-review FAIL (repo provisioning: dependency graph off — observation, accepted for throwaway). Hand-fixes (logged): just format; delete the two blueprint-only workflows |
+- **PROBLEM-21** — low — blueprint: press control files are not rewritten by
+  design, so identity tokens embedded in `press/press-rules.toml` COMMENTS
+  ship stale into every pressed fork (the G3 comment named the app token
+  literally). Disposition: blueprint — reword control-file comments to be
+  identity-free (fixed this round); candidate template-press doc guidance.
+- **PROBLEM-25** — high — blueprint: the four lefthook init-integrity
+  pre-push gates (`guard-wiring`, `manifest-drift`, `path-filter`,
+  `init-tests`) key on `init/.blueprint-initialized` only, so a pressed
+  fork (receipt, no marker) runs — and fails — blueprint-maintenance
+  checks, blocking every push. Same class as Run-1 PROBLEM-11; PR #505's
+  contract covered guard.sh but not lefthook. Disposition: blueprint —
+  accept `press/press-receipt.toml` in all four gates (fixed this round;
+  instance hand-fixed identically to publish).
+- **PROBLEM-26** — med/high — template-press: no file-removal mechanism.
+  Everything the legacy engine deletes via `init/manifest.toml [[remove]]`
+  (blueprint-only CI: `blueprint-guard.yml`, `init-integration.yml`;
+  dogfood history docs) ships to pressed forks; the two workflows FAIL
+  there. Disposition: template-press feature — declared `[[remove]]` in
+  press-rules (G-register class); fork hand-fix applied to the instance.
+- **PROBLEM-27** — low/med — blueprint/template-design: a longer pressed
+  identity pushes rewritten lines past ruff's 88-char limit (2 files) —
+  same class as PROBLEM-24 (length-sensitive artifacts vs text rewrite).
+  Disposition: fork runs `just format` post-press (hand-fixed on the
+  instance); folds into the post-press normalization story with P24.

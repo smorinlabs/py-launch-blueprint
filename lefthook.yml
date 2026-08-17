@@ -197,14 +197,17 @@ pre-push:
     init-guard-wiring:
       run: >-
         test -f init/.blueprint-initialized ||
+        test -f press/press-receipt.toml ||
         uv run --script init/ci/check_guard_wiring.py
     init-manifest-drift:
       run: >-
         test -f init/.blueprint-initialized ||
+        test -f press/press-receipt.toml ||
         uv run --script init/ci/check_manifest_drift.py
     init-path-filter:
       run: >-
         test -f init/.blueprint-initialized ||
+        test -f press/press-receipt.toml ||
         uv run --script init/ci/check_path_filter.py
     # Init unit tests (~3s; safe at pre-push, too slow for pre-commit).
     # `--override-ini=addopts=` because the project default excludes
@@ -223,6 +226,7 @@ pre-push:
     init-tests:
       run: >-
         test -f init/.blueprint-initialized ||
+        test -f press/press-receipt.toml ||
         env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE
         -u GIT_OBJECT_DIRECTORY -u GIT_COMMON_DIR -u GIT_PREFIX
         uv run pytest init/tests/ --override-ini="addopts=" -q

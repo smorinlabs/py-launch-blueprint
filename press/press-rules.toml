@@ -3,8 +3,11 @@
 # dogfood Run 3 (G3/G4/G5) are closed by declaration, not by ignores.
 
 [rules]
-# G3: plbp appears in glued forms (_plbp_owned, plbp-web) and PLBP in
-# uppercase glued forms — the token is word-disjoint in this repo.
+# G3: the app short name appears glued (owned-attribute prefix in tests,
+# a "-web" suffix in Dockerfile/Justfile) and in glued UPPERCASE forms —
+# the token is word-disjoint in this repo. Comments here stay free of
+# literal identity tokens: press control files are not rewritten, so a
+# literal would ship stale into every pressed fork (run 4 PROBLEM-21).
 substring_rewrite_fields = ["app_name", "app_name_upper"]
 
 # G2: bun.lock is excluded from rewrite; regenerate under the new identity.
