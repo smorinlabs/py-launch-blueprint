@@ -80,12 +80,12 @@ setup in [§2](#2-checks--configuration).
 ### Community / project automation (optional)
 
 - [ ] **Contributors automation** (contributors-please app generates
-      `CONTRIBUTORS.md`) — *Default: NOT shipped — the press removes
-      `.github/workflows/update-contributors.yml` (it needs app secrets a
-      fork does not have).* To adopt it: copy the workflow from the
-      blueprint repo, keep `.contributors.yml` + `.contributors.jsonl`
-      (which do ship), and set the contributors-please app secrets. The
-      manual path `just update-contributors` works without the workflow.
+      `CONTRIBUTORS.md`) — *Default: NOT shipped — the press removes the
+      workflow, the `.contributors.*` state files, and the template's
+      `CONTRIBUTORS.md` roster (legacy-engine parity).* To adopt it: run
+      `just update-contributors` once (it initializes fresh `.contributors`
+      state), then optionally copy `update-contributors.yml` from the
+      blueprint repo and set the contributors-please app secrets.
 - [ ] **Funding / Sponsor button** — *Default: points at the template author.*
       File: `.github/FUNDING.yml`. Set your own handle or delete the file.
 - [ ] **Issue/PR templates, Code of Conduct, Contributing** — *Default: on.*

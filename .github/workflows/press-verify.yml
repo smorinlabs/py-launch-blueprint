@@ -3,7 +3,10 @@
 # sandbox copy and scans for surviving identity: any added identity-bearing
 # file that presses dirty fails this check (exit 1); config errors exit 2.
 # This workflow deliberately SHIPS to generated projects — a pressed fork
-# is itself a valid press target, and this is its drift guard too.
+# is itself a valid press target, and this is its drift guard too. It
+# carries NO identity literals by design (the press rewrites them); the
+# template-only receipt guard lives in template-receipt-guard.yml, which
+# the press removes in forks.
 name: press-verify
 
 on:
@@ -25,17 +28,6 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           github-token: ${{ github.token }}
-      - name: No committed receipt in the template
-        # Blueprint-scoped (ports check_no_marker.sh's surviving function):
-        # a receipt committed to the TEMPLATE would silence every fork's
-        # guard. Generated projects legitimately commit theirs.
-        if: ${{ github.repository == 'smorinlabs/py-launch-blueprint' }}
-        run: |
-          if [ -f press/press-receipt.toml ]; then
-            echo "::error::press-receipt.toml committed in the template —" \
-              "it would disarm every fork's guard. Revert."
-            exit 1
-          fi
       - name: press verify
         # WL-001: hook/CI tools run from the locked dev group, never
         # floating uvx — the version comes from uv.lock.

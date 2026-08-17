@@ -114,3 +114,31 @@ reason = "app-secret-gated maintenance workflow; forks cannot run it"
 [[remove]]
 file = "tests/meta/test_contributors_workflow.py"
 reason = "pins the removed update-contributors workflow; a removal takes its meta-tests with it (run 5 PROBLEM-29)"
+
+[[remove]]
+file = ".github/workflows/template-receipt-guard.yml"
+reason = "template-only receipt guard; a fork legitimately commits its receipt"
+
+[[remove]]
+file = ".github/workflows/difftree.yml"
+reason = "uses the template owner's difftree action; the rewritten uses: path would not exist for a fork owner"
+
+[[remove]]
+file = ".contributors.yml"
+reason = "the template's contributor automation state"
+
+[[remove]]
+file = ".contributors.jsonl"
+reason = "the template's contributor records"
+
+[[remove]]
+file = "CONTRIBUTORS.md"
+reason = "the template's contributor roster; a fork starts its own"
+
+[[remove]]
+file = "tests/meta/test_contributors_state.py"
+reason = "pins the removed contributor state files"
+
+[[remove]]
+file = "tests/meta/test_contributors_render.py"
+reason = "pins the removed contributor roster rendering"

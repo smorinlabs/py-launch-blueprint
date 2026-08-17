@@ -98,6 +98,13 @@ command -v uv >/dev/null || {
     exit 1
 }
 
+# 3b. bun installed — the press's declared bun.lock regeneration needs it;
+# without it the rebrand fails mid-press (regen-bun-lock.sh exits 127).
+command -v bun >/dev/null || {
+    echo "bun not found. Install: https://bun.sh (required to regenerate bun.lock during the press)"
+    exit 1
+}
+
 # 4. Not already inside a rebranded project
 if [ -f "press/press-receipt.toml" ]; then
     echo "Already inside a rebranded blueprint project. This skill bootstraps a NEW project."
