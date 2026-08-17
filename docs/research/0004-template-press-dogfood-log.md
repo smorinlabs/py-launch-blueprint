@@ -439,8 +439,10 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
 - **PROBLEM-27** — low/med — blueprint/template-design: a longer pressed
   identity pushes rewritten lines past ruff's 88-char limit (2 files) —
   same class as PROBLEM-24 (length-sensitive artifacts vs text rewrite).
-  Disposition: fork runs `just format` post-press (hand-fixed on the
-  instance); folds into the post-press normalization story with P24.
+  Disposition: fork runs `uv run ruff format .` (full tree — `just
+  format` covers only the package dir) post-press per docs/POST_INIT.md
+  (hand-fixed on the instance); folds into the post-press normalization
+  story with P24.
 - **PROBLEM-28** — med — template-press: the hermetic-verify regeneration
   exemption is a hardcoded filename allowlist
   (`pathing.REGENERATE_EXEMPTIBLE = {"uv.lock", "bun.lock"}`). Any other

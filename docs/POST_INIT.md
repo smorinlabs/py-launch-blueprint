@@ -330,11 +330,15 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 ## After a `press rebrand` (external template-press)
 
 Two artifacts are length-sensitive and cannot be fixed by text rewriting —
-normalize them once, right after the press (run 4 PROBLEM-24/-27):
+normalize them once, right after the press (run 4 PROBLEM-24/-27).
+**Precondition: the pressed tree is already committed** (e.g.
+`git add -A && git commit -m "chore: press to <new> identity"`), so the only
+modifications left are the normalization itself:
 
 ```bash
 uv run pytest tests/cli/test_help_snapshots.py --snapshot-update --override-ini=addopts=
 uv run ruff format .
+just check
 git add tests/cli/__snapshots__/test_help_snapshots.ambr
 git add -u
 git commit -m "chore: normalize length-sensitive artifacts post-press"
@@ -345,8 +349,11 @@ git commit -m "chore: normalize length-sensitive artifacts post-press"
 - `uv run ruff format .` (the FULL tree — `just format` covers only the
   package dir) re-wraps any rewritten lines the new identity pushed past the
   88-character limit; run 4 saw this in `tests/` and `init/tests/`.
-- `git add -u` stages only tracked modifications (plus the snapshot file
-  explicitly), so unrelated untracked files are never swept into the commit.
+- `just check` proves the normalization landed (run 4: the snapshot suite
+  went 2 failed → all pass) before anything is committed.
+- With the press committed first, `git add -u` stages exactly the
+  normalization deltas (formatter output is not a fixed file list), and the
+  explicit snapshot path covers the one file syrupy may rewrite in place.
 
 A declared `[[regenerate]]` for the snapshots is the intended automation, but
 `press verify`'s exemption cap currently covers only `uv.lock`/`bun.lock`
