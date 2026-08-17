@@ -60,7 +60,7 @@ case "$mode" in
             # One-line banner. ALWAYS exit 0 — a non-zero exit from a `just`
             # `shell()` call aborts the recipe, which would weaponize Tier 1
             # into Tier 2.
-            printf >&2 '\033[33m⚠  blueprint un-initialized — rebrand with `uvx template-press press rebrand` (see docs/POST_INIT.md).\033[0m\n'
+            printf >&2 '\033[33m⚠  blueprint un-initialized — rebrand with `uvx --from 'template-press>=3.6.0' press rebrand` (see docs/POST_INIT.md).\033[0m\n'
         fi
         exit 0
         ;;
@@ -79,7 +79,7 @@ case "$mode" in
   CLI command, copyright holder, URLs).
 
   Run one of:
-      uvx template-press press rebrand --target . --config press-answers.toml
+      uvx --from 'template-press>=3.6.0' press rebrand --target . --config press-answers.toml
       (dry-run first: add --dry-run; see docs/POST_INIT.md afterwards)
 
   Escape hatches:

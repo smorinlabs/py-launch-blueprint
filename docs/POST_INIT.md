@@ -9,9 +9,9 @@ turn them on or off.
 This complements the automated paths and the deeper per-topic docs — it does not
 replace them:
 
-- `uvx template-press press rebrand` — rebrands identity (name, owner,
-  package, display name) across the repo; see the `new-python-project` skill.
-- `just post-init` — automates the publishing / Codecov / Read the Docs wiring.
+- `uvx --from 'template-press>=3.6.0' press rebrand` — rebrands identity
+  (name, owner, package, display name) across the repo; see the
+  `new-python-project` skill.
 - [`RELEASE.md`](RELEASE.md) — the release/publish flow in detail.
 - [`.github/SECURITY.md`](../.github/SECURITY.md) — security controls + CodeQL setup.
 
@@ -90,8 +90,10 @@ setup in [§2](#2-checks--configuration).
 
 ### Template-only machinery (recommended: remove for a real project)
 
-- [ ] **Blueprint guard** — *Default: silenced by the press receipt.* File:
-      `.github/workflows/blueprint-guard.yml`. It is blueprint-only.
+- [ ] **Fork guard** — *Default: silenced by the press receipt.* File:
+      `scripts/guard.sh` (wired via the `Justfile`). It warns/blocks only
+      while a clone still wears the template's identity, so a pressed
+      project needs no action.
 
 ---
 
@@ -317,7 +319,7 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 
 ## Quick start (typical public OSS project)
 
-1. `uvx template-press press rebrand` → rebrand identity.
+1. `uvx --from 'template-press>=3.6.0' press rebrand` → rebrand identity.
 2. Remove template-only machinery (§1, last group).
 3. Decide release/publish: keep release-please + `publish.yml`, set the
    release-please App secrets (§2.1), run `setup-github-environments.sh` (§2.2),
