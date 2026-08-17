@@ -451,3 +451,4 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   is already "earned by result" at real-press time) or add a declared
   exemption schema; until then PROBLEM-24 falls back to the documented
   post-press step (docs/POST_INIT.md).
+| 2026-08-17T05:48:49Z | T13 (publish, final) | CI on fixed head 5c42cec | GREEN: CI/CD, lint, CodeQL, secret-scan, commitlint, large-file-guard all pass. Only reds: release-please + Update Contributors — both "Provide either app-id + private-key, or pat" (credential-gated app workflows, pre-accepted class per spec §5). Publish exit criterion MET |
