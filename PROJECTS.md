@@ -26,7 +26,7 @@ file by hand — see Conventions.
 | P02 | `[x]` | [Repo simplification & organization (SIMP series)](projects/P02-repo-simplification.md) — single-purpose PRs to simplify/consolidate Justfile, docs, setup, tests, workflows, agent configs |
 | P03 | `[~]` | [Type Precision Uplevel](projects/P03-type-precision-uplevel.md) — eliminate leaking/overly-general types + verified ty rule promotions + scoped ruff ANN, from a Fable×Codex two-lens audit |
 | P04 | `[x]` | [Py-API Boundary Validation](projects/P04-py-api-boundary-validation.md) — validate Py-API responses at the edge with Pydantic; silent drift → APIError |
-| P05 | `[~]` | [Template-press v3.4 dogfood & conform](projects/P05-template-press-v34-dogfood-conform.md) — press/ config from scratch, verify to declarations-only green, rebrand + publish an instance; findings → Run 4 PROBLEM-NN |
+| P05 | `[x]` | [Template-press v3.4 dogfood & conform](projects/P05-template-press-v34-dogfood-conform.md) — press/ config from scratch, verify to declarations-only green, rebrand + publish an instance; findings → Run 4 PROBLEM-NN |
 
 ## Conventions
 

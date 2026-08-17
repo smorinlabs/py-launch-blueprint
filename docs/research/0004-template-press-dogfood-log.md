@@ -382,6 +382,7 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
 | 2026-08-17T05:28:18Z | TS03.6 (instance stands alone) | mise trust && make check && just setup && just check | FAIL first run: 2 syrupy help-snapshot tests (bpd config set/get) — PROBLEM-24. After snapshot refresh: just check PASS exit 0 (267+11 tests; instance hooks wired and firing) |
 | 2026-08-17T05:45:53Z | T13 (publish) | gh repo create smorinlabs/blueprint-press-dryrun (user-authorized); git push | First push BLOCKED by fork's own pre-push init-integrity gates (PROBLEM-25); after receipt-gate hand-fix, push OK. CI wave 1: blueprint-guard + init-integration FAIL (PROBLEM-26), ruff format FAIL (PROBLEM-27), dependency-review FAIL (repo provisioning: dependency graph off — observation, accepted for throwaway). Hand-fixes (logged): just format; delete the two blueprint-only workflows |
 | 2026-08-17T05:48:49Z | T13 (publish, final) | CI on fixed head 5c42cec | GREEN: CI/CD, lint, CodeQL, secret-scan, commitlint, large-file-guard all pass. Only reds: release-please + Update Contributors — both "Provide either app-id + private-key, or pat" (credential-gated app workflows, pre-accepted class per spec §5). Publish exit criterion MET |
+| 2026-08-17T07:02:29Z | T14 (close-out) | re-pin press-under-test: template-press main @ 6428a9c (PR #82 merged: scan policy + failure reporting + matrix conformed-blueprint update); fresh-clone final gate: press verify + check-tools vs blueprint main @ 8ed30c3 | PASS both exit 0. Campaign exit criteria met (spec §5). Follow-ups: template-press#80 ([[remove]]), #81 (exemption cap); blueprint adopts scan="boundary" for bun.lock only after the next template-press RELEASE (the key is unknown to v3.4.0 and would break released-press users); full conform (init/ retirement) is the next campaign per the scope gate |
 
 ### New findings
 
@@ -396,8 +397,9 @@ no known-gap bucket remains. Numbering continues at PROBLEM-21.
   target-side (D-v4-5: no ignores for engine gaps). Root cause:
   `scan_regenerated_output` applies the strictest matcher (case/separator-
   glued substring) to hash-dense regenerated artifacts. Disposition:
-  template-press fix, design options to user (scan-policy per regen rule vs
-  case-sensitive substring in regen scans vs entropy-aware exclusion).
+  FIXED+MERGED — template-press PR #82 (6428a9c): opt-in scan = "boundary"
+  on [[regenerate]], applied inside the hunt so separator/case variants
+  stay caught (codex P1 catch); E2E forced re-press passes exit 0.
 - **PROBLEM-23** — low — template-press: the regen-failure path prints only
   the error banner and summary counts; `report.skipped` (which carries the
   exact per-file reason, e.g. the PROBLEM-22 scan hit) is printed only on

@@ -1,4 +1,4 @@
-## [~] Project P05: Template-press v3.4 dogfood & conform (v1.0.0)
+## [x] Project P05: Template-press v3.4 dogfood & conform (v1.0.0)
 **Goal/Requirement**: Test template-press main @ bd52085 against this repo and
 bring this repo's press config in sync — verify exit 0 via declarations, a
 rebranded instance passes its own checks, and an instance publishes to a
@@ -22,7 +22,7 @@ generated projects, so this link resolves only in the blueprint itself)
 - [x] [P05-T07] Round-1 PR merged; verify green from fresh main clone
 - [x] [P05-TS03] Local rebrand battery passes (dry-run/apply/re-press/check-tools/instance checks)
 - [x] [P05-T08] Instance published to throwaway repo; CI triaged (user-gated)
-- [ ] [P05-T09] Close-out: dispositions, cleanup, report
+- [x] [P05-T09] Close-out: dispositions, cleanup, report
 
 ### Deliverable
 ```bash
