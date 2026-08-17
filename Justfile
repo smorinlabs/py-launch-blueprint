@@ -14,7 +14,7 @@ args := " "
 # fires on every recipe with zero per-recipe boilerplate. `guard.sh warn` prints
 # to stderr and MUST exit 0 — a non-zero exit from a `shell()` call aborts `just`.
 # `just --list` / `--summary` do not evaluate variables, so introspection stays silent.
-_blueprint_notice := shell('bash init/guard.sh warn')
+_blueprint_notice := shell('bash scripts/guard.sh warn')
 
 # Text colors
 BLACK := '\033[30m'
@@ -334,26 +334,7 @@ audit:
 # an external side effect, or an identity-bearing write when run un-migrated.
 [private]
 @_guard:
-    bash init/guard.sh block
-
-# Run the blueprint init walkthrough (re-brands this project).
-# `init` and `init-doctor` deliberately OMIT the _guard dependency — they are
-# the escape hatch and must always be runnable.
-[group('setup'), group('init')]
-init *args=args:
-    uv run init/init.py {{args}}
-
-# Audit blueprint migration completeness and environment readiness.
-[group('setup'), group('init')]
-init-doctor *args=args:
-    uv run init/init_doctor.py {{args}}
-
-# Post-init walkthrough: configure publishing (PyPI/release-please),
-# Codecov uploads, and ReadTheDocs. Run AFTER `just init` and after the
-# first push to GitHub (or with --skip-remote for local-only changes).
-[group('setup'), group('init')]
-post-init *args=args:
-    uv run init/post_init.py {{args}}
+    bash scripts/guard.sh block
 
 # Build package
 [group('build'), group('dev')]

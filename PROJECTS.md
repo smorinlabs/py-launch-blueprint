@@ -27,6 +27,7 @@ file by hand — see Conventions.
 | P03 | `[~]` | [Type Precision Uplevel](projects/P03-type-precision-uplevel.md) — eliminate leaking/overly-general types + verified ty rule promotions + scoped ruff ANN, from a Fable×Codex two-lens audit |
 | P04 | `[x]` | [Py-API Boundary Validation](projects/P04-py-api-boundary-validation.md) — validate Py-API responses at the edge with Pydantic; silent drift → APIError |
 | P05 | `[x]` | [Template-press v3.4 dogfood & conform](projects/P05-template-press-v34-dogfood-conform.md) — press/ config from scratch, verify to declarations-only green, rebrand + publish an instance; findings → Run 4 PROBLEM-NN |
+| P06 | `[~]` | [Full conform — retire the embedded engine](projects/P06-full-conform.md) — delete init/, CI cutover to press verify, v3.6.0 config upgrade ([[remove]], verify_exempt, scan=boundary); closes #423 |
 
 ## Conventions
 

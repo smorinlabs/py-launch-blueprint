@@ -182,51 +182,9 @@ pre-push:
     openapi-snapshot:
       glob: "src/py_launch_blueprint/web/**/*"
       run: uv run --extra web pytest tests/web/test_openapi_snapshot.py -q
-    # Init-system integrity — these are the checks the blueprint-guard
-    # CI workflow runs. Caught locally at pre-push, they prevent the
-    # "push → CI fails → push again" cycle that PR #319 went through.
-    # `uv run --script` (not `uv run python ...`) so PEP 723 inline metadata
-    # is honored — check_path_filter.py needs pyyaml from its dep block.
-    # Marker-gate (P0004 dogfood D-v2-3 / PROBLEM-11): these are
-    # blueprint-maintenance checks. In a generated repo the init marker
-    # exists, so `test -f … || <cmd>` short-circuits to a no-op (the `test`
-    # succeeds, so the `||` right side never runs — exit 0) — forks must not
-    # run the blueprint's own drift/wiring/test machinery (same marker-gating
-    # principle as init/guard.sh). The blueprint has no marker, so the `test`
-    # fails and all four checks run unchanged here.
-    init-guard-wiring:
-      run: >-
-        test -f init/.blueprint-initialized ||
-        test -f press/press-receipt.toml ||
-        uv run --script init/ci/check_guard_wiring.py
-    init-manifest-drift:
-      run: >-
-        test -f init/.blueprint-initialized ||
-        test -f press/press-receipt.toml ||
-        uv run --script init/ci/check_manifest_drift.py
-    init-path-filter:
-      run: >-
-        test -f init/.blueprint-initialized ||
-        test -f press/press-receipt.toml ||
-        uv run --script init/ci/check_path_filter.py
-    # Init unit tests (~3s; safe at pre-push, too slow for pre-commit).
-    # `--override-ini=addopts=` because the project default excludes
-    # slow/live markers — init tests aren't marked so they need explicit
-    # override to run consistently regardless of marker config drift.
-    #
-    # `env -u GIT_*` scrubs pre-push environment variables that git sets
-    # before running the hook. The init/tests fixtures spawn `git commit`
-    # in pytest tmp dirs; inherited `GIT_DIR` makes those subprocesses
-    # operate on the OUTER worktree instead of the tmp dir — which both
-    # makes tests fail (no commit happens in tmp -> guard.sh sees no repo)
-    # AND can author a "Test Fixture <test@example.com>" commit against the
-    # real blueprint repo (the 152-file-deletion class — see commit feb0938).
-    # Scrubbing the env before pytest starts covers `_git()`, `guard.sh`,
-    # and `init.py` subprocesses uniformly.
-    init-tests:
-      run: >-
-        test -f init/.blueprint-initialized ||
-        test -f press/press-receipt.toml ||
-        env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE
-        -u GIT_OBJECT_DIRECTORY -u GIT_COMMON_DIR -u GIT_PREFIX
-        uv run pytest init/tests/ --override-ini="addopts=" -q
+    # Press drift guard (P06) — replaces the four init-integrity gates.
+    # `press verify` hermetically self-presses a sandbox copy and scans
+    # for surviving identity; runs in generated projects too (a pressed
+    # fork is itself a valid press target, so this IS its drift guard).
+    press-verify:
+      run: uv run press verify

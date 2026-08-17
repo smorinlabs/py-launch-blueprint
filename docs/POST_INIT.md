@@ -2,15 +2,16 @@
 
 A single place to track everything that needs a **decision** or **configuration**
 after you create a project from this template (`gh repo create --template …`,
-then `just init` to rebrand). It is a *living registry*: as features are added
+then a press rebrand). It is a *living registry*: as features are added
 to the template, add a row here so downstream forks know they exist and how to
 turn them on or off.
 
 This complements the automated paths and the deeper per-topic docs — it does not
 replace them:
 
-- `just init` — rebrands identity (name, owner, package) across the repo.
-- `just post-init` — automates the publishing / Codecov / Read the Docs wiring.
+- `uvx --from 'template-press>=3.6.0' press rebrand` — rebrands identity
+  (name, owner, package, display name) across the repo; see the
+  `new-python-project` skill.
 - [`RELEASE.md`](RELEASE.md) — the release/publish flow in detail.
 - [`.github/SECURITY.md`](../.github/SECURITY.md) — security controls + CodeQL setup.
 
@@ -79,18 +80,25 @@ setup in [§2](#2-checks--configuration).
 ### Community / project automation (optional)
 
 - [ ] **Contributors automation** (contributors-please app generates
-      `CONTRIBUTORS.md`) — *Default: present, needs secrets.* Files:
-      `.github/workflows/update-contributors.yml`, `.contributors.yml`,
-      `.contributors.jsonl`. Remove all three to disable.
+      `CONTRIBUTORS.md`) — *Default: NOT shipped — the press removes the
+      workflow, the `.contributors.*` state files, and the template's
+      `CONTRIBUTORS.md` roster (legacy-engine parity).* To adopt it: run
+      `just update-contributors` once (it initializes fresh `.contributors`
+      state), then optionally copy `update-contributors.yml` from the
+      blueprint repo and set the contributors-please app secrets.
 - [ ] **Funding / Sponsor button** — *Default: points at the template author.*
       File: `.github/FUNDING.yml`. Set your own handle or delete the file.
 - [ ] **Issue/PR templates, Code of Conduct, Contributing** — *Default: on.*
       Files under `.github/`. Edit to taste.
 
-### Template-only machinery (recommended: remove for a real project)
+### Retained machinery (no action needed)
 
-- [ ] **Blueprint guard** — *Default: removed by `just init`.* File:
-      `.github/workflows/blueprint-guard.yml`. It is blueprint-only.
+- **Fork guard** — *Default: silenced by your press receipt.* File:
+      `scripts/guard.sh`, executed by the `Justfile` on every recipe. Do
+      NOT delete it — `just` shells it at parse time, so removing the
+      file breaks every recipe. It stays silent in a pressed project and
+      only ever fires if this project is itself used as an un-pressed
+      template.
 
 ---
 
@@ -121,7 +129,7 @@ provisioned automatically:
 
 ```bash
 # Creates the `pypi` + `testpypi` environments, restricted to main + release/*
-init/setup-github-environments.sh <owner>/<repo>
+scripts/setup-github-environments.sh <owner>/<repo>
 # Requires: gh CLI authenticated with admin (repo scope / Administration: write)
 ```
 
@@ -150,8 +158,8 @@ init/setup-github-environments.sh <owner>/<repo>
 Under **Settings**:
 
 - [ ] **Branch protection** on `main`: require status checks anchored on the
-      aggregate gates — `ci-ok` (all of `ci.yml`), `integration-ok`, `guard`,
-      `unit-tests`, `commitlint (humans)`, plus the `lint.yml` job names
+      aggregate gates — `ci-ok` (all of `ci.yml`), `press-verify` (the
+      rebrand drift guard), `commitlint (humans)`, plus the `lint.yml` job names
       (`actionlint`, `bandit`, `codespell`, `editorconfig-check`, `yamllint`;
       safe to require — they report *skipped* rather than never reporting).
       Avoid listing individual `ci.yml` jobs: `ci-ok` subsumes them and its
@@ -238,7 +246,7 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 
 - [ ] **`pypi` (and `testpypi`) exist** · *environment* — if publishing.
   - Check: `gh api /repos/<owner>/<repo>/environments --jq '.environments[].name'`
-  - Set: `init/setup-github-environments.sh <owner>/<repo>`
+  - Set: `scripts/setup-github-environments.sh <owner>/<repo>`
 - [ ] **`security-review` exists** · *environment* — if keeping the manual scan
       (created implicitly when you add its env secret, or via the script).
 
@@ -269,7 +277,7 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
       "required_status_checks": {
         "strict": false,
         "contexts": [
-          "ci-ok", "integration-ok", "guard", "unit-tests",
+          "ci-ok", "press-verify",
           "commitlint (humans)",
           "actionlint", "bandit", "codespell", "editorconfig-check", "yamllint"
         ]
@@ -316,8 +324,8 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 
 ## Quick start (typical public OSS project)
 
-1. `just init` → rebrand identity.
-2. Remove template-only machinery (§1, last group).
+1. `uvx --from 'template-press>=3.6.0' press rebrand` → rebrand identity.
+2. Review §1 — most rows are decisions, and the retained machinery needs no action.
 3. Decide release/publish: keep release-please + `publish.yml`, set the
    release-please App secrets (§2.1), run `setup-github-environments.sh` (§2.2),
    add the PyPI trusted publisher (§2.3).
@@ -336,25 +344,20 @@ normalize them once, right after the press (run 4 PROBLEM-24/-27).
 modifications left are the normalization itself:
 
 ```bash
-uv run pytest tests/cli/test_help_snapshots.py --snapshot-update --override-ini=addopts=
 uv run ruff format .
 just check
-git add tests/cli/__snapshots__/test_help_snapshots.ambr
 git add -u
-git commit -m "chore: normalize length-sensitive artifacts post-press"
+git commit -m "chore: normalize formatting post-press"
 ```
 
-- The CLI help snapshots re-wrap at the new name's length (a shorter or
-  longer app name moves the 80-column wrap points).
+- The CLI help snapshots regenerate automatically during the press since
+  the `[[regenerate]]` declaration in `press/press-rules.toml`
+  (template-press >= 3.6.0) — no manual snapshot step remains.
 - `uv run ruff format .` (the FULL tree — `just format` covers only the
   package dir) re-wraps any rewritten lines the new identity pushed past the
-  88-character limit; run 4 saw this in `tests/` and `init/tests/`.
-- `just check` proves the normalization landed (run 4: the snapshot suite
-  went 2 failed → all pass) before anything is committed.
-- With the press committed first, `git add -u` stages exactly the
-  normalization deltas (formatter output is not a fixed file list), and the
-  explicit snapshot path covers the one file syrupy may rewrite in place.
+  88-character limit; run 4 saw this in `tests/`.
+- `just check` proves the normalization landed before anything is
+  committed; with the press committed first, `git add -u` stages exactly
+  the formatting deltas.
 
-A declared `[[regenerate]]` for the snapshots is the intended automation, but
-`press verify`'s exemption cap currently covers only `uv.lock`/`bun.lock`
-(template-press PROBLEM-28) — until that widens, this manual step stands.
+

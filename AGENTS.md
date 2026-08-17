@@ -61,14 +61,14 @@ workflow enforce it).
 1. `just setup` (idempotent — REQUIRED in fresh clones/containers so the
    hooks in step 4 actually fire; also refreshes deps).
 2. `just check` (full pipeline must pass).
-3. Init-system integrity (CI `blueprint-guard` + `init-integration` enforce
-   these). Rule behind the drift check: any added/renamed file containing an
-   identity value (`py_launch_blueprint`, `py-launch-blueprint`, `plbp`,
-   `PLBP`, author/owner names) must be listed in that value's `[[replace]]`
-   block in `init/manifest.toml`, or a fork's `just init` ships
-   half-renamed. Then run:
-   - `uv run --script init/ci/check_manifest_drift.py`
-   - `uv run pytest init/tests/ --override-ini="addopts=" -q`
+3. Press conformance (the `press-verify` CI workflow enforces this). Rule:
+   any added/renamed file containing an identity value
+   (`py_launch_blueprint`, `py-launch-blueprint`, `plbp`, `PLBP`,
+   author/owner names, "Py Launch Blueprint") must press cleanly — either
+   the default rewrite covers it or `press/press-rules.toml` declares its
+   neutralization (`[[regenerate]]`, `[[reset]]`, `[[remove]]`, or a
+   reasoned exemption). Check locally:
+   - `uvx --from 'template-press>=3.6.0' press verify`
 4. Stage + commit. Lefthook fires automatically:
    - **commit-msg** → commitlint (Conventional Commits, lowercase subject).
    - **pre-commit** (fast, staged-scoped) → gitleaks + editorconfig-checker
@@ -77,8 +77,7 @@ workflow enforce it).
      guard (1 MB).
    - **pre-push** (slower, full-tree) → gitleaks range scan + bandit + ty
      typecheck + import-linter + tach + openapi-snapshot (web-layer gated)
-     + init-system integrity (guard wiring, manifest drift, path filter,
-     init tests).
+     + press verify (the hermetic self-press drift guard).
 
    Hooks mirror CI; CI is the authority (ADR 0018). Boundaries (import-linter
    + tach) are gated by the `import-boundaries` CI job, so a `--no-verify`
@@ -246,10 +245,11 @@ discovers the same directory via the `.agents/skills/new-python-project`
 symlink.
 
 It encodes the full sequence: precondition checks (`gh`/`uv`), identity
-collection, `gh repo create --template` instantiation, the init rebrand
-(`init/init.py`) with a dry-run preview, initial commit + push, and an
-optional handoff to post-init (`init/post_init.py`) for publishing/Codecov/
-RTD setup — `just` is NOT required for the bootstrap. Auto-triggering is
+collection, `gh repo create --template` instantiation, the press rebrand
+(`uvx --from 'template-press>=3.6.0' press rebrand`) with a dry-run preview, the post-press
+normalization step (`docs/POST_INIT.md`), initial commit + push, and the
+POST_INIT decision checklist for publishing/Codecov/RTD setup — `just` is
+NOT required for the bootstrap. Auto-triggering is
 **unreliable** (empirically 0% recall — agents tend to do the bootstrap
 directly and skip the skill); for predictable invocation, tell the agent
 explicitly: *"Use the `new-python-project` skill."* For any agent following

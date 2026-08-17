@@ -1,0 +1,28 @@
+# TEMPLATE-ONLY (press-removed in generated projects): a press receipt
+# committed to the template itself would disarm every fork's guard. This
+# lives apart from press-verify.yml so that workflow ships to forks with
+# no identity literals — the press would rewrite a repository-name
+# comparison and invert the scoping.
+name: template-receipt-guard
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  no-committed-receipt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: No committed receipt in the template
+        run: |
+          if [ -f press/press-receipt.toml ]; then
+            echo "::error::press-receipt.toml committed in the template —" \
+              "it would disarm every fork's guard. Revert."
+            exit 1
+          fi
