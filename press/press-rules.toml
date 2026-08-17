@@ -110,3 +110,7 @@ reason = "template-press TUI prototype is engine history"
 [[remove]]
 file = ".github/workflows/update-contributors.yml"
 reason = "app-secret-gated maintenance workflow; forks cannot run it"
+
+[[remove]]
+file = "tests/meta/test_contributors_workflow.py"
+reason = "pins the removed update-contributors workflow; a removal takes its meta-tests with it (run 5 PROBLEM-29)"
