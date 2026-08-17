@@ -35,7 +35,7 @@ node_modules/
 
 # Blueprint init system — local opt-out sentinel (silences the setup guard for
 # blueprint maintainers/contributors). NEVER committed; per-developer.
-init/.blueprint-contributor
+.blueprint-contributor
 
 # Riptide artifacts (cloud-synced)
 .humanlayer/tasks/
