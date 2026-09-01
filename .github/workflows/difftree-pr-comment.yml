@@ -1,0 +1,70 @@
+# Canonical consumer workflow for smorinlabs/difftree-action.
+#
+# Copy this file into your repository at:
+#   .github/workflows/difftree-pr-comment.yml
+#
+# It posts an ASCII diff-tree of a pull request's changes as a single,
+# self-updating PR comment (rendered by `difftree --pr`). This file is the
+# single source of truth for the recommended setup: the README links to it and
+# the `difftree-action-setup` skill scaffolds from it. This is the canonical
+# template: copy it verbatim into your repo. difftree-action's own CI lints it.
+name: Difftree PR Comment
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
+
+# Pull requests from forks get a read-only GITHUB_TOKEN: the action catches
+# the resulting 403, emits a workflow warning annotation, and the run stays
+# green with no comment posted. pull_request_target is deliberately not used.
+
+permissions:
+  contents: read
+  pull-requests: write # REQUIRED — the action posts/updates the PR comment.
+
+jobs:
+  difftree-pr-comment:
+    # Re-render only when the base branch changed. GitHub reports a PR
+    # retarget as `edited`; other edits (title, body, labels) also fire
+    # `edited` but don't change what's diffed, so this skips those.
+    if: github.event.action != 'edited' || github.event.changes.base != null
+    # Job-level (not workflow-level): a skipped no-op `edited` run must never
+    # enter this group, or it can cancel a real render that's already running
+    # (the `if:` above only skips the job after the run already joined the
+    # group). One run per PR so two overlapping renders can't race to post
+    # the comment.
+    concurrency:
+      group: difftree-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    # ubuntu-latest is a deliberate fleet-wide choice: this job runs ~80s
+    # and sits off the critical path. Repos with a runner policy should
+    # record this job as a carve-out rather than overriding it here.
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 is REQUIRED. `difftree --pr` computes
+      # merge-base(base, HEAD) to find what the PR changed, and difftree is
+      # libgit2-backed (poor shallow-clone support). The default shallow
+      # checkout (fetch-depth: 1) breaks this.
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          # The action's runtime `git fetch origin <base>` (action.yml:111-114)
+          # is a shallow-clone safety net that tolerates failure. With
+          # fetch-depth: 0 the base is already present, so disabling
+          # credential persistence here is safe.
+          persist-credentials: false
+
+      # @v0 is a floating major tag: non-breaking updates land automatically,
+      # with no fleet-wide re-sync PR needed. SHA-pin instead
+      # (e.g. @8fbc74d75ecdec41890a944d2ddf504ea7ae5a2f # v0.4.0) if your repo's
+      # policy requires reproducible refs — this is the one sanctioned
+      # deviation from byte-identity with this template; the fleet drift
+      # check ignores it.
+      - uses: smorinlabs/difftree-action@v0
+        # All inputs are optional. Uncomment to customize:
+        # with:
+        #   level: 3                  # max tree depth (difftree --level N)
+        #   dirs-only: "false"        # show directories only
+        #   difftree-version: "0.3.1" # crates.io version the action installs
+        #   comment: "true"           # set "false" to compute outputs only
+        #   advertise: "true"         # set "false" to drop the attribution footer
