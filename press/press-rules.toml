@@ -120,7 +120,7 @@ file = ".github/workflows/template-receipt-guard.yml"
 reason = "template-only receipt guard; a fork legitimately commits its receipt"
 
 [[remove]]
-file = ".github/workflows/difftree.yml"
+file = ".github/workflows/difftree-pr-comment.yml"
 reason = "uses the template owner's difftree action; the rewritten uses: path would not exist for a fork owner"
 
 [[remove]]
