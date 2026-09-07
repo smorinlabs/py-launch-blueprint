@@ -296,7 +296,8 @@ def smoke_test(image_id: str, version: str) -> None:
     )
     probe = (
         "import json, os, urllib.request; "
-        "health=json.load(urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)); "
+        "health=json.load(urllib.request.urlopen("
+        "'http://127.0.0.1:8000/healthz', timeout=2)); "
         "print(json.dumps({'health': health, 'uid': os.geteuid()}))"
     )
     try:
