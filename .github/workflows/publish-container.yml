@@ -1,0 +1,70 @@
+# Version publication is independent of PyPI and of other release versions.
+name: publish-container
+
+on:
+  release:
+    types: [published]
+  pull_request:
+  merge_group:
+
+permissions: {}
+
+jobs:
+  container-check:
+    if: github.event_name != 'release'
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Build and smoke-test the container without registry credentials
+        run: python3 scripts/publish_container.py check
+
+  publish-version:
+    if: >-
+      github.event_name == 'release' &&
+      !github.event.release.draft && !github.event.release.prerelease
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    concurrency:
+      group: container-version-${{ github.event.release.tag_name }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Publish or verify the released version and check anonymous access
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/publish_container.py publish
+
+  promote-latest:
+    needs: publish-version
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    # GitHub can replace a pending promotion. Every surviving job reconciles
+    # the highest published version, including versions from replaced jobs.
+    concurrency:
+      group: container-latest
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Promote the highest published stable version without rebuilding
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/publish_container.py promote

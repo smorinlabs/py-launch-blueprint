@@ -71,6 +71,14 @@ setup in [§2](#2-checks--configuration).
       needs PyPI + environment config.* File: `.github/workflows/publish.yml`,
       `.pypirc.template` (manual fallback). Remove the workflow if the project is
       not distributed on PyPI.
+- [ ] **Publish the web container to public GHCR** — *Default: on for published
+      stable releases, needs one-time package visibility setup.* File:
+      `.github/workflows/publish-container.yml`; helper:
+      `scripts/publish_container.py`. The image name uses this repository's
+      lowercase owner/name. Remove the workflow if the project does not ship
+      the web image, and adjust the release PR title in
+      `release-please-config.json` to name the channels you kept. See
+      [GHCR setup and recovery](RELEASE.md#public-container-publishing-ghcr).
 - [ ] **Read the Docs hosting** — *Default: configured, needs RTD import.* File:
       `.readthedocs.yaml` + `docs/`. Remove if you don't host docs on RTD.
 - [ ] **Codecov coverage reporting** — *Default: on, tokenless on public repos.*
@@ -121,6 +129,8 @@ Add under **Settings → Secrets and variables → Actions** (or org-level).
 
 > `GITHUB_TOKEN` is provided automatically — no setup. PyPI/TestPyPI publishing
 > uses **OIDC trusted publishing**, so it needs **no secret** (see §2.3).
+> GHCR uses `GITHUB_TOKEN` with job-scoped `packages: write`; do not add a
+> registry password or personal access token. Public pulls need no credential.
 
 ### 2.2 GitHub Environments
 
@@ -145,6 +155,7 @@ scripts/setup-github-environments.sh <owner>/<repo>
 |---|---|---|
 | **CodeQL** | In **Settings → Code security**, ensure **default setup is OFF** (advanced setup is mutually exclusive with it — see `.github/SECURITY.md`). To verify/disable: `gh api /repos/<owner>/<repo>/code-scanning/default-setup` then `gh api --method PATCH … -f state=not-configured`. | `codeql.yml`, `codeql-config.yml` |
 | **PyPI trusted publisher** | On pypi.org (and test.pypi.org) → your project → *Publishing* → add a GitHub Actions trusted publisher: this repo, workflow `publish.yml`, environment `pypi` (`testpypi`). | `publish.yml` |
+| **GHCR package** | After the first upload, set the container package to **Public** and rerun the failed anonymous-access check. Ensure the package grants this repository Actions write access and the organization permits public packages. | `publish-container.yml`; [release instructions](RELEASE.md#public-container-publishing-ghcr) |
 | **Codecov** | Add the repo at codecov.io. Public repos need no token (OIDC). | `.codecov.yml` |
 | **Read the Docs** | Import the project at readthedocs.org; it reads `.readthedocs.yaml`. | `.readthedocs.yaml` |
 | **Dependabot** | Enable **Dependabot version + security updates** in Settings; `dependabot.yml` does the rest. | `.github/dependabot.yml` |
@@ -359,5 +370,4 @@ git commit -m "chore: normalize formatting post-press"
 - `just check` proves the normalization landed before anything is
   committed; with the press committed first, `git add -u` stages exactly
   the formatting deltas.
-
 
