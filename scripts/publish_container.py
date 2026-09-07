@@ -182,9 +182,13 @@ class Registry:
         if "sha256:" + hashlib.sha256(raw).hexdigest() != manifest.config:
             raise ValueError("Image configuration digest does not match its bytes")
         config = json.loads(raw)
-        if (config.get("os"), config.get("architecture")) != ("linux", "amd64"):
+        if not isinstance(config, dict) or (
+            config.get("os"),
+            config.get("architecture"),
+        ) != ("linux", "amd64"):
             raise ValueError("Expected a linux/amd64 image")
-        labels = config["config"]["Labels"]
+        image_config = config.get("config")
+        labels = image_config.get("Labels") if isinstance(image_config, dict) else None
         if not isinstance(labels, dict) or not all(
             isinstance(key, str) and isinstance(value, str)
             for key, value in labels.items()

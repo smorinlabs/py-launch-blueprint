@@ -20,8 +20,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
       - name: Build and smoke-test the container without registry credentials
-        run: python3 scripts/publish_container.py check
+        run: >-
+          uv run --no-project --python 3.12 python
+          scripts/publish_container.py check
 
   publish-version:
     if: >-
@@ -41,10 +45,14 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
       - name: Publish or verify the released version and check anonymous access
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 scripts/publish_container.py publish
+        run: >-
+          uv run --no-project --python 3.12 python
+          scripts/publish_container.py publish
 
   promote-latest:
     needs: publish-version
@@ -64,7 +72,11 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
       - name: Promote the highest published stable version without rebuilding
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 scripts/publish_container.py promote
+        run: >-
+          uv run --no-project --python 3.12 python
+          scripts/publish_container.py promote
