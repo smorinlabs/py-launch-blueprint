@@ -174,7 +174,8 @@ Under **Settings**:
 - [ ] **Code security → Private vulnerability reporting**: enable (referenced by
       `SECURITY.md`).
 - [ ] **General → Pull requests**: pick a merge strategy consistent with
-      conventional commits (squash with a conventional title is a good default).
+      the retained `AGENTS.md`: merge commits preserve the individual
+      Conventional Commits that release-please reads.
 
 ### 2.5 Local development setup (per clone)
 
@@ -313,9 +314,10 @@ you need (`gh secret set NAME -R <owner>/<repo>` prompts for the value).
 ### 3.8 Repo metadata & merge strategy
 
 - [ ] **Funding handle** · *file* — set `github:` in `.github/FUNDING.yml` or delete it.
-- [ ] **Merge strategy** · *repo setting* — squash with a conventional title pairs
-      well with commitlint + release-please.
-  - Set: `gh api --method PATCH /repos/<owner>/<repo> -F allow_squash_merge=true -F allow_merge_commit=false -F allow_rebase_merge=false -F delete_branch_on_merge=true`
+- [ ] **Merge strategy** · *repo setting* — use merge commits to preserve each
+      Conventional Commit. Leave the merge commit title non-conventional so
+      release-please counts each change once, as required by `AGENTS.md`.
+  - Set: `gh api --method PATCH /repos/<owner>/<repo> -F allow_squash_merge=false -F allow_merge_commit=true -F allow_rebase_merge=false -f merge_commit_title=MERGE_MESSAGE -F delete_branch_on_merge=true`
 
 ### 3.9 Local (per clone)
 

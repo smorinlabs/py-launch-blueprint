@@ -64,6 +64,8 @@ def _snapshot(target):
     }
 
 
+# A complete bootstrap includes dependency regeneration and another test suite.
+@pytest.mark.timeout(300)
 def test_committed_blueprint_generates_a_usable_project(tmp_path):
     executables = {name: shutil.which(name) for name in ("git", "press", "uv", "just")}
     assert all(executables.values()), executables
@@ -135,7 +137,9 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
 
     receipt = _toml(target / "press/press-receipt.toml")["press"]
     assert receipt["verified"] is True
+    assert receipt["from"] == _toml(ROOT / "press/press-source.toml")["identity"]
     assert receipt["to"] == IDENTITY
+    assert set(receipt["origin_named_destination"]) == {"owner", "repo_name"}
     assert _toml(target / "press/press-source.toml")["identity"] == IDENTITY
     assert _toml(target / "pyproject.toml")["project"]["version"] == "0.1.0"
     assert json.loads((target / ".release-please-manifest.json").read_text()) == {

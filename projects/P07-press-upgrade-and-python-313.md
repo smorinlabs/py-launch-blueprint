@@ -6,10 +6,11 @@ Adopt the released press and prove a usable generated project.
 
 - **Trunk:** [PROJECTS.md](../PROJECTS.md)
 - **Plan:** [Implementation and validation plan](../docs/superpowers/specs/2026-09-10-press-upgrade-and-python-313.md)
+- **Validation:** [Acceptance evidence](../docs/superpowers/reviews/2026-09-10-press-upgrade-acceptance.md)
 - **Release:** [Template Press 4.1.0](https://github.com/smorinlabs/template-press/releases/tag/v4.1.0)
 - **Dependency gate:** [Template Press PR #131](https://github.com/smorinlabs/template-press/pull/131)
 
-**Status:** `[~]` in progress; owner approved execution after the merge gate.
+**Status:** `[~]` implementation and local acceptance complete; delivery PR pending.
 
 ### Scope
 
@@ -29,11 +30,11 @@ will be recorded separately from blueprint fixes.
 
 ### Tests & Tasks
 
-- [ ] [P07-TS01] Establish regression controls and a generated-project acceptance test.
-- [ ] [P07-T01] Align supported Python and the locked press release.
-- [ ] [P07-T02] Implement declared clean/edit/reset/removal and consistent Bun use.
-- [ ] [P07-T03] Update bootstrap instructions, generated docs, and first-PR CI.
-- [ ] [P07-T04] Pass source checks, then bootstrap and exercise a generated project.
+- [x] [P07-TS01] Establish regression controls and a generated-project acceptance test.
+- [x] [P07-T01] Align supported Python and the locked press release.
+- [x] [P07-T02] Implement declared clean/edit/reset/removal and consistent Bun use.
+- [x] [P07-T03] Update bootstrap instructions, generated docs, and first-PR CI.
+- [x] [P07-T04] Pass source checks, then bootstrap and exercise a generated project.
 - [ ] [P07-T05] Commit and prepare the delivery PR with exact validation evidence.
 
 ### Notes

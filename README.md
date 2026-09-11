@@ -68,7 +68,7 @@ The health endpoint is `http://127.0.0.1:8000/healthz`. Each release also has an
 publishing workflow's summary when a deployment must select exact image bytes.
 Public images can be pulled without signing in.
 
-**Starting a new project from this template?** If you use Claude Code or any agent that reads `AGENTS.md`, just say *"create a new Python project from py-launch-blueprint"* — the [`new-python-project`](.claude/skills/new-python-project/SKILL.md) skill (Claude Code discovers it in `.claude/skills/`; Codex via the `.agents/skills/` symlink) will walk you through `gh repo create --template`, identity collection, and the press rebrand (`uv run --locked press rebrand`, dry-run preview first). For humans without an agent: the skill is also a copy-pasteable runbook. After the press, work through [`docs/POST_INIT.md`](docs/POST_INIT.md) — the checklist of decisions, secrets, and repo settings to configure. Internal engineering docs (ADRs, design specs, research) live under [`docs/`](docs/README.md).
+**Starting a new project from this template?** If you use Claude Code or any agent that reads `AGENTS.md`, just say *"create a new Python project from py-launch-blueprint"* — the [`new-python-project`](.claude/skills/new-python-project/SKILL.md) skill (Claude Code discovers it in `.claude/skills/`; Codex via the `.agents/skills/` symlink) will walk you through `gh repo create --template`, identity collection, and the press rebrand (`uv run --locked press rebrand`, dry-run preview first). For humans without an agent: the skill is also a copy-pasteable runbook. After the press, work through [`docs/PROJECT_SETUP.md`](docs/PROJECT_SETUP.md) — the checklist of decisions, secrets, and repo settings to configure. Internal engineering docs (ADRs, design specs, research) live under [`docs/`](docs/README.md).
 
 ### 🎯 Perfect For
 Teams and professionals needing maintainable, type-safe Python projects following best practices.
@@ -79,7 +79,7 @@ Teams and professionals needing maintainable, type-safe Python projects followin
 
 - **Bootstrap dependency check and install with `make`**: Execute common development tasks with simple commands, standardizing workflows across team members.
 
-- **Optional one-command toolchains with [`mise`](https://mise.jdx.dev/) or [`flox`](https://flox.dev/)**: `mise install` (root `mise.toml`) or `flox activate` (root `.flox/`) provisions the same 10-tool set as the native installers — pick whichever fits your machine; see [ADR 0005](docs/adr/0005-mise-flox-first-class-toolchains.md).
+- **Optional one-command toolchains with [`mise`](https://mise.jdx.dev/) or [`flox`](https://flox.dev/)**: `mise install` (root `mise.toml`) or `flox activate` (root `.flox/`) provisions the same 11-tool set as the native installers — pick whichever fits your machine; see [ADR 0005](docs/adr/0005-mise-flox-first-class-toolchains.md).
 
 - **Command running with `just`**: Define and run project-specific commands with a modern Make alternative, simplifying complex operations with clear syntax.
 
