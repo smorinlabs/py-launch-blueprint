@@ -18,6 +18,7 @@ extra_exclude_files = [
   ".claude/skills/new-python-project/README.md",
   "docs/source/index.md",
   "docs/source/about/philosophy.md",
+  "docs/source/tutorials/full_project_setup.md",
 ]
 
 [[clean]]
@@ -188,3 +189,7 @@ stub_file = "press/stubs/docs-index.md"
 [[reset]]
 file = "docs/source/about/philosophy.md"
 stub_file = "press/stubs/project-philosophy.md"
+
+[[reset]]
+file = "docs/source/tutorials/full_project_setup.md"
+stub_file = "press/stubs/application-setup.md"

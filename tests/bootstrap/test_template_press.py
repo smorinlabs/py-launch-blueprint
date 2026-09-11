@@ -185,6 +185,7 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     for page, stub in (
         ("docs/source/index.md", "docs-index.md"),
         ("docs/source/about/philosophy.md", "project-philosophy.md"),
+        ("docs/source/tutorials/full_project_setup.md", "application-setup.md"),
     ):
         assert (target / page).read_text() == (
             target / "press/stubs" / stub
@@ -228,6 +229,12 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     home_page = (docs_output / "index.html").read_text(encoding="utf-8")
     assert "Application documentation" in home_page
     assert "Production-Ready Python Project Template" not in home_page
+    tutorial = (docs_output / "tutorials/full_project_setup.html").read_text(
+        encoding="utf-8"
+    )
+    assert "Application setup" in tutorial
+    assert "Set up the development environment" in tutorial
+    assert "end-to-end setup of a new project" not in tutorial
     _run(target, uv, "build")
     assert list((target / "dist").glob("harbor_sample-0.1.0-*.whl"))
     assert list((target / "dist").glob("harbor_sample-0.1.0.tar.gz"))
