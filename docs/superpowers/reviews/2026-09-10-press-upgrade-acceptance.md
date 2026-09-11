@@ -9,7 +9,7 @@ Template Press 4.1.0 and Python 3.13.14. The new application starts at version
 
 - Blueprint base: `c1216c6089f768ae0a3f3a465460d2d384f5fa44`.
 - Initial implementation snapshot: `c9347573bdee6c7bf0fa3e46a3619c985181a753`.
-- Current implementation and live acceptance snapshot: `c9992cb56c20e022193b856bc33c455a57dbaf95`. The complete live test passed in 71.97 seconds.
+- Current implementation and live acceptance snapshot: `7af9e0d09c3debc5636e1928b6363abdb9222401`. The complete live test passed in 67.87 seconds.
 - Template Press PR #131 merged on 2026-09-11 at `405a80f278c699b6d4d3504da011e78f9922b361`.
 - GitHub Releases and PyPI reported Template Press 4.1.0 as the latest published
   version. Its release predates PR #131. The tests used the published package,
@@ -25,16 +25,17 @@ Template Press 4.1.0 and Python 3.13.14. The new application starts at version
 | Check | Outcome |
 |---|---|
 | Source `just setup` | Passed; locked dev/web environment and hooks installed; frozen Bun install left its lock unchanged |
-| Source `just check` | 319 passed, 3 PowerShell cases skipped on macOS, 5 slow/live tests deselected; 11 snapshots passed; lint, types, boundaries, spelling and EditorConfig passed |
-| Source `press verify --target .` | Passed after committing the removal declarations and their target directories |
+| Source `just check` | 327 passed, 3 PowerShell cases skipped on macOS, 5 slow/live tests deselected; 11 snapshots passed; lint, types, boundaries, spelling and EditorConfig passed |
+| Source `press verify` | Passed against a clean Git snapshot of the staged implementation, including the new tutorial reset |
 | Source `uv build` | Wheel and source distribution built at blueprint version 2.4.2 |
 | Source Sphinx build with `-W` | Passed with warnings treated as errors |
 | Bun regression controls | Old script accepted wrong Bun and replaced the lock; fixed script preserved the lock for wrong/missing Bun and regenerated with supported Bun |
-| Generated `just setup` and `just check` | Passed; 313 tests passed, 3 skipped, 4 deselected; 11 snapshots passed |
+| Generated `just setup` and `just check` | Passed; 321 tests passed, 3 skipped, 4 deselected; 11 snapshots passed |
 | Generated `press verify` | Passed on the staged generated tree |
 | Generated version and build | Project metadata, release manifest, editable lock entry, CLI and web report 0.1.0; wheel and source distribution built |
 | Generated release configuration | Inherited `bootstrap-sha` removed; all other settings preserved apart from the expected package-name rewrite |
-| Generated application documentation | Introduction pages match neutral stubs; Sphinx builds with `-W`; rendered homepage has no template-marketing title |
+| Release-helper regression controls | Eight cases passed: preserve unrelated settings with or without a cutoff, repeated execution, and unchanged files with clear errors for five non-object roots and malformed JSON |
+| Generated application documentation | Introduction pages and setup tutorial match neutral stubs; Sphinx builds with `-W`; rendered tutorial describes application setup and homepage has no template-marketing title |
 | Generated planning scaffold | Extra `P08` control and all existing records removed; setup restores only `projects/.gitkeep` |
 | Claude credential controls | Actual configuration shell succeeds for present and absent synthetic credentials; absence prints the skip message; no credential reaches logs; checkout/review are gated on the result |
 | Generated CLI | `harborctl --help` and `harborctl --version` passed |
@@ -42,8 +43,8 @@ Template Press 4.1.0 and Python 3.13.14. The new application starts at version
 | Bootstrap skill | Static and session-backed loader checks passed for Claude Code and Codex; Bash blocks and embedded Python parsed; description unchanged |
 
 The full bootstrap has an explicit 300-second timeout, with per-command
-timeouts also enforced. The current run passed in 71.97 seconds. An initial
-attempt failed because Template Press's declared-command environment dropped
+timeouts also enforced. The current run passed in 67.87 seconds. An earlier
+attempt on `c9992cb` failed because Template Press's declared-command environment dropped
 the operator's cache overrides and the local sandbox blocked the default uv
 cache. The same committed code passed with access to the uv and Bun caches.
 
@@ -73,6 +74,19 @@ for each filename. Setup recreates only the empty `.gitkeep` placeholder.
 The Codex directory symlink
 still resolves to a directory containing neutral documentation. Generated
 README and POST_INIT files point to the retained project setup checklist.
+
+The generated `docs/source/tutorials/full_project_setup.md` is replaced from
+`press/stubs/application-setup.md` through a declared reset. The destination stays
+in the existing navigation, and the source blueprint keeps its template tutorial.
+The live test verifies the replacement contents and rendered application setup
+page. Reset stubs use neutral text without identity placeholders.
+
+The release helper still removes only `bootstrap-sha`. Before the validation
+fix, six invalid-input regression cases failed with tracebacks and the two valid
+cases passed. All eight now pass. Arrays, strings, numbers, booleans, null, and
+malformed JSON exit nonzero without changing the input file. Clear helper errors
+are visible when run directly; Template Press 4.1.0 still reports a failed edit
+generically rather than forwarding the helper's stderr.
 
 The generated CLI and web application run after its own setup, complete local
 checks, independent press verification and build. This supplies execution
@@ -112,8 +126,12 @@ regular Windows test matrix, not certified by the local macOS run.
 Local evidence from this run is retained under
 `/private/tmp/py-launch-blueprint-pr530-decisions-20260911/`, including
 `source-check.log`, `source-docs.log`, `source-press-verify.log`, and
-`acceptance-c9992cb-r2.log`. The generated project is under
-`/private/tmp/blueprint-acceptance-c9992cb-r2/test_committed_blueprint_gener0/harbor-sample`.
+`acceptance-c9992cb-r2.log` from the earlier accepted defaults. Current evidence
+uses the `two-fixes-` prefix, including `two-fixes-source-check.log`,
+`two-fixes-source-press-verify.log`, `two-fixes-source-docs.log`,
+`two-fixes-source-build.log`, `two-fixes-generated-large-files.log`, and
+`two-fixes-acceptance.log`. The generated project is under
+`/private/tmp/blueprint-acceptance-two-fixes-20260911/test_committed_blueprint_gener0/harbor-sample`.
 These paths are local diagnostics; the committed test and commands are the
 portable reproduction procedure.
 

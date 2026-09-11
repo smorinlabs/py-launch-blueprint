@@ -44,6 +44,8 @@ will be recorded separately from blueprint fixes.
 Tasks P07-T06 through P07-T09 are tracked follow-ups, not merge requirements
 for the Python 3.13 / Template Press 4.1.0 upgrade. The delivered implementation
 tasks above remain complete; the trunk stays open to keep follow-ups visible.
+The owner reaffirmed on 2026-09-11 that these four items belong in a separate
+CI and documentation follow-up, after the two approved bootstrap fixes.
 
 ### Notes
 
@@ -54,6 +56,15 @@ cutoff; ship neutral application introduction pages; and automatically remove
 blueprint planning records while retaining an empty `projects/` directory after
 setup. These refine the existing implementation tasks, without adding downstream
 application work or external-service configuration.
+
+The two subsequent owner-approved fixes at `7af9e0d` replace the generated setup
+tutorial through `press/stubs/application-setup.md` and validate release-helper
+JSON before writing. The source template tutorial is preserved. Source checks
+passed 327 tests and 11 snapshots. The full generation test passed in 67.87
+seconds with 321 generated tests and 11 snapshots, rendered application setup
+guidance, independent verification, both distribution formats, CLI version, and
+real HTTP health. All eight release-helper controls passed, including malformed
+JSON and non-object roots that leave the input unchanged.
 
 The agreed refinements at `c9992cb` passed source checks (319 tests and
 11 snapshots), source verification/build, and Sphinx with warnings as errors.
