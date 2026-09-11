@@ -122,10 +122,13 @@ and `ty` (port satisfaction).
   from typing import Protocol
   from py_launch_blueprint.projects.domain.models import Project
 
+
   class ProjectsRepository(Protocol):
-      def list_projects(self, *, workspace_gid: str | None, limit: int) -> list[Project]: ...
-      def get_project(self, project_id: str) -> Project | None: ...   # None = absent
-      def resolve_workspace_gid(self, name: str) -> str | None: ...    # None = unknown
+      def list_projects(
+          self, *, workspace_gid: str | None, limit: int
+      ) -> list[Project]: ...
+      def get_project(self, project_id: str) -> Project | None: ...  # None = absent
+      def resolve_workspace_gid(self, name: str) -> str | None: ...  # None = unknown
   ```
 
   Method names match the use-case names across rings (`list_projects`, not
@@ -143,7 +146,9 @@ and `ty` (port satisfaction).
       def __init__(self, projects: ProjectsRepository) -> None:
           self._projects = projects
 
-      def list_projects(self, *, workspace: str | None = None, limit: int = 200) -> list[Project]:
+      def list_projects(
+          self, *, workspace: str | None = None, limit: int = 200
+      ) -> list[Project]:
           gid = None
           if workspace:
               gid = self._projects.resolve_workspace_gid(workspace)
@@ -165,11 +170,14 @@ and `ty` (port satisfaction).
 
   ```python
   # projects/adapters/py_api.py
-  class PyApiProjectsRepository:                # structurally satisfies ProjectsRepository
+  class PyApiProjectsRepository:  # structurally satisfies ProjectsRepository
       BASE_URL = "https://app.py.com/api/1.0"
+
       def __init__(self, token: str, timeout: int = 30) -> None: ...
       def list_projects(self, *, workspace_gid, limit) -> list[Project]: ...
-      def get_project(self, project_id) -> Project | None: ...   # None on 404, raise on 5xx
+      def get_project(
+          self, project_id
+      ) -> Project | None: ...  # None on 404, raise on 5xx
       def resolve_workspace_gid(self, name) -> str | None: ...
       @staticmethod
       def _to_project(item: dict) -> Project: ...
@@ -200,13 +208,14 @@ and `ty` (port satisfaction).
   ```python
   # interfaces/cli/commands/projects.py
   def list_projects(app, workspace, limit):
-      svc = build_projects_service(require_token(app))      # compose (not `new`)
+      svc = build_projects_service(require_token(app))  # compose (not `new`)
       projects = svc.list_projects(workspace=workspace, limit=limit)  # call core
-      app.renderer.render(ProjectList(projects=projects))   # render (view model)
+      app.renderer.render(ProjectList(projects=projects))  # render (view model)
+
 
   # interfaces/web/deps.py
   def get_projects_service(config: ConfigDep) -> ProjectsService:
-      return build_projects_service(config.token)           # same composition root
+      return build_projects_service(config.token)  # same composition root
   ```
 
 ## Enforcement

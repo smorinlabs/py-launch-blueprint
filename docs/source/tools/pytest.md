@@ -27,6 +27,7 @@ uv pip install pytest
     def add(a, b):
         return a + b
 
+
     def test_add():
         assert add(2, 3) == 5
         assert add(-1, 1) == 0
@@ -71,11 +72,13 @@ Fixtures are functions that provide a fixed baseline for tests. They are used to
 ```python
 import pytest
 
+
 @pytest.fixture
 def temp_file(tmp_path):
     file = tmp_path / "tempfile.txt"
     file.write_text("Hello, Pytest!")
     return file
+
 
 def test_file_content(temp_file):
     assert temp_file.read_text() == "Hello, Pytest!"
