@@ -55,6 +55,15 @@ blueprint planning records while retaining an empty `projects/` directory after
 setup. These refine the existing implementation tasks, without adding downstream
 application work or external-service configuration.
 
+The agreed refinements at `c9992cb` passed source checks (319 tests and
+11 snapshots), source verification/build, and Sphinx with warnings as errors.
+The complete generation test passed in 71.97 seconds: 313 generated tests,
+11 snapshots, independent verification, rendered documentation, both package
+formats, CLI version, and real HTTP health. It verifies the release cutoff is
+absent and an extra planning record is removed before setup recreates only
+`projects/.gitkeep`. Credential controls verify both configured and missing
+secrets without an authenticated Claude request.
+
 The owner approved implementation on 2026-09-10 after Template Press PR #131
 merged. The merge gate was met on 2026-09-11 at commit
 `405a80f278c699b6d4d3504da011e78f9922b361`. The published baseline is Template
