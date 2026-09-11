@@ -1,0 +1,8 @@
+[identity]
+package_name = "py_launch_blueprint"
+repo_name    = "py-launch-blueprint"
+app_name     = "plbp"
+author       = "Steve Morin"
+email        = "steve.morin@gmail.com"
+owner        = "smorinlabs"
+display_name = "Py Launch Blueprint"

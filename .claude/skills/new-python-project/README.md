@@ -48,8 +48,9 @@ this repo locally, and say something like:
 Claude will pick up the skill from `.claude/skills/new-python-project/`
 and **first ask** whether you want the full template setup or a minimal
 one (Step 0 in the runbook). On confirmation, it walks identity collection
-→ `gh repo create --template` → the init rebrand (`init/init.py`) →
-optional post-init (`init/post_init.py`). Total time: about
+→ `gh repo create --template` → the press rebrand
+(`uvx --from 'template-press>=3.6.0' press rebrand`, dry-run first) →
+the docs/POST_INIT.md decision checklist. Total time: about
 60–90 seconds for the interactive bits, plus whatever the user spends
 thinking about the name.
 

@@ -109,5 +109,5 @@ reports it as an optional dependency; install with `make install-docker`
 2. Create a router in `web/routers/`, add it to `ROUTERS` in
    `web/routers/__init__.py` (one import + one entry, like the CLI's
    command groups).
-3. `just export-openapi`, commit the snapshot, and register any new files
-   containing identity values in `init/manifest.toml`.
+3. `just export-openapi`, commit the snapshot, and confirm any new files
+   containing identity values press cleanly (`uv run press verify`).
