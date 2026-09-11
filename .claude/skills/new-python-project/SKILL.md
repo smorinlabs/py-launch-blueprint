@@ -27,9 +27,9 @@ like "new Python project from this", "scaffold a project", "start a fresh
 project using this template" all qualify.
 
 **Don't invoke when**: the user is *inside* an existing project (already
-rebranded with a `.blueprint-initialized` marker) and just wants to modify
-something — that's `init/init.py`, `init/post_init.py`, or
-`init/init_doctor.py` territory (run via `uv run`), not this skill.
+rebranded, carrying a `press/press-receipt.toml`) and just wants to modify
+something — that's `docs/POST_INIT.md` checklist territory, not this
+skill.
 
 ## The runbook
 
@@ -98,10 +98,17 @@ command -v uv >/dev/null || {
     exit 1
 }
 
-# 4. Not already inside an initialized project
-if [ -f "init/.blueprint-initialized" ]; then
-    echo "Already inside an initialized blueprint project. This skill bootstraps a NEW project."
-    echo "If you want to reconfigure THIS project, use \`uv run init/init_doctor.py\` or \`uv run init/post_init.py\`."
+# 3b. bun installed — the press's declared bun.lock regeneration needs it;
+# without it the rebrand fails mid-press (regen-bun-lock.sh exits 127).
+command -v bun >/dev/null || {
+    echo "bun not found. Install: https://bun.sh (required to regenerate bun.lock during the press)"
+    exit 1
+}
+
+# 4. Not already inside a rebranded project
+if [ -f "press/press-receipt.toml" ]; then
+    echo "Already inside a rebranded blueprint project. This skill bootstraps a NEW project."
+    echo "To reconfigure THIS project, follow docs/POST_INIT.md."
     exit 1
 fi
 ```
@@ -130,6 +137,7 @@ than collecting everything and failing at the end.
 | App short name (CLI command) | `<package_name>` | `^[a-z][a-z0-9_]*$` (Python identifier) |
 | Author name | `git config user.name` | non-empty |
 | Author email | `git config user.email` | `^[^@\s]+@[^@\s]+\.[^@\s]+$` |
+| Display name (product name in prose) | `<repo-name>` title-cased, `-` → spaces | non-empty; shown in docs/README prose, so confirm it reads as a product name |
 
 The two name conventions matter and are independent: PyPI distribution
 names use kebab-case (`my-project`), Python import names use snake_case
@@ -149,6 +157,7 @@ About to create:
   Local clone:   <target-dir>
   Package name:  <package_name>
   App name:      <app_name>  (CLI command + <APP_NAME>_* env prefix)
+  Display name:  <display_name>  (product name in docs/README prose)
   Author:        <author> <<email>>
 
 Proceed? [Y/n]
@@ -177,7 +186,7 @@ gh repo create "<owner>/<repo-name>" \
 This creates the repo on GitHub, clones it locally, and configures `origin`
 correctly. After this completes, the user has a fresh repo with the
 blueprint's identity (`py_launch_blueprint`, `py-launch-blueprint`, etc.) —
-`init` will rebrand it next. Note: template generation is async on GitHub's
+The press will rebrand it next. Note: template generation is async on GitHub's
 side; if the clone is empty or warns, wait a few seconds and retry
 `gh repo clone <owner>/<repo-name> <target-dir>`.
 
@@ -185,8 +194,8 @@ side; if the clone is empty or warns, wait a few seconds and retry
 
 ### Step 5 — Write answers.toml from collected identity
 
-Write to `<target-dir>/answers.toml`. The schema matches
-`init/tests/integration/answers.toml`:
+Write to `<target-dir>/press-answers.toml` (transient operator input —
+do NOT commit it):
 
 ```toml
 [answers]
@@ -196,27 +205,28 @@ app_name = "<app_name>"
 author = "<author>"
 email = "<email>"
 owner = "<owner>"
+display_name = "<Display Name>"
 ```
 
-All six keys are required. The init engine will use these to compute the
-replace/rename operations.
+All seven keys are required — the template's source config declares
+`display_name`, so the answers must supply the new one (the press refuses
+a half-specified display identity).
 
 ### Step 6 — Preview the rebrand
 
-Run init in dry-run mode and show the user the plan summary:
+Run the press in dry-run mode and show the user the plan summary:
 
 ```bash
-uv run init/init.py --config answers.toml --dry-run --allow-dirty --yes
+uvx --from 'template-press>=3.6.0' press rebrand --target . --config press-answers.toml --dry-run --allow-dirty
 ```
 
-`--allow-dirty` is REQUIRED here (P0004 dogfood PROBLEM-04): the
-`answers.toml` you just wrote is an untracked file, which trips init's
-clean-tree precondition. It is safe for `--dry-run` (writes nothing) and
-for the real apply below (the only "dirty" file is the config init itself
-consumes). This prints the full list of replaces/renames/removes without
-writing anything. The summary at the end will look like `Summary: 2 removes, 97
-replaces, 5 renames.` — that's the user's checkpoint to spot anything
-unexpected (e.g., a name that didn't substitute correctly).
+`--allow-dirty` is REQUIRED here: the `press-answers.toml` you just wrote
+is an untracked file, which trips the press's clean-tree precondition. It
+is safe for `--dry-run` (writes nothing) and for the real apply below (the
+only "dirty" file is the config the press itself consumes). The plan lists
+every replace/rename, the declared resets/regenerations (CHANGELOG stub,
+lockfiles, help snapshots), and the declared removals of blueprint-only
+files — that's the user's checkpoint to spot anything unexpected.
 
 Prompt: "Apply these changes? [Y/n]"
 
@@ -227,17 +237,26 @@ On yes: continue.
 ### Step 7 — Apply the rebrand
 
 ```bash
-uv run init/init.py --config answers.toml --yes --allow-dirty
+uvx --from 'template-press>=3.6.0' press rebrand --target . --config press-answers.toml --allow-dirty
 ```
 
 Without `--dry-run` this time (`--allow-dirty` still needed for the
-untracked `answers.toml`, per PROBLEM-04). The marker
-`init/.blueprint-initialized` is written on success — verify it exists
-before proceeding.
+untracked `press-answers.toml`). On success the receipt
+`press/press-receipt.toml` is written and `press/press-source.toml` is
+refreshed to the new identity — verify the receipt exists before
+proceeding. Then run the one manual normalization step:
 
-If init fails for any reason, the message will instruct the user to recover
-with `git checkout . && git clean -fd`. Don't try to recover silently — the
-user needs to know something failed.
+```bash
+uv run ruff format .
+rm press-answers.toml
+```
+
+(Help snapshots regenerate automatically during the press; formatting is
+the only post-press normalization left — see `docs/POST_INIT.md`.)
+
+If the press fails, exit 1 leaves the tree rewritten — recover with
+`git checkout . && git clean -fd`; exit 2 wrote nothing. Don't try to
+recover silently — the user needs to know something failed.
 
 ### Step 8 — Initial commit and push
 
@@ -255,24 +274,21 @@ push goes to the new repo. The `-u` sets upstream tracking.
 Tell the user what just happened, then offer post-init:
 
 ```text
-✓ Project initialized at <target-dir>
+✓ Project rebranded at <target-dir>
   Pushed to https://github.com/<owner>/<repo-name>
-  Marker:   init/.blueprint-initialized
+  Receipt:  press/press-receipt.toml
 
-Next: post-init configures publishing (PyPI/release-please), Codecov uploads,
-and ReadTheDocs. It can run now (the GitHub repo exists, so the full flow
-works) or later via `uv run init/post_init.py`.
-
-Run post-init now? [y/N]
+Next: docs/POST_INIT.md is the decision checklist for publishing
+(PyPI/release-please), Codecov uploads, ReadTheDocs, and the app secrets
+the maintenance workflows need. Walk it now? [y/N]
 ```
 
-If yes: `cd <target-dir> && uv run init/post_init.py` — hand control to the
-post-init interactive flow. If no: print the deferred-message:
+If yes: open `docs/POST_INIT.md` in the new project and walk its registry
+rows one decision at a time. If no: print the deferred-message:
 
 ```text
-Skipped. When ready:
-  cd <target-dir>
-  uv run init/post_init.py
+Skipped. When ready: open docs/POST_INIT.md — every post-setup decision
+lives there.
 ```
 
 The default is "no" because the user has just completed a multi-step flow
@@ -315,10 +331,10 @@ that's already taken in their account. Re-prompt for the repo name and
 retry. Don't try to "use the existing repo" — that conflates "fresh
 project" with "reset existing project."
 
-**`uv run init/init.py` fails on a dirty tree.** Shouldn't happen — fresh
-clone is clean. If it does, the cause is almost certainly that step 5
-(`answers.toml`) is being detected as dirty. Add `--allow-dirty` to the
-init invocation, but also flag this as a bug worth investigating.
+**The press fails on a dirty tree without `--allow-dirty`.** Shouldn't
+happen — the invocations above carry the flag because step 5's
+`press-answers.toml` is untracked. If it fails for a different dirty file,
+stop and show the user what is dirty.
 
 **`git push` fails because the user doesn't have push access to the org.**
 Catch the error and tell the user explicitly — they may have picked an org
@@ -337,10 +353,10 @@ deferred to other tools/skills:
 - Branch protection setup → manual `gh api ...branches/main/protection` or
   a future `just protect-main` recipe
 - License changes (blueprint ships MIT) → manual `LICENSE` edit
-- Codecov / ReadTheDocs / PyPI publisher setup → `uv run init/post_init.py`
+- Codecov / ReadTheDocs / PyPI publisher setup → `docs/POST_INIT.md`
 - Codespaces / Devcontainer customization → manual edit of
   `.devcontainer/`
-- Forks (mode #4 in §4.7) → `gh repo fork` then `uv run init/init.py` manually
+- Forks (mode #4 in §4.7) → `gh repo fork` then the press invocation manually
 
 ## Underlying contract
 
@@ -348,13 +364,12 @@ This skill assumes:
 
 - `smorinlabs/py-launch-blueprint` is a valid GitHub template repository
   (the "Template repository" toggle in repo settings is on)
-- The local clone has `init/init.py`, `init/init_doctor.py`, and
-  `init/post_init.py`, runnable via `uv run` (the `Justfile` recipes
-  `init`, `init-doctor`, `post-init` are thin wrappers over these — `just`
-  is NOT required for the bootstrap)
+- The released `template-press` (>= 3.6.0) is reachable via `uvx`, and
+  the template commits its press config (`press/press-source.toml` +
+  `press/press-rules.toml`) — `just` is NOT required for the bootstrap
 - The user's authed gh account has permission to create repos under the
   chosen owner
 
-If any of these change, this skill needs to change with them. See
-`init/init-spec.md` §4.7 for the authoritative list of instantiation
-modes the blueprint supports.
+If any of these change, this skill needs to change with them. The press
+contract lives in template-press's design 0006 (external target model)
+and its CLI reference.

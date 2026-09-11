@@ -345,3 +345,162 @@ conform can use unpinned `uvx template-press` (≥3.2.0).
   `press verify` cannot reach exit 0 on any repo with a `CHANGELOG.md` without
   target-side ignores. Disposition: template-press — reconcile the
   exclude/reset/regenerate/scan contract (register **§6**).
+
+## Run 4 — v3.4/P07 conform + rebrand + publish (2026-08-16)
+
+**Context.** Spec `docs/superpowers/specs/2026-08-16-template-press-v34-dogfood-design.md`
+(P05). Press-under-test: template-press `main` @ `bd52085` (P07 merge; v3.4.0
+tag + platform-conditional declared commands). Target: this repo, branch
+`feat/press-conform` from `origin/main` @ `734abfd`.
+
+**Expectations.** All five Run-3 gaps (G1–G5) now have opt-in engine support
+(G3/G4/G5 in v3.3.0: substring mode, display_name, replace/path rules;
+G1/G2 in v3.4.0: declared [[reset]]/[[regenerate]]). Prediction: with a
+fully-declared config, verify reaches exit 0 with zero ignores. Any leak is a
+config-authoring gap (blueprint) or an engine regression (template-press) —
+no known-gap bucket remains. Numbering continues at PROBLEM-21.
+
+### Steps
+
+| time (UTC) | step | command / action | outcome |
+|---|---|---|---|
+| 2026-08-17T04:33:05Z | T03 (source config) | wrote press/press-source.toml (7 fields incl display_name); uv run press verify --target <worktree> --json | PASS gate: config accepted (no exit-2 missing-config); exit 1 with leaks dominated by CHANGELOG — rules not yet declared |
+| 2026-08-17T04:33:39Z | T05 (rules + check-tools) | wrote press/press-rules.toml (substring app_name+app_name_upper; regenerate uv.lock/bun.lock; reset CHANGELOG) + regen scripts; press check-tools --target <worktree> | PASS exit 0: git, uv, scripts/regen-bun-lock.sh all resolve; win32 entry filtered on darwin |
+| 2026-08-17T04:34:46Z | T06/TS02 (full verify) | uv run press verify --target <worktree> --json (rules declared) | **PASS exit 0 — verified true, 0 surviving, 0 ignores, 0 stale, 2 exempt (declared reset+regenerate)**. Spec §2 prediction confirmed: G1–G5 all closed by declaration. Control: same target pre-rules leaked en masse (T03 row). No PROBLEM entries from verify. |
+| 2026-08-17T04:51:12Z | T08 (scope gate) | user decision at gate | DECIDED: full conform (init/ deletion + CI cutover) deferred to a follow-up plan AFTER publish proof (Tasks 10–13); PR #505 authorized to merge now. Run-3 pause condition discharged (green via declarations). |
+| 2026-08-17T04:58:43Z | T10.1 (init integrity) | added press/spec/plan/P05 files to init/manifest.toml ([[replace]] text blocks + 2 [[remove]] entries); check_manifest_drift + init tests | PASS: drift ok; 82 passed; press verify re-run exit 0 after manifest edits |
+| 2026-08-17T04:58:43Z | T10.2 (full gate) | make check && just check | PASS (pre-existing non-fatal yamllint line-length warnings only, per Run 1 precedent) |
+| 2026-08-17T05:26:08Z | T09/T06 (pr #505) | 4 review threads triaged (2 codex, 2 coderabbit): all valid, fixed (spec 4th condition, check_no_marker receipt rejection, containment wording, origin alias); merged via merge queue b135492 | PASS |
+| 2026-08-17T05:26:08Z | T10/T07 (pr #518, round-1) | 5 bot threads over 2 waves: ps1 fail-loud fixed; display_name legacy-init gap deferred x2 (tracked in P05); path/nit declined; manifest-sync partially fixed | MERGED 6f99b76 |
+| 2026-08-17T05:26:08Z | T11 (fresh-main gate) | clone main; press verify + check-tools | PASS both exit 0 (uv.lock/bun.lock exemptions listed by design) |
+| 2026-08-17T05:26:08Z | TS03.1 (dry-run) | press rebrand --dry-run → plan | PASS exit 0: G5 renames, pkg dir rename, regens w/ resolved executables, CHANGELOG 328→stub |
+| 2026-08-17T05:26:08Z | TS03.2 (apply) | press rebrand apply → blueprint-press-dryrun | PASS exit 0: receipt written, source refreshed, 5 binary/symlink review-skips. Independent grep audit CLEAN (content+paths); CHANGELOG stub; bun.lock/uv.lock carry new identity |
+| 2026-08-17T05:26:08Z | TS03.3 (re-press guards) | re-press same identity; wrong-origin source | PASS both refuse exit 2 correctly (receipt guard; discovery mismatch guard — origin must be re-pointed first, plan-order note) |
+| 2026-08-17T05:26:08Z | TS03.4 (forced re-press to 2nd identity) | press --force on copy → press-dryrun-two | FAIL exit 1 → PROBLEM-22/23 below. Receipt invalidation itself fired correctly; incomplete-state contract (no receipt, loud recovery) correct |
+| 2026-08-17T05:50:00Z | TS03.4b (forced re-press, retest) | same forced re-press with the PROBLEM-22 fix branch (template-press fix/run4-regen-scan-policy) + `scan = "boundary"` declared on the copy's bun.lock regens | PASS exit 0: prior receipt invalidated, new receipt written, verified. Battery item closes on this evidence; the engine fix is in a template-press PR (merge pending) |
+| 2026-08-17T05:28:18Z | TS03.5 (check-tools) | press check-tools on instance | PASS exit 0 (git, uv, regen script). Negative case n/a by design: check-tools resolves the declared script, not tools inside it — the script fails loud at run time instead |
+| 2026-08-17T05:28:18Z | TS03.6 (instance stands alone) | mise trust && make check && just setup && just check | FAIL first run: 2 syrupy help-snapshot tests (bpd config set/get) — PROBLEM-24. After snapshot refresh: just check PASS exit 0 (267+11 tests; instance hooks wired and firing) |
+| 2026-08-17T05:45:53Z | T13 (publish) | gh repo create smorinlabs/blueprint-press-dryrun (user-authorized); git push | First push BLOCKED by fork's own pre-push init-integrity gates (PROBLEM-25); after receipt-gate hand-fix, push OK. CI wave 1: blueprint-guard + init-integration FAIL (PROBLEM-26), ruff format FAIL (PROBLEM-27), dependency-review FAIL (repo provisioning: dependency graph off — observation, accepted for throwaway). Hand-fixes (logged): just format; delete the two blueprint-only workflows |
+| 2026-08-17T05:48:49Z | T13 (publish, final) | CI on fixed head 5c42cec | GREEN: CI/CD, lint, CodeQL, secret-scan, commitlint, large-file-guard all pass. Only reds: release-please + Update Contributors — both "Provide either app-id + private-key, or pat" (credential-gated app workflows, pre-accepted class per spec §5). Publish exit criterion MET |
+| 2026-08-17T07:02:29Z | T14 (close-out) | re-pin press-under-test: template-press main @ 6428a9c (PR #82 merged: scan policy + failure reporting + matrix conformed-blueprint update); fresh-clone final gate: press verify + check-tools vs blueprint main @ 8ed30c3 | PASS both exit 0. Campaign exit criteria met (spec §5). Follow-ups: template-press#80 ([[remove]]), #81 (exemption cap); blueprint adopts scan="boundary" for bun.lock only after the next template-press RELEASE (the key is unknown to v3.4.0 and would break released-press users); full conform (init/ retirement) is the next campaign per the scope gate |
+
+### New findings
+
+- **PROBLEM-22** — med — template-press: post-regeneration changed-fields scan
+  false-positives on base64 hash material in regenerated lockfiles. Repro:
+  forced re-press blueprint-press-dryrun → press-dryrun-two; bun.lock
+  regenerates CLEAN (zero real identity tokens) but the scan reports
+  `output still carries source app_name 'bpd'` — the case-glued substring
+  matcher hits `Bpd` inside integrity hash `…x/2Xp/Bpdl…`. Structural for
+  short app names in substring mode (3 chars ≈ guaranteed in a large lock);
+  first press succeeded by luck (`plbp` variants absent). Workaround: none
+  target-side (D-v4-5: no ignores for engine gaps). Root cause:
+  `scan_regenerated_output` applies the strictest matcher (case/separator-
+  glued substring) to hash-dense regenerated artifacts. Disposition:
+  FIXED+MERGED — template-press PR #82 (6428a9c): opt-in scan = "boundary"
+  on [[regenerate]], applied inside the hunt so separator/case variants
+  stay caught (codex P1 catch); E2E forced re-press passes exit 0.
+- **PROBLEM-23** — low — template-press: the regen-failure path prints only
+  the error banner and summary counts; `report.skipped` (which carries the
+  exact per-file reason, e.g. the PROBLEM-22 scan hit) is printed only on
+  the success path (`cli.py` ~471 vs ~575). Diagnosing PROBLEM-22 required
+  monkeypatching a spy around `execute_regenerations`. Disposition:
+  FIXED+MERGED — template-press PR #82: the failure path now prints the
+  skipped entries.
+- **PROBLEM-24** — med — blueprint: CLI help-snapshot tests (WL-023, syrupy
+  `.ambr`) fail in a pressed fork whenever the app name changes length —
+  the press rewrites snapshot text faithfully, but argparse/click re-wraps
+  usage lines at COLUMNS=80, so the wrap points move (`plbp`→`bpd` shifts
+  `format|` across a line break). No text rewriter can fix generated
+  wrapped text. Proven fix: regenerate, not rewrite — running the
+  documented `uv run pytest tests/cli/test_help_snapshots.py
+  --snapshot-update` in the instance turns 2 failed into 11 passed.
+  Disposition: ACCEPTED with fallback — the documented post-press step in
+  docs/POST_INIT.md (snapshot update + full-tree format; landed PR #519).
+  The press-native `[[regenerate]]` declaration was proven to work in the
+  real press (empirical run: exit 0, fresh `.ambr`) but is BLOCKED on
+  template-press#81 — the hermetic-verify exemption cap covers only
+  uv.lock/bun.lock, so declaring it makes `press verify` structurally
+  exit 1 (PROBLEM-28). Revisit when #81 lands.
+- **PROBLEM-21** — low — blueprint: press control files are not rewritten by
+  design, so identity tokens embedded in `press/press-rules.toml` COMMENTS
+  ship stale into every pressed fork (the G3 comment named the app token
+  literally). Disposition: blueprint — reword control-file comments to be
+  identity-free (fixed this round); candidate template-press doc guidance.
+- **PROBLEM-25** — high — blueprint: the four lefthook init-integrity
+  pre-push gates (`guard-wiring`, `manifest-drift`, `path-filter`,
+  `init-tests`) key on `init/.blueprint-initialized` only, so a pressed
+  fork (receipt, no marker) runs — and fails — blueprint-maintenance
+  checks, blocking every push. Same class as Run-1 PROBLEM-11; PR #505's
+  contract covered guard.sh but not lefthook. Disposition: blueprint —
+  accept `press/press-receipt.toml` in all four gates (fixed this round;
+  instance hand-fixed identically to publish).
+- **PROBLEM-26** — med/high — template-press: no file-removal mechanism.
+  Everything the legacy engine deletes via `init/manifest.toml [[remove]]`
+  (blueprint-only CI: `blueprint-guard.yml`, `init-integration.yml`;
+  dogfood history docs) ships to pressed forks; the two workflows FAIL
+  there. Disposition: template-press feature — declared `[[remove]]` in
+  press-rules (G-register class); fork hand-fix applied to the instance.
+- **PROBLEM-27** — low/med — blueprint/template-design: a longer pressed
+  identity pushes rewritten lines past ruff's 88-char limit (2 files) —
+  same class as PROBLEM-24 (length-sensitive artifacts vs text rewrite).
+  Disposition: fork runs `uv run ruff format .` (full tree — `just
+  format` covers only the package dir) post-press per docs/POST_INIT.md
+  (hand-fixed on the instance); folds into the post-press normalization
+  story with P24.
+- **PROBLEM-28** — med — template-press: the hermetic-verify regeneration
+  exemption is a hardcoded filename allowlist
+  (`pathing.REGENERATE_EXEMPTIBLE = {"uv.lock", "bun.lock"}`). Any other
+  declared `[[regenerate]]` output — e.g. the help-snapshot `.ambr`
+  (PROBLEM-24) — makes `press verify` structurally exit 1: excluded from
+  rewrite, not exempt from the scan, and the sandbox never runs commands.
+  Empirically the real press handles the same declaration fine (exit 0,
+  post-command scan certifies the output). Disposition: template-press
+  design decision — widen the cap to any declared regeneration (exemption
+  is already "earned by result" at real-press time) or add a declared
+  exemption schema; until then PROBLEM-24 falls back to the documented
+  post-press step (docs/POST_INIT.md).
+
+## Run 5 — full conform (P06, 2026-08-17)
+
+**Context.** Spec docs/superpowers/specs/2026-08-17-full-conform-design.md.
+Press: v3.6.0 line (local template-press main @ post-#85 for iteration;
+released uvx for CI/hooks — release in flight). Base: origin/main @ e36ecb9.
+
+### Steps
+
+| time (UTC) | step | command / action | outcome |
+|---|---|---|---|
+| 2026-08-17T15:34:32Z | T01 (config) | scan=boundary ×2; .ambr [[regenerate]] + verify_exempt; 15 [[remove]] entries (2 handoff docs dropped from the plan — they exist only in the user's unpushed local commit) | PASS: check-tools 0; verify 0 with .ambr exempt (declared reason), removals modeled |
+| 2026-08-17T15:34:32Z | T02 (guard) | git mv init/guard.sh scripts/guard.sh; 3 conditions (marker dropped per D-P06-1); Justfile + .gitignore re-point; tests/test_guard.py | PASS: 11 guard tests incl. legacy-marker-no-longer-silences pin |
+| 2026-08-17T15:34:32Z | T03 (ci cutover) | press-verify.yml added (receipt guard + uvx verify); blueprint-guard.yml + init-integration.yml deleted; lefthook 4 gates → press-verify | PASS: yamllint + actionlint clean |
+| 2026-08-17T15:34:32Z | T04 (deletion) | git rm -r init/ (30 files); Justfile recipes; AGENTS.md/SKILL.md/POST_INIT rewrites; pyproject init blocks | PASS: just check green end-to-end with no engine; operational grep sweep clean (historical docs retain references by design) |
+| 2026-08-17T15:34:32Z | TS01 (branch gates) | just check; press verify; press check-tools | PASS all (verify/tools exit 0 vs template-press main) |
+| 2026-08-17T17:22:20Z | TS02 (acceptance re-press) | scratch clone of branch → press to accept-press-test (app 'apt', 3 chars — exercises scan=boundary live) → audit → make check/just setup/just check | PASS after ONE finding: PROBLEM-29. Dry-run plan exact (3 regens incl .ambr, reset, 15 removes); apply exit 0; snapshots regenerated as apt; zero identity survivors; zero P05-class hand-fixes; zero formatting fixes needed |
+
+### New findings
+
+- **PROBLEM-29** — low — blueprint: a [[remove]]d file's dependent
+  meta-tests survive into the fork and fail (tests/meta/
+  test_contributors_workflow.py pins the removed update-contributors
+  workflow: 3 failures in the pressed instance's just check). Same class
+  as the PR #520 tracker-link finding, in executable form: a removal must
+  take its reference-holders with it. Disposition: FIXED — the meta-test
+  file joins the [[remove]] set; instance re-check green (277+15 pass).
+  Reference sweep found no other breaking holders (Justfile recipe and a
+  lint-exclude are no-ops in forks).
+
+### Merge & post-merge gates
+
+| time (UTC) | step | command / action | outcome |
+|---|---|---|---|
+| 2026-08-17 | merge | PR #521 via merge queue (merge commit 986eafa7); branch protection required contexts updated to press-verify beforehand | MERGED; init/ engine gone from main (30 files) |
+| 2026-08-17 | fresh-main gate | fresh clone of main → `uvx --from 'template-press>=3.6.0' press verify` and `press check-tools` | PASS: both exit 0 against the released press — no local template-press checkout involved |
+| 2026-08-17 | close-out | #423 auto-closed by the merge; P06 flipped to `[x]` (trunk + project file) | campaign complete |
+
+**Run 5 verdict.** Full conform achieved: the blueprint's only rebrand
+engine is the released template-press (>= 3.6.0 from PyPI); drift
+detection is `press verify` in CI (press-verify.yml), hooks (lefthook
+pre-push), and the fork's own CI (the workflow ships). One new finding
+(PROBLEM-29, fixed in-flight). Cumulative campaign findings: PROBLEM-21
+through PROBLEM-29, all dispositioned.

@@ -544,14 +544,14 @@ wheels = [
 
 [[package]]
 name = "gitpython"
-version = "3.1.50"
+version = "3.1.58"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "gitdb" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/33/f6/354ae6491228b5eb40e10d89c4d13c651fe1cf7556e35ebdded50cff57ce/gitpython-3.1.50.tar.gz", hash = "sha256:80da2d12504d52e1f998772dc5baf6e553f8d2fcfe1fcc226c9d9a2ee3372dcc", size = 219798, upload-time = "2026-05-06T04:01:26.571Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/26/d6/5f358ff283325580c2003a6d953aea18cfe10ae87b46f5ebc80fa3a386dc/gitpython-3.1.58.tar.gz", hash = "sha256:621416df10ef3fd0e19fabf9172ddeed0fa704d353d04f194eec56a625a95b22", size = 228498, upload-time = "2026-08-04T15:05:49.47Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/20/7a/1c6e3562dfd8950adbb11ffbc65d21e7c89d01a6e4f137fa981056de25c5/gitpython-3.1.50-py3-none-any.whl", hash = "sha256:d352abe2908d07355014abdd21ddf798c2a961469239afec4962e9da884858f9", size = 212507, upload-time = "2026-05-06T04:01:23.799Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/0c/9d8752098bc442f0726e64aa6135940b3a96809915d1aa4206c1bb97881d/gitpython-3.1.58-py3-none-any.whl", hash = "sha256:d331e722577f0fd7fc1f857419b3ecc07af66282b933d2a4d95f84a042fdd50f", size = 220183, upload-time = "2026-08-04T15:05:48.025Z" },
 ]
 
 [[package]]
@@ -1645,6 +1645,7 @@ dev = [
     { name = "schemathesis" },
     { name = "syrupy" },
     { name = "tach" },
+    { name = "template-press" },
     { name = "twine" },
     { name = "ty" },
     { name = "types-pygments" },
@@ -1703,6 +1704,7 @@ dev = [
     { name = "schemathesis", specifier = ">=4.0.0" },
     { name = "syrupy", specifier = ">=4.8.0" },
     { name = "tach", specifier = ">=0.35.0" },
+    { name = "template-press", specifier = ">=3.6.0" },
     { name = "twine", specifier = ">=6.1.0" },
     { name = "ty", specifier = ">=0.0.1a16" },
     { name = "types-pygments" },
@@ -2609,6 +2611,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/4b/0f/e1842c063d0ac7be804797fab569ac782ef8a9fa349092c71125bc628e4d/tach-0.35.0-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:e9275b65ff31e7ff9842b3bd7417a393115dbadd1fa8c3d953ae330cff7fbefb", size = 4565068, upload-time = "2026-05-12T12:49:06.024Z" },
     { url = "https://files.pythonhosted.org/packages/2e/e5/054784261781dbcb8ac663a5d09af6c7996f5bde5230282b4c062dcf1f1f/tach-0.35.0-cp37-abi3-win32.whl", hash = "sha256:72dd6553d9fdd1e72fbd8e5b71892a463e8cd70b3ff6377b4f682aab100937d3", size = 3378975, upload-time = "2026-05-12T12:49:00.79Z" },
     { url = "https://files.pythonhosted.org/packages/4b/1d/5dddf88fa9433bf4fcc76afad18e49d8e50e24f1f40c981c286edccd6c2d/tach-0.35.0-cp37-abi3-win_amd64.whl", hash = "sha256:746271a5313c348e00c1b85927260e3e1a75351d86b2da1746e85c5dd77051e6", size = 3671788, upload-time = "2026-05-12T12:48:59.619Z" },
+]
+
+[[package]]
+name = "template-press"
+version = "3.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/4d/dd21f28b0615be2954a93d2846d12545596e06689db8c4cdec87f75e733e/template_press-3.6.0.tar.gz", hash = "sha256:b2a0941868bec8bb9998d5846ddb9b44228f6294bb55246f267d6b517c6cf22f", size = 127357, upload-time = "2026-08-17T17:55:22.219Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/b0/e3d8a27ee8d576711ba52606dad7e18f16b9b32762d0408f091916828e60/template_press-3.6.0-py3-none-any.whl", hash = "sha256:222e3c6827f8c74e436c3a2ddcffcd366754ea1b0b2c9d5349c4ad88fcb902bc", size = 142107, upload-time = "2026-08-17T17:55:20.965Z" },
 ]
 
 [[package]]
