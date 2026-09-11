@@ -231,7 +231,11 @@ with JSON-RPC `initialize`/`shutdown` against `uvx ty@latest server`.
 
 `release-please` opens a release PR on every push to `main`; merging the PR
 cuts a `v*` tag; `publish.yml` uploads to TestPyPI then PyPI via OIDC
-Trusted Publishing. See [ITM-053..060] for the full chain.
+Trusted Publishing. `publish-container.yml` separately publishes the existing
+web-service Docker image to GHCR when a stable GitHub Release is published.
+It uses `GITHUB_TOKEN`, preserves existing version images on retries, and
+checks anonymous access. First publication requires public package visibility.
+See `docs/RELEASE.md` for tags, verification, and recovery.
 
 ## Creating a new project from this template
 

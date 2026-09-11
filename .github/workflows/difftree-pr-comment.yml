@@ -68,3 +68,6 @@ jobs:
         #   difftree-version: "0.3.1" # crates.io version the action installs
         #   comment: "true"           # set "false" to compute outputs only
         #   advertise: "true"         # set "false" to drop the attribution footer
+        #   color-section: "open"     # colored fold: "open" | "closed" | "hidden"
+        #   plain-section: "closed"   # 📱 plain fold: "closed" | "open" | "hidden"
+        #   color: "true"             # DEPRECATED alias — "false" ≡ color-section: "hidden"
