@@ -24,7 +24,7 @@ jobs:
         uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
       - name: Build and smoke-test the container without registry credentials
         run: >-
-          uv run --no-project --python 3.12 python
+          uv run --no-project --python 3.13 python
           scripts/publish_container.py check
 
   publish-version:
@@ -51,7 +51,7 @@ jobs:
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
-          uv run --no-project --python 3.12 python
+          uv run --no-project --python 3.13 python
           scripts/publish_container.py publish
 
   promote-latest:
@@ -78,5 +78,5 @@ jobs:
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
-          uv run --no-project --python 3.12 python
+          uv run --no-project --python 3.13 python
           scripts/publish_container.py promote

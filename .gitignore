@@ -25,7 +25,7 @@ docs/build/
 .venv
 
 # Bun / npm (ADR-04: commitlint + Bun)
-node_modules/
+node_modules
 
 # Secrets
 .env

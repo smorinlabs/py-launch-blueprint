@@ -5,197 +5,118 @@ description: Use when bootstrapping a new Python repo, project, CLI, package, sc
 
 # new-python-project
 
-Bootstrap a fresh Python project from `smorinlabs/py-launch-blueprint`. This
-skill orchestrates the entire path from "I want a new project" to "the repo
-exists on GitHub, is rebranded with the user's identity, and the initial
-commit is pushed" — typically 60–90 seconds end-to-end.
+Create a fresh Python project from `smorinlabs/py-launch-blueprint`, validate
+its CLI and web application, and deliver the initialization as a pull request.
+The generated project starts at version `0.1.0` and requires Python 3.13+.
 
-## Why a skill rather than just commands
+Use this runbook from the **original blueprint checkout** throughout the
+bootstrap. Rebranding removes the generated copy of `SKILL.md` and retires its
+companion documentation. The generated project's ongoing setup checklist is
+`docs/PROJECT_SETUP.md`; `docs/POST_INIT.md` is a template/provenance pointer.
 
-The bootstrap is small *only after you've done it ten times*. The first
-time, a user hits a half-dozen "now what?" moments: gh not authed, package
-name not a valid Python identifier, post-init failing because the remote
-doesn't exist yet, etc. This skill encodes the right sequence with
-preconditions checked at the right time, so each "now what?" becomes a
-specific actionable prompt — never a surprise.
+## Scope and authorization
 
-## When to invoke vs. when not to
+Use this skill for a new project derived from the blueprint. An existing
+project with `press/press-receipt.toml`, the record of a completed rebrand, is
+not a fresh bootstrap target.
 
-**Invoke when**: the user wants a brand new project derived from this
-template. They don't need to say "py-launch-blueprint" explicitly — phrases
-like "new Python project from this", "scaffold a project", "start a fresh
-project using this template" all qualify.
+If the user has already selected the blueprint or approved this bootstrap,
+continue without asking them to choose it again. For a generic Python project
+request where that choice is unresolved, ask whether they want the blueprint's
+full toolchain or a minimal setup. If they decline the template, leave this
+skill and follow their chosen approach.
 
-**Don't invoke when**: the user is *inside* an existing project (already
-rebranded, carrying a `press/press-receipt.toml`) and just wants to modify
-something — that's `docs/POST_INIT.md` checklist territory, not this
-skill.
+Resolve the GitHub owner, repository name, visibility, and target directory
+before creating resources. Summarize the identity, local setup, and intended
+initialization pull request. Ask for approval only if those actions are not
+already authorized. An approved full bootstrap includes the preview, declared
+cleanup, rebrand, local toolchain setup, validation, and initialization PR.
+Publishing packages, merging the PR, and configuring external services require
+their own requested scope.
 
-## The runbook
+## Runbook
 
-Follow these steps in order. At each step the goal is *user clarity*, not
-mechanical execution — explain what's about to happen, especially before
-anything that creates resources on GitHub or writes to disk.
+Run commands from the stated directory and stop at a failed command. Replace
+angle-bracket placeholders with the collected values. The shell examples use
+Bash; keep the `bootstrap_*` variables available between steps. Record their
+resolved values when the execution tool starts a separate shell for each call.
 
-### Step 0 — Confirm the user wants this template (filter step)
+### 1. Check prerequisites and collect missing identity
 
-This skill triggers broadly on any Python project creation intent. Before
-doing ANY other work, ask the user whether they want this opinionated
-bootstrap. The skill is safe to enter on a wide net of phrasings BECAUSE
-it asks before acting — that's the whole filter-after-trigger contract.
-
-Ask exactly one question, with this shape (adapt phrasing to the
-conversation; do not invent extra options):
-
-> "I can bootstrap this as a full **py-launch-blueprint** project — uv,
-> ruff, lefthook, CI workflows, release-please, OIDC publishing, the whole
-> production-quality setup. Or set it up minimally (just `uv init`, no
-> opinions). The template adds significant tooling; great for projects
-> you'll maintain long-term, overkill for quick throwaway scripts.
->
-> **Use the py-launch-blueprint template?** [Y/n]"
-
-- **If yes** → continue to Step 1 (preconditions). The user opted in;
-  proceed through the rest of the runbook.
-- **If no** → stop this skill cleanly. Confirm: "Got it — I'll set this
-  up without the template." Then proceed with whatever simpler approach
-  fits (a plain `uv init`, a single script, etc.). Do NOT continue with
-  the runbook; the user explicitly declined.
-- **If unclear or the user asks for more info** → describe what's in the
-  template at one level of detail more than the prompt: "It scaffolds the
-  whole repo with uv dependency management, ruff lint+format, lefthook
-  git hooks, a Justfile with `just check` / `just test` etc., GitHub
-  Actions workflows (CI, security scans, dependency review, codecov),
-  release-please for automated version PRs, and OIDC publishing to PyPI.
-  All optional via post-init." Then re-ask the Y/n question.
-
-This step is **never skipped**, even when the user's initial prompt
-explicitly mentions py-launch-blueprint. The confirmation is cheap (one
-question, one keypress) and the cost of bootstrapping the wrong way is
-high (a half-rebranded project the user has to manually fix).
-
-### Step 1 — Preconditions
-
-Check all four before asking the user anything. If any fail, stop and tell
-the user precisely what's missing and how to fix it; do not proceed.
+From the original blueprint checkout, verify the command-line tools and GitHub
+login before creating the new repository:
 
 ```bash
-# 1. gh CLI installed
-command -v gh >/dev/null || {
-    echo "gh CLI not found. Install: https://cli.github.com/"
-    exit 1
-}
-
-# 2. gh authenticated
-gh auth status >/dev/null 2>&1 || {
-    echo "gh not authenticated. Run: gh auth login"
-    exit 1
-}
-
-# 3. uv installed
-command -v uv >/dev/null || {
-    echo "uv not found. Install: https://docs.astral.sh/uv/getting-started/installation/"
-    exit 1
-}
-
-# 3b. bun installed — the press's declared bun.lock regeneration needs it;
-# without it the rebrand fails mid-press (regen-bun-lock.sh exits 127).
-command -v bun >/dev/null || {
-    echo "bun not found. Install: https://bun.sh (required to regenerate bun.lock during the press)"
-    exit 1
-}
-
-# 4. Not already inside a rebranded project
-if [ -f "press/press-receipt.toml" ]; then
-    echo "Already inside a rebranded blueprint project. This skill bootstraps a NEW project."
-    echo "To reconfigure THIS project, follow docs/POST_INIT.md."
-    exit 1
-fi
+command -v git
+command -v gh
+command -v uv
+command -v bash
+command -v make
+gh auth status
 ```
 
-The last check matters because GitHub template repos *can* be re-templated
-infinitely, but you should never bootstrap inside an active project — the
-user almost certainly meant something else.
+Resolve missing tools or interactive authentication before resource creation.
+The complete bootstrap also runs the target's `make bootstrap` when needed
+and `just setup`; dependency installation and Git hook wiring are part of the
+validated result.
 
-### Step 2 — Collect identity
-
-Ask the user for each field below in order. Use whatever prompt mechanism
-your environment provides (Claude: AskUserQuestion; Codex: equivalent
-prompt UI; bare CLI: read from stdin). Show defaults inline and accept
-empty input to take the default.
-
-**Validate each answer** as it comes in — re-prompt on invalid input rather
-than collecting everything and failing at the end.
+Reuse identity values the user already supplied. Collect only missing fields,
+show derived defaults, and validate the answers before creating the repository.
 
 | Field | Default | Validation |
 |---|---|---|
-| GitHub repo name | (none — required) | `^[a-z][a-z0-9-]{0,99}$` (kebab-case, lowercase) |
-| GitHub owner | `gh api user --jq .login` | `^[a-z0-9][a-z0-9-]{0,38}$` |
-| Visibility | `public` | one of `public` / `private` |
-| Target directory | `$PWD/<repo-name>` | must not exist OR be empty |
-| Python package name | `<repo-name>` with `-` → `_` | `^[a-z][a-z0-9_]*$` (Python identifier) |
-| App short name (CLI command) | `<package_name>` | `^[a-z][a-z0-9_]*$` (Python identifier) |
-| Author name | `git config user.name` | non-empty |
-| Author email | `git config user.email` | `^[^@\s]+@[^@\s]+\.[^@\s]+$` |
-| Display name (product name in prose) | `<repo-name>` title-cased, `-` → spaces | non-empty; shown in docs/README prose, so confirm it reads as a product name |
+| GitHub repo name | Required | Lowercase kebab-case: `^[a-z][a-z0-9-]{0,99}$` |
+| GitHub owner | `gh api user --jq .login` | Existing account or organization the user can create repositories under |
+| Visibility | `public` | `public` or `private`; resolve before creating the repository |
+| Target directory | A sibling of the blueprint checkout named after the repo | Absolute path; absent or empty; outside the source checkout |
+| Python package name | Repo name with `-` changed to `_` | `^[a-z][a-z0-9_]*$`; not a Python keyword |
+| App short name | Python package name | `^[a-z][a-z0-9_]*$`; not a Python keyword |
+| Author name | `git config user.name` | Non-empty |
+| Author email | `git config user.email` | Valid email address |
+| Display name | Repo name with hyphens changed to spaces and words title-cased | Non-empty product name for README and documentation prose |
 
-The two name conventions matter and are independent: PyPI distribution
-names use kebab-case (`my-project`), Python import names use snake_case
-(`my_project`). The app short name is the noun-verb CLI's command and
-namespace: it becomes the command itself, the `<APP>_*` env-var prefix
-(uppercased), and the XDG dir/file names
-(`~/.config/<app>/<app>_config.toml`) — which is why it must be
-identifier-safe (no hyphens).
+The repo name is also the Python distribution name, such as `my-project`.
+The package name is its import name, such as `my_project`. The app short name
+becomes the CLI command, uppercase environment-variable prefix, and XDG
+configuration names. For example, `widget` produces the command `widget` and
+the environment-variable prefix `WIDGET_`.
 
-### Step 3 — Show what's about to happen
+### 2. Instantiate the GitHub template and create a working branch
 
-Before any GitHub or filesystem mutation, summarize the plan:
-
-```text
-About to create:
-  GitHub repo:   <owner>/<repo-name>  (<visibility>)
-  Local clone:   <target-dir>
-  Package name:  <package_name>
-  App name:      <app_name>  (CLI command + <APP_NAME>_* env prefix)
-  Display name:  <display_name>  (product name in docs/README prose)
-  Author:        <author> <<email>>
-
-Proceed? [Y/n]
-```
-
-If the user says no, stop. They've spent ~30 seconds answering questions,
-and stopping cleanly with no partial state is the right behavior. If yes,
-proceed.
-
-### Step 4 — Bootstrap via `gh repo create --template`
-
-`gh repo create` has **no `--directory` flag** (P0004 dogfood PROBLEM-02);
-`--clone` always clones into a subdirectory of the current working
-directory named after the repo. So run the command from the PARENT of your
-target directory:
+Use a real GitHub template instantiation so `origin` identifies the new
+repository. Create and clone separately to support the exact target directory;
+`gh repo create` does not have a `--directory` option.
 
 ```bash
-cd "$(dirname "<target-dir>")"
 gh repo create "<owner>/<repo-name>" \
     --template smorinlabs/py-launch-blueprint \
-    --<visibility> \
-    --clone
-# clone lands at ./<repo-name>; if your target dir name differs, `mv` it.
+    --<visibility>
+gh repo clone "<owner>/<repo-name>" "<target-dir>"
+cd "<target-dir>"
+git rev-parse --verify HEAD
+git remote get-url origin
+git status --short
+bootstrap_base_branch="$(git branch --show-current)"
+git switch -c chore/initialize-project
 ```
 
-This creates the repo on GitHub, clones it locally, and configures `origin`
-correctly. After this completes, the user has a fresh repo with the
-blueprint's identity (`py_launch_blueprint`, `py-launch-blueprint`, etc.) —
-The press will rebrand it next. Note: template generation is async on GitHub's
-side; if the clone is empty or warns, wait a few seconds and retry
-`gh repo clone <owner>/<repo-name> <target-dir>`.
+Require a populated, clean clone with `origin` pointing to the selected
+repository and no existing receipt. If GitHub has not finished generating the
+template, wait for its initial commit and complete the clone before continuing.
+Do not recreate the remote or delete an existing directory to retry.
 
-`cd` into the new directory before any further steps.
+### 3. Keep operator input outside the target
 
-### Step 5 — Write answers.toml from collected identity
+From `<target-dir>`, allocate a separate directory for answers and validation
+notes. This keeps operator input out of Git's clean-tree check.
 
-Write to `<target-dir>/press-answers.toml` (transient operator input —
-do NOT commit it):
+```bash
+bootstrap_operator_dir="$(mktemp -d "${TMPDIR:-/tmp}/blueprint-bootstrap.XXXXXX")"
+bootstrap_answers="$bootstrap_operator_dir/press-answers.toml"
+```
+
+Write the following TOML to the exact path in `$bootstrap_answers`, using the
+collected identity and valid TOML string escaping:
 
 ```toml
 [answers]
@@ -208,168 +129,240 @@ owner = "<owner>"
 display_name = "<Display Name>"
 ```
 
-All seven keys are required — the template's source config declares
-`display_name`, so the answers must supply the new one (the press refuses
-a half-specified display identity).
+Supply all seven keys: the blueprint declares a display name, so its new
+identity must supply one too. Keep this file outside the target through the
+receipt check in step 6. It is operator input, not a project artifact.
 
-### Step 6 — Preview the rebrand
+### 4. Install and check the locked press engine and Bun
 
-Run the press in dry-run mode and show the user the plan summary:
-
-```bash
-uvx --from 'template-press>=3.6.0' press rebrand --target . --config press-answers.toml --dry-run --allow-dirty
-```
-
-`--allow-dirty` is REQUIRED here: the `press-answers.toml` you just wrote
-is an untracked file, which trips the press's clean-tree precondition. It
-is safe for `--dry-run` (writes nothing) and for the real apply below (the
-only "dirty" file is the config the press itself consumes). The plan lists
-every replace/rename, the declared resets/regenerations (CHANGELOG stub,
-lockfiles, help snapshots), and the declared removals of blueprint-only
-files — that's the user's checkpoint to spot anything unexpected.
-
-Prompt: "Apply these changes? [Y/n]"
-
-On no: stop. The repo exists on GitHub and locally with the blueprint's
-identity unchanged — the user can manually rerun or abandon the project.
-On yes: continue.
-
-### Step 7 — Apply the rebrand
+All remaining commands run from `<target-dir>`. Sync the committed lockfile
+and use its released `template-press==4.1.0` throughout this runbook:
 
 ```bash
-uvx --from 'template-press>=3.6.0' press rebrand --target . --config press-answers.toml --allow-dirty
+uv sync --locked --group dev --extra web
+uv run --locked python --version
+test "$(uv run --locked python -c 'from importlib.metadata import version; print(version("template-press"))')" = "4.1.0"
 ```
 
-Without `--dry-run` this time (`--allow-dirty` still needed for the
-untracked `press-answers.toml`). On success the receipt
-`press/press-receipt.toml` is written and `press/press-source.toml` is
-refreshed to the new identity — verify the receipt exists before
-proceeding. Then run the one manual normalization step:
+Require Python 3.13 or newer. If the lockfile is stale or the expected engine
+is unavailable, resolve that failure before rebranding. Do not substitute a
+floating `uvx` invocation or a different press checkout for one of the phases.
+
+Install the target's pinned Bun, the JavaScript runtime used to regenerate
+`bun.lock`, and verify the executable that regeneration will see:
 
 ```bash
-uv run ruff format .
-rm press-answers.toml
+export PATH="$HOME/.local/bin:$HOME/.bun/bin:${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+scripts/install-bun.sh
+test "$(bun --version)" = "1.3.5"
+uv run --locked press check-tools --target .
+git status --short
 ```
 
-(Help snapshots regenerate automatically during the press; formatting is
-the only post-press normalization left — see `docs/POST_INIT.md`.)
+`press check-tools` resolves the declared command entry points without running
+them. It cannot establish the version of Bun called inside a script; the
+explicit Bun check must pass before regeneration. The working tree must still
+be clean. If mise blocks an untrusted configuration, inspect the new target's
+`mise.toml` and resolve trust before running its tools.
 
-If the press fails, exit 1 leaves the tree rewritten — recover with
-`git checkout . && git clean -fd`; exit 2 wrote nothing. Don't try to
-recover silently — the user needs to know something failed.
+### 5. Preview cleanup, clean, preview rebrand, then apply
 
-### Step 8 — Initial commit and push
+Imports during environment setup can create ignored bytecode directories
+inside source-package paths that the rebrand must rename. Use the target's
+`[[clean]]` declarations, which select the permitted cleanup paths:
+
+```bash
+uv run --locked press clean --target . --show
+```
+
+Review and report the listed paths, then execute the declared cleanup:
+
+```bash
+uv run --locked press clean --target .
+uv run --locked press rebrand --target . \
+    --config "$bootstrap_answers" --dry-run
+```
+
+Inspect the dry-run plan. It should cover the new identity, initial-version
+edits, reset documentation and history, removal of template-only material,
+and regeneration of lockfiles and CLI help snapshots. `--allow-dirty` is not
+needed because the answers file is outside the target.
+
+Show the plan summary and continue within the approved bootstrap scope. Pause
+only for unexpected changes that need a new decision. The preview does not
+run declared edit or regeneration commands; their successful execution is
+part of the apply and validation gates.
+
+```bash
+uv run --locked press rebrand --target . --config "$bootstrap_answers"
+test -f press/press-receipt.toml
+```
+
+Keep the cleanup outcome with the run's evidence. A `[[press.clean]]` receipt
+row records a declaration, not proof that cleanup ran. A successful rebrand
+writes the receipt and refreshes `press/press-source.toml` to the new identity.
+Continue reading the runbook in the original blueprint checkout after this
+step; its generated `SKILL.md` has been removed.
+
+### 6. Normalize, set up, and validate the generated project
+
+Format the **full tree** because longer identity values can affect tests as
+well as package code. `just format` covers only the package directory.
+
+```bash
+uv run --locked ruff format .
+make check
+```
+
+If `make check` reports missing base tools, run the target's `make bootstrap`
+and repeat the check. Then complete the required setup and resync the locked
+environment for the new package identity:
+
+```bash
+just setup
+uv sync --locked --group dev --extra web
+```
+
+Review `git status --short` and `git diff` against the preview. Stage the
+reviewed generated changes so Git-backed checks see the new paths. Investigate
+unexpected changes before staging.
 
 ```bash
 git add -A
+git diff --cached --check
+just check
+uv run --locked press verify --target .
+uv lock --check
+uv build
+uv run --locked <app_name> --help
+uv run --locked <app_name> --version
+```
+
+Require every command to pass. `press verify` checks identity conformance in
+an isolated copy; it does not run declared commands and reports its exempt
+outputs. The real apply and generated-project checks supply that additional
+evidence. The CLI must show the selected app name and version `0.1.0`.
+
+Check that the receipt matches the answers, and that project metadata,
+release state, the editable lock entry, and installed runtime all start at
+`0.1.0`:
+
+```bash
+uv run --locked python - "$bootstrap_answers" <<'PY'
+import importlib
+import json
+import sys
+import tomllib
+from importlib.metadata import version
+from pathlib import Path
+
+
+def read_toml(path):
+    return tomllib.loads(Path(path).read_text(encoding="utf-8"))
+
+
+project = read_toml("pyproject.toml")["project"]
+answers = read_toml(sys.argv[1])["answers"]
+receipt = read_toml("press/press-receipt.toml")["press"]
+editable = [
+    package for package in read_toml("uv.lock")["package"]
+    if package.get("source") == {"editable": "."}
+]
+if len(editable) != 1:
+    raise SystemExit("Expected one editable project entry in uv.lock")
+versions = {
+    "pyproject.toml": project["version"],
+    "release manifest": json.loads(Path(".release-please-manifest.json").read_text())["."],
+    "uv.lock": editable[0]["version"],
+    "installed metadata": version(project["name"]),
+    "runtime": importlib.import_module(answers["package_name"]).__version__,
+}
+if any(value != "0.1.0" for value in versions.values()):
+    raise SystemExit(f"Initial version mismatch: {versions}")
+if receipt.get("verified") is not True or any(
+    receipt.get("to", {}).get(key) != value for key, value in answers.items()
+):
+    raise SystemExit("Receipt does not certify the requested identity")
+print("PASS: receipt identity and initial 0.1.0 versions agree")
+PY
+```
+
+Smoke-test the actual web entry point. In `<target-dir>`, start the server:
+
+```bash
+uv run --locked --extra web uvicorn <package_name>.web.app:create_app \
+    --factory --host 127.0.0.1 --port 8000 --timeout-graceful-shutdown 5
+```
+
+Wait for `Application startup complete.` and the listening address
+`http://127.0.0.1:8000`. This command stays running. From another shell in the
+same `<target-dir>`, check its health response:
+
+```bash
+uv run --locked python - <<'PY'
+import json
+from urllib.request import urlopen
+
+with urlopen("http://127.0.0.1:8000/healthz", timeout=5) as response:
+    health = json.load(response)
+if health.get("status") != "ok" or health.get("version") != "0.1.0":
+    raise SystemExit(f"Unexpected health response: {health}")
+print("PASS: web health reports ok and version 0.1.0")
+PY
+```
+
+Use a different free local port in both commands if `8000` is occupied. Stop
+this server with Ctrl+C after the probe and confirm it exits. Build artifacts
+must include a wheel and source distribution for the new project at `0.1.0`.
+
+### 7. Commit the validated initialization and open its PR
+
+After the checks pass, inspect the final changes and stage any reviewed
+normalization outputs. Keep the answers and logs outside the repository.
+
+```bash
+git add -A
+git diff --cached --check
 git commit -m "chore: initialize <repo-name> from py-launch-blueprint"
-git push -u origin main
+git push -u origin chore/initialize-project
 ```
 
-`origin` is already set correctly by `gh repo create --template`, so the
-push goes to the new repo. The `-u` sets upstream tracking.
+Write a PR body to `$bootstrap_operator_dir/initialization-pr.md` describing
+the generated identity, initial version, completed checks, and deferred
+external-service setup. Use actual results, including any reported verification
+exemptions. Then create the PR against the branch recorded before rebranding:
 
-### Step 9 — Prompt about post-init (do not auto-chain)
-
-Tell the user what just happened, then offer post-init:
-
-```text
-✓ Project rebranded at <target-dir>
-  Pushed to https://github.com/<owner>/<repo-name>
-  Receipt:  press/press-receipt.toml
-
-Next: docs/POST_INIT.md is the decision checklist for publishing
-(PyPI/release-please), Codecov uploads, ReadTheDocs, and the app secrets
-the maintenance workflows need. Walk it now? [y/N]
+```bash
+gh pr create --repo "<owner>/<repo-name>" \
+    --base "$bootstrap_base_branch" --head chore/initialize-project \
+    --title "chore: initialize <repo-name>" \
+    --body-file "$bootstrap_operator_dir/initialization-pr.md"
 ```
 
-If yes: open `docs/POST_INIT.md` in the new project and walk its registry
-rows one decision at a time. If no: print the deferred-message:
+Report the target path, PR URL, receipt path, and validation result. Distinguish
+local checks from pending or completed GitHub checks. The delivered result is
+an initialization PR; do not push the initialization directly to the default
+branch or treat an open PR as merged.
 
-```text
-Skipped. When ready: open docs/POST_INIT.md — every post-setup decision
-lives there.
-```
+Point to the generated `docs/PROJECT_SETUP.md` for publishing, Codecov,
+Read the Docs, and repository configuration decisions. Continue those tasks
+only when they are part of the user's requested scope.
 
-The default is "no" because the user has just completed a multi-step flow
-and may want to commit, look at the diff, or take a break before tackling
-another decision tree.
+## Failure handling
 
-### Step 10 — Recommend the dev-toolchain setup (do NOT run it)
-
-This skill only needs `gh` and `uv`. The generated project's day-to-day
-workflow additionally uses `just` (task runner) and the lefthook git hooks
-— but installing toolchains on the user's machine is the user's call, not
-this skill's. Recommend, don't execute:
-
-```text
-Your project works with gh + uv alone, but the full dev workflow uses just.
-Inside <target-dir>:
-
-  make check       # report which base tools are present/missing
-  make install-just  # PRINT the just install command (runs nothing)
-  make bootstrap   # install just + uv if missing (Level 1 setup)
-  mise trust       # mise users only: trust the repo's mise.toml (see below)
-  just setup       # Level 2 — dev env sync, git hooks, hook toolchain
-
-Run `make check` first; it tells you exactly what's missing and how to fix it.
-```
-
-If you use **mise**, run `mise trust` in the new repo before `just setup`
-(P0004 dogfood PROBLEM-08): mise refuses to load an untrusted `mise.toml`
-on a fresh clone and `just setup` fails with "Config files in mise.toml
-are not trusted." Non-mise users can ignore this.
-
-Do not run `make bootstrap` or `just setup` on the user's behalf — they
-modify the user's machine (`~/.local/bin`, git hooks) beyond the project
-directory the user asked for.
-
-## Common failure modes and how to handle them
-
-**`gh repo create` says the repo already exists.** The user picked a name
-that's already taken in their account. Re-prompt for the repo name and
-retry. Don't try to "use the existing repo" — that conflates "fresh
-project" with "reset existing project."
-
-**The press fails on a dirty tree without `--allow-dirty`.** Shouldn't
-happen — the invocations above carry the flag because step 5's
-`press-answers.toml` is untracked. If it fails for a different dirty file,
-stop and show the user what is dirty.
-
-**`git push` fails because the user doesn't have push access to the org.**
-Catch the error and tell the user explicitly — they may have picked an org
-they're not a member of. Don't retry; have them pick a different owner.
-
-**User aborts at step 3 (plan confirmation) or step 6 (rebrand
-confirmation).** Leave everything as-is. The user can rerun this skill or
-manually continue. Do not delete the GitHub repo — that's destructive and
-usually wrong.
-
-## What this skill does NOT do
-
-Be explicit about boundaries — these are out of scope and should be
-deferred to other tools/skills:
-
-- Branch protection setup → manual `gh api ...branches/main/protection` or
-  a future `just protect-main` recipe
-- License changes (blueprint ships MIT) → manual `LICENSE` edit
-- Codecov / ReadTheDocs / PyPI publisher setup → `docs/POST_INIT.md`
-- Codespaces / Devcontainer customization → manual edit of
-  `.devcontainer/`
-- Forks (mode #4 in §4.7) → `gh repo fork` then the press invocation manually
-
-## Underlying contract
-
-This skill assumes:
-
-- `smorinlabs/py-launch-blueprint` is a valid GitHub template repository
-  (the "Template repository" toggle in repo settings is on)
-- The released `template-press` (>= 3.6.0) is reachable via `uvx`, and
-  the template commits its press config (`press/press-source.toml` +
-  `press/press-rules.toml`) — `just` is NOT required for the bootstrap
-- The user's authed gh account has permission to create repos under the
-  chosen owner
-
-If any of these change, this skill needs to change with them. The press
-contract lives in template-press's design 0006 (external target model)
-and its CLI reference.
+- **Repository already exists:** determine whether the current run just
+  created it. Resume that known bootstrap if appropriate; otherwise resolve
+  the name conflict without adopting or resetting someone else's repository.
+- **Dirty-tree or ignored-path refusal:** inspect the exact target paths in
+  the diagnostic. Keep user work intact. Preview and run `press clean` only
+  for the target's declared paths; resolve remaining collisions explicitly.
+- **Apply failure:** record the exit code and engine diagnostics, then inspect
+  the target and receipt state. A failed apply can leave rewritten files.
+  Use target-scoped restoration for individually reviewed paths, or start a
+  separate fresh clone while retaining the failed checkout for diagnosis.
+  Do not run blanket `git clean` or silently retry with force flags.
+- **Check, build, hook, or push failure:** fix confirmed bootstrap problems
+  and rerun the affected checks before proceeding. Report missing access or
+  service configuration precisely; do not disable gates to create a green PR.
+- **User stops the bootstrap:** report which resources and changes exist and
+  leave them intact. Stopping does not authorize repository deletion.

@@ -33,6 +33,7 @@ jobs:
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -52,6 +53,7 @@ jobs:
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     permissions:
       contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v7
         with:

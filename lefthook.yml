@@ -130,18 +130,18 @@ pre-commit:
       glob: "{pyproject.toml,uv.lock}"
       run: uv lock --check
     # ADR 0018 — local mirror of the large-file-guard CI workflow (ITM-028):
-    # reject staged files over 1 MB unless under docs/assets/. Catches a big
+    # reject staged files over 1 MB unless under assets/ or docs/assets/. Catches a big
     # blob before the push round-trip. Same 1 MB threshold + allowlist as CI.
     large-files:
       run: |
         threshold=1048576
         status=0
         for f in {staged_files}; do
-          case "$f" in docs/assets/*) continue ;; esac
+          case "$f" in assets/*|docs/assets/*) continue ;; esac
           [ -f "$f" ] || continue
           size=$(wc -c <"$f" | tr -d ' ')
           if [ "$size" -gt "$threshold" ]; then
-            echo "FAIL: $f is $size bytes (>1MB); use docs/assets/ or drop it" >&2
+            echo "FAIL: $f is $size bytes (>1MB); use assets/ or docs/assets/, or drop it" >&2
             status=1
           fi
         done

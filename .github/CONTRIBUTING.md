@@ -4,7 +4,7 @@ Thank you for your interest in contributing to Py Launch Blueprint! We welcome c
 
 ## Setup
 
-Requires **Python 3.12+** (per ITM-033). Setup is two levels, in order
+Requires **Python 3.13+** (per ITM-033). Setup is two levels, in order
 (both idempotent — safe to re-run):
 
 ```bash

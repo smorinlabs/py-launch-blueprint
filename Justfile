@@ -134,7 +134,7 @@ setup:
     scripts/install-lefthook.sh
     scripts/install-gitleaks.sh
     scripts/install-actionlint.sh
-    bun install
+    bun install --frozen-lockfile
     echo -e "{{BLUE}}[3/4] Installing formatters (taplo, yamlfmt)...{{NC}}"
     just install-taplo
     just install-yamlfmt

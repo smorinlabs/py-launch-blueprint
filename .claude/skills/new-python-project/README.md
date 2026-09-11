@@ -1,130 +1,59 @@
-# `new-python-project` — agent skill for bootstrapping new projects
+# `new-python-project` — bootstrap a project from the blueprint
 
-A self-contained skill that guides an AI agent (Claude Code, Codex, or
-anything that reads `AGENTS.md`) through creating a new Python project
-from the `py-launch-blueprint` template.
+This skill creates a fresh GitHub repository from `py-launch-blueprint`,
+rebrands it, validates the generated Python project, and opens its
+initialization pull request. The canonical procedure is [SKILL.md](SKILL.md).
 
-Canonical location: `.claude/skills/new-python-project/` (Claude Code's
-project-skill discovery path). `.agents/skills/new-python-project` is a
-symlink to this directory so Codex discovers it natively too (Codex scans
-`$REPO_ROOT/.agents/skills`). Note for Windows checkouts: without git
-symlink support the `.agents` entry degrades to a text file — Codex then
-won't auto-discover the skill, but the canonical copy still works as a
-runbook.
+## Location and invocation
 
-## What's here
+The maintained source is `.claude/skills/new-python-project/` in the original
+blueprint checkout. Claude Code discovers it there; Codex uses the existing
+`.agents/skills/new-python-project` directory symlink. Agents following
+`AGENTS.md` can read the same file as a runbook. On Windows checkouts without
+Git symlink support, use the canonical path directly.
 
-| File | Purpose |
+For predictable invocation, name the skill and supply the identity you know:
+
+```text
+Use the new-python-project skill to create a project from py-launch-blueprint.
+Repo: my-project. Owner: my-org. Package: my_project. App: widget.
+Use a private repository at /absolute/path/to/my-project.
+```
+
+The description still matches broad Python project creation intent. When the
+template choice is unresolved, the skill asks whether the user wants the full
+blueprint or a minimal setup. An explicit template request or prior approval
+settles that choice; the skill does not ask for it again. Declining the
+template exits the skill without introducing a separate minimal-setup mode.
+
+Automatic selection varies by agent and context. The
+[historical trigger evaluation](../../../docs/research/0001-skill-trigger-optimization.md)
+records the earlier experiments; it is not a guarantee of current behavior.
+
+## Bootstrap contract
+
+| Area | Required behavior |
 |---|---|
-| `SKILL.md` | Canonical runbook + YAML frontmatter for Claude's trigger matching |
-| `README.md` | This file |
+| Python | Python 3.13 or newer; generated project version `0.1.0` |
+| Press engine | Released `template-press==4.1.0` from committed `uv.lock`; `uv run --locked press` for every phase |
+| Input | Answers file outside the target; the clean-tree guard stays enabled |
+| Bun | Target installer and regeneration agree on Bun `1.3.5`; verify it before rebranding |
+| Order | Sync tools, check declared commands, preview cleanup, clean, preview rebrand, apply, format the full tree, set up, validate |
+| Validation | Setup and project checks, press verification, lock consistency, build, CLI smoke, and actual web health probe |
+| Delivery | Initialization branch and pull request with validation evidence |
+| Ongoing setup | Generated `docs/PROJECT_SETUP.md` holds external-service and repository decisions |
 
-## How agents invoke it
+The template's declared edits reset initial versions before lock regeneration.
+Declared resets and removals retire template history and maintenance content.
+The runbook checks the resulting receipt and version agreement before commit.
 
-**Claude Code** discovers it as a project skill (it lives in
-`.claude/skills/`), so it can be invoked directly as `/new-python-project`
-or auto-detected via the YAML frontmatter when the user describes the
-intent (e.g., "I want to start a new project from this template").
+Keep the runbook available from the **original blueprint checkout** while
+working in the new target. Rebranding removes the generated `SKILL.md` and
+resets this README to a retirement notice. The existing Codex directory
+symlink remains resolvable, but the generated project no longer exposes this
+bootstrap skill. Its `docs/POST_INIT.md` is a short template/provenance pointer.
 
-**Codex** discovers it through the `.agents/skills/new-python-project`
-symlink (Codex scans `$REPO_ROOT/.agents/skills`). Other agents that
-follow `AGENTS.md` find it via the "Creating a new project from this
-template" section in the repo root's `AGENTS.md`, which points here.
-
-**Humans** can read `SKILL.md` directly as a manual runbook — every step
-is a copy-pasteable bash block.
-
-## How to use it
-
-The fastest path is to start a fresh Claude Code session, ensure you have
-this repo locally, and say something like:
-
-> "I want to create a new Python project from py-launch-blueprint."
-
-…or (per the V6 broader-trigger design):
-
-> "Create a new Python repo for me — it's a CLI for parsing X."
-
-Claude will pick up the skill from `.claude/skills/new-python-project/`
-and **first ask** whether you want the full template setup or a minimal
-one (Step 0 in the runbook). On confirmation, it walks identity collection
-→ `gh repo create --template` → the press rebrand
-(`uvx --from 'template-press>=3.6.0' press rebrand`, dry-run first) →
-the docs/POST_INIT.md decision checklist. Total time: about
-60–90 seconds for the interactive bits, plus whatever the user spends
-thinking about the name.
-
-## The "filter-after-trigger" design
-
-The skill description casts a deliberately wide net — it triggers on
-Python project/repo/CLI/script creation intent, not just on explicit
-template mentions. The SKILL.md body's **Step 0** then asks the user
-whether they want the full template or a minimal setup. If declined, the
-skill exits cleanly; if confirmed, the rest of the runbook runs.
-
-This is intentional: rather than try (and fail) to thread a precise
-trigger that fires only when the user wants this template specifically,
-the skill triggers liberally and uses the conversation itself as the
-filter. Costs the user one extra Y/n prompt; gains everyone who would
-have otherwise missed the template option entirely.
-
-The frontmatter description must stay concise because Codex rejects skill
-descriptions over 1024 characters. Put detailed trigger rationale here in
-the README or in the SKILL.md body, not in the YAML description.
-
-## When this skill might fail to trigger (and how to force it)
-
-Empirically, this skill **undertriggers reliably** — measured via the
-skill-creator's trigger eval (20 queries × 3 runs each; findings in
-[`docs/research/0001-skill-trigger-optimization.md`](../../../docs/research/0001-skill-trigger-optimization.md)),
-all **six** description versions tested
-scored 0% recall on should-trigger queries while keeping 100%
-specificity (no false positives). Versions tested:
-
-- V1: original informational
-- V2: aggressive "DO NOT do directly"
-- V3: CRITICAL framing + named failure modes
-- V4: broad Python intent + ask-first framing
-- V5: mandatory-prerequisite ("You MUST consult... NEVER bootstrap without")
-- V6: "repo" emphasis + ask-first framing
-- V7: concise Codex-compatible description with the ask-first workflow in
-  the skill body (currently shipped)
-
-The root cause is structural, not phrasing: per the skill-creator's own
-documentation, *"Claude only consults skills for tasks it can't easily
-handle on its own."* The bootstrap task LOOKS simple to Claude even
-though it isn't — Claude evaluates "do I need help?" and concludes "I'll
-just run `gh repo create` and `git clone` myself," bypassing the skill.
-No amount of description-pushing seems to overcome this evaluation.
-
-**The practical workaround is to invoke the skill directly** rather than
-relying on auto-triggering:
-
-```text
-"Use the new-python-project skill to bootstrap a new Python project.
- I want it named X, owner Y, package Z."
-```
-
-Or even shorter:
-
-```text
-"Use the new-python-project skill — repo name X, owner Y."
-```
-
-Direct invocation always works. Auto-triggering is best-effort but not
-something to rely on for this skill specifically. The descriptions are
-written as if auto-triggering will work because it MIGHT in some
-contexts, and the skill body's value is the same either way.
-
-## When this skill is most likely to auto-trigger
-
-When the user's request makes the *multi-step nature* obvious:
-
-- "I need to bootstrap a project AND set up publishing AND configure
-  Codecov — can you walk me through it?"
-- "Help me start a new project from this template, I haven't done it
-  before and I always forget the OIDC step"
-- "What's the right order to do the bootstrap from py-launch-blueprint?"
-
-Single-line "create a project named X" rarely triggers — Claude treats
-it as a one-shot command.
+Full bootstrap authorization covers the necessary local setup and validation.
+Package publication, external-service setup, and PR merge remain separate
+requested work. The runbook preserves failed checkouts and directs recovery
+through engine diagnostics and explicitly reviewed target paths.

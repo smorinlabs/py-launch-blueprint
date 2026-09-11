@@ -1,5 +1,5 @@
-# WL-012 - scheduled "canary" run: the FULL suite (incl. the slow/live markers
-# the per-PR run also exercises) against a FRESHLY-RESOLVED dependency graph.
+# WL-012 - scheduled "canary" run: the hermetic suite (including slow tests, excluding
+# unprovisioned live tests) against a FRESHLY-RESOLVED dependency graph.
 #
 # Why separate from ci.yml: every other job pins to uv.lock (WL-002) so PRs are
 # reproducible. This one deliberately drops the lock and re-resolves to the
@@ -29,9 +29,9 @@ jobs:
     permissions:
       contents: read
     strategy:
-      fail-fast: false  # report both Python legs even if one breaks
+      fail-fast: false  # report all selected Python versions
       matrix:
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.13"]
     steps:
       - uses: actions/checkout@v7
 
@@ -46,7 +46,7 @@ jobs:
         # the canary; do NOT add --locked here.
         run: uv sync --upgrade --group dev --extra web
 
-      - name: Run the full suite (incl. slow + live markers)
-        # `-m ""` clears the default slow/live exclusion; `-n auto` parallelises.
+      - name: Run the hermetic suite (including slow tests)
+        # `-m "not live"` includes slow tests without requiring external services.
         # No coverage upload — the canary is about dependency health, not %.
-        run: uv run --no-sync pytest -m "" -n auto
+        run: uv run --no-sync pytest -m "not live" -n auto

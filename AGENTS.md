@@ -8,7 +8,7 @@ Windsurf, and Codex read this file natively. For human-contributor flow see
 
 ## Required tools
 
-- **Python 3.12+** (per `requires-python = ">=3.12"`; see ITM-033).
+- **Python 3.13+** (per `requires-python = ">=3.13"`; see ITM-033).
 - **uv** — Python dependency + venv management.
 - **bun** — commitlint runtime (per ADR-04).
 - **lefthook** — hook manager (per ADR-01).
@@ -68,7 +68,7 @@ workflow enforce it).
    the default rewrite covers it or `press/press-rules.toml` declares its
    neutralization (`[[regenerate]]`, `[[reset]]`, `[[remove]]`, or a
    reasoned exemption). Check locally:
-   - `uvx --from 'template-press>=3.6.0' press verify`
+   - `uv run --locked press verify`
 4. Stage + commit. Lefthook fires automatically:
    - **commit-msg** → commitlint (Conventional Commits, lowercase subject).
    - **pre-commit** (fast, staged-scoped) → gitleaks + editorconfig-checker
@@ -174,8 +174,6 @@ are what tooling can't check:
   decorators, parameterized generics over bare `dict`/`list`; a
   signature-changing decorator may legitimately keep a `cast`.
 
-Deep-dive + rationale: [`projects/P03-type-precision-uplevel.md`](projects/P03-type-precision-uplevel.md).
-
 ## Developer environment
 
 - Toolchain provisioning (per ADR 0005, extended by ADR 0018) — three
@@ -237,28 +235,18 @@ It uses `GITHUB_TOKEN`, preserves existing version images on retries, and
 checks anonymous access. First publication requires public package visibility.
 See `docs/RELEASE.md` for tags, verification, and recovery.
 
-## Creating a new project from this template
+## Creating another project
 
-When the user wants to bootstrap a new Python project from this template
-(phrases like *"create a new project from py-launch-blueprint"*, *"start a
-new Python project from this template"*, *"scaffold a project from the
-blueprint"*), follow the runbook at
-[`.claude/skills/new-python-project/SKILL.md`](.claude/skills/new-python-project/SKILL.md).
-Claude Code discovers it as the project skill `new-python-project`; Codex
-discovers the same directory via the `.agents/skills/new-python-project`
-symlink.
+In the blueprint, `.claude/skills/new-python-project/SKILL.md` is the bootstrap
+runbook, also discovered through the `.agents/skills/new-python-project` symlink.
+Use it when the user requests a new project from this template. It checks tools,
+uses the locked press, previews cleanup and rebranding, and validates the result
+before opening the initial PR.
 
-It encodes the full sequence: precondition checks (`gh`/`uv`), identity
-collection, `gh repo create --template` instantiation, the press rebrand
-(`uvx --from 'template-press>=3.6.0' press rebrand`) with a dry-run preview, the post-press
-normalization step (`docs/POST_INIT.md`), initial commit + push, and the
-POST_INIT decision checklist for publishing/Codecov/RTD setup — `just` is
-NOT required for the bootstrap. Auto-triggering is
-**unreliable** (empirically 0% recall — agents tend to do the bootstrap
-directly and skip the skill); for predictable invocation, tell the agent
-explicitly: *"Use the `new-python-project` skill."* For any agent following
-this file, the SKILL.md is a direct runbook — every step is a
-copy-pasteable shell block.
+Generated projects remove that SKILL.md. Configure an existing application with
+`docs/PROJECT_SETUP.md`; its source template is recorded in
+`press/press-receipt.toml` under `[press.from]`. Do not describe a generated
+application as a template for creating unrelated projects.
 
 ## For generated projects
 
