@@ -98,7 +98,7 @@ dev = [
   "pytest-randomly>=3.15", # WL-010 — randomized order surfaces inter-test coupling
   "hypothesis>=6.100",     # WL-013 — property-based tests at parse/serialize seams
   "responses>=0.25",       # HEX-40 — HTTP mock for the port-contract suite
-  "template-press>=4.1.0",
+  "template-press==4.1.0",
 ]
 
 docs = [

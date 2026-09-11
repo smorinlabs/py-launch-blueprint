@@ -441,7 +441,7 @@ over time.
 `.github/workflows/dep-audit.yml`, `Justfile`; WL-014.
 
 ### Large-file guard
-**What** — a workflow rejects new files >1 MB outside `docs/assets/`.
+**What** — a workflow rejects new files >1 MB outside `assets/` and `docs/assets/`.
 **Why** — accidental binary commits bloat history permanently and are painful to
 excise.
 **Value** — repo history stays lean and clone-fast.
@@ -869,7 +869,7 @@ template-press CLI reference.
 **What** — any added/renamed file containing an identity value must press
 cleanly; `press verify` (hermetic self-press + leak scan) enforces it in CI
 (`press-verify.yml`), at pre-push (lefthook), and locally
-(`uv run press verify`).
+(`uv run --locked press verify`).
 **Why** — if a new identity-bearing file has no rewrite coverage or
 declared neutralization, a fork would ship half-renamed; the drift check
 makes that impossible to merge.
@@ -897,14 +897,16 @@ drift; a single canonical file keeps every agent in sync.
 contributor uses.
 **Refs** — `AGENTS.md`, `CLAUDE.md`.
 
-### A project-bootstrap skill
-**What** — a `new-python-project` skill (under `.claude/skills/`, symlinked for
-Codex) encodes the full template-to-project runbook.
-**Why** — bootstrapping has many steps (preconditions, identity collection, init,
-post-init); a skill turns it into a guided, repeatable flow that's also a
-copy-pasteable runbook for humans.
-**Value** — agents (and people) scaffold new projects correctly and consistently.
-**Refs** — `.claude/skills/new-python-project/SKILL.md`; ADR-0014.
+### Bootstrap provenance and project setup
+**What** — the source blueprint's `new-python-project` skill encodes the
+template-to-project runbook. Rebranding retires the executable skill and
+keeps its README as a retirement notice. Generated applications use
+`docs/PROJECT_SETUP.md` for subsequent configuration.
+**Why** — bootstrapping validates the new identity, dependencies, CLI, and web
+application before handing over to ordinary project development.
+**Value** — generated projects retain setup guidance and a record of their origin.
+**Refs** — `docs/skills/new-python-project.md`, `docs/PROJECT_SETUP.md`;
+ADR-0014 records the source blueprint's original workflow.
 
 ---
 

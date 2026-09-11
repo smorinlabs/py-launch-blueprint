@@ -180,16 +180,12 @@ Under **Settings**:
 ### 2.5 Local development setup (per clone)
 
 ```bash
-# Toolchain
-scripts/install-bun.sh          # bun (used to install lefthook + commitlint deps)
-scripts/install-lefthook.sh     # wires git hooks from lefthook.yml
-scripts/install-gitleaks.sh     # local secret scanning
-
-# Python env
-uv sync --group dev             # dev dependencies (PEP 735)
-
-# Sanity
-just check                      # format + lint + typecheck + test
+# Bare machines only: install the base toolchain (just + uv).
+make bootstrap
+# Every fresh clone: locked dev + web dependencies, local Bun dependencies,
+# hooks, and the complete check toolchain.
+just setup
+just check
 ```
 
 ### 2.6 Application / runtime config

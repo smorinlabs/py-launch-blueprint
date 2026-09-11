@@ -10,7 +10,7 @@ Adopt the released press and prove a usable generated project.
 - **Release:** [Template Press 4.1.0](https://github.com/smorinlabs/template-press/releases/tag/v4.1.0)
 - **Dependency gate:** [Template Press PR #131](https://github.com/smorinlabs/template-press/pull/131)
 
-**Status:** `[x]` implemented and delivered in [PR #530](https://github.com/smorinlabs/py-launch-blueprint/pull/530); merge and release are outside this project.
+**Status:** `[~]` implementation delivered in [PR #530](https://github.com/smorinlabs/py-launch-blueprint/pull/530); deferred review follow-ups remain. Merge and release are outside the implementation tasks.
 
 ### Scope
 
@@ -36,6 +36,14 @@ will be recorded separately from blueprint fixes.
 - [x] [P07-T03] Update bootstrap instructions, generated docs, and first-PR CI.
 - [x] [P07-T04] Pass source checks, then bootstrap and exercise a generated project.
 - [x] [P07-T05] Commit and prepare the delivery PR with exact validation evidence.
+- [ ] [P07-T06] Add provisioned scheduled or manually dispatched bootstrap acceptance CI. Deferred from [review 3986130902](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3986130902); requires the native toolchain and network, and remains separate from generic CI's deliberate live-test exclusion.
+- [ ] [P07-T07] Evaluate and add Python 3.14 CI/canary coverage alongside the 3.13 minimum. Deferred from [review 3986130907](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3986130907); Python 3.14 lock resolution and the coverage gap already existed before this PR.
+- [ ] [P07-T08] Refresh the retained CI tutorial against actual workflow commands and supported platforms. Deferred from [review 3986130826](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3986130826); the Ubuntu-only example, macOS prose, wrong workflow extension, and floating tool examples predate this PR.
+- [ ] [P07-T09] Correct contributor-automation adoption and generated documentation. Deferred from [Copilot review 5175179607](https://github.com/smorinlabs/py-launch-blueprint/pull/530#pullrequestreview-5175179607); the existing checklist omits recreation of `.contributors.yml`, and retained Sphinx pages advertise the removed workflow/roster. Validate the opt-in command and generated links without enabling external automation.
+
+Tasks P07-T06 through P07-T09 are tracked follow-ups, not merge requirements
+for the Python 3.13 / Template Press 4.1.0 upgrade. The delivered implementation
+tasks above remain complete; the trunk stays open to keep follow-ups visible.
 
 ### Notes
 

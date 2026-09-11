@@ -86,8 +86,9 @@ A second review pass (same parity lens) settled four more checks:
    locally so a route change with a stale `docs/api/openapi.json` is caught
    before the push.
 8. **Large-file guard at pre-commit**: reject staged files over 1 MB outside
-   `docs/assets/`, the same threshold and allowlist as the `large-file-guard`
-   CI workflow.
+   `assets/` and `docs/assets/`, the same threshold and allowlist as the
+   `large-file-guard` CI workflow. P07 added root `assets/` so the supplied
+   application logo can be committed during initialization.
 9. **`actionlint` at pre-commit** on staged workflow files, mirroring the
    `lint.yml` actionlint job. This makes `actionlint` the **11th toolchain
    tool**, amending ADR 0005's lean 10-tool set: it is a git-hook tool with no

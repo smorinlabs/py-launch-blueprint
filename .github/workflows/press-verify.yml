@@ -32,5 +32,5 @@ jobs:
         # WL-001: hook/CI tools run from the locked dev group, never
         # floating uvx — the version comes from uv.lock.
         run: |
-          uv sync --group dev
-          uv run press verify
+          uv sync --locked --group dev
+          uv run --locked press verify

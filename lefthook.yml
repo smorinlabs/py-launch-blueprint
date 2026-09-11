@@ -141,7 +141,8 @@ pre-commit:
           [ -f "$f" ] || continue
           size=$(wc -c <"$f" | tr -d ' ')
           if [ "$size" -gt "$threshold" ]; then
-            echo "FAIL: $f is $size bytes (>1MB); use assets/ or docs/assets/, or drop it" >&2
+            echo "FAIL: $f is $size bytes (>1MB);" \
+              "use assets/ or docs/assets/, or drop it" >&2
             status=1
           fi
         done
@@ -187,4 +188,4 @@ pre-push:
     # for surviving identity; runs in generated projects too (a pressed
     # fork is itself a valid press target, so this IS its drift guard).
     press-verify:
-      run: uv run press verify
+      run: uv run --locked press verify

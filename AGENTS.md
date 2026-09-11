@@ -21,7 +21,7 @@ make bootstrap   # Level 1 — base toolchain (just + uv); bare machines only
 just setup       # Level 2 — everything else (run every fresh clone/container/session)
 ```
 
-`just setup` syncs the dev env (`uv sync --group dev --extra web`), wires
+`just setup` syncs the dev env (`uv sync --locked --group dev --extra web`), wires
 lefthook git hooks, and installs the hook toolchain (bun + `bun install`,
 gitleaks, taplo, yamlfmt). It starts by running the Makefile's `make check`
 gate and fails with a pointer to `make bootstrap` if the base toolchain is
@@ -35,7 +35,7 @@ clones, containers, and remote agent sessions start without it — run
 
 | Task | Command |
 |---|---|
-| Sync dev env | `uv sync --group dev --extra web` (PEP 735 — not `pip install '.[dev]'`) |
+| Sync dev env | `uv sync --locked --group dev --extra web` (PEP 735 — not `pip install '.[dev]'`) |
 | All checks | `just check` |
 | Run tests | `pytest` (default excludes `slow`/`live` markers per ITM-046; full: `pytest -m ""`; parallel: add `-n auto`) |
 | Run one test | `pytest tests/test_file.py::test_name` |

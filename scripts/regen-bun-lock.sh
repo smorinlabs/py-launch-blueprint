@@ -7,7 +7,7 @@ set -e
 # must fail here with the lock still intact, before the rm.
 command -v bun >/dev/null 2>&1 || { echo "regen-bun-lock: bun not found" >&2; exit 127; }
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-expected=$(cat "$SCRIPT_DIR/../.bun-version")
+expected=$(tr -d '\r' < "$SCRIPT_DIR/../.bun-version")
 actual=$(bun --version)
 if [ "$actual" != "$expected" ]; then
     echo "regen-bun-lock: expected bun $expected, found $actual; lock preserved" >&2

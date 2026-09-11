@@ -12,7 +12,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-BUN_VERSION=$(cat "$SCRIPT_DIR/../.bun-version")
+BUN_VERSION=$(tr -d '\r' < "$SCRIPT_DIR/../.bun-version")
 INSTALL_HOME="${HOME}/.bun"
 BIN="${INSTALL_HOME}/bin/bun"
 

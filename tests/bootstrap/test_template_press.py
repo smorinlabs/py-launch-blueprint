@@ -1,6 +1,6 @@
 """Live acceptance: press committed template content, then use the new project.
 
-Run explicitly with ``uv run --extra web pytest tests/bootstrap -m live -s``.
+Run with ``uv run --locked --extra web pytest tests/bootstrap -m live -s``.
 Requires the native toolchain and network access for dependency regeneration.
 No GitHub repository is created; the local origin models a template instance.
 """
@@ -67,9 +67,10 @@ def _snapshot(target):
 # A complete bootstrap includes dependency regeneration and another test suite.
 @pytest.mark.timeout(300)
 def test_committed_blueprint_generates_a_usable_project(tmp_path):
-    executables = {name: shutil.which(name) for name in ("git", "press", "uv", "just")}
+    executables = {name: shutil.which(name) for name in ("git", "uv", "just")}
     assert all(executables.values()), executables
-    git, press, uv, just = (executables[name] for name in executables)
+    git, uv, just = (executables[name] for name in executables)
+    press = (uv, "run", "--locked", "--extra", "web", "--project", str(ROOT), "press")
     target = tmp_path / IDENTITY["repo_name"]
     target.mkdir()
     source_commit = _run(ROOT, git, "rev-parse", "HEAD").strip()
@@ -107,10 +108,10 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     unignored = target / "tests/local-control.txt"
     unignored.write_bytes(b"unignored control\n")
     before = _snapshot(target)
-    _run(target, press, "check-tools", "--target", ".")
-    _run(target, press, "clean", "--target", ".", "--show")
+    _run(target, *press, "check-tools", "--target", ".")
+    _run(target, *press, "clean", "--target", ".", "--show")
     assert _snapshot(target) == before
-    _run(target, press, "clean", "--target", ".")
+    _run(target, *press, "clean", "--target", ".")
     assert not ignored.exists()
     assert tracked.read_bytes() == b"tracked control\n"
     assert unignored.read_bytes() == b"unignored control\n"
@@ -130,10 +131,17 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
         encoding="utf-8",
     )
     _run(
-        target, press, "rebrand", "--target", ".", "--config", str(answers), "--dry-run"
+        target,
+        *press,
+        "rebrand",
+        "--target",
+        ".",
+        "--config",
+        str(answers),
+        "--dry-run",
     )
     assert not _run(target, git, "status", "--porcelain")
-    _run(target, press, "rebrand", "--target", ".", "--config", str(answers))
+    _run(target, *press, "rebrand", "--target", ".", "--config", str(answers))
 
     receipt = _toml(target / "press/press-receipt.toml")["press"]
     assert receipt["verified"] is True
@@ -168,6 +176,10 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     for pointer in ("README.md", "docs/POST_INIT.md"):
         assert "PROJECT_SETUP.md" in (target / pointer).read_text()
     assert (target / "docs/PROJECT_SETUP.md").is_file()
+    design = (target / "docs/source/about/design_decisions.md").read_text()
+    assert "Rebranding retires the executable skill" in design
+    assert ".claude/skills/new-python-project/SKILL.md" not in design
+    assert (target / ".claude/skills/new-python-project/README.md").is_file()
     assert (target / "press/stubs/readme.md").read_text() == (
         target / "README.md"
     ).read_text()
@@ -177,7 +189,7 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     _run(target, git, "add", "--all")
     _run(target, git, "diff", "--cached", "--check")
     _run(target, just, "check")
-    _run(target, press, "verify", "--target", ".")
+    _run(target, uv, "run", "--locked", "press", "verify", "--target", ".")
     _run(target, uv, "lock", "--check")
     _run(target, uv, "build")
     assert list((target / "dist").glob("harbor_sample-0.1.0-*.whl"))
