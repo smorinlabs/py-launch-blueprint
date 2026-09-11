@@ -78,16 +78,20 @@ uv run ty check src/py_launch_blueprint/cli/main.py
 from collections.abc import Callable
 from typing import TypeVar, Generic
 
+
 # Basic type annotations
 def greet(name: str) -> str:
     return f"Hello {name}"
 
+
 # Optional parameters
-def fetch_user(user_id: int | None = None) -> dict[str, str | int]:
-    ...
+def fetch_user(user_id: int | None = None) -> dict[str, str | int]: ...
+
 
 # Generic types
-T = TypeVar('T')
+T = TypeVar("T")
+
+
 class Stack(Generic[T]):
     def __init__(self) -> None:
         self.items: list[T] = []
@@ -98,6 +102,7 @@ class Stack(Generic[T]):
     def pop(self) -> T:
         return self.items.pop()
 
+
 # Type aliases
 UserId = int
 UserDict = dict[UserId, dict[str, str | int]]
@@ -105,6 +110,6 @@ UserDict = dict[UserId, dict[str, str | int]]
 # Callable types
 Handler = Callable[[str, int], bool]
 
-def process(handler: Handler) -> None:
-    ...
+
+def process(handler: Handler) -> None: ...
 ```

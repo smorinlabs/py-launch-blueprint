@@ -36,6 +36,7 @@ verdict), plus one blessing bundle (F13).
 
   type CheckStatus = Literal["ok", "warn", "error"]
 
+
   class DoctorCheck(BaseModel):
       name: str
       status: CheckStatus
@@ -87,10 +88,18 @@ verdict), plus one blessing bundle (F13).
   ```
 - **Proposed**:
   ```python
-  def _request(self, method: str, path: str, *, allow_not_found: bool = False,
-               params: dict[str, str | int] | None = None) -> dict[str, Any]:
+  def _request(
+      self,
+      method: str,
+      path: str,
+      *,
+      allow_not_found: bool = False,
+      params: dict[str, str | int] | None = None,
+  ) -> dict[str, Any]:
       ...
       response = self.session.request(method, url, timeout=self.timeout, params=params)
+
+
   ...
   params: dict[str, str | int] = {"limit": limit, "opt_fields": "name,workspace.name"}
   ```
@@ -156,8 +165,9 @@ verdict), plus one blessing bundle (F13).
       query: str
       idempotency_key: str
 
+
   class _Entry(NamedTuple):
-      stored_at: float          # monotonic
+      stored_at: float  # monotonic
       status_code: int
       raw_headers: list[tuple[bytes, bytes]]
       body: bytes
@@ -229,6 +239,7 @@ verdict), plus one blessing bundle (F13).
       version: str
       python: str
 
+
   @app.get("/healthz", tags=["ops"])
   async def healthz() -> Health: ...
   ```
@@ -258,6 +269,8 @@ verdict), plus one blessing bundle (F13).
      ```python
      class _WorkspaceRef(TypedDict, total=False):
          name: str
+
+
      class _ProjectPayload(TypedDict, total=False):
          gid: str
          id: str
