@@ -39,7 +39,7 @@ will be recorded separately from blueprint fixes.
 - [ ] [P07-T06] Add provisioned scheduled or manually dispatched bootstrap acceptance CI. Deferred from [review 3986130902](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3986130902); requires the native toolchain and network, and remains separate from generic CI's deliberate live-test exclusion.
 - [ ] [P07-T07] Evaluate and add Python 3.14 CI/canary coverage alongside the 3.13 minimum. Deferred from [review 3986130907](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3986130907); Python 3.14 lock resolution and the coverage gap already existed before this PR.
 - [ ] [P07-T08] Refresh the retained CI tutorial against actual workflow commands and supported platforms. Deferred from [review 3986130826](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3986130826); the Ubuntu-only example, macOS prose, wrong workflow extension, and floating tool examples predate this PR.
-- [ ] [P07-T09] Correct contributor-automation adoption and generated documentation. Deferred from [Copilot review 5175179607](https://github.com/smorinlabs/py-launch-blueprint/pull/530#pullrequestreview-5175179607); the existing checklist omits recreation of `.contributors.yml`, and retained Sphinx pages advertise the removed workflow/roster. Validate the opt-in command and generated links without enabling external automation.
+- [ ] [P07-T09] Correct retained generated documentation for optional contributor automation. Deferred from [Copilot review 5175179607](https://github.com/smorinlabs/py-launch-blueprint/pull/530#pullrequestreview-5175179607); Sphinx pages advertise the removed workflow/roster. The separate claim that initialization requires an existing `.contributors.yml` was refuted against published contributors-please 1.4.3: `init` uses defaults when the file is absent. Verify generated links without enabling external automation.
 
 Tasks P07-T06 through P07-T09 are tracked follow-ups, not merge requirements
 for the Python 3.13 / Template Press 4.1.0 upgrade. The delivered implementation
@@ -58,3 +58,11 @@ publication authorization.
 The pushed implementation at `64490e3` passed the full local bootstrap again
 (62.36 seconds). GitHub Actions passed, including Python 3.13 on Linux, macOS
 and Windows. Automated review results are tracked on PR #530.
+
+The review repair at `2b5ba26` passed `just check` (317 tests and 11 snapshots),
+Sphinx with warnings treated as errors, and the full generated-project
+acceptance in 63.14 seconds. The generated application passed 311 tests and
+11 snapshots, built both distributions, and served healthy CLI/HTTP behavior
+at version `0.1.0`. Inverse controls verified stale-lock refusal, isolation
+from system Bun, and LF/CRLF version-pin handling. Every original review
+thread received an evidence reply and a confirmed resolution.
