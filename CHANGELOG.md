@@ -1,5 +1,50 @@
 # Changelog
 
+## [3.0.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.4.2...v3.0.0) (2026-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* retire the embedded init engine
+
+### Features
+
+* **ci:** publish stable release containers to ghcr ([c1216c6](https://github.com/smorinlabs/py-launch-blueprint/commit/c1216c6089f768ae0a3f3a465460d2d384f5fa44))
+* **ci:** publish stable release containers to ghcr ([a680cd1](https://github.com/smorinlabs/py-launch-blueprint/commit/a680cd1e13a879169b6b26351a2af8e7429ceaff))
+* **guard:** relocate fork guard to scripts with receipt-era conditions ([4f3a10a](https://github.com/smorinlabs/py-launch-blueprint/commit/4f3a10a06d1e442da3d095be2396ba81fab61e3f))
+* **press:** add bun.lock regeneration scripts for declared rules ([f200e01](https://github.com/smorinlabs/py-launch-blueprint/commit/f200e018e23389d1b267492afc1c4282f627f02e))
+* **press:** conform to template-press v3.4 — source identity, declared rules, run 4 log ([6f99b76](https://github.com/smorinlabs/py-launch-blueprint/commit/6f99b7666116bbff861b0cd7501ab38d7c875f28))
+* **press:** declare rules — substring mode, regenerate, reset ([fb7ecda](https://github.com/smorinlabs/py-launch-blueprint/commit/fb7ecda98634ff0259c041998b5afa0edc6574f8))
+* **press:** declare source identity for external press ([8461389](https://github.com/smorinlabs/py-launch-blueprint/commit/84613893f46ab827a9ce7496dd882cc9249644b7))
+* **press:** v3.6.0 config — boundary scan, snapshot regeneration, fork removals ([7a1668d](https://github.com/smorinlabs/py-launch-blueprint/commit/7a1668d0fa639ae4dd6857b3c7c90e599bc76622))
+* retire the embedded init engine ([3a11108](https://github.com/smorinlabs/py-launch-blueprint/commit/3a11108ca9ab4254ec6f3463dbd644ef75724338))
+
+
+### Bug Fixes
+
+* **ci:** exclude internal repositories ([7161d85](https://github.com/smorinlabs/py-launch-blueprint/commit/7161d858203648a348c3cf04ced9368479878577))
+* **ci:** provision container publisher runtime explicitly ([27d3f20](https://github.com/smorinlabs/py-launch-blueprint/commit/27d3f2036741247552f642ffa0f84c8fd9452da8))
+* **ci:** reject a committed press receipt in the marker-absence check ([91bf56c](https://github.com/smorinlabs/py-launch-blueprint/commit/91bf56c76c419bbd225a46caa74776260ce7e854))
+* **ci:** remove runner cli dependency ([7bb296c](https://github.com/smorinlabs/py-launch-blueprint/commit/7bb296ccd92a64082f0125d59459640a78c86855))
+* **ci:** use trigger-independent visibility ([2f38073](https://github.com/smorinlabs/py-launch-blueprint/commit/2f380733f51a349185cedfe0d71731a922d0ce0f))
+* **guard:** accept a press receipt as an initialized marker ([b135492](https://github.com/smorinlabs/py-launch-blueprint/commit/b135492a1def0fafa41cbe35e301ac0698e57256))
+* **guard:** accept a press receipt as an initialized marker ([62cb439](https://github.com/smorinlabs/py-launch-blueprint/commit/62cb4397da3b5cd805959aa3bbe07c2bc4b8ec7c))
+* **hooks:** invoke commitlint by explicit path, not a resolvable name ([35395a1](https://github.com/smorinlabs/py-launch-blueprint/commit/35395a11a18e10aa804870617bc6acef02c55ac1))
+* **hooks:** run commitlint from node_modules, not bunx or a global shim ([b6b3b32](https://github.com/smorinlabs/py-launch-blueprint/commit/b6b3b3264edab444254b647cb33e59d25218f3ad))
+* **hooks:** run commitlint through Bun from the repo's own lockfile ([6b26809](https://github.com/smorinlabs/py-launch-blueprint/commit/6b2680966d8947169644af4cbd437f59678dd7ba))
+* **hooks:** run commitlint through Bun, which is the only runtime provisioned ([8019bfe](https://github.com/smorinlabs/py-launch-blueprint/commit/8019bfe8f4761bf69b7a7dbd120a6208a667eef6))
+* **hooks:** run commitlint via the mise pin instead of unpinned bunx ([4a1d000](https://github.com/smorinlabs/py-launch-blueprint/commit/4a1d00016428bb8159d0d8863e3c5268010bfc56))
+* **press:** fail loud on undeletable bun.lock; annotate blueprint-only spec link ([21b9274](https://github.com/smorinlabs/py-launch-blueprint/commit/21b927425dfe8739e58cdc66e7ea9233b6073b02))
+* **press:** fork-safe runner, locked press deps, complete doc cutover ([ff12511](https://github.com/smorinlabs/py-launch-blueprint/commit/ff1251116ba512cecb298c7862ef7aa9e27309ed))
+* **press:** identity-free fork workflow, legacy removal parity, bun precondition ([fa3b98d](https://github.com/smorinlabs/py-launch-blueprint/commit/fa3b98d2b153194aa866921bc1fcacf0a5f724ef))
+* **press:** receipt-aware pre-push gates, post-press normalization docs, run 4 evidence ([8ed30c3](https://github.com/smorinlabs/py-launch-blueprint/commit/8ed30c3c64d389659b481714fe218b6e8ffec4a4))
+* **press:** receipt-aware pre-push gates; identity-free control comments ([b455003](https://github.com/smorinlabs/py-launch-blueprint/commit/b45500359d2176afaeb0ff62eaa0d6cc5cd29afa))
+* **press:** remove the contributors meta-test with its workflow ([9744ebc](https://github.com/smorinlabs/py-launch-blueprint/commit/9744ebc5ac7d6da7929cc2009a04589ac9e511e4))
+* **release:** scope uv.lock updater ([1567113](https://github.com/smorinlabs/py-launch-blueprint/commit/15671136436e46055b4ba3e2a0da837831b3d0c5))
+* **release:** target editable lock package ([41d3367](https://github.com/smorinlabs/py-launch-blueprint/commit/41d3367254726539dd1296fe12c375b90f35b738))
+* **release:** update uv.lock atomically ([46c744f](https://github.com/smorinlabs/py-launch-blueprint/commit/46c744f6c2fb1c424ee0bcf0306d2d2c874d3a30))
+* **release:** update uv.lock atomically ([0a3a657](https://github.com/smorinlabs/py-launch-blueprint/commit/0a3a6578db43621d885828a4744a952a84324448))
+
 ## [2.4.2](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.4.1...v2.4.2) (2026-07-21)
 
 
