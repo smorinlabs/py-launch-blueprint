@@ -1,6 +1,6 @@
 # P07 — Released press integration and Python 3.13 bootstrap
 
-Status: owner-approved execution, in progress.
+Status: implemented and delivered in [PR #530](https://github.com/smorinlabs/py-launch-blueprint/pull/530). Local acceptance and GitHub Actions passed. Merge and release remain outside scope.
 
 ## Contract and baseline
 

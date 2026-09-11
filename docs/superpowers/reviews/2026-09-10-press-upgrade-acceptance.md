@@ -2,19 +2,20 @@
 
 The updated blueprint generated a working CLI and web application with released
 Template Press 4.1.0 and Python 3.13.14. The new application starts at version
-0.1.0. This is local acceptance evidence; GitHub CI is reported separately on
-the delivery PR.
+0.1.0. This records local acceptance and the passing GitHub Actions run on
+[PR #530](https://github.com/smorinlabs/py-launch-blueprint/pull/530).
 
 ## Source and dependency gate
 
 - Blueprint base: `c1216c6089f768ae0a3f3a465460d2d384f5fa44`.
-- Implementation snapshot: `c9347573bdee6c7bf0fa3e46a3619c985181a753`.
+- Initial implementation snapshot: `c9347573bdee6c7bf0fa3e46a3619c985181a753`.
+- Final implementation and live acceptance snapshot: `64490e3efa9e4a39db66b9c9b94f74e9d6044618`. The repeated live test passed in 62.36 seconds.
 - Template Press PR #131 merged on 2026-09-11 at `405a80f278c699b6d4d3504da011e78f9922b361`.
 - GitHub Releases and PyPI reported Template Press 4.1.0 as the latest published
   version. Its release predates PR #131. The tests used the published package,
   not an unreleased checkout.
 - Native toolchain used Python 3.13.14, Bun 1.3.5 and the committed Python lock.
-  The public Flox catalog also lists Bun 1.3.5 for all four manifest systems,
+  The [public Flox catalog](https://api.flox.dev/api/v1/catalog/packages/bun?pageSize=1000) also lists Bun 1.3.5 for all four manifest systems,
   with available builds and no broken/insecure flag. Full Flox activation was
   not exercised; `flox show` stalled locally, so availability was verified via
   the catalog's read-only package endpoint.
@@ -39,7 +40,14 @@ the delivery PR.
 The first live acceptance run reached successful generated checks, verification
 and builds, then hit pytest's generic 60-second timeout. Giving this full
 bootstrap test an explicit 300-second limit allowed the complete second run
-to pass in 57.65 seconds. Per-command timeouts remain enforced.
+to pass in 57.65 seconds. Per-command timeouts remain enforced. The final committed implementation
+passed the same test again in 62.36 seconds.
+
+[GitHub CI](https://github.com/smorinlabs/py-launch-blueprint/actions/runs/34564289149)
+passed on `64490e3`, including Linux, macOS and Windows Python 3.13, build
+installation smoke tests, documentation, types and lint. The separate press,
+security, dependency, container and commit checks also passed. Automated review
+results and any subsequent tracking-only commit are visible on PR #530.
 
 ## What the acceptance test proves
 

@@ -10,7 +10,7 @@ Adopt the released press and prove a usable generated project.
 - **Release:** [Template Press 4.1.0](https://github.com/smorinlabs/template-press/releases/tag/v4.1.0)
 - **Dependency gate:** [Template Press PR #131](https://github.com/smorinlabs/template-press/pull/131)
 
-**Status:** `[~]` implementation and local acceptance complete; delivery PR pending.
+**Status:** `[x]` implemented and delivered in [PR #530](https://github.com/smorinlabs/py-launch-blueprint/pull/530); merge and release are outside this project.
 
 ### Scope
 
@@ -35,7 +35,7 @@ will be recorded separately from blueprint fixes.
 - [x] [P07-T02] Implement declared clean/edit/reset/removal and consistent Bun use.
 - [x] [P07-T03] Update bootstrap instructions, generated docs, and first-PR CI.
 - [x] [P07-T04] Pass source checks, then bootstrap and exercise a generated project.
-- [ ] [P07-T05] Commit and prepare the delivery PR with exact validation evidence.
+- [x] [P07-T05] Commit and prepare the delivery PR with exact validation evidence.
 
 ### Notes
 
@@ -46,3 +46,7 @@ Press 4.1.0, verified through GitHub Releases and PyPI. The owner selected
 Python 3.13 as the minimum supported version. Downstream application work and
 feedback-log updates are excluded. Delivery is a reviewed PR, without merge or
 publication authorization.
+
+The pushed implementation at `64490e3` passed the full local bootstrap again
+(62.36 seconds). GitHub Actions passed, including Python 3.13 on Linux, macOS
+and Windows. Automated review results are tracked on PR #530.
