@@ -45,7 +45,7 @@ jobs:
       # merge-base(base, HEAD) to find what the PR changed, and difftree is
       # libgit2-backed (poor shallow-clone support). The default shallow
       # checkout (fetch-depth: 1) breaks this.
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           # The action's runtime `git fetch origin <base>` (action.yml:111-114)
