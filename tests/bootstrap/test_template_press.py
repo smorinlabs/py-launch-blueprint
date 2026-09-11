@@ -100,7 +100,10 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     tracked = target / "tests/__pycache__/tracked-control.pyc"
     tracked.parent.mkdir(exist_ok=True)
     tracked.write_bytes(b"tracked control\n")
+    future_plan = target / "projects/P08-acceptance-control.md"
+    future_plan.write_text("# Independent planning record\n", encoding="utf-8")
     _run(target, git, "add", "--force", str(tracked.relative_to(target)))
+    _run(target, git, "add", str(future_plan.relative_to(target)))
     _run(target, git, "commit", "-m", "test: add tracked cleanup control")
     ignored = target / "src/py_launch_blueprint/__pycache__/ignored-control.pyc"
     ignored.parent.mkdir(exist_ok=True)
@@ -153,6 +156,12 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     assert json.loads((target / ".release-please-manifest.json").read_text()) == {
         ".": "0.1.0"
     }
+    expected_release = json.loads((ROOT / "release-please-config.json").read_text())
+    expected_release.pop("bootstrap-sha", None)
+    expected_release["packages"]["."]["package-name"] = IDENTITY["package_name"]
+    assert json.loads((target / "release-please-config.json").read_text()) == (
+        expected_release
+    )
     editable = [
         p
         for p in _toml(target / "uv.lock")["package"]
@@ -172,7 +181,14 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     ):
         assert not (target / removed).exists(), removed
     assert (target / ".agents/skills/new-python-project").is_dir()
-    assert not list((target / "projects").glob("P*.md"))
+    assert not (target / "projects").exists()
+    for page, stub in (
+        ("docs/source/index.md", "docs-index.md"),
+        ("docs/source/about/philosophy.md", "project-philosophy.md"),
+    ):
+        assert (target / page).read_text() == (
+            target / "press/stubs" / stub
+        ).read_text()
     for pointer in ("README.md", "docs/POST_INIT.md"):
         assert "PROJECT_SETUP.md" in (target / pointer).read_text()
     assert (target / "docs/PROJECT_SETUP.md").is_file()
@@ -186,11 +202,32 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
 
     _run(target, uv, "run", "--locked", "ruff", "format", ".")
     _run(target, just, "setup")
+    assert [p.name for p in (target / "projects").iterdir()] == [".gitkeep"]
     _run(target, git, "add", "--all")
     _run(target, git, "diff", "--cached", "--check")
     _run(target, just, "check")
     _run(target, uv, "run", "--locked", "press", "verify", "--target", ".")
     _run(target, uv, "lock", "--check")
+    docs_output = tmp_path / "generated-docs"
+    _run(
+        target,
+        uv,
+        "run",
+        "--locked",
+        "--group",
+        "docs",
+        "--extra",
+        "web",
+        "sphinx-build",
+        "-W",
+        "-b",
+        "html",
+        "docs/source",
+        str(docs_output),
+    )
+    home_page = (docs_output / "index.html").read_text(encoding="utf-8")
+    assert "Application documentation" in home_page
+    assert "Production-Ready Python Project Template" not in home_page
     _run(target, uv, "build")
     assert list((target / "dist").glob("harbor_sample-0.1.0-*.whl"))
     assert list((target / "dist").glob("harbor_sample-0.1.0.tar.gz"))

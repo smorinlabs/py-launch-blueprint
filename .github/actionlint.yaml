@@ -63,7 +63,6 @@ config-variables:
   - RUNNER_UBUNTU
   - RUNNER_MACOS
   - RUNNER_WINDOWS
-  - CLAUDE_REVIEW_ENABLED
 
 paths:
   .github/workflows/release-please.yml:

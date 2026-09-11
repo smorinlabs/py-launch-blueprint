@@ -441,7 +441,7 @@ over time.
 `.github/workflows/dep-audit.yml`, `Justfile`; WL-014.
 
 ### Large-file guard
-**What** — a workflow rejects new files >1 MB outside `assets/` and `docs/assets/`.
+**What** — a workflow rejects new files >1 MB outside `docs/assets/`.
 **Why** — accidental binary commits bloat history permanently and are painful to
 excise.
 **Value** — repo history stays lean and clone-fast.

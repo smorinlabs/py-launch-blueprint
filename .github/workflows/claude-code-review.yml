@@ -12,8 +12,7 @@ on:
 
 jobs:
   claude-review:
-    # Enable only after configuring credentials and CLAUDE_REVIEW_ENABLED=true.
-    # Repository variables, not secrets, are available in a job-level condition.
+    # Credential presence enables review; fresh repositories skip it cleanly.
     # Only run on same-repo, non-bot PRs.
     #  - Forked-PR runs don't receive repo secrets (CLAUDE_CODE_OAUTH_TOKEN would
     #    be empty), so they'd error on every external contributor's PR.
@@ -26,8 +25,7 @@ jobs:
     #    the author check alone isn't enough. Skipping is a neutral (non-failing)
     #    outcome for this non-required job.
     if: >-
-      vars.CLAUDE_REVIEW_ENABLED == 'true'
-      && github.event.pull_request.head.repo.full_name == github.repository
+      github.event.pull_request.head.repo.full_name == github.repository
       && github.event.pull_request.user.type != 'Bot'
       && github.event.sender.type != 'Bot'
 
@@ -39,12 +37,28 @@ jobs:
       id-token: write
 
     steps:
+      - name: Check Claude review configuration
+        id: configuration
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -n "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            message="Claude review is not configured; skipping."
+            echo "$message"
+            echo "$message" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Checkout repository
+        if: steps.configuration.outputs.configured == 'true'
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
       - name: Run Claude Code Review
+        if: steps.configuration.outputs.configured == 'true'
         id: claude-review
         uses: anthropics/claude-code-action@v1.0.175
         with:

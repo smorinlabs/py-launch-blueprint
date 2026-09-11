@@ -336,8 +336,11 @@ Use `bun install --frozen-lockfile` inside each additional Git worktree.
 Do not share `node_modules` through a symlink. `.bun-version` selects the
 lockfile writer used by setup and press regeneration.
 
-Optional Claude review needs both its documented credential and the repository
-variable `CLAUDE_REVIEW_ENABLED=true`. Without that opt-in, the workflow skips.
+Optional Claude review runs when the `CLAUDE_CODE_OAUTH_TOKEN` secret is
+configured. Without that credential, its configuration check succeeds and
+reports "Claude review is not configured; skipping." in the log and job summary.
+Checkout and review steps are skipped; no separate enable variable is needed.
+Invalid credentials or failures during a configured review still report errors.
 Commitlint needs `pull-requests: read` to inspect commits on private PRs; the
 workflow declares that permission. Initialize through a branch and PR when the
 repository requires reviews; do not rely on a main-branch bypass.
@@ -350,3 +353,7 @@ explicitly.
 
 Generic CI includes slow tests but excludes tests marked `live`, which require
 external services. Run live tests only in a job that provisions those services.
+
+Generation removes the template's entire `projects/` planning directory.
+`just setup` restores `projects/.gitkeep` while `PROJECTS.md` is present, so
+the generated project has an empty directory for its own planning records.

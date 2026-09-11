@@ -27,9 +27,12 @@ its Python floor was 3.12, and `just setup` and baseline `just check` passed.
    for hook/CI checks.
 3. Declare cleanup of ignored artifacts under source package and test paths.
    Keep cleanup separate and previewable. Reset release metadata and use an
-   edit to seed the project version before lock regeneration.
+   edit to seed the project version before lock regeneration. Remove the
+   inherited release-history cutoff from generated release configuration.
 4. Remove blueprint-owned history. Reset README, POST_INIT and the project
-   index to useful identity-free content. Preserve the general configuration
+   index and Sphinx introduction pages to useful identity-free content.
+   Remove the whole planning directory; setup restores `projects/.gitkeep`.
+   Preserve the general configuration
    checklist in PROJECT_SETUP. Remove the bootstrap SKILL.md and its dedicated
    test; retain a neutral companion README so its Codex symlink resolves.
 5. Check Bun's supported version before removing either lockfile. Keep native,
@@ -38,8 +41,10 @@ its Python floor was 3.12, and `just setup` and baseline `just check` passed.
 6. Update the bootstrap runbook to store answers outside the target, check
    tools, preview cleanup/rebrand, apply, format, validate, and open the initial
    PR from a branch. Scope recovery to the actual failed operation.
-7. Supply commitlint PR-read permission and opt-in Claude review. Generic
-   tests exclude unprovisioned live tests. Correct the asset allowlist and
+7. Supply commitlint PR-read permission. Run Claude review when its credential
+   is configured; otherwise report a successful skip without a separate enable
+   variable. Generic tests exclude unprovisioned live tests. Retain the existing
+   large-file restriction, which exempts only `docs/assets/`, and
    explain the actual visibility gates on security workflows.
 
 ## Reassessment boundaries
@@ -58,6 +63,9 @@ removing only ignored artifacts; and successful press with an origin already
 naming the destination. Assert receipt provenance, version/manifest/lock
 agreement, disappearance of active template-only skills/history, and useful
 retained setup links. Validate a second `press verify` on the generated tree.
+Credential-present and credential-absent controls exercise the actual Claude
+configuration step without real credentials or a paid review. An extra planning
+record proves cleanup covers future files; setup must leave only `.gitkeep`.
 
 Run all required source checks and build. Generate a local disposable repository
 with fresh Git history and a destination origin. Press committed blueprint

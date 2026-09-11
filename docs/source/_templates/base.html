@@ -25,7 +25,7 @@
 {% if not docstitle %}
   <title>{{ title|striptags|e }}</title>
 {% elif pagename == master_doc %}
-  <title>py-launch-blueprint: A Production-Ready Python Project Template with Integrated Best Practices</title>
+  <title>{{ docstitle|striptags|e }}</title>
 {% else %}
   <title>{{ title|striptags|e }} - {{ docstitle|striptags|e }}</title>
 {% endif %}

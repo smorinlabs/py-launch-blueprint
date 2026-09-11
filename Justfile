@@ -129,6 +129,11 @@ setup:
     export PATH="$HOME/.local/bin:$HOME/.bun/bin:${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
     echo -e "{{BLUE}}[1/4] Syncing dev environment: uv sync --locked --group dev --extra web{{NC}}"
     uv sync --locked --group dev --extra web
+    # Generation removes template planning history; retain an empty scaffold.
+    if [ -f PROJECTS.md ]; then
+        mkdir -p projects
+        touch projects/.gitkeep
+    fi
     echo -e "{{BLUE}}[2/4] Installing hook toolchain (bun, lefthook, gitleaks, actionlint)...{{NC}}"
     scripts/install-bun.sh
     scripts/install-lefthook.sh

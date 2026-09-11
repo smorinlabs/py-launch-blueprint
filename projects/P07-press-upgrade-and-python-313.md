@@ -47,6 +47,14 @@ tasks above remain complete; the trunk stays open to keep follow-ups visible.
 
 ### Notes
 
+Owner decisions on 2026-09-11: retain the original large-file restriction;
+run Claude review when its credential is present and otherwise report a clean
+skip, with no separate enable variable; remove the inherited release-history
+cutoff; ship neutral application introduction pages; and automatically remove
+blueprint planning records while retaining an empty `projects/` directory after
+setup. These refine the existing implementation tasks, without adding downstream
+application work or external-service configuration.
+
 The owner approved implementation on 2026-09-10 after Template Press PR #131
 merged. The merge gate was met on 2026-09-11 at commit
 `405a80f278c699b6d4d3504da011e78f9922b361`. The published baseline is Template
