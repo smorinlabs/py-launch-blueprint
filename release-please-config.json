@@ -26,6 +26,8 @@
         {"type": "refactor", "section": "Refactor"},
         {"type": "revert",   "section": "Reverts"},
         {"type": "deps",     "section": "Dependencies"},
+        {"type": "chore", "scope": "deps", "section": "Dependencies"},
+        {"type": "chore", "scope": "deps-dev", "section": "Dependencies"},
         {"type": "chore", "section": "Miscellaneous", "hidden": true},
         {"type": "docs",  "section": "Documentation", "hidden": true},
         {"type": "style", "section": "Styles",        "hidden": true},

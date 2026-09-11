@@ -135,12 +135,15 @@ autofix commits (e.g. Copilot's "Potential fix…"). The required
 `commitlint (humans)` CI check lints every non-merge commit in a PR, so a
 single non-conventional commit blocks the merge; reword it before merging.
 This matters more under merge commits than it did under squash: the branch's
-individual commits land on the trunk, and release-please parses *those* —
-not the PR title. The merge commit's own subject is left deliberately
-non-conventional (`merge_commit_title=MERGE_MESSAGE`, i.e.
-`Merge pull request #N from …`) precisely so release-please skips it and counts each
-change exactly once. Conventional PR titles are still expected for review
-legibility; they are simply not what the changelog is built from.
+individual commits land on the trunk, and release-please parses those commits.
+The merge commit's subject is non-conventional
+(`merge_commit_title=MERGE_MESSAGE`, i.e. `Merge pull request #N from …`).
+GitHub still copies the conventional PR title into its body, which
+release-please can parse as a duplicate entry. During release review, remove
+merge-derived entries from both `CHANGELOG.md` and the release PR's notes,
+preserving the individual branch changes. Automatic prevention is tracked in
+[#531](https://github.com/smorinlabs/py-launch-blueprint/issues/531).
+Conventional PR titles remain required for review legibility.
 
 ## Code style
 
