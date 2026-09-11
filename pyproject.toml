@@ -99,6 +99,7 @@ dev = [
   "pytest-randomly>=3.15", # WL-010 — randomized order surfaces inter-test coupling
   "hypothesis>=6.100",     # WL-013 — property-based tests at parse/serialize seams
   "responses>=0.25",       # HEX-40 — HTTP mock for the port-contract suite
+  "template-press>=3.6.0",
 ]
 
 docs = [
@@ -160,7 +161,7 @@ lint.select = [
   "S",   # flake8-bandit
   "ANN", # flake8-annotations — enforce annotation *presence* (P03; the gap ty
   # deliberately does NOT check). Scoped to the package via
-  # per-file-ignores below; tests/ and init/ are exempt.
+  # per-file-ignores below; tests/ are exempt.
 ]
 
 # Source's ignore rationale (round-2): line-length handled by formatter;
@@ -197,20 +198,8 @@ max-line-length = 88
   "S106",
   "ANN",
 ] # asserts + annotations optional in tests
-"init/tests/**" = [
-  "S101",
-  "S105",
-  "S106",
-  "ANN",
-] # same exemption — pytest convention
-"init/**" = [
-  "S603",
-  "S607",
-  "ANN",  # ANN (P03) gates the package only; init/ is rebrand tooling, its own follow-up
-] # init/ wraps gh/just/uv via subprocess; that's the point
 # S101: assert statements removed under -O — security risk if assert is the only gate.
 # S105/S106: hardcoded password strings/variables in code.
-# S603/S607: subprocess module use + partial-path executables — init/ tooling wraps gh/just/uv intentionally.
 
 # ITM-018 — explicit format config (round-2; mirrors source). Values match Ruff
 # defaults but being explicit prevents silent drift if defaults change.
@@ -276,8 +265,8 @@ error-on-warning = false # warnings (e.g. `deprecated`) inform; they don't gate 
 # ITM-027 — bandit config (round 3). Tests legitimately use `assert`
 # (pytest convention) — exclude_dirs covers tests/.
 [tool.bandit]
-exclude_dirs = ["tests", "init/tests", ".venv", "build", "dist"]
-skips = []                                                       # No global skips; add with rationale only.
+exclude_dirs = ["tests", ".venv", "build", "dist"]
+skips = []                                         # No global skips; add with rationale only.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
