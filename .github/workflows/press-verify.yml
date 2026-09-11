@@ -1,0 +1,36 @@
+# Press drift guard (P06) — replaces the init-era blueprint-guard and
+# init-integration workflows. `press verify` hermetically self-presses a
+# sandbox copy and scans for surviving identity: any added identity-bearing
+# file that presses dirty fails this check (exit 1); config errors exit 2.
+# This workflow deliberately SHIPS to generated projects — a pressed fork
+# is itself a valid press target, and this is its drift guard too. It
+# carries NO identity literals by design (the press rewrites them); the
+# template-only receipt guard lives in template-receipt-guard.yml, which
+# the press removes in forks.
+name: press-verify
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  press-verify:
+    # ubuntu-latest, not a custom runner: this workflow deliberately
+    # ships to generated repositories, which have no blacksmith runners.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          github-token: ${{ github.token }}
+      - name: press verify
+        # WL-001: hook/CI tools run from the locked dev group, never
+        # floating uvx — the version comes from uv.lock.
+        run: |
+          uv sync --group dev
+          uv run press verify

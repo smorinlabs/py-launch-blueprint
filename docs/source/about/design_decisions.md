@@ -211,7 +211,6 @@ double-reporting the same issue.
 ### Pragmatic per-file ignores
 **What** — `__init__.py` ignores `F401` (re-export imports); `tests/**` ignore
 `S101/S105/S106` (asserts and test credentials are expected in tests);
-`init/**` ignores `S603/S607` (the rebrand engine intentionally shells out).
 **Why** — blanket security/lint rules produce false positives in contexts where
 the flagged pattern is correct; scoping the ignores keeps the rules strict
 everywhere else.
@@ -464,7 +463,7 @@ the blast radius if a workflow or action is compromised.
 
 ### GitHub Actions as the CI platform
 **What** — all automation runs in `.github/workflows/` — test/lint/typecheck,
-security, contract, release, publish, and init-integration workflows.
+security, contract, release, publish, and press-verify workflows.
 **Why** — native to GitHub, no external service to configure, first-class OIDC
 support for keyless publishing.
 **Value** — zero-setup CI that adopters inherit working.
@@ -851,49 +850,43 @@ nobody is missed.
 
 ---
 
-## 17. Template / init system
+## 17. Template / rebrand system
 
-### A rebrand engine, not a one-shot script
-**What** — `init/` holds a manifest-driven engine (`init.py`) that renames the
-template's identity (package, app short name, author) across the repo, with a
-dry-run preview, plus an optional `post_init.py` for publishing/Codecov/RTD
-setup.
-**Why** — turning a template into your project by hand is error-prone; a
-manifest-driven engine with a preview makes it reliable and reviewable.
-**Value** — `gh repo create --template` → run init → working, rebranded project.
-**Refs** — [design 0004](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/design/0004-template-press-plan.md),
-`init/manifest.toml`.
+### An external press, not an embedded engine
+**What** — rebranding is owned by the standalone `template-press` tool
+(`uvx --from 'template-press>=3.6.0' press rebrand`): the repo commits its
+identity (`press/press-source.toml`) and its neutralization rules
+(`press/press-rules.toml` — declared regenerations, resets, and removals),
+and the press rewrites, renames, regenerates, and deletes accordingly, with
+a dry-run preview and a verified receipt.
+**Why** — the original embedded `init/` engine was extracted into
+template-press (issue #423) so one engine serves every template and the
+blueprint stops maintaining rebrand machinery in-tree.
+**Value** — `gh repo create --template` → press → working, rebranded,
+receipt-carrying project.
+**Refs** — `press/press-rules.toml`, `docs/POST_INIT.md`, the
+template-press CLI reference.
 
-### Manifest-drift guard
-**What** — any added/renamed file containing an identity value must be listed in
-that value's `[[replace]]` block in `init/manifest.toml`; a CI check
-(`check_manifest_drift.py`) enforces it.
-**Why** — if a new file with the project name isn't in the manifest, a fork's
-`init` ships half-renamed; the drift check makes that impossible to merge.
+### Press-verify drift guard
+**What** — any added/renamed file containing an identity value must press
+cleanly; `press verify` (hermetic self-press + leak scan) enforces it in CI
+(`press-verify.yml`), at pre-push (lefthook), and locally
+(`uv run press verify`).
+**Why** — if a new identity-bearing file has no rewrite coverage or
+declared neutralization, a fork would ship half-renamed; the drift check
+makes that impossible to merge.
 **Value** — the rebrand stays complete as the template evolves.
-**Refs** — `init/ci/check_manifest_drift.py`, AGENTS.md; (blueprint-guard).
+**Refs** — `.github/workflows/press-verify.yml`, AGENTS.md.
 
-### Two-tier guard with a completion marker
-**What** — `init/guard.sh` warns (Tier-1) on un-rebranded projects and blocks
-(Tier-2) risky operations like publish; the `init/.blueprint-initialized` marker
-records completion and gates blueprint-only maintenance checks in forks.
-**Why** — it must be hard to accidentally publish the *template's* identity, and
-forks shouldn't run the blueprint's self-maintenance checks.
+### Fork guard with a press receipt
+**What** — `scripts/guard.sh` warns (Tier-1) in un-rebranded clones and
+blocks (Tier-2) risky operations like publish; the press receipt
+(`press/press-receipt.toml`), the contributor sentinel, or the canonical
+origin silences it.
+**Why** — it must be hard to accidentally publish the *template's*
+identity.
 **Value** — guardrails against shipping an un-rebranded project.
-**Refs** — `init/guard.sh`, `Justfile` (`_guard`).
-
-### Five instantiation modes, integration-tested
-**What** — `init-integration.yml` tests all five ways a template is used
-(template button, `gh ... --template`, clone-reinit, fork, zip) at both contract
-(L1) and outcome (L2) levels, on a weekly schedule too.
-**Why** — each instantiation path has different git/state characteristics; only
-testing all of them proves the template works however it's adopted.
-**Value** — confidence that adoption works for real users, not just the happy
-path.
-**Refs** — `.github/workflows/init-integration.yml`,
-`.github/workflows/blueprint-guard.yml`.
-
----
+**Refs** — `scripts/guard.sh`, `Justfile` (`_guard`).
 
 ## 18. AI agent tooling
 
