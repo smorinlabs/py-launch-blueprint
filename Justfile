@@ -464,7 +464,7 @@ alias contributors := update-contributors
 
 [group('build')]
 update-contributors:
-    npx {{contributors_package}} init --non-interactive --owner {{contributors_owner}} --repo {{repo_name}} --config-file .contributors.yml
+    bun x --bun {{contributors_package}} init --non-interactive --owner {{contributors_owner}} --repo {{repo_name}} --config-file .contributors.yml
 
 # Verify commit messages follow conventional commit format (commitlint per ADR-04).
 [group('hooks')]

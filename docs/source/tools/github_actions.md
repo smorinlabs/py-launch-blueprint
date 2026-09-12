@@ -1,46 +1,30 @@
 # GitHub Actions
 
-## Setup
+GitHub Actions runs automated checks and release workflows for Py Launch Blueprint.
+The checked-in configuration lives in
+[`.github/workflows/`](https://github.com/smorinlabs/py-launch-blueprint/tree/main/.github/workflows).
 
-GitHub Actions automates testing and deployment. The Py Launch Blueprint project includes a pre-configured workflows in [`.github/workflows/`](https://github.com/smorinlabs/py-launch-blueprint/tree/main/.github/workflows).
+## Workflow configuration
 
-## Workflow Configuration
+The main workflow is
+[`ci.yml`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/.github/workflows/ci.yml).
+It runs for pushes to `main`, pull requests targeting `main`, and merge-queue
+validation through the `merge_group` event.
 
-The workflow runs on every push or pull request to `main`:
+The test matrix covers these combinations:
 
-```yaml
-name: CI/CD
+| Python version | Platforms |
+|---|---|
+| 3.13 | Linux, macOS and Windows |
+| 3.14 | Linux |
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+Python 3.13 remains the minimum and setup default. Pull-request CI uses the
+committed dependency lock; the separate weekly dependency canary tests both
+Python versions with the latest allowed dependencies.
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.13"]
+The main workflow also checks lint, types, import boundaries, package builds,
+documentation and TOML formatting. Its `ci-ok` job reports the aggregate result.
 
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - run: uv sync --all-extras --dev
-      - run: uv run ty check src/py_launch_blueprint/
-      - run: uvx ruff check py_launch_blueprint/
-```
-
-## Best Practices
-
-- **Keep It Simple**: Start small and expand as needed.
-- **Use Matrix Builds**: Test across multiple Python versions.
-- **Cache Dependencies**: Speed up workflows by caching dependencies.
-- **Fail Fast**: Identify and fix issues quickly.
-- **Monitor Regularly**: Ensure workflows run efficiently.
-
-[Actions documentation](https://docs.github.com/en/actions) for more details.
+For exact local commands, job conditions, the canary and release workflows, see
+[Using CI/CD](../tasks/using_ci_cd.md). Use the checked-in workflows as the source
+for executable configuration.
