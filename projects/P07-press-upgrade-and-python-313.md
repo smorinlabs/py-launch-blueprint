@@ -10,7 +10,7 @@ Adopt the released press and prove a usable generated project.
 - **Release:** [Template Press 4.1.0](https://github.com/smorinlabs/template-press/releases/tag/v4.1.0)
 - **Dependency gate:** [Template Press PR #131](https://github.com/smorinlabs/template-press/pull/131)
 
-**Status:** `[~]` bootstrap upgrade delivered in [PR #530](https://github.com/smorinlabs/py-launch-blueprint/pull/530); T06–T09 implemented on `ci/p07-bootstrap-followups`; T10 remains deferred. Merge and release are outside the implementation tasks.
+**Status:** `[x]` implementation complete in [PR #530](https://github.com/smorinlabs/py-launch-blueprint/pull/530) and [PR #532](https://github.com/smorinlabs/py-launch-blueprint/pull/532). T06–T10 are implemented on `ci/p07-bootstrap-followups`. Merge and release are outside the implementation tasks.
 
 ### Scope
 
@@ -40,7 +40,7 @@ will be recorded separately from blueprint fixes.
 - [x] [P07-T07] Evaluate and add Python 3.14 CI/canary coverage alongside the 3.13 minimum. Deferred from [review 3986130907](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3986130907); Python 3.14 lock resolution and the coverage gap already existed before this PR.
 - [x] [P07-T08] Refresh the retained CI tutorial against actual workflow commands and supported platforms. Deferred from [review 3986130826](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3986130826); the Ubuntu-only example, macOS prose, wrong workflow extension, and floating tool examples predate this PR.
 - [x] [P07-T09] Correct retained generated documentation for optional contributor automation. Deferred from [Copilot review 5175179607](https://github.com/smorinlabs/py-launch-blueprint/pull/530#pullrequestreview-5175179607); Sphinx pages advertise the removed workflow/roster. The separate claim that initialization requires an existing `.contributors.yml` was refuted against published contributors-please 1.4.3: `init` uses defaults when the file is absent. Verify generated links without enabling external automation.
-- [ ] [P07-T10] Pin the Claude review action to a verified immutable commit and confirm Dependabot maintains the pin. Deferred from [review 3995193747](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3995193747); `anthropics/claude-code-action@v1.0.214` and its credential/OIDC permissions are unchanged from base `e3ed657`. Keep this supply-chain hardening separate from the bootstrap upgrade, preserve the action version and credential-gated behavior, and validate the workflow and configured/missing-secret paths.
+- [x] [P07-T10] Use `anthropics/claude-code-action@v1` in both Claude workflows. The owner selected the maintained major-version tag on 2026-09-12, replacing the immutable-commit proposal from [review 3995193747](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3995193747). Preserve the automatic review credential gate and both workflows' permissions; validate workflow syntax and the configured/missing-secret controls.
 
 ### Follow-up recommendation and delivery
 
@@ -54,17 +54,16 @@ regression coverage or correct instructions that users encounter.
 | P07-T07 | Implement with limited extra CI | Add Linux/Python 3.14 to the normal test matrix and 3.14 to the weekly dependency canary. Keep Python 3.13 as the minimum and preserve its Linux/macOS/Windows coverage. |
 | P07-T08 | Implement | Replace the obsolete CI example with the real workflow paths, triggers, jobs, locked commands and separate release/acceptance behavior. |
 | P07-T09 | Implement | Document contributor tracking as an explicit opt-in for generated applications; remove links and claims that assume the retired roster/workflow exists. |
-| P07-T10 | Defer | Reassess immutable action pins as a consistent workflow policy with an explicit vulnerability-alert strategy, rather than changing one inherited Claude reference in this bootstrap follow-up. |
+| P07-T10 | Implement owner-selected major tag | Use `anthropics/claude-code-action@v1` in the automatic review and interactive Claude workflows, retaining their existing configuration and permissions. |
 
-GitHub recommends commit pins for immutability, and Dependabot version updates
-support them. However, GitHub currently documents that Dependabot vulnerability
-alerts for Actions require semantic versions and do not cover SHA references.
-That makes T10 a policy tradeoff, not a bootstrap correctness fix. Keep the
-existing credential switch and action reference for now. Revisit when adopting
-consistent action pinning and deciding how to retain vulnerability monitoring.
-Sources: [secure use](https://docs.github.com/en/actions/reference/security/secure-use),
-[Dependabot alert limitations](https://docs.github.com/en/code-security/concepts/supply-chain-security/dependabot-alerts),
-[version-update support](https://docs.github.com/en/code-security/reference/supply-chain-security/supported-ecosystems-and-repositories).
+The owner resolved T10 on 2026-09-12: follow the maintained `v1` tag and
+receive updates within major version 1. A future major version requires an
+explicit workflow-reference change. The earlier SHA-pinning proposal is closed
+by this decision, with no deferred pinning requirement. The automatic review
+still uses `CLAUDE_CODE_OAUTH_TOKEN` as its single configuration switch and
+reports a successful skip when that secret is absent. Sources: Anthropic
+[documented usage](https://github.com/anthropics/claude-code-action/releases/tag/v1)
+and [major-tag release automation](https://github.com/anthropics/claude-code-action/blob/main/.github/workflows/release.yml).
 
 Implementation commit `204961118e208969b751bb4644a76570c28938bc` passed source
 checks (327 tests, 11 snapshots), Actionlint, Sphinx with warnings as errors,
@@ -79,8 +78,9 @@ The additional normal CI runtime cell is Linux-only: the prior PR's three
 Python 3.13 test jobs took 20, 17 and 24 seconds on Linux, macOS and Windows,
 respectively. This change adds one runtime cell instead of doubling all three
 platforms. These observations are not an estimate of future hosted CI cost.
-T10 remains open, so P07 stays in progress. The original bootstrap upgrade
-remains on PR #530; this follow-up does not authorize either PR's merge.
+All P07 implementation tasks are complete with the owner-approved T10
+decision. The original bootstrap upgrade remains on PR #530, and the
+follow-ups are on PR #532. Merge and publication remain separate from delivery.
 
 ### Notes
 
