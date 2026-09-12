@@ -25,6 +25,6 @@ behind the `web` extra — every front-end renders the same result models.
 
 ## Optional
 
-- [Contributing](https://github.com/smorinlabs/py-launch-blueprint/blob/main/CONTRIBUTORS.md): contributor list and workflow
+- [Contributing](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/source/contributing/index.md): contribution guide and optional contributor tracking
 - [Release process](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/RELEASE.md): release-please + OIDC trusted publishing
 - [Project setup](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/PROJECT_SETUP.md): development setup and optional repository and service configuration after rebranding

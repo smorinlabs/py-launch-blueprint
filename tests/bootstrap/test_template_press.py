@@ -208,6 +208,13 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     assert "just contributors" in contributor_guide
     assert "/blob/main/CONTRIBUTORS.md)" not in contributor_guide
     assert "does not install a workflow" in contributor_guide
+    llms = (target / "llms.txt").read_text()
+    contributor_url = (
+        f"https://github.com/{IDENTITY['owner']}/{IDENTITY['repo_name']}"
+        "/blob/main/docs/source/contributing/index.md"
+    )
+    assert f"]({contributor_url})" in llms
+    assert "/blob/main/CONTRIBUTORS.md)" not in llms
     design = (target / "docs/source/about/design_decisions.md").read_text()
     assert "Rebranding retires the executable skill" in design
     assert ".claude/skills/new-python-project/SKILL.md" not in design

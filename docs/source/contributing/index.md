@@ -51,10 +51,10 @@ To opt in locally, run the retained helper from the repository root:
 just contributors
 ```
 
-The helper initializes contributor state when needed, updates it from Git history,
-and renders `CONTRIBUTORS.md`. An existing `.contributors.yml` is not required;
-identity-map configuration is optional. This command does not install a workflow
-or configure GitHub credentials.
+The helper uses Bun from `just setup`. It initializes contributor state when
+needed, updates it from Git history, and renders `CONTRIBUTORS.md`. An existing
+`.contributors.yml` is not required; identity-map configuration is optional. This
+command does not install a workflow or configure GitHub credentials.
 
 The source blueprint maintains its roster with a workflow triggered by pushes
 to `main` and manual dispatch. Generated applications must deliberately install
