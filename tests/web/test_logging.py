@@ -9,6 +9,7 @@ import json
 import logging
 
 import pytest
+from fastapi import APIRouter
 from fastapi.testclient import TestClient
 
 from py_launch_blueprint.web.app import create_app
@@ -67,6 +68,49 @@ def test_unmatched_route_logs_none(capsys):
     assert event["route"] is None
     assert event["path"] == "/no/such/route-12345"
     assert event["status"] == 404
+
+
+@pytest.mark.parametrize("root_path", ["", "/gateway"])
+@pytest.mark.parametrize("prefix", ["/v2", "/v3"])
+def test_access_route_preserves_nested_prefixes_and_parameters(
+    capsys, root_path, prefix
+):
+    app = create_app(WebSettings.model_construct(root_path=root_path))
+    items = APIRouter()
+
+    @items.get("/items/{item_id}")
+    async def get_item(tenant_id: str, item_id: str):
+        return {"tenant_id": tenant_id, "item_id": item_id}
+
+    tenants = APIRouter(prefix="/tenants/{tenant_id}")
+    tenants.include_router(items)
+    # The same route can have different effective paths in one application.
+    app.include_router(tenants, prefix="/v2")
+    app.include_router(tenants, prefix="/v3")
+    path = f"{root_path}{prefix}/tenants/acme/items/123"
+    with TestClient(app, raise_server_exceptions=False) as client:
+        response = client.get(path)
+    assert response.status_code == 200
+    (event,) = stderr_events(capsys, "http_request")
+    assert event["route"] == f"{prefix}/tenants/{{tenant_id}}/items/{{item_id}}"
+    assert event["path"] == path
+
+
+def test_access_route_preserves_prefix_on_handler_error(capsys):
+    app = create_app(WebSettings.model_construct())
+    router = APIRouter()
+
+    @router.get("/boom/{item_id}")
+    async def boom(item_id: str):
+        raise RuntimeError("handler failed")
+
+    app.include_router(router, prefix="/v2")
+    with TestClient(app, raise_server_exceptions=False) as client:
+        response = client.get("/v2/boom/123")
+    assert response.status_code == 500
+    (event,) = stderr_events(capsys, "http_request")
+    assert event["route"] == "/v2/boom/{item_id}"
+    assert event["status"] == 500
 
 
 def test_access_event_carries_request_id(capsys):
