@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v3.0.0...v3.0.1) (2026-09-12)
+
+
+### Bug Fixes
+
+* **bootstrap:** replace retired guide with application provenance ([d0f8f8a](https://github.com/smorinlabs/py-launch-blueprint/commit/d0f8f8a5c527087da603547e55e73e03b31ed231))
+* **contributors:** keep generated guidance and helper usable ([6c85a57](https://github.com/smorinlabs/py-launch-blueprint/commit/6c85a57ab47174aaaa9a3bdb71e3615c1a6d9352))
+* restore dependency canary and update gitpython ([9e0f9de](https://github.com/smorinlabs/py-launch-blueprint/commit/9e0f9dece63bbf2d94a7ab387c432826055090eb))
+* **web:** preserve included route prefixes in access logs ([5be7139](https://github.com/smorinlabs/py-launch-blueprint/commit/5be7139661410e599f260d65eaef5d2e1c1d5998))
+
 ## [3.0.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.4.2...v3.0.0) (2026-09-11)
 
 
