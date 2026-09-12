@@ -82,7 +82,7 @@ py-launch-blueprint/
 │   ├── core/                       # Library: logic + Pydantic models
 │   └── web/                        # FastAPI web service (behind the `web` extra)
 ├── pyproject.toml                  # Project configuration file
-├── CONTRIBUTORS.md                 # Project contributors
+├── CONTRIBUTORS.md                 # Optional: created by contributor tooling
 ├── README.md                       # Project overview and navigation
 ├── SECURITY.md                     # Security policy
 └── tests/                          # Test files
@@ -166,7 +166,10 @@ Template for pull requests to ensure consistency and completeness.
 Configuration file for the project, including dependencies and build settings.
 
 ### CONTRIBUTORS.md
-Auto-generated file that lists the project contributors.
+
+Optional contributor roster. Generation removes the blueprint roster and its
+automation state. Running `just contributors` explicitly creates a project-local
+roster; see [contributor tracking](../contributing/index.md#tracking-contributors).
 
 ### README.md
 

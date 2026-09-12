@@ -160,6 +160,10 @@ file = "tests/meta/test_bootstrap_skill.py"
 reason = "template bootstrap skill and its dedicated contract test"
 
 [[remove]]
+file = ".github/workflows/bootstrap-acceptance.yml"
+reason = "blueprint acceptance workflow; its tests are removed from applications"
+
+[[remove]]
 dir = "tests/bootstrap"
 reason = "template acceptance tests generate a new project and must not recurse"
 

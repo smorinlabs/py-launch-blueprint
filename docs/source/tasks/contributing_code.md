@@ -86,8 +86,11 @@ for more information, see the [Contributor License Agreement](../contributing/in
 
 ## Contributors
 
-This project includes a `just contributors` helper that invokes
-`contributors-please` to bootstrap or refresh the local contributors list.
+Contributor automation is optional. Generated applications start without the
+blueprint roster, state files or update workflow. The retained `just contributors`
+helper initializes or refreshes a local roster when explicitly requested. It
+does not enable a GitHub workflow. See
+[contributor tracking](../contributing/index.md#tracking-contributors).
 
 ### Manual Update
 

@@ -1,0 +1,59 @@
+# Blueprint-only acceptance; generation removes this workflow and its tests.
+name: bootstrap-acceptance
+
+on:
+  schedule:
+    - cron: '37 6 * * 3'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/bootstrap-acceptance.yml'
+      - 'tests/bootstrap/**'
+      - 'tests/meta/**'
+      - 'tests/cli/**'
+      - 'src/**'
+      - 'press/**'
+      - 'scripts/**'
+      - 'docs/source/**'
+      - 'docs/PROJECT_SETUP.md'
+      - '.python-version'
+      - '.bun-version'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'package.json'
+      - 'bun.lock'
+      - 'Makefile'
+      - 'Justfile'
+      - 'lefthook.yml'
+      - 'release-please-config.json'
+      - '.release-please-manifest.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bootstrap-acceptance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bootstrap-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@v8.3.2
+        with:
+          python-version: '3.13'
+      - name: Provision the native toolchain
+        run: |
+          export PATH="$HOME/.local/bin:$HOME/.bun/bin:$HOME/.cargo/bin:$PATH"
+          make bootstrap
+          just setup
+          {
+            echo "$HOME/.local/bin"
+            echo "$HOME/.bun/bin"
+            echo "$HOME/.cargo/bin"
+          } >> "$GITHUB_PATH"
+      - name: Generate and exercise a fresh application
+        run: uv run --locked --extra web pytest tests/bootstrap -m live -s

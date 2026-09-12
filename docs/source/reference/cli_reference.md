@@ -163,7 +163,11 @@ just pre-commit-run
 ```
 
 ### `contributors`
-Update `CONTRIBUTORS.md` file.
+
+Opt in to local contributor tracking. Initialize state when absent, update it
+from Git history, and render `CONTRIBUTORS.md`. Generated applications do not
+include a roster or automatic update workflow by default. This helper does not
+enable GitHub automation; see [contributor tracking](../contributing/index.md#tracking-contributors).
 
 #### Usage
 ```bash

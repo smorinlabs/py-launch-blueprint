@@ -838,13 +838,15 @@ CLA.
 **Refs** — `docs/source/contributing/cla/`,
 [CLA tool guide](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/source/tools/cla-assistant.md).
 
-### Automated contributor recognition
-**What** — a weekly workflow runs `contributors-please` to update the contributor
-list.
-**Why** — recognizing contributors manually is forgotten; automating it ensures
-nobody is missed.
-**Value** — every participant is acknowledged, automatically.
-**Refs** — `.github/workflows/update-contributors.yml`.
+### Optional contributor recognition
+**What** — the source blueprint uses `contributors-please` after pushes to
+`main` or manual workflow dispatch. Generated applications remove the roster,
+state and update workflow, while retaining an optional local helper.
+**Why** — an application should choose its contributor policy and configure its
+own automation rather than inherit the blueprint's records and credentials.
+**Value** — fresh applications work without contributor-service configuration;
+maintainers can opt in with `just contributors`.
+**Refs** — [contributor tracking](../contributing/index.md#tracking-contributors).
 
 ---
 

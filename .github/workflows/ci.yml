@@ -154,6 +154,10 @@ jobs:
       matrix:
         os: [ubuntu, macos, windows]
         python-version: ["3.13"]
+        # Runtime coverage on Linux; 3.13 retains the full platform matrix.
+        include:
+          - os: ubuntu
+            python-version: "3.14"
     steps:
       - uses: actions/checkout@v7
       - name: Install uv
