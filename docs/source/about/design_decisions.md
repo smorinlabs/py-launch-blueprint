@@ -52,10 +52,13 @@ the project and its development tools keeps setup, hooks and CI compatible.
 behaviour that only reproduces on an old interpreter.
 **Refs** — `pyproject.toml [project]`, `.python-version`; ITM-033.
 
-### Tested on 3.13
-**What** — the CI test matrix runs Python 3.13 on Linux, macOS and Windows.
-**Why** — test the supported minimum on each platform the template advertises.
-**Value** — generated projects inherit checks for the same runtime as setup.
+### Tested on Python 3.13 and 3.14
+**What** — CI tests Python 3.13 on Linux, macOS and Windows, plus Python 3.14
+on Linux. Python 3.13 remains the minimum and setup default.
+**Why** — cover the supported minimum on every platform and check the newer
+interpreter without duplicating the entire platform matrix.
+**Value** — generated projects inherit both minimum-version and newer-runtime
+coverage.
 **Refs** — `.github/workflows/ci.yml`; ITM-030.
 
 ---
@@ -340,7 +343,8 @@ verifying the API matches its own schema.
 **Refs** — `tests/web/`, `pyproject.toml`; WEB-50.
 
 ### Cross-platform, cross-version matrix
-**What** — CI runs the suite on ubuntu/macOS/windows × Python 3.13.
+**What** — CI runs the suite on Linux, macOS and Windows with Python 3.13,
+plus a Linux/Python 3.14 job.
 **Why** — a template is cloned everywhere; path handling, line endings, and
 interpreter quirks must be proven across OSes and versions.
 **Value** — broad compatibility is evidence-backed.
