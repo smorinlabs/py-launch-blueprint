@@ -21,13 +21,13 @@
 #     the drift WL-001 warns about. Requires `bun install` in fresh checkouts.
 #   * ty, pytest — project dev deps, provided by `uv run`.
 [tools]
-python = "3.12"
+python = "3.13"
 uv = "latest"
 ruff = "latest"
 taplo = "latest"
 gitleaks = "latest"
 just = "latest"
-bun = "latest"
+bun = "1.3.5" # matches .bun-version
 gh = "latest"
 lefthook = "latest"
 make = "latest"

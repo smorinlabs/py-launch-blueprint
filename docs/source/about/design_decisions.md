@@ -16,8 +16,8 @@ records (see [`docs/README.md`](https://github.com/smorinlabs/py-launch-blueprin
 - **Design specs** ([`docs/design/`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/design)) —
   normative "how it must behave" specifications, including the `WEB-xx` web-API
   catalog and the `HEX-xx` architecture rules.
-- **Research notes** ([`docs/research/`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/research)) —
-  explorations that fed the decisions above.
+- **Research notes** (`docs/research/`) — explorations that feed decisions.
+  Bootstrap removes template research; create this directory for new work.
 
 **This page does not replace those records — it indexes them.** It walks every
 decision thematically so a reader can understand the whole system in one pass,
@@ -43,21 +43,19 @@ but they are not standalone documents.
 
 ## 1. Language & runtime
 
-### Python 3.12 minimum
-**What** — `requires-python = ">=3.12"`; `.python-version` pins `3.12` for
+### Python 3.13 minimum
+**What** — `requires-python = ">=3.13"`; `.python-version` pins `3.13` for
 pyenv/mise.
-**Why** — 3.12 brings faster startup, better error messages, and modern typing
-(`type` statement, `Self`, PEP 695 generics) without back-compat shims. A high
-floor keeps the codebase free of version-gated branches.
+**Why** — Template Press 4.1 requires Python 3.13. Using the same minimum for
+the project and its development tools keeps setup, hooks and CI compatible.
 **Value** — every example uses current idioms; contributors never debug
 behaviour that only reproduces on an old interpreter.
 **Refs** — `pyproject.toml [project]`, `.python-version`; ITM-033.
 
-### Tested on 3.12 **and** 3.13
-**What** — the CI test matrix runs both 3.12 and 3.13.
-**Why** — a template is adopted across environments; proving the next minor
-works prevents "works on my machine" upgrades.
-**Value** — adopters can move to 3.13 with evidence, not hope.
+### Tested on 3.13
+**What** — the CI test matrix runs Python 3.13 on Linux, macOS and Windows.
+**Why** — test the supported minimum on each platform the template advertises.
+**Value** — generated projects inherit checks for the same runtime as setup.
 **Refs** — `.github/workflows/ci.yml`; ITM-030.
 
 ---
@@ -317,7 +315,7 @@ merge.
 ### Coverage gates via Codecov
 **What** — `.codecov.yml` sets a project target of `auto` with a 1% threshold
 and a patch target of 80% on changed lines; coverage uploads via OIDC from the
-ubuntu/3.12 job only.
+ubuntu/3.13 job only.
 **Why** — comparing against the base branch (auto) with a small tolerance avoids
 flaky failures from coverage noise, while the 80% patch gate holds *new* code to
 a high bar. Uploading from one matrix cell prevents double-counting.
@@ -342,7 +340,7 @@ verifying the API matches its own schema.
 **Refs** — `tests/web/`, `pyproject.toml`; WEB-50.
 
 ### Cross-platform, cross-version matrix
-**What** — CI runs the suite on ubuntu/macOS/windows × Python 3.12/3.13.
+**What** — CI runs the suite on ubuntu/macOS/windows × Python 3.13.
 **Why** — a template is cloned everywhere; path handling, line endings, and
 interpreter quirks must be proven across OSes and versions.
 **Value** — broad compatibility is evidence-backed.
@@ -652,7 +650,7 @@ barrier; Furo is a clean, modern theme.
 **Refs** — `docs/source/conf.py`.
 
 ### ReadTheDocs with PEP 735 doc group
-**What** — `.readthedocs.yaml` builds on ubuntu-22.04/Python 3.12, installs `uv`
+**What** — `.readthedocs.yaml` builds on ubuntu-22.04/Python 3.13, installs `uv`
 and runs `uv sync --group docs`, and produces HTML, PDF, and ePub.
 **Why** — RTD gives free hosted, versioned docs; using the PEP 735 `docs` group
 keeps the doc dependencies consistent with local builds.
@@ -854,7 +852,7 @@ nobody is missed.
 
 ### An external press, not an embedded engine
 **What** — rebranding is owned by the standalone `template-press` tool
-(`uvx --from 'template-press>=3.6.0' press rebrand`): the repo commits its
+(`uv run --locked press rebrand`): the repo commits its
 identity (`press/press-source.toml`) and its neutralization rules
 (`press/press-rules.toml` — declared regenerations, resets, and removals),
 and the press rewrites, renames, regenerates, and deletes accordingly, with
@@ -871,7 +869,7 @@ template-press CLI reference.
 **What** — any added/renamed file containing an identity value must press
 cleanly; `press verify` (hermetic self-press + leak scan) enforces it in CI
 (`press-verify.yml`), at pre-push (lefthook), and locally
-(`uv run press verify`).
+(`uv run --locked press verify`).
 **Why** — if a new identity-bearing file has no rewrite coverage or
 declared neutralization, a fork would ship half-renamed; the drift check
 makes that impossible to merge.
@@ -899,14 +897,16 @@ drift; a single canonical file keeps every agent in sync.
 contributor uses.
 **Refs** — `AGENTS.md`, `CLAUDE.md`.
 
-### A project-bootstrap skill
-**What** — a `new-python-project` skill (under `.claude/skills/`, symlinked for
-Codex) encodes the full template-to-project runbook.
-**Why** — bootstrapping has many steps (preconditions, identity collection, init,
-post-init); a skill turns it into a guided, repeatable flow that's also a
-copy-pasteable runbook for humans.
-**Value** — agents (and people) scaffold new projects correctly and consistently.
-**Refs** — `.claude/skills/new-python-project/SKILL.md`; ADR-0014.
+### Bootstrap provenance and project setup
+**What** — the source blueprint's `new-python-project` skill encodes the
+template-to-project runbook. Rebranding retires the executable skill and
+keeps its README as a retirement notice. Generated applications use
+`docs/PROJECT_SETUP.md` for subsequent configuration.
+**Why** — bootstrapping validates the new identity, dependencies, CLI, and web
+application before handing over to ordinary project development.
+**Value** — generated projects retain setup guidance and a record of their origin.
+**Refs** — `docs/skills/new-python-project.md`, `docs/PROJECT_SETUP.md`;
+ADR-0014 records the source blueprint's original workflow.
 
 ---
 
@@ -955,5 +955,5 @@ in [`docs/`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs);
 
 For the conventions the maintainer follows when writing new records, see the
 READMEs in [`docs/adr/`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/adr),
-[`docs/design/`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/design),
-and [`docs/research/`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/research).
+[`docs/design/`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/design).
+Create `docs/research/` when recording new investigations.

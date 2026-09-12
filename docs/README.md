@@ -7,7 +7,7 @@ Sphinx site (`docs/source/`). Three buckets, by intent:
 |---|---|---|
 | [`adr/`](adr/) | **Architecture Decision Records** — one significant decision each, with context + consequences. | Yes (a decision) |
 | [`design/`](design/) | **Design / requirements specs** — proposals and conventions to implement. | Yes (a plan) |
-| [`research/`](research/) | **Research** — investigations, comparisons, findings. | No (exploration) |
+| `research/` | **Research** — investigations, comparisons, findings. Create this directory when the project needs it. | No (exploration) |
 
 Rules of thumb:
 
@@ -16,13 +16,14 @@ Rules of thumb:
 - Recording a single decision (and why) so it isn't re-litigated → **ADR**.
 
 A research doc often feeds a design doc, which often crystallizes one or more
-ADRs. Cross-link them. Each subdirectory has its own `README.md` with the file
-naming + status conventions.
+ADRs. Cross-link them. Retained subdirectories have a `README.md` with file
+naming and status conventions. Template research is removed during bootstrap;
+a generated project starts its own research record.
 
 Two operational guides also live at this level (linked from the root README):
 
-- [`POST_INIT.md`](POST_INIT.md) — the post-init decisions & configuration
-  checklist for projects created from this template.
+- [`PROJECT_SETUP.md`](PROJECT_SETUP.md) — the repository and service
+  configuration checklist. `POST_INIT.md` points to this retained guide.
 - [`RELEASE.md`](RELEASE.md) — the release/publish flow in detail.
 
 > These docs are intentionally outside `docs/source/`, so they are reviewed in

@@ -9,7 +9,7 @@
 > Decision record and implementation plan for extracting the init and
 > post-init systems into a reusable engine. This concretizes the
 > recommendations of the
-> [init/post-init analysis](../research/0003-init-post-init-analysis.md)
+> `docs/research/0003-init-post-init-analysis.md` in the template history
 > (Part 3), which were reviewed and **accepted** on 2026-06-12. The analysis
 > remains the rationale; this document is the contract.
 
@@ -319,7 +319,7 @@ Migration map (current → target, executed during phase 3):
 | `init/.blueprint-contributor` | `press/.contributor` |
 | `init/guard.sh` two-tier guard | stays in blueprint (template concern), reads `press/state.toml` |
 | `init/tests/` five-mode matrix, `init/ci/` drift checks | engine repo test fixtures; blueprint CI calls the engine |
-| `init/init-spec.md`, the [analysis](../research/0003-init-post-init-analysis.md) + this plan | engine repo docs (design history) |
+| `init/init-spec.md`, the historical init/post-init analysis + this plan | engine repo docs (design history) |
 
 The `init/` → `press/` directory rename happens at the start of phase 3,
 together with the `uvx` cutover, so guards/CI/manifest paths are touched

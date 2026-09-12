@@ -37,7 +37,7 @@ Py Launch Blueprint eliminates the setup friction in Python projects by providin
 ## ✨ Features TLDR
 - 🛠️ **Dev Tools**: Ruff (linting/formatting), `ty` (type checking, Astral), lefthook (hooks), commitlint
 - 🧠 **AI Ready**: Default configs for Cursor, Windsurf, Claude Code
-- 💪 **Production**: Python 3.12+, uv + uv_build, PEP 735 dependency-groups
+- 💪 **Production**: Python 3.13+, uv + uv_build, PEP 735 dependency-groups
 - 🚀 **DX - Developer Experience**: VS Code integration, sensible defaults, quality documentation
 - 🔄 **CI/CD**: GitHub Actions workflows, automatic testing, version management
 

@@ -23,18 +23,17 @@ name = "py_launch_blueprint"
 version = "3.0.0"
 description = "CLI tools for interacting with Py, including project search functionality"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 license = "MIT" # PEP 639 license expression (ITM-070, round-19).
 authors = [{ name = "Steve Morin", email = "steve.morin@gmail.com" }]
 classifiers = [
-  # ITM-070 — round-19. py3.12+ only (per ITM-033 floor); MIT classifier
+  # ITM-070 — round-19. py3.13+ only (per ITM-033 floor); MIT classifier
   # intentionally omitted (PEP 639 license expression above is the single
   # source of truth — duplication would drift).
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3 :: Only",
   "Topic :: Software Development :: Libraries :: Python Modules",
@@ -99,7 +98,7 @@ dev = [
   "pytest-randomly>=3.15", # WL-010 — randomized order surfaces inter-test coupling
   "hypothesis>=6.100",     # WL-013 — property-based tests at parse/serialize seams
   "responses>=0.25",       # HEX-40 — HTTP mock for the port-contract suite
-  "template-press>=3.6.0",
+  "template-press==4.1.0",
 ]
 
 docs = [
@@ -144,7 +143,7 @@ module-root = "src"
 # ITM-018 reconciled config (round-2). Merge: template's stricter rule
 # selection + source's ignore rationale. target-version reflects ITM-033
 # Python-floor bump.
-target-version = "py312"
+target-version = "py313"
 line-length = 88
 
 lint.select = [
@@ -216,7 +215,7 @@ include = ["src/py_launch_blueprint", "tests"]
 exclude = ["**/node_modules", "**/__pycache__"]
 defineConstant = { DEBUG = true }
 typeCheckingMode = "strict"
-pythonVersion = "3.12"
+pythonVersion = "3.13"
 useLibraryCodeForTypes = true
 reportMissingImports = true
 reportMissingTypeStubs = true
@@ -248,7 +247,7 @@ reportUnusedClass = true
 # sensitive pre-1.0). `strict-literal-narrowing` is left off as an optional
 # stricter knob. See projects/P03-type-precision-uplevel.md.
 [tool.ty.environment]
-python-version = "3.12" # matches requires-python floor; explicit for determinism
+python-version = "3.13" # matches requires-python floor; explicit for determinism
 
 [tool.ty.rules]
 ambiguous-protocol-member = "error"      # core/ports.py exposes Protocol ports
@@ -299,7 +298,7 @@ branch = true
 [tool.codespell]
 skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache,*.log"
 # *.log: raw run output, not prose.
-ignore-words-list = "ans,porjects"
+ignore-words-list = "ans,porjects,unparseable"
 # ans: variable name used in prompt-handling code; codespell wants to "fix"
 # it to "and". Whitelist to keep the short variable name.
 # porjects: intentional typo — the did-you-mean example in cli/groups.py and

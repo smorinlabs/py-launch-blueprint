@@ -1,126 +1,81 @@
 # Setting Up Development
 
-## Setup & Dependency Check
+Run these commands from the repository root. The project requires Python 3.13
+or later; `.python-version` selects the default interpreter.
 
-Run the following command to check if the base dependencies are installed.
+## Check the base tools
+
 ```bash
 make check
 ```
 
-### (Optional) Provision the whole toolchain with mise or flox
-
-Instead of installing each tool natively, you can provision the project's full
-11-tool set (python, uv, ruff, taplo, gitleaks, just, bun, gh, lefthook, make,
-actionlint) with a single command — both manifests live at the repo root and are kept in
-sync with the native installers (see
-[ADR 0005](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/adr/0005-mise-flox-first-class-toolchains.md)):
+If `uv` or `just` is missing, install the base toolchain first:
 
 ```bash
-# Option A: mise (https://mise.jdx.dev/) — reads mise.toml
-curl https://mise.run | sh   # install mise itself, then:
-mise install
+make bootstrap
+```
 
-# Option B: flox (https://flox.dev/) — reads .flox/
-make install-flox            # prints platform-specific install instructions
+You can also use the [optional toolchain provisioning](#optional-toolchain-provisioning)
+options below. After the base tools are available, continue with `just setup`.
+
+## Set up the development environment
+
+Run this for every fresh clone or development environment:
+
+```bash
+just setup
+```
+
+This syncs the locked development and web dependencies with
+`uv sync --locked --group dev --extra web`, installs the hook toolchain, and
+wires Lefthook's Git hooks. It also installs commitlint's dependencies with
+`bun install --frozen-lockfile`.
+
+Development dependencies are the `dev` dependency group in `pyproject.toml`,
+not an optional package extra. Dependency sync alone does not install the Git
+hooks; use `just setup` before committing or pushing.
+
+## Verify the installation
+
+```bash
+just check
+uv run --locked plbp --version
+```
+
+`just check` runs the tests, lint and format checks, type checks, import
+boundaries, spelling, YAML, and EditorConfig checks. Both commands must exit
+successfully. Use the [CLI reference](../reference/cli_reference.md) and
+[web documentation](../web/index.md) for the application interfaces.
+
+For individual checks, use the locked environment:
+
+```bash
+uv run --locked ruff format --check .
+uv run --locked ruff check .
+uv run --locked --extra web ty check src/py_launch_blueprint/
+uv run --locked --extra web pytest
+```
+
+## Optional toolchain provisioning
+
+The repository's `mise.toml` and `.flox/` manifests provision the same native
+toolchain as the installers. See
+[ADR 0005](https://github.com/smorinlabs/py-launch-blueprint/blob/main/docs/adr/0005-mise-flox-first-class-toolchains.md)
+for the supported tools.
+
+With mise installed, run:
+
+```bash
+mise install
+```
+
+For Flox:
+
+```bash
+make install-flox
 flox activate
 ```
 
-Note: yamllint, codespell, bandit, editorconfig-checker, and commitlint are
-deliberately not in these manifests. The first four are fetched on demand via
-`uvx`; commitlint runs via `bun ./node_modules/@commitlint/cli/cli.js`, so run
-`bun install` before your first commit or the commit-msg hook cannot find it.
-
-# Setup Development Environment
-
-Project requires Python 3.12+ (which is also specified inside [.python-version](https://github.com/smorinlabs/py-launch-blueprint/blob/main/.python-version) file)
-There are two options for setting up the development environment:
-
-- Using [uv](https://docs.astral.sh/uv/getting-started/installation/):
-- Using [pip](https://pip.pypa.io/en/stable/installation/):
-
-It depends on the tool you choose, but both offer a convenient way to install the package in editable mode with development dependencies. UV is recommended as it offers much greater speed and a lot of features and tools out of the box.
-
-## Using uv:
-
-```bash
-# This command creates a live development installation that allows you to modify the code without reinstalling while also installing additional development tools (like pytest, ty, etc.) specified in your project's dev dependencies.
-uv pip install --editable ".[dev]"
-
-# Format the code
-uvx ruff format py_launch_blueprint/
-
-# Run linter
-uvx ruff check py_launch_blueprint/
-
-# Run type checker
-uv run ty check src/py_launch_blueprint/
-
-# Run tests
-uvx --with-editable . pytest
-
-# Run tests with coverage
-uvx --with pytest-cov --with-editable . pytest --cov=py_launch_blueprint --cov-report=term-missing
-
-# Run command
-uvx --from . plbp
-```
-
-### (Optional) Pre-Commit Hooks with uv
-
-```bash
-# Setup Pre-Commit Hook
-uvx --with-editable . pre-commit install
-
-#Run all pre-Commit Hooks
-uvx pre-commit run --all-files
-```
-
-## Using pip:
-
-```bash
-
-# Create and activate a virtual environment if needed
-python3 -m venv .venv
-source .venv/bin/activate  # On Unix/macOS
-.venv\Scripts\activate  # On Windows
-
-# Install the package in editable mode with development dependencies
-pip install --editable ".[dev]"
-
-# Run development tools directly (no need for 'uv pip run')
-ruff format py_launch_blueprint/
-ruff check py_launch_blueprint/
-ty check src/py_launch_blueprint/
-pytest --cov=py_launch_blueprint --cov-report=term-missing
-
-# Check the installed package cli tool version
-plbp --version
-```
-
-### (Optional) Pre-Commit Hooks with pip
-
-```bash
-# Setup Pre-Commit Hook
-pre-commit install
-
-#Run all pre-Commit Hooks
-pre-commit run --all-files
-```
-
-## Customization for New Projects
-
-When using this workflow as a template for a new project, update the following:
-
-1. **Project Name**:
-   Replace `py_launch_blueprint` with your package name in the version verification step:
-
-   ```yaml
-   PY_VERSION=$(uv run python -c "import your_package_name; print(your_package_name.__version__)")
-   ```
-
-2. **Python Version**:
-   Update the Python version to match your project's requirements:
-   ```yaml
-   with:
-     python-version: "3.12" # Change to your required version
-   ```
+After activating either toolchain, run `just setup` to sync Python dependencies,
+install commitlint's dependencies, and wire Git hooks. Python quality tools come
+from the locked `dev` dependency group and run through `uv run --locked`.

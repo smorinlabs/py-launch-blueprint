@@ -18,7 +18,8 @@ on:
   push:
     branches: [main]
   pull_request:
-  merge_group:  # required checks must also report on the merge queue's speculative merge
+  # Required checks also report on speculative merge-queue commits.
+  merge_group:
 
 permissions: {}
 

@@ -1,4 +1,4 @@
-# 0005. mise and flox are first-class toolchain provisioners (lean 10-tool set)
+# 0005. mise and flox are first-class toolchain provisioners
 
 - **Status:** Accepted (amended by [0018](0018-hook-ci-parity-and-boundary-gate.md) — tool set grew 10 → 11 with `actionlint`)
 - **Date:** 2026-06-12
@@ -40,9 +40,10 @@ keep them in sync:
 2. **mise** — root `mise.toml`; provision with `mise install`.
 3. **flox** — root `.flox/`; provision with `flox activate`.
 
-Both manifests declare the **same lean 10-tool set**: python 3.12, uv, ruff,
-taplo, gitleaks, just, bun, gh, lefthook, make. Adding or removing a tool means
-updating all three options.
+Both manifests declare the **same 11-tool set**: Python 3.13, uv, ruff,
+taplo, gitleaks, just, bun, gh, lefthook, make, actionlint. ADR 0018 added
+actionlint; P07 raised the Python minimum to 3.13. Adding or removing a tool
+means updating all three options.
 
 Deliberately excluded from the manifests:
 

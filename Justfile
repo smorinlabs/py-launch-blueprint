@@ -127,14 +127,19 @@ setup:
     # Tools installed below land in these dirs; make them visible to the
     # rest of this run (the final check-deps) even on a fresh machine.
     export PATH="$HOME/.local/bin:$HOME/.bun/bin:${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
-    echo -e "{{BLUE}}[1/4] Syncing dev environment: uv sync --group dev --extra web{{NC}}"
-    uv sync --group dev --extra web
+    echo -e "{{BLUE}}[1/4] Syncing dev environment: uv sync --locked --group dev --extra web{{NC}}"
+    uv sync --locked --group dev --extra web
+    # Generation removes template planning history; retain an empty scaffold.
+    if [ -f PROJECTS.md ]; then
+        mkdir -p projects
+        touch projects/.gitkeep
+    fi
     echo -e "{{BLUE}}[2/4] Installing hook toolchain (bun, lefthook, gitleaks, actionlint)...{{NC}}"
     scripts/install-bun.sh
     scripts/install-lefthook.sh
     scripts/install-gitleaks.sh
     scripts/install-actionlint.sh
-    bun install
+    bun install --frozen-lockfile
     echo -e "{{BLUE}}[3/4] Installing formatters (taplo, yamlfmt)...{{NC}}"
     just install-taplo
     just install-yamlfmt
@@ -146,7 +151,7 @@ setup:
 # Install package in editable mode with dev dependencies
 [group('install'), group('quick start')]
 @install-dev: check-deps
-    uv sync --group dev --extra web
+    uv sync --locked --group dev --extra web
 
 # Install Taplo from upstream pre-built binary (much faster than `cargo install`,
 # which compiles from source — ~1s vs ~2min). Detects OS + arch and pulls the

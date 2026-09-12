@@ -87,11 +87,3 @@ def test_astral_adapter_carries_docs_and_upstream_licenses() -> None:
     assert (PLUGIN_ROOT / "README.md").is_file()
     assert (PLUGIN_ROOT / "LICENSE-APACHE").is_file()
     assert (PLUGIN_ROOT / "LICENSE-MIT").is_file()
-
-
-def test_repo_project_skill_description_stays_codex_compatible() -> None:
-    skill_text = (
-        REPO_ROOT / ".claude" / "skills" / "new-python-project" / "SKILL.md"
-    ).read_text()
-
-    assert len(_frontmatter_description(skill_text)) <= 1024

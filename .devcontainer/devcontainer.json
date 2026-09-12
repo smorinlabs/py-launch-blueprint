@@ -1,7 +1,7 @@
 {
-  "_comment": "ITM-067 - Portable devcontainer per ADR-11. Base image decided round 17: ghcr.io/astral-sh/uv (uv-prebuilt for fast cold start; matches ITM-033 py3.12 floor).",
+  "_comment": "ITM-067 - Portable devcontainer per ADR-11. Base image decided round 17: ghcr.io/astral-sh/uv (uv-prebuilt for fast cold start; matches ITM-033 py3.13 floor).",
   "name": "py-launch-blueprint",
-  "image": "ghcr.io/astral-sh/uv:python3.12-bookworm-slim",
+  "image": "ghcr.io/astral-sh/uv:python3.13-bookworm-slim",
   "postCreateCommand": "sh .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {

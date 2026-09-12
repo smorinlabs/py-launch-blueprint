@@ -4,7 +4,7 @@ Thank you for your interest in contributing to Py Launch Blueprint! We welcome c
 
 ## Setup
 
-Requires **Python 3.12+** (per ITM-033). Setup is two levels, in order
+Requires **Python 3.13+** (per ITM-033). Setup is two levels, in order
 (both idempotent — safe to re-run):
 
 ```bash
@@ -15,7 +15,7 @@ make bootstrap
 just setup
 ```
 
-`just setup` syncs the dev environment (`uv sync --group dev --extra web`,
+`just setup` syncs the dev environment (`uv sync --locked --group dev --extra web`,
 PEP 735 per ITM-063), installs bun/lefthook/gitleaks via the
 `scripts/install-*.sh` installers (bun per ADR-04, lefthook per ADR-01,
 gitleaks per ADR-02), runs `bun install` for commitlint deps, installs

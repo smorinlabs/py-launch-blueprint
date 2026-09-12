@@ -153,12 +153,17 @@ producing a release that can't publish.
 
 ## First-release cutover (one-time)
 
-When this template lands in a fresh repo:
+Template generation starts `pyproject.toml`, the editable `uv.lock` entry, and
+`.release-please-manifest.json` at `0.1.0`. It removes the source repository's
+`bootstrap-sha` from `release-please-config.json`: a fresh repository has its
+own commit history, so it must not inherit another repository's release cutoff.
 
-1. Ensure `[project] version` in `pyproject.toml` matches the latest
-   release (or `0.0.0` if none). For this template the static cutover
-   is `1.0.0`.
-2. Update `.release-please-manifest.json` to `{".": "<that version>"}`.
-3. Update `release-please-config.json` `bootstrap-sha` to the merge
-   commit that lands the release-please cluster.
-4. Push to main. release-please opens its first PR.
+Configure the release credentials above before enabling publication. After the
+initialization PR lands, release-please considers this repository's commits and
+proposes the next version when it finds releasable changes. Initializing the
+version files does not itself publish a release.
+
+For an existing project adopting release-please, seed the manifest with that
+project's current version. Set an optional `bootstrap-sha` only when you need
+to exclude older commits, and choose a full commit ID from that repository.
+See the [release-please bootstrap reference](https://github.com/googleapis/release-please/blob/main/docs/manifest-releaser.md#bootstrapping).
