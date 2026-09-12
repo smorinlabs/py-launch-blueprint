@@ -155,11 +155,11 @@ emits a draft manifest for review.
    ```python
    class Answers:
        package_name: str  # derived from repo_name if not set
-       repo_name: str     # parsed from git origin
-       app_name: str      # derived from package_name if not set
-       author: str        # from git config or prompt
+       repo_name: str  # parsed from git origin
+       app_name: str  # derived from package_name if not set
+       author: str  # from git config or prompt
        email: str
-       owner: str         # parsed from git origin
+       owner: str  # parsed from git origin
    ```
 
    - Validated per BLUEPRINT_IDENTITY constraints (Python identifier, valid email, etc.)
@@ -330,7 +330,12 @@ BLUEPRINT_IDENTITY = {
 }
 
 PROMPTED_IDENTITY_FIELDS = (
-    "package_name", "repo_name", "app_name", "author", "email", "owner"
+    "package_name",
+    "repo_name",
+    "app_name",
+    "author",
+    "email",
+    "owner",
 )
 ```
 
@@ -425,24 +430,27 @@ def check_preconditions() -> bool:
 ```python
 @dataclass
 class PublishingConfig:
-    pypi: str = DEFERRED          # "enabled" | "disabled" | "deferred"
+    pypi: str = DEFERRED  # "enabled" | "disabled" | "deferred"
     testpypi: str = DEFERRED
     release_please: str = DEFERRED
 
+
 @dataclass
 class CodecovConfig:
-    status: str = DEFERRED         # "enabled" | "disabled" | "deferred"
+    status: str = DEFERRED  # "enabled" | "disabled" | "deferred"
     token_set: bool = False
+
 
 @dataclass
 class RTDConfig:
-    status: str = DEFERRED         # "configured" | "declined" | "deferred"
+    status: str = DEFERRED  # "configured" | "declined" | "deferred"
+
 
 @dataclass
 class PostInitConfig:
     version: str = POST_INIT_VERSION
     date: str = ""
-    mode: str = "full"             # "full" | "partial-no-remote" | "reconfigure"
+    mode: str = "full"  # "full" | "partial-no-remote" | "reconfigure"
     publishing: PublishingConfig
     codecov: CodecovConfig
     readthedocs: RTDConfig
@@ -466,7 +474,9 @@ def ask_publishing(current: PublishingConfig | None) -> PublishingConfig:
     pypi = ask_yes_no_defer("Publish to PyPI?", current.pypi if current else DEFERRED)
     if pypi == ENABLED:
         testpypi = ask_yes_no("Mirror to TestPyPI?", default=True)
-        release_please = ask_yes_no("Use release-please for version bumps?", default=True)
+        release_please = ask_yes_no(
+            "Use release-please for version bumps?", default=True
+        )
     # ...
     return PublishingConfig(pypi=pypi, testpypi=testpypi, release_please=release_please)
 ```
@@ -478,6 +488,7 @@ def ask_publishing(current: PublishingConfig | None) -> PublishingConfig:
 ```python
 def disable_workflow(name: str) -> bool:
     """Move .github/workflows/<name> → workflows.disabled/<name>. Idempotent."""
+
 
 def enable_workflow(name: str) -> bool:
     """Reverse of disable_workflow."""

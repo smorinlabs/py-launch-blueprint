@@ -46,13 +46,7 @@ from collections.abc import Callable, Mapping, Sequence
 from typing import Concatenate, Literal, ParamSpec, Protocol, TypeVar
 
 type TomlScalar = (
-    str
-    | int
-    | float
-    | bool
-    | datetime.datetime
-    | datetime.date
-    | datetime.time
+    str | int | float | bool | datetime.datetime | datetime.date | datetime.time
 )
 type TomlValue = TomlScalar | list[TomlValue] | dict[str, TomlValue]
 type TomlDocument = dict[str, TomlValue]
@@ -63,42 +57,49 @@ type JsonValue = (
 type RequestParam = str | int
 
 type TokenSource = Literal["flag", "env"]
-type ConfigValueSource = Literal[
-    "flag", "env", "config", "default", "dry-run", "file"
-]
+type ConfigValueSource = Literal["flag", "env", "config", "default", "dry-run", "file"]
 type DoctorStatus = Literal["ok", "warn", "error"]
 type FileLogFormat = Literal["text", "json"]
 
 P = ParamSpec("P")
 R = TypeVar("R")
 
+
 class _OptionDecorator(Protocol):
     def __call__[F: Callable[..., object]](self, func: F, /) -> F: ...
+
 
 # Pydantic boundary models, with gid/id normalized by AliasChoices.
 class _WorkspacePayload(BaseModel):
     id: str = Field(validation_alias=AliasChoices("gid", "id"))
     name: str
 
+
 class _WorkspaceRef(BaseModel):
     name: str
+
 
 class _ProjectPayload(BaseModel):
     id: str = Field(validation_alias=AliasChoices("gid", "id"))
     name: str
     workspace: _WorkspaceRef | None = None
 
+
 class _WorkspaceListEnvelope(BaseModel):
     data: list[_WorkspacePayload] = []
+
 
 class _ProjectListEnvelope(BaseModel):
     data: list[_ProjectPayload] = []
 
+
 class _ProjectEnvelope(BaseModel):
     data: _ProjectPayload | None = None
 
+
 class _ApiErrorItem(BaseModel):
     message: str
+
 
 class _ApiErrorEnvelope(BaseModel):
     errors: list[_ApiErrorItem] = []
