@@ -186,10 +186,15 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
         ("docs/source/index.md", "docs-index.md"),
         ("docs/source/about/philosophy.md", "project-philosophy.md"),
         ("docs/source/tutorials/full_project_setup.md", "application-setup.md"),
+        ("docs/skills/new-python-project.md", "bootstrap-provenance.md"),
     ):
         assert (target / page).read_text() == (
             target / "press/stubs" / stub
         ).read_text()
+    provenance = target / "docs/skills/new-python-project.md"
+    for link in ("../../press/press-receipt.toml", "../PROJECT_SETUP.md"):
+        assert f"]({link})" in provenance.read_text()
+        assert (provenance.parent / link).is_file()
     for pointer in ("README.md", "docs/POST_INIT.md"):
         assert "PROJECT_SETUP.md" in (target / pointer).read_text()
     assert (target / "docs/PROJECT_SETUP.md").is_file()

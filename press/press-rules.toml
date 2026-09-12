@@ -19,6 +19,7 @@ extra_exclude_files = [
   "docs/source/index.md",
   "docs/source/about/philosophy.md",
   "docs/source/tutorials/full_project_setup.md",
+  "docs/skills/new-python-project.md",
 ]
 
 [[clean]]
@@ -193,3 +194,7 @@ stub_file = "press/stubs/project-philosophy.md"
 [[reset]]
 file = "docs/source/tutorials/full_project_setup.md"
 stub_file = "press/stubs/application-setup.md"
+
+[[reset]]
+file = "docs/skills/new-python-project.md"
+stub_file = "press/stubs/bootstrap-provenance.md"
