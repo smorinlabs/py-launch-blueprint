@@ -40,12 +40,15 @@ will be recorded separately from blueprint fixes.
 - [ ] [P07-T07] Evaluate and add Python 3.14 CI/canary coverage alongside the 3.13 minimum. Deferred from [review 3986130907](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3986130907); Python 3.14 lock resolution and the coverage gap already existed before this PR.
 - [ ] [P07-T08] Refresh the retained CI tutorial against actual workflow commands and supported platforms. Deferred from [review 3986130826](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3986130826); the Ubuntu-only example, macOS prose, wrong workflow extension, and floating tool examples predate this PR.
 - [ ] [P07-T09] Correct retained generated documentation for optional contributor automation. Deferred from [Copilot review 5175179607](https://github.com/smorinlabs/py-launch-blueprint/pull/530#pullrequestreview-5175179607); Sphinx pages advertise the removed workflow/roster. The separate claim that initialization requires an existing `.contributors.yml` was refuted against published contributors-please 1.4.3: `init` uses defaults when the file is absent. Verify generated links without enabling external automation.
+- [ ] [P07-T10] Pin the Claude review action to a verified immutable commit and confirm Dependabot maintains the pin. Deferred from [review 3995193747](https://github.com/smorinlabs/py-launch-blueprint/pull/530#discussion_r3995193747); `anthropics/claude-code-action@v1.0.214` and its credential/OIDC permissions are unchanged from base `e3ed657`. Keep this supply-chain hardening separate from the bootstrap upgrade, preserve the action version and credential-gated behavior, and validate the workflow and configured/missing-secret paths.
 
 Tasks P07-T06 through P07-T09 are tracked follow-ups, not merge requirements
 for the Python 3.13 / Template Press 4.1.0 upgrade. The delivered implementation
 tasks above remain complete; the trunk stays open to keep follow-ups visible.
 The owner reaffirmed on 2026-09-11 that these four items belong in a separate
 CI and documentation follow-up, after the two approved bootstrap fixes.
+P07-T10 records a later review suggestion for separate CI hardening; it does
+not alter the four owner-agreed follow-ups or add a bootstrap merge requirement.
 
 ### Notes
 

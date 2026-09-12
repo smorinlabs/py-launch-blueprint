@@ -50,7 +50,7 @@ successfully. Use the [CLI reference](../reference/cli_reference.md) and
 For individual checks, use the locked environment:
 
 ```bash
-uv run --locked ruff format .
+uv run --locked ruff format --check .
 uv run --locked ruff check .
 uv run --locked --extra web ty check src/py_launch_blueprint/
 uv run --locked --extra web pytest
