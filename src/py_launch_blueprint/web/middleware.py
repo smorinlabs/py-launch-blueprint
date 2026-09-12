@@ -88,10 +88,15 @@ def _log_access(request: Request, *, status_code: int, start: float) -> None:
     """Emit the one-per-request ``http_request`` event (WEB-12)."""
     if request.url.path in ACCESS_LOG_EXCLUDED_PATHS:
         return
-    # The router sets scope["route"] once matched. Unmatched requests (404s)
-    # log route=None — falling back to the raw path here would let URL spam
-    # blow up the one field kept bounded-cardinality on purpose.
-    matched = request.scope.get("route")
+    # FastAPI >=0.137 preserves the original route without include_router
+    # prefixes. Its request-scoped effective context holds the full template.
+    # This internal metadata has no public request accessor; keep the fallback
+    # for older FastAPI and routes outside an included router.
+    matched = request.scope.get("fastapi", {}).get("effective_route_context")
+    if matched is None:
+        matched = request.scope.get("route")
+    # Unmatched requests log route=None. Never use the raw URL as a fallback:
+    # only route templates keep this field bounded in cardinality.
     log.info(
         "http_request",
         method=request.method,
