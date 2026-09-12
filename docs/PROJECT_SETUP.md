@@ -136,7 +136,7 @@ scripts/setup-github-environments.sh <owner>/<repo>
 | Environment | Used by | Notes |
 |---|---|---|
 | `pypi` | `publish.yml` | Production PyPI publish. Pair with the PyPI trusted-publisher config in §2.3. |
-| `testpypi` | `publish.yml` (currently commented out) | TestPyPI smoke test; enable by uncommenting the job. |
+| `testpypi` | `publish.yml` → `publish-testpypi` | Required before production PyPI publishing. Configure this environment and its TestPyPI trusted publisher before the first release. |
 | `security-review` | `manual-pr-security-scan.yml` | Scopes the `SAFETY_API_KEY` secret to a gated environment. |
 
 ### 2.3 External services to connect
@@ -144,7 +144,8 @@ scripts/setup-github-environments.sh <owner>/<repo>
 | Service | Action | Config in repo |
 |---|---|---|
 | **CodeQL** | In **Settings → Code security**, ensure **default setup is OFF** (advanced setup is mutually exclusive with it — see `.github/SECURITY.md`). To verify/disable: `gh api /repos/<owner>/<repo>/code-scanning/default-setup` then `gh api --method PATCH … -f state=not-configured`. | `codeql.yml`, `codeql-config.yml` |
-| **PyPI trusted publisher** | On pypi.org (and test.pypi.org) → your project → *Publishing* → add a GitHub Actions trusted publisher: this repo, workflow `publish.yml`, environment `pypi` (`testpypi`). | `publish.yml` |
+| **TestPyPI trusted publisher** | On test.pypi.org → your project → *Publishing* → add a GitHub Actions trusted publisher: this repo, workflow `publish.yml`, environment `testpypi`. The shipped workflow must complete this stage before publishing to PyPI. | `publish.yml` |
+| **PyPI trusted publisher** | On pypi.org → your project → *Publishing* → add a GitHub Actions trusted publisher: this repo, workflow `publish.yml`, environment `pypi`. | `publish.yml` |
 | **GHCR package** | After the first upload, set the container package to **Public** and rerun the failed anonymous-access check. Ensure the package grants this repository Actions write access and the organization permits public packages. | `publish-container.yml`; [release instructions](RELEASE.md#public-container-publishing-ghcr) |
 | **Codecov** | Add the repo at codecov.io. Public repos need no token (OIDC). | `.codecov.yml` |
 | **Read the Docs** | Import the project at readthedocs.org; it reads `.readthedocs.yaml`. | `.readthedocs.yaml` |
