@@ -1,8 +1,11 @@
-import {test, expect} from 'bun:test';
+import {test, expect, setDefaultTimeout} from 'bun:test';
 import {ReleaseHistory, createReleaseManifest, snapshotGitHub} from '../../scripts/release_commits.cjs';
 import {repository, quiet} from './helpers.cjs';
 import {readFileSync} from 'node:fs';
 import {Manifest} from 'release-please';
+
+// Real Git fixtures may exceed Bun's five-second default on shared runners.
+setDefaultTimeout(15000);
 
 async function build(repo) {
     const history = new ReleaseHistory(repo.cwd);

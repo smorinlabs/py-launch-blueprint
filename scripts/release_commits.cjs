@@ -11,6 +11,7 @@ const CONTEXT = Symbol('release history');
 const WRITES = new Set([
     'createPullRequest', 'updatePullRequest', 'createRelease',
     'commentOnIssue', 'addIssueLabels', 'removeIssueLabels',
+    'createFileOnNewBranch',
 ]);
 
 class ReleaseHistory {

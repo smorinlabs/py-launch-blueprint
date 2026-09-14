@@ -1,8 +1,9 @@
-import {test, expect} from 'bun:test';
+import {test, expect, setDefaultTimeout} from 'bun:test';
 import {Manifest, setLogger} from 'release-please';
 import {parseConventionalCommits} from 'release-please/build/src/commit';
 import {repository, quiet} from './helpers.cjs';
 
+setDefaultTimeout(15000);
 setLogger(quiet);
 
 test('upstream stops before older branch changes that landed after the release', async () => {

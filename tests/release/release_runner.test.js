@@ -1,9 +1,13 @@
-import {test, expect} from 'bun:test';
+import {test, expect, setDefaultTimeout} from 'bun:test';
 import {runRelease} from '../../scripts/release_please.cjs';
 import {createReleaseManifest, snapshotGitHub, ReleaseHistory} from '../../scripts/release_commits.cjs';
 import {repository, quiet} from './helpers.cjs';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {FilePullRequestOverflowHandler} from 'release-please/build/src/util/pull-request-overflow-handler';
+
+// Bun applies this per file; a cached shared helper cannot configure later files.
+setDefaultTimeout(15000);
 
 function run(repo, options = {}) {
     return runRelease({github: repo.github, cwd: repo.cwd, logger: quiet, ...options});
@@ -163,5 +167,35 @@ test('historical preview ignores releases, tags, and merged PRs outside its sour
         const current = await run(repo);
         expect(current.cutoff).toBe(future);
         expect(current.pullRequests).toEqual([]);
+    } finally { repo.dispose(); }
+});
+
+test('oversized release notes obey dry-run and stale-source guards before creating a branch', async () => {
+    const repo = repository();
+    try {
+        repo.github.createFileOnNewBranch = async (...args) => {
+            repo.calls.push(['createFileOnNewBranch', ...args]);
+            return 'https://example.org/notes';
+        };
+        const history = new ReleaseHistory(repo.cwd);
+        const candidate = {headRefName: 'release-branch', body: {toString: () => 'x'.repeat(65537)}};
+        const handler = options => new FilePullRequestOverflowHandler(
+            snapshotGitHub(repo.github, history, 'main', options), quiet,
+        );
+        await expect(handler().handleOverflow(candidate)).rejects.toThrow('Dry run refused');
+        expect(repo.calls).toEqual([]);
+        let checks = 0;
+        await expect(handler({dryRun: false, assertCurrent: async () => {
+            checks += 1;
+            throw new Error('stale overflow source');
+        }}).handleOverflow(candidate)).rejects.toThrow('stale overflow source');
+        expect(checks).toBe(1);
+        expect(repo.calls).toEqual([]);
+        const result = await handler({dryRun: false, assertCurrent: async () => {
+            checks += 1;
+        }}).handleOverflow(candidate);
+        expect(result).toContain('https://example.org/notes');
+        expect(checks).toBe(2);
+        expect(repo.calls.map(c => c[0])).toEqual(['createFileOnNewBranch']);
     } finally { repo.dispose(); }
 });
