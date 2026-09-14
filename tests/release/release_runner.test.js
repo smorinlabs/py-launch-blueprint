@@ -142,3 +142,26 @@ test('invalid cutoff and API failures stop the lifecycle without a new PR', asyn
         expect(repo.calls).toEqual([]);
     } finally { repo.dispose(); }
 });
+
+test('historical preview ignores releases, tags, and merged PRs outside its source ancestry', async () => {
+    const repo = repository();
+    try {
+        const source = repo.commit('feat: first feature');
+        const original = await run(repo);
+        const candidate = original.pullRequests[0];
+        const future = repo.commit('chore: later release');
+        repo.release(future);
+        repo.pullRequests.MERGED.push({
+            number: 44, sha: future, title: candidate.title, body: candidate.body,
+            headBranchName: candidate.branch, labels: ['autorelease: pending'],
+        });
+        expect(await run(repo, {source})).toEqual(original);
+        // Exercise tag backfill separately from release discovery.
+        repo.releases.length = 0;
+        expect(await run(repo, {source})).toEqual(original);
+        repo.pullRequests.MERGED.length = 0;
+        const current = await run(repo);
+        expect(current.cutoff).toBe(future);
+        expect(current.pullRequests).toEqual([]);
+    } finally { repo.dispose(); }
+});

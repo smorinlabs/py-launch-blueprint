@@ -39,6 +39,20 @@ class ReleaseHistory {
         }
     }
 
+    contains(ref) {
+        // Discovery can return newer or unrelated remote objects absent locally.
+        // Explicit configured cutoffs still use select(), which fails on either.
+        let sha;
+        try { sha = this.resolve(ref); } catch { return false; }
+        try {
+            this.git(['merge-base', '--is-ancestor', sha, this.source]);
+            return true;
+        } catch (error) {
+            if (error.status === 1) return false;
+            throw error;
+        }
+    }
+
     select(ref) {
         this.cutoff = ref ? this.resolve(ref) : null;
         if (this.cutoff) {
@@ -94,7 +108,31 @@ function snapshotGitHub(github, history, branch, {dryRun = true, assertCurrent, 
             return history.files(pin(ref)).filter(path => path.startsWith(directory)
                 && basename(path) === filename).map(path => path.slice(directory.length));
         },
-        async *mergeCommitIterator() { yield* history.walk([history.source]); },
+        async *mergeCommitIterator(_ref, {maxResults} = {}) {
+            const revisions = [history.source];
+            if (maxResults !== undefined) {
+                if (!Number.isSafeInteger(maxResults) || maxResults < 0) {
+                    throw new Error('Commit discovery maxResults must be a nonnegative integer.');
+                }
+                revisions.unshift(`--max-count=${maxResults}`);
+            }
+            yield* history.walk(revisions);
+        },
+        async *releaseIterator(...args) {
+            for await (const release of github.releaseIterator(...args)) {
+                if (history.contains(release.sha)) yield release;
+            }
+        },
+        async *tagIterator(...args) {
+            for await (const tag of github.tagIterator(...args)) {
+                if (history.contains(tag.sha)) yield tag;
+            }
+        },
+        async *pullRequestIterator(ref, state = 'MERGED', ...args) {
+            for await (const pr of github.pullRequestIterator(ref, state, ...args)) {
+                if (state !== 'MERGED' || history.contains(pr.sha)) yield pr;
+            }
+        },
     };
     for (const method of ['findFilesByGlobAndRef', 'findFilesByExtensionAndRef']) {
         overrides[method] = (pattern, ref, prefix) => github[method](pattern, pin(ref), prefix);
@@ -102,7 +140,7 @@ function snapshotGitHub(github, history, branch, {dryRun = true, assertCurrent, 
     let proxy;
     proxy = new Proxy(github, {
         get(target, property) {
-            if (property in overrides) return overrides[property];
+            if (Object.hasOwn(overrides, property)) return overrides[property];
             const value = Reflect.get(target, property);
             if (typeof value !== 'function') return value;
             if (WRITES.has(property)) {

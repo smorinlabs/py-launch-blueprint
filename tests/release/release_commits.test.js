@@ -1,5 +1,5 @@
 import {test, expect} from 'bun:test';
-import {ReleaseHistory, createReleaseManifest} from '../../scripts/release_commits.cjs';
+import {ReleaseHistory, createReleaseManifest, snapshotGitHub} from '../../scripts/release_commits.cjs';
 import {repository, quiet} from './helpers.cjs';
 import {readFileSync} from 'node:fs';
 import {Manifest} from 'release-please';
@@ -146,5 +146,24 @@ test('empty ranges produce no release; upstream revert and release-trailer behav
         expect(corrected.body.toString()).toContain('Reverts');
         repo.commit('fix: choose release\n\nRelease-As: 3.2.1');
         expect((await build(repo)).candidates[0].version.toString()).toBe('3.2.1');
+    } finally { repo.dispose(); }
+});
+
+test('upstream discovery respects its limit while final selection remains complete', async () => {
+    const repo = repository();
+    try {
+        repo.config['commit-search-depth'] = 1;
+        repo.release(repo.commit('chore: configure scan', {'release-please-config.json': JSON.stringify(repo.config)}));
+        const breaking = repo.commit('feat!: first breaking change');
+        repo.commit('fix: second change');
+        repo.commit('fix: third change');
+        const snapshot = snapshotGitHub(repo.github, new ReleaseHistory(repo.cwd), 'main');
+        const discovery = [];
+        for await (const commit of snapshot.mergeCommitIterator('main', {maxResults: 1})) discovery.push(commit);
+        expect(discovery).toHaveLength(1);
+        const {history, candidates: [candidate]} = await build(repo);
+        expect(history.selected).toHaveLength(3);
+        expect(candidate.body.toString()).toContain(breaking);
+        expect(candidate.version.toString()).toBe('2.0.0');
     } finally { repo.dispose(); }
 });

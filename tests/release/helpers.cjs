@@ -4,6 +4,9 @@ const {tmpdir} = require('node:os');
 const {join, dirname} = require('node:path');
 const {FileNotFoundError} = require('release-please/build/src/errors');
 
+// These integration tests create real Git histories and repeat API lifecycles.
+require('bun:test').setDefaultTimeout(15000);
+
 const quiet = Object.fromEntries(
     ['debug', 'trace', 'info', 'warn', 'error'].map(name => [name, () => {}]),
 );

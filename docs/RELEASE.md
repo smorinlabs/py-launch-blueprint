@@ -39,8 +39,12 @@ supported. A multi-package configuration fails explicitly.
 The cutoff is the configured `last-release-sha`, otherwise the release found by
 upstream discovery, otherwise `bootstrap-sha` for a first release. With no
 cutoff, all local history is considered. Annotated tags resolve to their commits.
-The checkout must contain full history and tags. A missing cutoff or one outside
-the source revision's ancestry stops generation.
+The checkout must contain full history and tags. An explicitly configured cutoff
+that is missing or outside the source revision's ancestry stops generation.
+Discovery ignores releases, tags, and merged release PRs whose commits are
+outside the pinned source's ancestry. A later release therefore cannot become
+the cutoff for an older preview. The upstream discovery scan retains its search
+limit; the plugin's final commit selection always covers the complete range.
 
 From the repository root, after `just setup`, preview the committed `HEAD`:
 
