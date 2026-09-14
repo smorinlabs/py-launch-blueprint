@@ -2,9 +2,10 @@
   "name": "py-launch-blueprint-tooling",
   "version": "0.0.0",
   "private": true,
-  "description": "Bun-managed dev tooling for py-launch-blueprint (commitlint only). ITM-041.",
+  "description": "Bun-managed commitlint and release tooling for py-launch-blueprint.",
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
-    "@commitlint/config-conventional": "^21.0.1"
+    "@commitlint/config-conventional": "^21.0.1",
+    "release-please": "17.6.0"
   }
 }

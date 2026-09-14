@@ -20,6 +20,61 @@ Release flow per ADR-05 + ADR-06 + ADR-07. See
    published. It builds and tests the web image, publishes the version to
    GHCR, verifies anonymous access, and reconciles the `latest` image tag.
 
+## Complete commit selection and preview
+
+`scripts/release_please.cjs` runs release-please `17.6.0` with the Bun version
+in `.bun-version`. `scripts/release_commits.cjs` supplies all non-merge commits
+reachable from the source revision but absent from the previous release's
+ancestry. Branch commits authored before that release remain included if they
+were merged afterward. Merge bodies cannot contribute duplicate release notes.
+Separate commits with identical subjects remain separate changes.
+
+The plugin runs before upstream parsing and version calculation. Full commit
+messages, breaking-change trailers, release overrides, and changed paths are
+retained. Configured path exclusions still apply. `build(deps)` and
+`build(deps-dev)` join the existing dependency scopes in the Dependencies section;
+ordinary builds and chores remain hidden. Only one package at path `.` is
+supported. A multi-package configuration fails explicitly.
+
+The cutoff is the configured `last-release-sha`, otherwise the release found by
+upstream discovery, otherwise `bootstrap-sha` for a first release. With no
+cutoff, all local history is considered. Annotated tags resolve to their commits.
+The checkout must contain full history and tags. A missing cutoff or one outside
+the source revision's ancestry stops generation.
+
+From the repository root, after `just setup`, preview the committed `HEAD`:
+
+```bash
+GITHUB_REPOSITORY="$(gh repo view --json nameWithOwner --jq .nameWithOwner)" \
+RELEASE_PLEASE_TOKEN="$(gh auth token)" \
+RELEASE_PLEASE_APPLY=0 \
+bun scripts/release_please.cjs > /tmp/release-preview.json
+```
+
+The preview makes no GitHub writes. JSON on standard output contains the source
+commit, cutoff, selected commits, proposed version, title, notes, rendered files,
+and any merged releases awaiting publication. Diagnostics go to standard error.
+The preview reads committed files; commit local changes before inspecting them.
+`RELEASE_PLEASE_SOURCE` selects another locally available revision, and
+`RELEASE_PLEASE_BRANCH` selects the target branch. Their defaults are `GITHUB_SHA`
+or `HEAD`, and the GitHub repository's default branch, respectively.
+
+Only `RELEASE_PLEASE_APPLY=1` enables writes. The workflow installs frozen
+dependencies before supplying its App/PAT credential as `RELEASE_PLEASE_TOKEN`.
+It publishes already-merged release PRs first, loads a fresh manifest, then
+creates or updates the next PR using upstream branch names, labels, and atomic
+file updates. Each write checks that the target branch still matches the pinned
+source revision. A branch move during an upstream API operation is still
+possible; the workflow's serialized runs and subsequent source checks limit
+that race rather than making a multi-request operation transactional.
+
+If history is shallow, fetch it with `git fetch --unshallow --tags`. If a cutoff
+is missing or unrelated, verify it against this repository's history and correct
+the configuration before retrying. If the source is stale, let the newer push
+run or rerun from its revision. Do not manually remove notes to conceal a
+generator defect. Run `just test-release` for the offline regression suite;
+`just check` and the required `ci-ok` check include it.
+
 ## Public container publishing (GHCR)
 
 The image is `ghcr.io/smorinlabs/py-launch-blueprint`. Generated projects use

@@ -92,6 +92,24 @@ jobs:
       - name: Ruff format check
         run: uv run --no-sync ruff format --check .
 
+  release-generation:
+    name: release-generation
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pinned Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2
+        with:
+          bun-version-file: .bun-version
+      - name: Install frozen tooling
+        run: bun install --frozen-lockfile
+      - name: Test release generation
+        run: bun test tests/release
+
   # ITM-026 - typecheck job (ty, per ADR-03). Decided round 3 direct switch.
   typecheck:
     name: typecheck
@@ -276,6 +294,7 @@ jobs:
     needs:
       - changes
       - lint
+      - release-generation
       - typecheck
       - import-boundaries
       - test

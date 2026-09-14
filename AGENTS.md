@@ -10,7 +10,7 @@ Windsurf, and Codex read this file natively. For human-contributor flow see
 
 - **Python 3.13+** (per `requires-python = ">=3.13"`; see ITM-033).
 - **uv** — Python dependency + venv management.
-- **bun** — commitlint runtime (per ADR-04).
+- **bun** — commitlint and release-generator runtime (per ADR-04).
 - **lefthook** — hook manager (per ADR-01).
 - **gitleaks** — secret scanner (per ADR-02).
 
@@ -138,11 +138,14 @@ This matters more under merge commits than it did under squash: the branch's
 individual commits land on the trunk, and release-please parses those commits.
 The merge commit's subject is non-conventional
 (`merge_commit_title=MERGE_MESSAGE`, i.e. `Merge pull request #N from …`).
-GitHub still copies the conventional PR title into its body, which
-release-please can parse as a duplicate entry. During release review, remove
-merge-derived entries from both `CHANGELOG.md` and the release PR's notes,
-preserving the individual branch changes. Automatic prevention is tracked in
-[#531](https://github.com/smorinlabs/py-launch-blueprint/issues/531).
+GitHub still copies the conventional PR title into its body. The release
+generator in `scripts/release_commits.cjs` excludes merge commits and selects
+all individual commits reachable from the source but absent from the previous
+release's ancestry. This includes older branch work merged after that release.
+Run `just test-release` after changing release tooling. Use the read-only preview
+in `docs/RELEASE.md` to verify the version and both sets of generated notes.
+Repair generator defects before merging a release PR; manual note edits do not
+verify the automatic behavior.
 Conventional PR titles remain required for review legibility.
 
 ## Code style
