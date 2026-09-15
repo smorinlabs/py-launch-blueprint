@@ -1,5 +1,34 @@
 # Changelog
 
+## [4.0.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v3.0.0...v4.0.0) (2026-09-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **bootstrap:** adopt template-press 4.1 and python 3.13
+
+### Features
+
+* **bootstrap:** adopt template-press 4.1 and python 3.13 ([c934757](https://github.com/smorinlabs/py-launch-blueprint/commit/c9347573bdee6c7bf0fa3e46a3619c985181a753))
+
+
+### Bug Fixes
+
+* **bootstrap:** apply credential and generated project defaults ([c9992cb](https://github.com/smorinlabs/py-launch-blueprint/commit/c9992cb56c20e022193b856bc33c455a57dbaf95))
+* **bootstrap:** enforce locked setup and resolve review findings ([2b5ba26](https://github.com/smorinlabs/py-launch-blueprint/commit/2b5ba26a5f52e623f5309947b3b6d49282b5e544))
+* **bootstrap:** replace generated tutorial and validate release config ([7af9e0d](https://github.com/smorinlabs/py-launch-blueprint/commit/7af9e0d09c3debc5636e1928b6363abdb9222401))
+* **bootstrap:** replace retired guide with application provenance ([d0f8f8a](https://github.com/smorinlabs/py-launch-blueprint/commit/d0f8f8a5c527087da603547e55e73e03b31ed231))
+* **contributors:** keep generated guidance and helper usable ([6c85a57](https://github.com/smorinlabs/py-launch-blueprint/commit/6c85a57ab47174aaaa9a3bdb71e3615c1a6d9352))
+* **release:** bind discovery to the source ancestry ([fefc93d](https://github.com/smorinlabs/py-launch-blueprint/commit/fefc93d203490aa08e5e3783205d34d357689d34))
+* **release:** generate complete notes from unreleased commits ([43728c9](https://github.com/smorinlabs/py-launch-blueprint/commit/43728c9da3d726319b949985b758e3ec272f4a32))
+* **release:** guard overflow writes and stabilize integration tests ([f633767](https://github.com/smorinlabs/py-launch-blueprint/commit/f6337671db245df68cc8142d6e83f9e36f008c88))
+* **web:** preserve included route prefixes in access logs ([5be7139](https://github.com/smorinlabs/py-launch-blueprint/commit/5be7139661410e599f260d65eaef5d2e1c1d5998))
+
+
+### Dependencies
+
+* **deps:** update gitpython for security fixes ([37b1199](https://github.com/smorinlabs/py-launch-blueprint/commit/37b11998e375096748eafa2c15e1f7059c971721))
+
 ## [3.0.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v2.4.2...v3.0.0) (2026-09-11)
 
 
