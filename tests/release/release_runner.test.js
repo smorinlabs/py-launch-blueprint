@@ -80,6 +80,13 @@ test('existing PR keeps its number and branch; unchanged retries perform no writ
 test('release-only merge publishes, reloads the manifest, and proposes no extra release', async () => {
     const repo = repository();
     try {
+        repo.git(['checkout', '--orphan', 'retired-template']);
+        const obsolete = repo.commit('chore: retired template bootstrap');
+        repo.git(['checkout', 'main']);
+        repo.config['bootstrap-sha'] = obsolete;
+        repo.commit('chore: record historical bootstrap', {
+            'release-please-config.json': JSON.stringify(repo.config),
+        });
         repo.release();
         repo.commit('fix: repair application');
         const candidate = (await run(repo)).pullRequests[0];
@@ -88,8 +95,22 @@ test('release-only merge publishes, reloads the manifest, and proposes no extra 
             number: 33, sha: released, title: candidate.title, body: candidate.body,
             headBranchName: candidate.branch, labels: ['autorelease: pending'],
         });
-        expect((await run(repo)).releases).toEqual([{tag: 'v1.0.1', sha: released}]);
+        const preview = await run(repo);
+        expect(preview.releases).toEqual([{tag: 'v1.0.1', sha: released}]);
+        expect(preview.pullRequests).toEqual([]);
+        expect(preview.cutoff).toBe(released);
         expect(repo.calls).toEqual([]);
+        // A pending release does not waive an explicitly selected invalid cutoff.
+        repo.config['last-release-sha'] = obsolete;
+        repo.commit('chore: invalid explicit cutoff', {
+            'release-please-config.json': JSON.stringify(repo.config),
+        });
+        await expect(run(repo, {dryRun: false})).rejects.toThrow('not an ancestor');
+        expect(repo.calls).toEqual([]);
+        delete repo.config['last-release-sha'];
+        repo.commit('chore: restore release discovery', {
+            'release-please-config.json': JSON.stringify(repo.config),
+        });
         const publish = repo.github.createRelease;
         repo.github.createRelease = async () => { throw new Error('Publication API unavailable'); };
         await expect(run(repo, {dryRun: false})).rejects.toThrow('Publication API unavailable');
@@ -100,7 +121,7 @@ test('release-only merge publishes, reloads the manifest, and proposes no extra 
             loads.push(repo.releases.map(r => r.tagName));
             return createReleaseManifest(...args);
         }});
-        expect(loads).toEqual([['v1.0.0'], ['v1.0.1', 'v1.0.0']]);
+        expect(loads).toEqual([['v1.0.0'], ['v1.0.0'], ['v1.0.1', 'v1.0.0']]);
         expect(result.pullRequests).toEqual([]);
         expect(repo.calls.map(c => c[0])).toEqual([
             'createRelease', 'commentOnIssue', 'removeIssueLabels', 'addIssueLabels',
@@ -108,6 +129,37 @@ test('release-only merge publishes, reloads the manifest, and proposes no extra 
         repo.calls.length = 0;
         await run(repo, {dryRun: false});
         expect(repo.calls).toEqual([]);
+    } finally { repo.dispose(); }
+});
+
+test('preview uses the pending release as the baseline for later changes without publishing it', async () => {
+    const repo = repository();
+    try {
+        repo.release();
+        repo.commit('fix: released repair');
+        const candidate = (await run(repo)).pullRequests[0];
+        const released = repo.commit(candidate.title, candidate.files);
+        repo.pullRequests.MERGED.push({
+            number: 33, sha: released, title: candidate.title, body: candidate.body,
+            headBranchName: candidate.branch, labels: ['autorelease: pending'],
+        });
+        const later = repo.commit('feat!: subsequent breaking change');
+        const preview = await run(repo);
+        expect(preview.releases).toEqual([{tag: 'v1.0.1', sha: released}]);
+        expect(preview.cutoff).toBe(released);
+        expect(preview.commits.map(commit => commit.sha)).toEqual([later]);
+        expect(preview.pullRequests).toHaveLength(1);
+        expect(preview.pullRequests[0].version).toBe('2.0.0');
+        expect(preview.pullRequests[0].body).not.toContain('released repair');
+        expect(repo.releases.map(release => release.tagName)).toEqual(['v1.0.0']);
+        expect(repo.calls).toEqual([]);
+        const applied = await run(repo, {dryRun: false});
+        expect(applied.pullRequests).toHaveLength(1);
+        expect(repo.calls.map(call => call[0])).toEqual([
+            'createRelease', 'commentOnIssue', 'removeIssueLabels', 'addIssueLabels',
+            'createPullRequest',
+        ]);
+        expect(repo.calls.at(-1)[1].body).toBe(preview.pullRequests[0].body);
     } finally { repo.dispose(); }
 });
 
