@@ -225,12 +225,43 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
 
     _run(target, uv, "run", "--locked", "ruff", "format", ".")
     _run(target, just, "setup")
+    tooling = json.loads((target / "package.json").read_text())
+    assert tooling["devDependencies"]["release-please"] == "17.6.0"
+    for release_file in (
+        "scripts/release_commits.cjs",
+        "scripts/release_please.cjs",
+        "tests/release/release_runner.test.js",
+    ):
+        assert (target / release_file).is_file()
     assert [p.name for p in (target / "projects").iterdir()] == [".gitkeep"]
     _run(target, git, "add", "--all")
     _run(target, git, "diff", "--cached", "--check")
     _run(target, just, "check")
     _run(target, uv, "run", "--locked", "press", "verify", "--target", ".")
     _run(target, uv, "lock", "--check")
+    _run(target, git, "commit", "-m", "feat: initialize application")
+    # Read the generated project's committed history with an offline GitHub
+    # transport. The normal runner owns file reads and preview construction.
+    bun = shutil.which("bun")
+    assert bun
+    preview_script = """
+const {runRelease} = require('./scripts/release_please.cjs');
+const {quiet} = require('./tests/release/helpers.cjs');
+const github = {
+    repository: {owner: 'example-labs', repo: 'harbor-sample', defaultBranch: 'main'},
+    async *releaseIterator() {},
+    async *tagIterator() {},
+    async *pullRequestIterator() {},
+};
+runRelease({github, logger: quiet}).then(result => console.log(JSON.stringify(result)));
+"""
+    preview = json.loads(_run(target, bun, "-e", preview_script))
+    assert preview["mode"] == "preview"
+    assert preview["cutoff"] is None
+    assert preview["source"] == _run(target, git, "rev-parse", "HEAD").strip()
+    assert preview["pullRequests"][0]["version"] == "0.2.0"
+    assert "harbor_sample" in preview["pullRequests"][0]["branch"]
+    assert "initialize application" in preview["pullRequests"][0]["body"]
     docs_output = tmp_path / "generated-docs"
     _run(
         target,

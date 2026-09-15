@@ -37,6 +37,17 @@ jobs:
       # available directly in `if:` conditions). Empty unless the App is set up.
       RP_CLIENT_ID: ${{ secrets.RELEASE_PLEASE_CLIENT_ID }}
     steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install pinned Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2
+        with:
+          bun-version-file: .bun-version
+      - name: Install frozen release tooling
+        run: bun install --frozen-lockfile
+
       # Mint a GitHub App installation token when the App is configured, so the
       # release PR/tag triggers downstream workflows. Skipped otherwise.
       - name: Mint release-please app token
@@ -48,10 +59,9 @@ jobs:
           private-key: ${{ secrets.RELEASE_PLEASE_PRIVATE_KEY }}
 
       - name: release-please
-        uses: googleapis/release-please-action@v5.0.0
-        with:
+        env:
           # Minted App installation token (preferred) or the RELEASE_PLEASE_APP_TOKEN
           # PAT — both open PRs and trigger downstream workflows. See docs/RELEASE.md.
-          token: ${{ steps.app-token.outputs.token || secrets.RELEASE_PLEASE_APP_TOKEN }}
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+          RELEASE_PLEASE_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_PLEASE_APP_TOKEN }}
+          RELEASE_PLEASE_APPLY: '1'
+        run: bun scripts/release_please.cjs

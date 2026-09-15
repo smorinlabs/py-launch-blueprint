@@ -266,6 +266,11 @@ alias li := lint-imports
 
 alias t := test
 
+# Exercise the release generator against temporary Git histories and a fake API
+[group('test'), group('dev')]
+@test-release:
+    bun test tests/release
+
 # Run tests with coverage and generate term-missing + HTML + XML reports
 [group('test'), group('dev')]
 @coverage:
@@ -279,7 +284,7 @@ alias t := test
 
 # Run all checks
 [group('test'), group('dev'), group('quick start')]
-@check: test lint typecheck lint-imports tach check-yaml check-spelling check-editorconfig
+@check: test test-release lint typecheck lint-imports tach check-yaml check-spelling check-editorconfig
     echo "All checks passed!"
 
 alias ca := check

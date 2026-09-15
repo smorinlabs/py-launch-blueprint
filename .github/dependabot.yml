@@ -61,7 +61,7 @@ updates:
       github-actions:
         patterns: ["*"]
 
-  # ITM-043 - npm (Bun) ecosystem; commitlint deps only for now.
+  # ITM-043 - npm (Bun) ecosystem; commitlint and release-please.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
