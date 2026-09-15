@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v4.0.0...v4.0.1) (2026-09-15)
+
+
+### Bug Fixes
+
+* **release:** plan against releases awaiting publication ([833a2fa](https://github.com/smorinlabs/py-launch-blueprint/commit/833a2fa8d7276ad950e1a81a40f9122d9fd7187c))
+
 ## [4.0.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v3.0.0...v4.0.0) (2026-09-15)
 
 
