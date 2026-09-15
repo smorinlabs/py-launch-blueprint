@@ -98,7 +98,9 @@ class ReleaseHistory {
 }
 
 // Bind internal SCM calls (including buildChangeSet) to the same snapshot too.
-function snapshotGitHub(github, history, branch, {dryRun = true, assertCurrent, context} = {}) {
+function snapshotGitHub(github, history, branch, {
+    dryRun = true, assertCurrent, context, pendingReleases = [],
+} = {}) {
     const pin = ref => !ref || ref === branch ? history.source : history.resolve(ref);
     const overrides = {
         [CONTEXT]: context,
@@ -120,6 +122,12 @@ function snapshotGitHub(github, history, branch, {dryRun = true, assertCurrent, 
             yield* history.walk(revisions);
         },
         async *releaseIterator(...args) {
+            // Model the post-publication baseline for read-only PR planning.
+            for (const release of pendingReleases) {
+                if (history.contains(release.sha)) {
+                    yield {tagName: release.tag.toString(), sha: release.sha, notes: release.notes};
+                }
+            }
             for await (const release of github.releaseIterator(...args)) {
                 if (history.contains(release.sha)) yield release;
             }

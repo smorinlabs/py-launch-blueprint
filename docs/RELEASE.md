@@ -58,6 +58,11 @@ bun scripts/release_please.cjs > /tmp/release-preview.json
 The preview makes no GitHub writes. JSON on standard output contains the source
 commit, cutoff, selected commits, proposed version, title, notes, rendered files,
 and any merged releases awaiting publication. Diagnostics go to standard error.
+When a merged release awaits publication, the preview uses that release as the
+baseline for the next PR. This models the publication order without creating a
+tag or release. The pending release's own changes are not proposed again, and
+an obsolete first-release bootstrap cutoff is not consulted. An invalid explicit
+`last-release-sha` still stops the preview or apply operation before any writes.
 The preview reads committed files; commit local changes before inspecting them.
 `RELEASE_PLEASE_SOURCE` selects another locally available revision, and
 `RELEASE_PLEASE_BRANCH` selects the target branch. Their defaults are `GITHUB_SHA`

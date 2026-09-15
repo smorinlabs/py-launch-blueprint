@@ -32,14 +32,17 @@ async function runRelease({github, cwd = process.cwd(), source = 'HEAD',
             throw new Error(`Stale release source ${history.source}; ${branch} is now ${actual}. Rerun at the new revision.`);
         }
     };
-    const load = () => manifestFactory(github, history, {branch, dryRun, logger, assertCurrent});
+    const load = (options = {}) => manifestFactory(github, history, {branch, dryRun, logger, assertCurrent, ...options});
     const manifest = await load();
+    const pending = await manifest.buildReleases();
+    // A merged release has already advanced the manifest, but its tag does not
+    // exist yet. Plan against that pending release without writing it first.
+    const planning = pending.length ? await load({pendingReleases: pending, dryRun: true}) : manifest;
     // Validate the cutoff and render all files before allowing publication writes.
-    const candidates = await manifest.buildPullRequests();
+    const candidates = await planning.buildPullRequests();
     const preview = [];
     for (const candidate of candidates) preview.push(await previewCandidate(candidate, github, history, branch, logger));
     if (dryRun) {
-        const pending = await manifest.buildReleases();
         return {
             mode: 'preview', source: history.source, cutoff: history.cutoff,
             commits: history.selected, pullRequests: preview,
