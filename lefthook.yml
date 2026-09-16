@@ -100,7 +100,7 @@ pre-commit:
         command -v actionlint >/dev/null 2>&1 ||
         { echo "FAIL: actionlint missing — run just install-actionlint" >&2; exit 1; }
         && { command -v shellcheck >/dev/null 2>&1 ||
-        { echo "FAIL: shellcheck missing — run just install-shellcheck" >&2; exit 1; }; }
+        { echo "shellcheck missing — run just install-shellcheck" >&2; exit 1; }; }
         && actionlint {staged_files}
     # ITM-016 — codespell staged files (decided round 9).
     codespell:
