@@ -125,9 +125,10 @@ integrity); CI is the authority and every correctness gate must exist there.
   superset for local one-shot verification.
 - Round-2 checks add local mirrors for lockfile freshness, OpenAPI snapshot
   drift, large files, and workflow lint — each backstopped by an existing CI
-  job/test (CI stays the authority). The toolchain grows to 11 tools; the
+  job/test (CI stays the authority). That round grew the toolchain to 11 tools; the
   three provisioners and their doc references move together (ADR 0005 amended).
-- Standalone shell scripts now have staged, full-tree, and CI coverage.
+- The ShellCheck follow-up grows the toolchain to 12 tools. Standalone shell
+  scripts now have staged, full-tree, and CI coverage.
 
 ## Alternatives considered
 

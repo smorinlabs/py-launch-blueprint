@@ -601,8 +601,8 @@ makes "run it again" always safe.
 ### Three first-class toolchain provisioners, one tool set
 **What** — native installers (`make`/`just` + `scripts/install-*.sh`),
 `mise install` (`mise.toml`), and `flox activate` (`.flox/`) all declare the
-*same* 10 tools (python, uv, ruff, taplo, gitleaks, just, bun, gh, lefthook,
-make) and must stay in sync.
+*same* 12 tools (python, uv, ruff, taplo, gitleaks, just, bun, gh, lefthook,
+make, actionlint, shellcheck) and must stay in sync.
 **Why** — developers have different machine-management preferences; offering
 three equal paths to an identical environment meets people where they are.
 **Value** — anyone can provision the canonical toolchain with the tool they
