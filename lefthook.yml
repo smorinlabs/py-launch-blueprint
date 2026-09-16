@@ -89,13 +89,18 @@ pre-commit:
     # ADR 0018 — actionlint on staged workflow files (local mirror of the
     # lint.yml actionlint job). actionlint is the 11th toolchain tool (ADR
     # 0005, amended by 0018) — installed by `just setup`; guard + fail with
-    # guidance rather than skipping silently. It auto-uses shellcheck for
-    # embedded run: blocks when present (CI's runner ships it).
+    # guidance rather than skipping silently. ShellCheck is required for
+    # embedded run: blocks locally and explicitly provisioned in CI.
+    shellcheck:
+      glob: "*.{sh,bash}"
+      run: bash scripts/check-shell.sh {staged_files}
     actionlint:
       glob: ".github/workflows/*.{yml,yaml}"
       run: >-
         command -v actionlint >/dev/null 2>&1 ||
         { echo "FAIL: actionlint missing — run just install-actionlint" >&2; exit 1; }
+        && { command -v shellcheck >/dev/null 2>&1 ||
+        { echo "shellcheck missing — run just install-shellcheck" >&2; exit 1; }; }
         && actionlint {staged_files}
     # ITM-016 — codespell staged files (decided round 9).
     codespell:

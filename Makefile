@@ -131,7 +131,7 @@ hook-check: ## ITM-022 — verify lefthook + downstream hook tools on PATH
 	@echo "Checking hook toolchain..."
 	@echo "=== Hook Toolchain Status ==="
 	@ERROR_COUNT=0; MISSING=""; \
-	for TOOL in lefthook gitleaks bun uv actionlint editorconfig-checker yamllint codespell; do \
+	for TOOL in lefthook gitleaks bun uv actionlint shellcheck editorconfig-checker yamllint codespell; do \
 		if command -v $${TOOL} >/dev/null 2>&1; then \
 			printf "[$(CHECK)] %s\n" "$${TOOL}"; \
 		else \
@@ -149,6 +149,7 @@ hook-check: ## ITM-022 — verify lefthook + downstream hook tools on PATH
 		echo "  scripts/install-lefthook.sh   (lefthook)"; \
 		echo "  scripts/install-gitleaks.sh   (gitleaks)"; \
 		echo "  scripts/install-actionlint.sh (actionlint)"; \
+		echo "  scripts/install-shellcheck.sh (shellcheck)"; \
 		echo "  scripts/install-bun.sh        (bun; required for commitlint)"; \
 		echo "  uvx yamllint codespell  (Python tools via uv)"; \
 		echo "  bunx --bun editorconfig-checker  (matches lefthook invocation)"; \

@@ -79,7 +79,7 @@ Teams and professionals needing maintainable, type-safe Python projects followin
 
 - **Bootstrap dependency check and install with `make`**: Execute common development tasks with simple commands, standardizing workflows across team members.
 
-- **Optional one-command toolchains with [`mise`](https://mise.jdx.dev/) or [`flox`](https://flox.dev/)**: `mise install` (root `mise.toml`) or `flox activate` (root `.flox/`) provisions the same 11-tool set as the native installers — pick whichever fits your machine; see [ADR 0005](docs/adr/0005-mise-flox-first-class-toolchains.md).
+- **Optional one-command toolchains with [`mise`](https://mise.jdx.dev/) or [`flox`](https://flox.dev/)**: `mise install` (root `mise.toml`) or `flox activate` (root `.flox/`) provisions the same 12-tool set as the native installers — pick whichever fits your machine; see [ADR 0005](docs/adr/0005-mise-flox-first-class-toolchains.md).
 
 - **Command running with `just`**: Define and run project-specific commands with a modern Make alternative, simplifying complex operations with clear syntax.
 

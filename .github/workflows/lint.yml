@@ -73,12 +73,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
-      - name: Run actionlint
-        # ITM-029 round-3 decision: enable shellcheck (GitHub-hosted runners
-        # ship shellcheck; no install needed).
-        uses: rhysd/actionlint@v1.7.12
-        with:
-          version: "1.7.7"
+      - name: Install ShellCheck
+        run: |
+          bash scripts/install-shellcheck.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install actionlint
+        run: bash scripts/install-actionlint.sh
+      - name: Run actionlint with ShellCheck
+        run: actionlint
 
   yamllint:
     name: yamllint
