@@ -100,6 +100,7 @@ check-deps:
     if ! command -v taplo >/dev/null 2>&1; then echo "{{YELLOW}}Taplo is not installed{{NC}}\n RUN {{BLUE}}just install-taplo{{NC}}"; exit 1; fi
     if ! command -v yamlfmt >/dev/null 2>&1; then echo "{{YELLOW}}yamlfmt is not installed{{NC}}\n RUN {{BLUE}}just install-yamlfmt{{NC}}"; exit 1; fi
     if ! command -v actionlint >/dev/null 2>&1; then echo "{{YELLOW}}actionlint is not installed{{NC}}\n RUN {{BLUE}}just install-actionlint{{NC}}"; exit 1; fi
+    if ! command -v shellcheck >/dev/null 2>&1; then echo "ShellCheck missing: run just install-shellcheck" >&2; exit 1; fi
     echo "All required tools are installed"
 
 alias c := check-deps
@@ -134,11 +135,12 @@ setup:
         mkdir -p projects
         touch projects/.gitkeep
     fi
-    echo -e "{{BLUE}}[2/4] Installing hook toolchain (bun, lefthook, gitleaks, actionlint)...{{NC}}"
+    echo -e "{{BLUE}}[2/4] Installing hook toolchain (bun, lefthook, gitleaks, actionlint, shellcheck)...{{NC}}"
     scripts/install-bun.sh
     scripts/install-lefthook.sh
     scripts/install-gitleaks.sh
     scripts/install-actionlint.sh
+    scripts/install-shellcheck.sh
     bun install --frozen-lockfile
     echo -e "{{BLUE}}[3/4] Installing formatters (taplo, yamlfmt)...{{NC}}"
     just install-taplo
@@ -284,7 +286,7 @@ alias t := test
 
 # Run all checks
 [group('test'), group('dev'), group('quick start')]
-@check: test test-release lint typecheck lint-imports tach check-yaml check-spelling check-editorconfig
+@check: test test-release lint typecheck lint-imports tach check-yaml check-spelling check-editorconfig check-shell
     echo "All checks passed!"
 
 alias ca := check
@@ -783,3 +785,13 @@ install-yamlfmt:
 @check-editorconfig:
     echo "🔍 Checking EditorConfig rules..."
     uv run ec -config .editorconfig-checker.json
+
+# Install the pinned, checksum-verified shell script analyzer.
+[group('setup'), group('install')]
+install-shellcheck:
+    bash scripts/install-shellcheck.sh
+
+# Check every tracked shell script (also enforced by CI).
+[group('dev'), group('pre-commit')]
+check-shell:
+    bash scripts/check-shell.sh

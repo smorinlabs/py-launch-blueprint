@@ -1,6 +1,6 @@
 # 0005. mise and flox are first-class toolchain provisioners
 
-- **Status:** Accepted (amended by [0018](0018-hook-ci-parity-and-boundary-gate.md) — tool set grew 10 → 11 with `actionlint`)
+- **Status:** Accepted (amended by [0018](0018-hook-ci-parity-and-boundary-gate.md) — tool set grew 10 → 12 with `actionlint` and `shellcheck`)
 - **Date:** 2026-06-12
 - **Deciders:** maintainer
 - **Related:** historical ADR-04 (commitlint via bun); the shim note in
@@ -40,9 +40,9 @@ keep them in sync:
 2. **mise** — root `mise.toml`; provision with `mise install`.
 3. **flox** — root `.flox/`; provision with `flox activate`.
 
-Both manifests declare the **same 11-tool set**: Python 3.13, uv, ruff,
-taplo, gitleaks, just, bun, gh, lefthook, make, actionlint. ADR 0018 added
-actionlint; P07 raised the Python minimum to 3.13. Adding or removing a tool
+Both manifests declare the **same 12-tool set**: Python 3.13, uv, ruff,
+taplo, gitleaks, just, bun, gh, lefthook, make, actionlint, shellcheck. ADR 0018 added
+actionlint and the ShellCheck follow-up; P07 raised the Python minimum to 3.13. Adding or removing a tool
 means updating all three options.
 
 Deliberately excluded from the manifests:

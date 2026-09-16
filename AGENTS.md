@@ -23,7 +23,7 @@ just setup       # Level 2 — everything else (run every fresh clone/container/
 
 `just setup` syncs the dev env (`uv sync --locked --group dev --extra web`), wires
 lefthook git hooks, and installs the hook toolchain (bun + `bun install`,
-gitleaks, taplo, yamlfmt). It starts by running the Makefile's `make check`
+gitleaks, actionlint, shellcheck, taplo, yamlfmt). It starts by running the Makefile's `make check`
 gate and fails with a pointer to `make bootstrap` if the base toolchain is
 missing — so running it "too early" is safe. The hook wiring is REQUIRED
 before any commit/push work: without it none of the hooks below fire. Fresh
@@ -72,7 +72,7 @@ workflow enforce it).
 4. Stage + commit. Lefthook fires automatically:
    - **commit-msg** → commitlint (Conventional Commits, lowercase subject).
    - **pre-commit** (fast, staged-scoped) → gitleaks + editorconfig-checker
-     + yamllint + actionlint (workflows) + codespell + ruff check/format
+     + yamllint + actionlint (workflows) + shellcheck (shell scripts) + codespell + ruff check/format
      + taplo (TOML) + `uv lock --check` (lockfile freshness) + large-files
      guard (1 MB).
    - **pre-push** (slower, full-tree) → gitleaks range scan + bandit + ty
@@ -183,8 +183,8 @@ are what tooling can't check:
 ## Developer environment
 
 - Toolchain provisioning (per ADR 0005, extended by ADR 0018) — three
-  first-class options, all declaring the SAME 11-tool set (python, uv, ruff,
-  taplo, gitleaks, just, bun, gh, lefthook, make, actionlint); keep them in
+  first-class options, all declaring the SAME 12-tool set (python, uv, ruff,
+  taplo, gitleaks, just, bun, gh, lefthook, make, actionlint, shellcheck); keep them in
   sync when adding/removing a tool:
   1. Native installs (Makefile + Justfile `install-*` targets,
      `scripts/install-*.sh`)

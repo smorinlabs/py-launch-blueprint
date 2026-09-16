@@ -284,6 +284,20 @@ jobs:
       - name: Check TOML formatting
         run: taplo check '**/*.toml'
 
+  shellcheck:
+    name: shellcheck
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install ShellCheck
+        run: |
+          bash scripts/install-shellcheck.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Check shell scripts
+        run: bash scripts/check-shell.sh
+
   # WL-006 - single gate for branch protection. Require ONLY this check;
   # job renames/additions then never desync the required-checks list.
   # Skipped jobs (docs-only PRs, WL-019) count as success; anything that
@@ -301,6 +315,7 @@ jobs:
       - build-smoke
       - docs
       - toml-format
+      - shellcheck
     if: always()
     permissions: {}
     steps:

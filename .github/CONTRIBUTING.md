@@ -147,3 +147,9 @@ Subject must be lowercase (`subject-case` rule). commitlint will reject other ca
 If you need help or have any questions, feel free to open an issue on GitHub or reach out to the maintainers.
 
 Thank you for contributing to Py Launch Blueprint!
+
+Shell scripts are checked by ShellCheck 0.11.0, installed by `just setup`
+(or `just install-shellcheck`, `mise install`, or `flox activate`).
+Use `just check-shell` for all tracked `.sh`/`.bash` files. The pre-commit hook
+checks staged scripts; `just check` and CI check the full set. Workflow lint
+also requires ShellCheck to analyze embedded Bash/sh commands.

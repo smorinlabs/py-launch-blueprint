@@ -97,9 +97,11 @@ A second review pass (same parity lens) settled four more checks:
    checksum-verified `scripts/install-actionlint.sh` is added and wired into
    `just setup`.
 
-Deferred: a `shellcheck` hook + CI job for standalone `*.sh` scripts (today
-linted nowhere). It is the one genuine zero-coverage gap and remains an open
-follow-up, not adopted in this batch.
+Follow-up adopted: ShellCheck checks tracked `*.sh` and `*.bash` files through
+staged pre-commit checks, `just check-shell` (included in `just check`), and a
+CI job required by `ci-ok`. Native setup, mise, and Flox provision ShellCheck
+0.11.0, extending the toolchain to 12 tools. Workflow lint explicitly installs
+ShellCheck instead of relying on the runner image.
 
 Tiering principle reaffirmed: pre-commit holds fast, staged-scoped checks;
 pre-push holds the slower full-tree checks (bandit, ty, boundaries, init
@@ -125,8 +127,7 @@ integrity); CI is the authority and every correctness gate must exist there.
   drift, large files, and workflow lint — each backstopped by an existing CI
   job/test (CI stays the authority). The toolchain grows to 11 tools; the
   three provisioners and their doc references move together (ADR 0005 amended).
-- Still open: `shellcheck` for standalone shell scripts — the only check with
-  zero coverage on any surface today.
+- Standalone shell scripts now have staged, full-tree, and CI coverage.
 
 ## Alternatives considered
 
