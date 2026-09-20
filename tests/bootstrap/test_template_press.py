@@ -226,7 +226,11 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     _run(target, uv, "run", "--locked", "ruff", "format", ".")
     _run(target, just, "setup")
     tooling = json.loads((target / "package.json").read_text())
-    assert tooling["devDependencies"]["release-please"] == "17.6.0"
+    source_tooling = json.loads((ROOT / "package.json").read_text())
+    assert (
+        tooling["devDependencies"]["release-please"]
+        == (source_tooling["devDependencies"]["release-please"])
+    )
     for release_file in (
         "scripts/release_commits.cjs",
         "scripts/release_please.cjs",
