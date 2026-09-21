@@ -213,7 +213,7 @@ jobs:
         # Only the Ubuntu matrix cell uploads coverage.
         # use_oidc: tokenless upload (public repo). Requires `id-token: write`.
         if: matrix.os == 'ubuntu' && matrix.python-version == '3.13'
-        uses: codecov/codecov-action@v7.0.0
+        uses: codecov/codecov-action@v7.1.1
         with:
           use_oidc: true
           files: coverage.xml
