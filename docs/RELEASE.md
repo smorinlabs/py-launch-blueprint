@@ -22,7 +22,7 @@ Release flow per ADR-05 + ADR-06 + ADR-07. See
 
 ## Complete commit selection and preview
 
-`scripts/release_please.cjs` runs release-please `17.6.0` with the Bun version
+`scripts/release_please.cjs` runs release-please `17.11.2` with the Bun version
 in `.bun-version`. `scripts/release_commits.cjs` supplies all non-merge commits
 reachable from the source revision but absent from the previous release's
 ancestry. Branch commits authored before that release remain included if they
