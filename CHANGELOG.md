@@ -1,5 +1,33 @@
 # Changelog
 
+## [4.1.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v4.0.1...v4.1.0) (2026-09-22)
+
+
+### Features
+
+* **ci:** weekly-audit response loop, link repair, and triage bot ([2231626](https://github.com/smorinlabs/py-launch-blueprint/commit/22316269c8f330a97fd1457ee2aadf74cc642f42))
+
+
+### Bug Fixes
+
+* **ci:** answer review round 2 (zip logs, overrides, typing, landing link) ([8fe31e7](https://github.com/smorinlabs/py-launch-blueprint/commit/8fe31e755ffda5c195d5ba343f9c108a0485f0cc))
+* **ci:** harden triage bot per review (CLI runner, gates, SSRF guard) ([9af5d60](https://github.com/smorinlabs/py-launch-blueprint/commit/9af5d603340b00d61b4a5bdfb8c1edae80881b32))
+* **ci:** inline Muse credential reference in triage config ([857ead6](https://github.com/smorinlabs/py-launch-blueprint/commit/857ead6c7649c49b03ff599ccea151a613c884d1))
+
+
+### Dependencies
+
+* **deps-dev:** bump release-please from 17.6.0 to 17.11.2 ([cfc2d4d](https://github.com/smorinlabs/py-launch-blueprint/commit/cfc2d4dbd499c56acf78d1a422df0462c914eef9))
+* **deps-dev:** bump responses from 0.26.2 to 0.26.3 ([d3e24f9](https://github.com/smorinlabs/py-launch-blueprint/commit/d3e24f921d2726ec4ea0dce31989e47d6d77ed81))
+* **deps-dev:** bump the lint-and-format group across 1 directory with 3 updates ([ba9cdb6](https://github.com/smorinlabs/py-launch-blueprint/commit/ba9cdb637a18a1661d7fe5b5badfab6c981c77eb))
+* **deps-dev:** bump the test group across 1 directory with 2 updates ([ff9a776](https://github.com/smorinlabs/py-launch-blueprint/commit/ff9a776c67536cce58bb1aee40f0850fab03cb15))
+* **deps-dev:** bump twine in the dev-tools group across 1 directory ([cd69b43](https://github.com/smorinlabs/py-launch-blueprint/commit/cd69b43e8dd2cbb22c619e587e75b0f25510cf45))
+* **deps:** bump anyio from 4.13.0 to 4.14.2 ([8a74007](https://github.com/smorinlabs/py-launch-blueprint/commit/8a7400764c4565b5fd820958b332bc557697db49))
+* **deps:** bump soupsieve from 2.8.4 to 2.9 ([9929ecf](https://github.com/smorinlabs/py-launch-blueprint/commit/9929ecf815682756d1d5754e89408d198feaa2f4))
+* **deps:** bump the github-actions group across 1 directory with 3 updates ([bc979f7](https://github.com/smorinlabs/py-launch-blueprint/commit/bc979f7db49b8a858856340c8c1f83cf5e92f2d4))
+* **deps:** bump the runtime group across 1 directory with 2 updates ([3791e49](https://github.com/smorinlabs/py-launch-blueprint/commit/3791e49077c83b67d4fbfaa633656925bddb06b2))
+* **deps:** complete release-please 17.11.2 update ([aa5d701](https://github.com/smorinlabs/py-launch-blueprint/commit/aa5d70154d492a2ac19faaa1bf20cdd01629195a))
+
 ## [4.0.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v4.0.0...v4.0.1) (2026-09-15)
 
 
