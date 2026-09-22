@@ -15,15 +15,18 @@ from __future__ import annotations
 
 import argparse
 import email.message
+import ipaddress
 import json
 import os
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections.abc import Mapping
 from pathlib import Path
 from typing import IO, NoReturn
 from uuid import uuid4
@@ -32,8 +35,10 @@ MODEL = "model_api/muse-spark-1.3"
 MAX_FINDINGS_BYTES = 20_000
 MAX_PROMPT_BYTES = 100_000
 MAX_LOG_BYTES = 2_000_000
-MAX_TOUCHED_URLS = 50
+MAX_TOUCHED_URLS = 20
 REQUEST_TIMEOUT = 30
+VERIFY_TIMEOUT = 10
+MAX_VERIFY_REDIRECTS = 3
 AUDIT_WORKFLOW_NAME = "weekly-audit"
 URL_RE = re.compile(r"https?://[^\s)\"'<>]+", re.ASCII)
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
@@ -96,6 +101,8 @@ class GitHub:
         )
         if self._token:
             request.add_header("Authorization", f"Bearer {self._token}")
+        if body is not None:
+            request.add_header("Content-Type", "application/json")
         try:
             with self._opener.open(request, timeout=REQUEST_TIMEOUT) as response:
                 parsed = json.loads(response.read().decode())
@@ -218,38 +225,92 @@ def scope_ok(paths: list[str]) -> bool:
     return True
 
 
-def entry_marker(run_id: str) -> str:
-    return f"Triage of weekly-audit run {run_id}"
+def assert_public_url(url: str) -> None:
+    """Refuse non-public verification targets (SSRF guard).
+
+    Touched URLs come from agent-authored diffs, so verification must never
+    probe loopback, private, or cloud-metadata endpoints from the runner.
+    """
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme not in ("http", "https") or not parts.hostname:
+        raise RefusalError(f"Refusing to verify non-HTTP(S) URL: {url[:80]}")
+    if parts.username or parts.password:
+        raise RefusalError(f"Refusing to verify URL with credentials: {url[:80]}")
+    try:
+        port = parts.port or (443 if parts.scheme == "https" else 80)
+        infos = socket.getaddrinfo(parts.hostname, port, type=socket.SOCK_STREAM)
+    except (socket.gaierror, ValueError, OverflowError) as error:
+        raise RefusalError(
+            f"Refusing to verify unresolvable host: {parts.hostname}"
+        ) from error
+    for info in infos:
+        if not ipaddress.ip_address(info[4][0]).is_global:
+            raise RefusalError(
+                f"Refusing to verify non-public target: {parts.hostname}"
+            )
 
 
-def check_url(url: str) -> tuple[str, str]:
-    """Return (verdict, detail). Only definitive-dead fails.
+class _VerifyRedirect(urllib.request.HTTPRedirectHandler):
+    """Follow redirects only to public targets, bounded."""
+
+    def __init__(self, remaining: int) -> None:
+        self.remaining = remaining
+
+    def redirect_request(
+        self,
+        req: urllib.request.Request,
+        fp: IO[bytes],
+        code: int,
+        msg: str,
+        headers: email.message.Message,
+        newurl: str,
+    ) -> urllib.request.Request:
+        if self.remaining <= 0:
+            raise RefusalError("Too many redirects while verifying URL")
+        assert_public_url(urllib.parse.urljoin(req.full_url, newurl))
+        self.remaining -= 1
+        result = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if result is None:
+            raise RefusalError("Redirect handler declined the request")
+        return result
+
+
+def verdict_for_status(code: int) -> tuple[str, str]:
+    """Map an HTTP status to (verdict, detail). Only definitive-dead fails.
 
     Page-level check only: fragments never reach the server, so anchor
-    drift still needs human eyes (or the next linkcheck run). Bot-hostile
-    statuses (403, 429, 5xx) warn instead of failing: many live pages
-    refuse headless checks, and a false red is costlier than a flagged
-    pass the human reviews anyway.
+    drift still needs human eyes or the next linkcheck run. Bot-hostile
+    statuses warn instead of failing: many live pages refuse headless
+    checks, and a false red is costlier than a flagged pass the human
+    reviews anyway.
     """
-    request = urllib.request.Request(  # noqa: S310 -- scheme constrained to http/https by URL_RE
-        url,
-        method="HEAD",
-        headers={"User-Agent": "py-launch-blueprint-audit-triage/1.0"},
-    )
-    try:
-        with urllib.request.build_opener().open(
-            request, timeout=REQUEST_TIMEOUT
-        ) as response:
-            code = response.status
-    except urllib.error.HTTPError as error:
-        code = error.code
-    except (urllib.error.URLError, TimeoutError, ValueError) as error:
-        return ("fail", f"unreachable ({error})")
     if 200 <= code < 300:
         return ("pass", f"HTTP {code}")
     if code in (404, 410):
         return ("fail", f"HTTP {code}")
     return ("warn", f"HTTP {code} (ambiguous to bots; human must judge)")
+
+
+def check_url(url: str) -> tuple[str, str]:
+    try:
+        assert_public_url(url)
+    except RefusalError as error:
+        return ("skip", str(error))
+    request = urllib.request.Request(  # noqa: S310 -- target validated public above
+        url,
+        method="HEAD",
+        headers={"User-Agent": "py-launch-blueprint-audit-triage/1.0"},
+    )
+    opener = urllib.request.build_opener(_VerifyRedirect(MAX_VERIFY_REDIRECTS))
+    try:
+        with opener.open(request, timeout=VERIFY_TIMEOUT) as response:
+            return verdict_for_status(response.status)
+    except urllib.error.HTTPError as error:
+        return verdict_for_status(error.code)
+    except (urllib.error.URLError, TimeoutError, ValueError) as error:
+        return ("fail", f"unreachable ({error})")
+    except RefusalError as error:
+        return ("fail", str(error))
 
 
 def output(path: str, name: str, value: str) -> None:
@@ -258,7 +319,7 @@ def output(path: str, name: str, value: str) -> None:
         file.write(f"{name}<<{delimiter}\n{value}\n{delimiter}\n")
 
 
-def summary(environ: dict, body: str) -> None:
+def summary(environ: Mapping[str, str], body: str) -> None:
     if environ.get("GITHUB_STEP_SUMMARY"):
         with open(environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as file:
             file.write(body + "\n")
@@ -306,12 +367,19 @@ def resolve_target_run(api: GitHub, event: dict, event_name: str, repo: str) -> 
         raise RefusalError("Nothing to triage: run did not fail")
     if run.get("head_branch") != default_branch:
         raise RefusalError("Run is not on the default branch")
+    if event_name == "workflow_run":
+        if run.get("event") != "schedule":
+            raise RefusalError("Automatic triage handles schedule-triggered runs only")
+    elif run.get("event") not in ("schedule", "workflow_dispatch"):
+        raise RefusalError(
+            "Replay target must be a schedule- or dispatch-triggered run"
+        )
     if not isinstance(run.get("id"), int) or not isinstance(run.get("head_sha"), str):
         raise RefusalError("Run is missing its id or head SHA")
     return run
 
 
-def prepare(environ: dict = os.environ) -> None:
+def prepare(environ: Mapping[str, str] = os.environ) -> None:
     root = Path(environ["GITHUB_WORKSPACE"]).resolve()
     event_name = environ.get("GITHUB_EVENT_NAME", "")
     if event_name not in ("workflow_run", "workflow_dispatch"):
@@ -319,11 +387,14 @@ def prepare(environ: dict = os.environ) -> None:
     event = json.loads(Path(environ["GITHUB_EVENT_PATH"]).read_text())
     if event["repository"]["full_name"] != environ["GITHUB_REPOSITORY"]:
         raise RefusalError("Event repository does not match the runner")
-    if event["repository"].get("owner", {}).get("type") != "Organization":
+    owner = event["repository"].get("owner", {})
+    if owner.get("type") != "Organization":
         raise RefusalError("Audit triage runs on organization repositories only")
     policy = json.loads((root / ".opencode/audit-triage/policy.json").read_text())
     if policy.get("schema_version") != 1 or policy.get("model") != MODEL:
         raise RefusalError("Unsupported audit-triage policy")
+    if owner.get("login") != policy.get("organization"):
+        raise RefusalError("Repository owner does not match the triage policy")
     api = GitHub(environ.get("GH_TOKEN", ""))
     repo = event["repository"]["full_name"]
     run = resolve_target_run(api, event, event_name, repo)
@@ -335,9 +406,20 @@ def prepare(environ: dict = os.environ) -> None:
         raise RefusalError(
             "Trusted checkout must be clean and match the audited commit"
         )
-    query = f'repo:{repo} type:pr state:open "{entry_marker(run_id)}"'
-    found = api.get(f"search/issues?q={urllib.parse.quote(query)}")
-    if isinstance(found, dict) and found.get("total_count"):
+    for tool_path in (
+        ".github/scripts/audit_triage.py",
+        ".opencode/audit-triage/triage.json",
+        ".opencode/audit-triage/policy.json",
+    ):
+        try:
+            git(root, "cat-file", "-e", f"{base}:{tool_path}")
+        except RefusalError:
+            raise RefusalError(
+                f"Run predates triage tooling ({tool_path} absent); replay a newer run"
+            ) from None
+    branch = f"bot/weekly-audit-{run_id}"
+    pulls = api.get(f"repos/{repo}/pulls?head={owner.get('login')}:{branch}&state=open")
+    if isinstance(pulls, list) and pulls:
         raise RefusalError(f"Run {run_id} already has a triage PR")
     jobs = api.get(f"repos/{repo}/actions/runs/{run_id}/jobs?per_page=100")
     if not isinstance(jobs, dict):
@@ -345,6 +427,13 @@ def prepare(environ: dict = os.environ) -> None:
     failed = [job for job in jobs.get("jobs", []) if job.get("conclusion") == "failure"]
     if not failed:
         raise RefusalError("Run has no failed jobs to triage")
+    if all(job.get("name") != "docs-linkcheck" for job in failed):
+        output(environ["GITHUB_OUTPUT"], "should_run", "false")
+        output(environ["GITHUB_OUTPUT"], "branch", "")
+        output(environ["GITHUB_OUTPUT"], "prompt", "")
+        summary(environ, f"Run `{run_id}` has no docs failure; skipping the agent run.")
+        print(f"No docs failure in run {run_id}; agent run skipped")
+        return
     findings: list[str] = []
     for job in failed[:5]:
         logs = download_logs(
@@ -383,6 +472,7 @@ def prepare(environ: dict = os.environ) -> None:
     state = {
         "base": base,
         "run_id": run_id,
+        "branch": branch,
         "repository": repo,
         "failed_jobs": [job.get("name", "?") for job in failed],
     }
@@ -399,8 +489,7 @@ def prepare(environ: dict = os.environ) -> None:
             },
             ensure_ascii=False,
         )
-        + f"\nBegin the PR body with exactly this marker line: {entry_marker(run_id)}. "
-        "Never approve or merge. Tests run later in ordinary PR CI without the Muse credential."
+        + "\nNever approve or merge. Tests run later in ordinary PR CI without the Muse credential."
     )
     if len(prompt.encode()) > MAX_PROMPT_BYTES:
         raise RefusalError("Encoded prompt exceeds the safe environment size")
@@ -434,18 +523,22 @@ def prepare(environ: dict = os.environ) -> None:
     for name, value in variables.items():
         output(environ["GITHUB_ENV"], name, value)
     output(environ["GITHUB_OUTPUT"], "prompt", prompt)
+    output(environ["GITHUB_OUTPUT"], "branch", branch)
+    output(environ["GITHUB_OUTPUT"], "should_run", "true")
     summary(environ, f"Prepared audit triage for run `{run_id}` from base `{base}`.")
     print(
         f"Authorized triage for run {run_id}; configuration from {base}; no credential values written"
     )
 
 
-def finish(environ: dict = os.environ) -> None:
+def finish(environ: Mapping[str, str] = os.environ) -> None:
     root = Path(environ["GITHUB_WORKSPACE"])
     state = json.loads(Path(environ["MUSE_CI_STATE"]).read_text())
     branch = git(root, "branch", "--show-current").strip()
-    if not branch.startswith("opencode/dispatch-"):
-        raise RefusalError("Triage did not stay on the runner-created branch")
+    if not branch:
+        raise RefusalError("Agent step produced no branch; the opencode run failed")
+    if branch != state["branch"]:
+        raise RefusalError("Triage did not stay on its assigned branch")
     raw = git(root, "diff", "--name-only", "-z", state["base"], "HEAD")
     changes = [path for path in raw.split("\0") if path]
     if not changes:
@@ -469,17 +562,10 @@ def finish(environ: dict = os.environ) -> None:
     if len(urls) > MAX_TOUCHED_URLS:
         raise RefusalError("Too many touched URLs to verify; review by hand")
     rows = [(url, *check_url(url)) for url in urls]
+    number = environ.get("MUSE_CI_PR", "")
+    if not number.isdigit():
+        raise RefusalError("Triage PR was not created; see the agent and commit steps")
     api = GitHub(environ.get("GH_TOKEN", ""))
-    owner = state["repository"].split("/")[0]
-    pulls = api.get(
-        f"repos/{state['repository']}/pulls"
-        f"?head={owner}:{urllib.parse.quote(branch, safe='')}&state=open"
-    )
-    if not isinstance(pulls, list) or len(pulls) != 1:
-        raise RefusalError(
-            "Expected exactly one open triage PR for the dispatch branch"
-        )
-    number = pulls[0]["number"]
     table = [
         "## Triage URL verification",
         "",

@@ -82,11 +82,13 @@ jobs:
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     timeout-minutes: 5
     permissions:
+      actions: read
       issues: write
     steps:
       - name: File or update the rolling audit-failure issue
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           HEAD_SHA: ${{ github.sha }}
@@ -94,11 +96,14 @@ jobs:
           set -euo pipefail
           failed_jobs="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs?per_page=100" --jq '[.jobs[] | select(.conclusion == "failure") | .name] | join(", ")')"
           entry="- $(date -u +%FT%TZ) run ${RUN_ID} (\`${HEAD_SHA:0:7}\`): ${failed_jobs} — ${RUN_URL}"
-          existing="$(gh issue list --label weekly-audit --state open --json number,body --jq '[.[] | select(.body != null and (.body | contains("<!-- weekly-audit-tracking -->"))) | .number][0] // empty')"
+          label_args=()
+          labels="$(gh label list --json name --jq '.[].name' | tr '\n' ',')"
+          case ",${labels}," in *,weekly-audit,*) label_args=(--label weekly-audit) ;; esac
+          existing="$(gh issue list ${label_args[@]+"${label_args[@]}"} --state open --json number,body --jq '[.[] | select(.body != null and (.body | contains("<!-- weekly-audit-tracking -->"))) | .number][0] // empty')"
           if [ -n "$existing" ]; then
             body="$(gh issue view "$existing" --json body --jq .body)"
             printf '%s\n' "$body" | awk -v entry="$entry" '
-              BEGIN { in_entries = 0; kept = 0 }
+              BEGIN { in_entries = 0; kept = 1 }
               /^## Failures \(newest first\)$/ { print; print entry; in_entries = 1; next }
               in_entries && /^- [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T/ { kept++; if (kept > 30) next }
               in_entries && /^## / { in_entries = 0 }
@@ -120,5 +125,5 @@ jobs:
               echo
               echo "- Diagnosis and fix PRs come from the \`audit-triage\` workflow runs linked above."
             } > /tmp/tracking-body.md
-            gh issue create --title 'weekly-audit failures need triage' --label weekly-audit --body-file /tmp/tracking-body.md
+            gh issue create --title 'weekly-audit failures need triage' ${label_args[@]+"${label_args[@]}"} --body-file /tmp/tracking-body.md
           fi
