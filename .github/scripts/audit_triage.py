@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import email.message
+import io
 import ipaddress
 import json
 import os
@@ -26,15 +27,17 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+import zipfile
 from collections.abc import Mapping
 from pathlib import Path
-from typing import IO, NoReturn
+from typing import IO, Any, NoReturn, override
 from uuid import uuid4
 
 MODEL = "model_api/muse-spark-1.3"
 MAX_FINDINGS_BYTES = 20_000
 MAX_PROMPT_BYTES = 100_000
 MAX_LOG_BYTES = 2_000_000
+MAX_LOG_MEMBERS = 500
 MAX_TOUCHED_URLS = 20
 REQUEST_TIMEOUT = 30
 VERIFY_TIMEOUT = 10
@@ -49,6 +52,7 @@ class RefusalError(RuntimeError):
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
+    @override
     def redirect_request(
         self,
         req: urllib.request.Request,
@@ -68,6 +72,7 @@ class _RedirectError(Exception):
 
 
 class _CaptureRedirect(urllib.request.HTTPRedirectHandler):
+    @override
     def redirect_request(
         self,
         req: urllib.request.Request,
@@ -87,7 +92,9 @@ class GitHub:
         self._token = token
         self._opener = urllib.request.build_opener(NoRedirect)
 
-    def _request(self, method: str, path: str, data: dict | None = None) -> dict | list:
+    def _request(
+        self, method: str, path: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any] | list[Any]:
         body = None if data is None else json.dumps(data).encode()
         request = urllib.request.Request(
             f"https://api.github.com/{path}",
@@ -116,10 +123,10 @@ class GitHub:
             )
         return parsed
 
-    def get(self, path: str) -> dict | list:
+    def get(self, path: str) -> dict[str, Any] | list[Any]:
         return self._request("GET", path)
 
-    def post(self, path: str, data: dict) -> dict:
+    def post(self, path: str, data: dict[str, Any]) -> dict[str, Any]:
         result = self._request("POST", path, data)
         if not isinstance(result, dict):
             raise RefusalError(f"GitHub API POST {path} returned an unexpected shape")
@@ -178,7 +185,32 @@ def download_logs(api_url: str, token: str, size_cap: int = MAX_LOG_BYTES) -> st
         raise RefusalError(f"Log download failed: {error}") from error
     if len(payload) > size_cap:
         raise RefusalError("Log archive exceeds the size cap")
-    return payload.decode("utf-8", errors="replace")
+    return extract_log_text(payload, size_cap)
+
+
+def extract_log_text(payload: bytes, size_cap: int = MAX_LOG_BYTES) -> str:
+    """Concatenate the text members of a job-log ZIP archive, size-bounded.
+
+    The Actions log endpoint returns a ZIP of per-step .txt files; decoding
+    the archive bytes directly yields binary, not log lines. Members are
+    read through a bounded stream so a hostile member cannot exhaust memory,
+    and the total stays under the same cap as the download.
+    """
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(payload))
+    except zipfile.BadZipFile as error:
+        raise RefusalError("Log archive is not a ZIP file") from error
+    members = [info for info in archive.infolist() if not info.is_dir()]
+    texts: list[str] = []
+    total = 0
+    for info in members[:MAX_LOG_MEMBERS]:
+        with archive.open(info.filename) as member:
+            chunk = member.read(size_cap - total + 1)
+        total += len(chunk)
+        if total > size_cap:
+            raise RefusalError("Extracted logs exceed the size cap")
+        texts.append(chunk.decode("utf-8", errors="replace"))
+    return "\n".join(texts)
 
 
 def strip_ansi(text: str) -> str:
@@ -256,6 +288,7 @@ class _VerifyRedirect(urllib.request.HTTPRedirectHandler):
     def __init__(self, remaining: int) -> None:
         self.remaining = remaining
 
+    @override
     def redirect_request(
         self,
         req: urllib.request.Request,
@@ -325,8 +358,12 @@ def summary(environ: Mapping[str, str], body: str) -> None:
             file.write(body + "\n")
 
 
-def configuration(root: Path) -> dict:
-    config = json.loads((root / ".opencode/audit-triage/triage.json").read_text())
+def configuration(root: Path) -> dict[str, Any]:
+    config: dict[str, Any] = json.loads(
+        (root / ".opencode/audit-triage/triage.json").read_text()
+    )
+    if not isinstance(config, dict):
+        raise RefusalError("Triage profile is not a JSON object")
     # Never merge project plugins, tools, hooks, other providers, or instructions.
     config["provider"] = {
         "model_api": {
@@ -349,7 +386,9 @@ def configuration(root: Path) -> dict:
     return config
 
 
-def resolve_target_run(api: GitHub, event: dict, event_name: str, repo: str) -> dict:
+def resolve_target_run(
+    api: GitHub, event: dict[str, Any], event_name: str, repo: str
+) -> dict[str, Any]:
     """Return the failed weekly-audit run to triage, validated."""
     default_branch = event["repository"]["default_branch"]
     if event_name == "workflow_run":

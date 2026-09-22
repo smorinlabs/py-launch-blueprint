@@ -247,3 +247,42 @@ def test_policy_pins_model_and_organization():
     assert policy["schema_version"] == 1
     assert policy["model"] == audit_triage.MODEL == "model_api/muse-spark-1.3"
     assert policy["organization"] == "smorinlabs"
+
+
+def _log_archive(members):
+    import io
+    import zipfile
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        for name, text in members:
+            archive.writestr(name, text)
+    return buffer.getvalue()
+
+
+def test_log_extraction_concatenates_archive_members():
+    payload = _log_archive(
+        [
+            ("1_setup.txt", "2026-09-21T05:00:01Z setup ok\n"),
+            (
+                "2_linkcheck.txt",
+                "2026-09-21T05:01:02Z ( docs/index: line 1 ) broken https://x.invalid\n",
+            ),
+        ]
+    )
+    text = audit_triage.extract_log_text(payload)
+    assert "setup ok" in text
+    assert audit_triage.extract_broken_lines(text) == [
+        "( docs/index: line 1 ) broken https://x.invalid"
+    ]
+
+
+def test_log_extraction_rejects_non_zip_payload():
+    with pytest.raises(audit_triage.RefusalError, match="not a ZIP"):
+        audit_triage.extract_log_text(b"plain text, not an archive")
+
+
+def test_log_extraction_enforces_size_cap():
+    payload = _log_archive([("big.txt", "y" * 100)])
+    with pytest.raises(audit_triage.RefusalError, match="size cap"):
+        audit_triage.extract_log_text(payload, size_cap=10)
