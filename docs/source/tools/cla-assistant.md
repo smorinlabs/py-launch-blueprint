@@ -69,8 +69,7 @@ CLA Assistant automates the process of managing Contributor License Agreements (
 ## References
 
 - [CLA Assistant Website](https://cla-assistant.io)
-- [GitHub Marketplace: CLA Assistant](https://github.com/marketplace/cla-assistant)
 - [Individual CLA](../contributing/cla/individual_cla.md)
 - [Corporate CLA](../contributing/cla/corporate_cla.md)
 - [Py Launch Blueprint Contribution Guide](https://github.com/smorinlabs/py-launch-blueprint/blob/main/.github/CONTRIBUTING.md)
-- [GitHub Docs: About required status checks](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/about-required-status-checks)
+- [GitHub Docs: Configuring branches and merges](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository)
