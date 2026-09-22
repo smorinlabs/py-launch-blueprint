@@ -29,7 +29,6 @@ from typing import IO, NoReturn
 from uuid import uuid4
 
 MODEL = "model_api/muse-spark-1.3"
-SECRET_NAME = "META_MUSE_CI_API_KEY"  # noqa: S105 -- secret name, not a secret value
 MAX_FINDINGS_BYTES = 20_000
 MAX_PROMPT_BYTES = 100_000
 MAX_LOG_BYTES = 2_000_000
@@ -274,7 +273,7 @@ def configuration(root: Path) -> dict:
             "name": "Meta Model API",
             "options": {
                 "baseURL": "https://api.meta.ai/v1",
-                "apiKey": "{env:" + SECRET_NAME + "}",
+                "apiKey": "{env:META_MUSE_CI_API_KEY}",
             },
             "models": {
                 "muse-spark-1.3": {
