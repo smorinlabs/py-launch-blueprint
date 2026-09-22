@@ -63,6 +63,8 @@ config-variables:
   - RUNNER_UBUNTU
   - RUNNER_MACOS
   - RUNNER_WINDOWS
+  # Kill-switch for the audit-triage bot (audit-triage.yml); unset = inert.
+  - MUSE_CI_ENABLED
 
 paths:
   .github/workflows/release-please.yml:

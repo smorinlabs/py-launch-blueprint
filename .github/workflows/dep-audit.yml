@@ -4,7 +4,9 @@
 # *changes* the manifests - a CVE published against an already-pinned
 # dependency never triggers it. This weekly run audits the full locked
 # graph (all extras + groups) via pip-audit (PyPA, OSV + PyPI advisory DBs).
-# Locally: `just audit` runs the identical pipeline.
+# Locally: `just audit` runs the pip-audit half; run the linkcheck half with
+# `uv sync --locked --group docs --extra web`, then
+# `uv run --no-sync sphinx-build -b linkcheck docs/source docs/_build/linkcheck`.
 #
 # Docs linkcheck lives here too: external links rot independently of PRs,
 # and flaky third-party sites should not block merges (the blocking -W html
@@ -68,3 +70,55 @@ jobs:
         run: >-
           uv run --no-sync sphinx-build -b linkcheck
           docs/source docs/_build/linkcheck
+
+  # WL-014 response loop: a scheduled red with no receiver stays red until
+  # someone opens the Actions tab. This job files (or prepends to) one
+  # rolling tracking issue per red run. Humans close the issue when the
+  # backlog is triaged; the next red run opens a fresh one.
+  file-tracking-issue:
+    name: file-tracking-issue
+    needs: [pip-audit, docs-linkcheck]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: File or update the rolling audit-failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          failed_jobs="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs?per_page=100" --jq '[.jobs[] | select(.conclusion == "failure") | .name] | join(", ")')"
+          entry="- $(date -u +%FT%TZ) run ${RUN_ID} (\`${HEAD_SHA:0:7}\`): ${failed_jobs} — ${RUN_URL}"
+          existing="$(gh issue list --label weekly-audit --state open --json number,body --jq '[.[] | select(.body != null and (.body | contains("<!-- weekly-audit-tracking -->"))) | .number][0] // empty')"
+          if [ -n "$existing" ]; then
+            body="$(gh issue view "$existing" --json body --jq .body)"
+            printf '%s\n' "$body" | awk -v entry="$entry" '
+              BEGIN { in_entries = 0; kept = 0 }
+              /^## Failures \(newest first\)$/ { print; print entry; in_entries = 1; next }
+              in_entries && /^- [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T/ { kept++; if (kept > 30) next }
+              in_entries && /^## / { in_entries = 0 }
+              { print }
+            ' > /tmp/tracking-body.md
+            gh issue edit "$existing" --body-file /tmp/tracking-body.md
+          else
+            {
+              echo '<!-- weekly-audit-tracking -->'
+              echo
+              echo "The scheduled \`weekly-audit\` run failed. Triage each entry, then close"
+              echo 'this issue when the backlog is clear (a later red run opens a fresh one).'
+              echo
+              echo '## Failures (newest first)'
+              echo
+              echo "$entry"
+              echo
+              echo '## Notes'
+              echo
+              echo "- Diagnosis and fix PRs come from the \`audit-triage\` workflow runs linked above."
+            } > /tmp/tracking-body.md
+            gh issue create --title 'weekly-audit failures need triage' --label weekly-audit --body-file /tmp/tracking-body.md
+          fi

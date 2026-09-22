@@ -47,7 +47,7 @@ py-launch-blueprint/
 ├── .flox/                          # Flox environment (optional toolchain provisioner; ADR 0005)
 │   └── env/manifest.toml           # Declares the 12-tool dev set for `flox activate`
 ├── .gitignore                      # Git ignore file
-├── .pre-commit-config.yaml         # Pre-commit hooks configuration
+├── lefthook.yml                      # Git hooks configuration (lefthook)
 ├── .python-version                 # Python version file
 ├── .readthedocs.yaml               # Read the Docs configuration
 ├── .vscode/                        # VS Code configuration files
@@ -113,9 +113,9 @@ Contains test files for the project, organized under `tests/cli/`, `tests/core/`
 
 Specifies files and directories to be ignored by Git.
 
-### .pre-commit-config.yaml
+### lefthook.yml
 
-Configuration file for pre-commit hooks to ensure code quality and consistency.
+Configuration file for lefthook Git hooks to ensure code quality and consistency.
 
 ### .python-version
 

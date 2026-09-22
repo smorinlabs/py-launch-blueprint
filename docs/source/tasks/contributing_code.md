@@ -49,7 +49,7 @@ To ensure consistency and maintainability, please follow these code style guidel
 
 This project includes a `Justfile` that provides convenient commands for common development tasks. [Just](https://github.com/casey/just) is a handy command runner that helps standardize commands across your project.
 
-To use these commands, first [install Just](https://github.com/casey/just#installation). You can see all available commands by running:
+To use these commands, first [install Just](https://github.com/casey/just). You can see all available commands by running:
 
 ```bash
 just --list

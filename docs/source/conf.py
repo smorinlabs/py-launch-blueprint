@@ -92,3 +92,22 @@ html_theme_options = {
 
 # The logo configuration
 html_logo = "_static/py_launch_blueprint_logo_100x100.png"
+
+# -- Options for linkcheck ----------------------------------------------------
+# Weekly `sphinx-build -b linkcheck` runs in the scheduled weekly-audit
+# workflow (dep-audit.yml), not per-PR.
+#
+# - linkcheck_anchors_ignore_for_url: github.com repo pages no longer render
+#   anchor ids in static HTML, so no #fragment on github.com can resolve.
+#   Ignore anchors there instead of failing the whole run.
+# - linkcheck_rate_limit_timeout: cap how long to sleep when GitHub
+#   rate-limits unauthenticated checks. Weekly cadence makes duration cheap
+#   while a false red is expensive (it pages the triage bot), so wait out
+#   typical throttle windows instead of failing fast (the 300s default
+#   stalls the job even longer).
+# - linkcheck_retries: ride out transient 5xx responses and flaky hosts.
+linkcheck_anchors_ignore_for_url = [
+    r'https://github\.com/.*',
+]
+linkcheck_rate_limit_timeout = 120.0
+linkcheck_retries = 2

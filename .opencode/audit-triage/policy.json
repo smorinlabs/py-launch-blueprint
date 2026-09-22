@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "organization": "smorinlabs",
+  "model": "model_api/muse-spark-1.3",
+  "max_findings_bytes": 20000
+}

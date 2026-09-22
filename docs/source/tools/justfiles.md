@@ -2,7 +2,7 @@
 
 This project includes a [`Justfile`](https://github.com/smorinlabs/py-launch-blueprint/blob/main/Justfile) that defines useful commands for common development tasks. [Just](https://github.com/casey/just) is a simple command runner that helps standardize commands across your project.
 
-To use these commands, first [install Just](https://github.com/casey/just#installation). Alternatively, this project's root `Makefile` is the Level 1 bootstrap — it installs `just` (and `uv`) for you:
+To use these commands, first [install Just](https://github.com/casey/just). Alternatively, this project's root `Makefile` is the Level 1 bootstrap — it installs `just` (and `uv`) for you:
 
 ```bash
 make bootstrap

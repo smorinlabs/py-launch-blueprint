@@ -6,9 +6,9 @@ This section provides detailed information about the configuration files used in
 
 The `pyproject.toml` file is the central configuration file for the project. It contains metadata about the project, dependencies, and tool-specific configurations. See [pyproject.toml](https://github.com/smorinlabs/py-launch-blueprint/blob/main/pyproject.toml) file for more details.
 
-## .pre-commit-config.yaml
+## lefthook.yml
 
-The `.pre-commit-config.yaml` file is used to configure pre-commit hooks. These hooks run code quality checks before commits, ensuring that only clean and consistent code is committed. See [pre-commit-config.yaml](https://github.com/smorinlabs/py-launch-blueprint/blob/main/.pre-commit-config.yaml) file for more details.
+The `lefthook.yml` file configures lefthook, the Git hooks manager used for pre-commit checks. These hooks run code quality checks before commits, ensuring that only clean and consistent code is committed. See [lefthook.yml](https://github.com/smorinlabs/py-launch-blueprint/blob/main/lefthook.yml) file for more details.
 
 ## [tool.pyright] (in pyproject.toml)
 

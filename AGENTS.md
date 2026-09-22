@@ -275,3 +275,17 @@ Route state changes through these skills rather than hand-editing:
 - `project-audit` — verify state matches conventions
 
 Planning system: Superpowers (specs under `docs/superpowers/specs/`).
+
+## Documentation link policy
+
+External links in `docs/` rot; the scheduled `weekly-audit` linkcheck is the
+only gate, so write links that survive:
+
+- No `#fragment` links to `github.com` pages — GitHub's rendered HTML no
+  longer exposes anchor ids, so Sphinx cannot resolve them (linkcheck
+  ignores `github.com` anchors; don't add new ones).
+- Prefer stable targets (project docs/manuals) over README sections, and
+  never deep-link `docs.github.com` article paths (they restructure often).
+- Verify every new external URL returns 200 before committing.
+- Documented config files must exist in the repo — a retirement/removal PR
+  must update `docs/source/reference/` and `docs/source/tools/` in the same PR.
