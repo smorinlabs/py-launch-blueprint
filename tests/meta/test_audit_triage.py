@@ -2,6 +2,8 @@
 
 import importlib.util
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -79,6 +81,117 @@ def test_dispatch_input_reaches_shell_through_the_environment():
     assert resolve["env"]["DISPATCH_RUN_ID"] == "${{ inputs.run_id }}"
     assert "inputs.run_id" not in resolve["run"]
     assert 'case "$DISPATCH_RUN_ID" in' in resolve["run"]
+
+
+@pytest.fixture
+def run_create_pr(tmp_path):
+    """Execute the workflow shell with a recording CLI and no inherited secrets."""
+    gh = tmp_path / "gh"
+    gh.write_text(
+        f"#!{sys.executable}\n"
+        "import json, os, sys\n"
+        "from pathlib import Path\n"
+        "args = sys.argv[1:]\n"
+        "with Path(os.environ['GH_RECORD']).open('a') as record:\n"
+        "    record.write(json.dumps(args) + '\\n')\n"
+        "if args[:2] == ['api', 'repos/owner/repository']:\n"
+        "    operation, response = 'read', 'pilot-main'\n"
+        "elif args[:4] == ['api', '--method', 'POST', "
+        "'repos/owner/repository/pulls']:\n"
+        "    operation, response = 'create', os.environ['PR_NUMBER']\n"
+        "else:\n"
+        "    sys.exit('unsupported gh command')\n"
+        "if operation == os.environ['FAIL_OPERATION']:\n"
+        "    print('simulated API failure', file=sys.stderr)\n"
+        "    sys.exit(23)\n"
+        "print(response)\n"
+    )
+    gh.chmod(0o755)
+    output = tmp_path / "output"
+    record = tmp_path / "record.jsonl"
+
+    def run(*, repository="owner/repository", fail="", number="417"):
+        # Execute only the checked-in workflow in an isolated temporary directory.
+        result = subprocess.run(  # noqa: S603
+            [
+                "/bin/bash",
+                "-e",
+                "-o",
+                "pipefail",
+                "-c",
+                _step_named("Create triage PR")["run"],
+            ],
+            cwd=tmp_path,
+            env={
+                "PATH": f"{tmp_path}{os.pathsep}/usr/bin:/bin",
+                "GH_REPO": "owner/repository",
+                "GITHUB_REPOSITORY": repository,
+                "BRANCH": "bot/weekly-audit-987654",
+                "GITHUB_OUTPUT": str(output),
+                "GH_RECORD": str(record),
+                "FAIL_OPERATION": fail,
+                "PR_NUMBER": number,
+            },
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        calls = [json.loads(line) for line in record.read_text().splitlines()]
+        return result, calls, output.read_text() if output.exists() else ""
+
+    return run
+
+
+@pytest.mark.parametrize(
+    "repository",
+    [
+        "owner/repository",
+        'owner/repo "quoted"\\path\n$(touch evaluated)`touch evaluated`',
+    ],
+)
+def test_create_pr_uses_rest_and_preserves_fields(run_create_pr, repository, tmp_path):
+    result, calls, output = run_create_pr(repository=repository)
+    assert result.returncode == 0, result.stderr
+    assert calls == [
+        ["api", "repos/owner/repository", "--jq", ".default_branch"],
+        [
+            "api",
+            "--method",
+            "POST",
+            "repos/owner/repository/pulls",
+            "--raw-field",
+            "head=bot/weekly-audit-987654",
+            "--raw-field",
+            "base=pilot-main",
+            "--raw-field",
+            "title=fix(docs): triage weekly-audit run 987654",
+            "--raw-field",
+            "body=Triage of weekly-audit run 987654.\n\n"
+            "Automated docs repair; verification table follows from the finish step.\n"
+            f"Audit run: https://github.com/{repository}/actions/runs/987654",
+            "--jq",
+            ".number",
+        ],
+    ]
+    assert output == "number=417\n"
+    assert not (tmp_path / "evaluated").exists()
+
+
+@pytest.mark.parametrize(("fail", "call_count"), [("read", 1), ("create", 2)])
+def test_create_pr_propagates_api_failure(run_create_pr, fail, call_count):
+    result, calls, output = run_create_pr(fail=fail)
+    assert result.returncode == 23
+    assert "simulated API failure" in result.stderr
+    assert len(calls) == call_count
+    assert output == ""
+
+
+@pytest.mark.parametrize("number", ["null", "0", "-1", "abc", "417\n418"])
+def test_create_pr_requires_a_positive_number(run_create_pr, number):
+    result, calls, output = run_create_pr(number=number)
+    assert result.returncode != 0
+    assert len(calls) == 2
+    assert output == ""
 
 
 def test_broken_line_extraction_strips_ansi_and_timestamps():
