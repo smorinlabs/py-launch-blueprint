@@ -185,9 +185,16 @@ jobs:
         run: |
           set -euo pipefail
           run_id="${BRANCH#bot/weekly-audit-}"
-          base="$(gh repo view --json defaultBranch --jq .defaultBranch)"
+          base="$(gh api "repos/$GH_REPO" --jq .default_branch)"
           body="$(printf 'Triage of weekly-audit run %s.\n\nAutomated docs repair; verification table follows from the finish step.\nAudit run: https://github.com/%s/actions/runs/%s\n' "$run_id" "$GITHUB_REPOSITORY" "$run_id")"
-          number="$(gh pr create --head "$BRANCH" --base "$base" --title "fix(docs): triage weekly-audit run ${run_id}" --body "$body" --json number --jq .number)"
+          number="$(gh api --method POST "repos/$GH_REPO/pulls" \
+            --raw-field head="$BRANCH" --raw-field base="$base" \
+            --raw-field title="fix(docs): triage weekly-audit run ${run_id}" \
+            --raw-field body="$body" --jq .number)"
+          if [[ ! "$number" =~ ^[1-9][0-9]*$ ]]; then
+            echo "PR creation did not return a positive PR number." >&2
+            exit 1
+          fi
           echo "number=$number" >> "$GITHUB_OUTPUT"
 
       - name: Verify scope and touched URLs
