@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import argparse
 import email.message
-import io
 import ipaddress
 import json
 import os
@@ -27,7 +26,6 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
-import zipfile
 from collections.abc import Mapping
 from pathlib import Path
 from typing import IO, Any, NoReturn, override
@@ -37,7 +35,6 @@ MODEL = "model_api/muse-spark-1.3"
 MAX_FINDINGS_BYTES = 20_000
 MAX_PROMPT_BYTES = 100_000
 MAX_LOG_BYTES = 2_000_000
-MAX_LOG_MEMBERS = 500
 MAX_TOUCHED_URLS = 20
 REQUEST_TIMEOUT = 30
 VERIFY_TIMEOUT = 10
@@ -152,7 +149,7 @@ def git(root: Path, *args: str) -> str:
 
 
 def download_logs(api_url: str, token: str, size_cap: int = MAX_LOG_BYTES) -> str:
-    """Fetch an Actions job log archive (one redirect to signed storage).
+    """Fetch plaintext Actions job logs (one redirect to signed storage).
 
     The bearer token authenticates the api.github.com call only; the
     redirected blob fetch is always unauthenticated.
@@ -169,7 +166,7 @@ def download_logs(api_url: str, token: str, size_cap: int = MAX_LOG_BYTES) -> st
             payload = response.read(size_cap + 1)
     except _RedirectError as redirect:
         if not redirect.location.startswith("https://"):
-            raise RefusalError("Log archive redirected off https") from redirect
+            raise RefusalError("Log download redirected off https") from redirect
         plain = urllib.request.Request(  # noqa: S310 -- https prefix enforced above
             redirect.location,
             headers={"User-Agent": "py-launch-blueprint-audit-triage"},
@@ -180,37 +177,12 @@ def download_logs(api_url: str, token: str, size_cap: int = MAX_LOG_BYTES) -> st
             ) as response:
                 payload = response.read(size_cap + 1)
         except (urllib.error.URLError, TimeoutError, ValueError) as error:
-            raise RefusalError(f"Log archive fetch failed: {error}") from error
+            raise RefusalError(f"Log fetch failed: {error}") from error
     except (urllib.error.URLError, TimeoutError, ValueError) as error:
         raise RefusalError(f"Log download failed: {error}") from error
     if len(payload) > size_cap:
-        raise RefusalError("Log archive exceeds the size cap")
-    return extract_log_text(payload, size_cap)
-
-
-def extract_log_text(payload: bytes, size_cap: int = MAX_LOG_BYTES) -> str:
-    """Concatenate the text members of a job-log ZIP archive, size-bounded.
-
-    The Actions log endpoint returns a ZIP of per-step .txt files; decoding
-    the archive bytes directly yields binary, not log lines. Members are
-    read through a bounded stream so a hostile member cannot exhaust memory,
-    and the total stays under the same cap as the download.
-    """
-    try:
-        archive = zipfile.ZipFile(io.BytesIO(payload))
-    except zipfile.BadZipFile as error:
-        raise RefusalError("Log archive is not a ZIP file") from error
-    members = [info for info in archive.infolist() if not info.is_dir()]
-    texts: list[str] = []
-    total = 0
-    for info in members[:MAX_LOG_MEMBERS]:
-        with archive.open(info.filename) as member:
-            chunk = member.read(size_cap - total + 1)
-        total += len(chunk)
-        if total > size_cap:
-            raise RefusalError("Extracted logs exceed the size cap")
-        texts.append(chunk.decode("utf-8", errors="replace"))
-    return "\n".join(texts)
+        raise RefusalError("Log download exceeds the size cap")
+    return payload.decode("utf-8", errors="replace")
 
 
 def strip_ansi(text: str) -> str:

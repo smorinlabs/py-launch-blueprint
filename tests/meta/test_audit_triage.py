@@ -1,10 +1,15 @@
 """Guards for the weekly-audit triage bot (workflow shape + helper logic)."""
 
+import email.message
 import importlib.util
+import io
 import json
 import os
 import subprocess
 import sys
+import urllib.error
+import urllib.request
+import urllib.response
 from pathlib import Path
 
 import pytest
@@ -362,40 +367,120 @@ def test_policy_pins_model_and_organization():
     assert policy["organization"] == "smorinlabs"
 
 
-def _log_archive(members):
-    import io
-    import zipfile
+_JOB_LOG_URL = "https://api.github.com/repos/o/r/actions/jobs/106294708263/logs"
+_STORAGE_URL = "https://logs.example.invalid/job.txt?signature=fixture"
+# Bounded excerpt from the pilot's actual job log, including ANSI and timestamp.
+_BROKEN_LINE = (
+    "2026-09-21T10:14:50.0156914Z (tasks/contributing_code: line   52) "
+    "\x1b[91mbroken    \x1b[39;49;00mhttps://github.com/casey/just#installation"
+    "\x1b[91m - Anchor 'installation' not found\x1b[39;49;00m\n"
+)
+_PLAINTEXT_LOG = (
+    "2026-09-21T10:14:48.0000000Z checking links\n" + _BROKEN_LINE
+).encode()
 
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as archive:
-        for name, text in members:
-            archive.writestr(name, text)
-    return buffer.getvalue()
+
+@pytest.fixture
+def log_transport(monkeypatch):
+    """Replace HTTPS I/O while exercising urllib's real redirect processors."""
+    requests = []
+    reads = []
+    replies = []
+
+    class Response(io.BytesIO):
+        def read(self, size=-1):
+            reads.append(size)
+            return super().read(size)
+
+    class HTTPSHandler(urllib.request.HTTPSHandler):
+        def https_open(self, request):
+            requests.append(request)
+            status, payload = replies.pop(0)
+            if isinstance(payload, Exception):
+                raise payload
+            headers = email.message.Message()
+            if status == 302:
+                headers["Location"] = payload
+                payload = b""
+            response = urllib.response.addinfourl(
+                Response(payload), headers, request.full_url, status
+            )
+            response.msg = "Found" if status == 302 else "OK"
+            return response
+
+    monkeypatch.setattr(urllib.request, "HTTPSHandler", HTTPSHandler)
+    return replies, requests, reads
 
 
-def test_log_extraction_concatenates_archive_members():
-    payload = _log_archive(
-        [
-            ("1_setup.txt", "2026-09-21T05:00:01Z setup ok\n"),
-            (
-                "2_linkcheck.txt",
-                "2026-09-21T05:01:02Z ( docs/index: line 1 ) broken https://x.invalid\n",
-            ),
-        ]
-    )
-    text = audit_triage.extract_log_text(payload)
-    assert "setup ok" in text
+@pytest.mark.parametrize("redirect", [False, True])
+@pytest.mark.parametrize("token", ["", "fixture-token"])
+def test_download_plaintext_job_log_and_extract_actual_broken_line(
+    log_transport, redirect, token
+):
+    replies, requests, reads = log_transport
+    if redirect:
+        replies.append((302, _STORAGE_URL))
+    replies.append((200, _PLAINTEXT_LOG))
+    text = audit_triage.download_logs(_JOB_LOG_URL, token)
+    assert text == _PLAINTEXT_LOG.decode()
     assert audit_triage.extract_broken_lines(text) == [
-        "( docs/index: line 1 ) broken https://x.invalid"
+        "(tasks/contributing_code: line   52) broken    "
+        "https://github.com/casey/just#installation - Anchor 'installation' not found"
     ]
+    assert requests[0].full_url == _JOB_LOG_URL
+    assert requests[0].get_header("Authorization") == (
+        f"Bearer {token}" if token else None
+    )
+    if redirect:
+        assert requests[1].full_url == _STORAGE_URL
+        assert requests[1].get_header("Authorization") is None
+    assert reads == [audit_triage.MAX_LOG_BYTES + 1]
+    assert not replies
 
 
-def test_log_extraction_rejects_non_zip_payload():
-    with pytest.raises(audit_triage.RefusalError, match="not a ZIP"):
-        audit_triage.extract_log_text(b"plain text, not an archive")
+@pytest.mark.parametrize("redirect", [False, True])
+@pytest.mark.parametrize("payload", [b"x" * 10, b"x" * 100])
+def test_download_job_log_enforces_bounded_read(log_transport, redirect, payload):
+    replies, _, reads = log_transport
+    if redirect:
+        replies.append((302, _STORAGE_URL))
+    replies.append((200, payload))
+    if len(payload) > 10:
+        with pytest.raises(audit_triage.RefusalError, match="size cap"):
+            audit_triage.download_logs(_JOB_LOG_URL, "fixture-token", size_cap=10)
+    else:
+        assert audit_triage.download_logs(_JOB_LOG_URL, "", size_cap=10) == "x" * 10
+    assert reads == [11]
 
 
-def test_log_extraction_enforces_size_cap():
-    payload = _log_archive([("big.txt", "y" * 100)])
-    with pytest.raises(audit_triage.RefusalError, match="size cap"):
-        audit_triage.extract_log_text(payload, size_cap=10)
+def test_download_job_log_replaces_invalid_utf8(log_transport):
+    replies, _, _ = log_transport
+    replies.append((200, b"setup \xff\n" + _PLAINTEXT_LOG))
+    text = audit_triage.download_logs(_JOB_LOG_URL, "")
+    assert text.startswith("setup \ufffd\n")
+    assert len(audit_triage.extract_broken_lines(text)) == 1
+
+
+def test_download_job_log_refuses_non_https_redirect(log_transport):
+    replies, requests, reads = log_transport
+    replies.append((302, "http://logs.example.invalid/job.txt"))
+    with pytest.raises(audit_triage.RefusalError, match="redirected off https"):
+        audit_triage.download_logs(_JOB_LOG_URL, "fixture-token")
+    assert len(requests) == 1
+    assert reads == []
+
+
+@pytest.mark.parametrize("redirect", [False, True])
+@pytest.mark.parametrize(
+    "error", [urllib.error.URLError("unavailable"), TimeoutError(), ValueError()]
+)
+def test_download_job_log_preserves_fetch_failure_paths(log_transport, redirect, error):
+    replies, requests, _ = log_transport
+    if redirect:
+        replies.append((302, _STORAGE_URL))
+    replies.append((0, error))
+    message = "Log fetch failed" if redirect else "Log download failed"
+    with pytest.raises(audit_triage.RefusalError, match=message):
+        audit_triage.download_logs(_JOB_LOG_URL, "fixture-token")
+    if redirect:
+        assert requests[1].get_header("Authorization") is None
