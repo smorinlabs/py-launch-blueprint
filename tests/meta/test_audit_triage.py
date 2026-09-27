@@ -91,6 +91,8 @@ def test_dispatch_input_reaches_shell_through_the_environment():
 @pytest.fixture
 def run_create_pr(tmp_path):
     """Execute the workflow shell with a recording CLI and no inherited secrets."""
+    if os.name == "nt":
+        pytest.skip("Audit triage workflow runs on Ubuntu")
     gh = tmp_path / "gh"
     gh.write_text(
         f"#!{sys.executable}\n"
