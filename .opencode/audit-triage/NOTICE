@@ -29,4 +29,4 @@ SOFTWARE.
 Further adapted for scheduled audit triage by smorinlabs/py-launch-blueprint
 (P04, 2026-09-22): triage mode over frozen CI failure bundles, standard-tier
 model, docs-only agent scope, deterministic URL verification of the resulting
-diff. Via the smorinlabs-harness muse-github-setup skill templates.
+diff. Via the smorinlabs-skills muse-github-setup skill templates.
