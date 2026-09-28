@@ -18,7 +18,7 @@ jobs:
   no-committed-receipt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: No committed receipt in the template
         run: |
           if [ -f press/press-receipt.toml ]; then
