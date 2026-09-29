@@ -106,8 +106,11 @@ html_logo = "_static/py_launch_blueprint_logo_100x100.png"
 #   typical throttle windows instead of failing fast (the 300s default
 #   stalls the job even longer).
 # - linkcheck_retries: ride out transient 5xx responses and flaky hosts.
+#   Sphinx retries back-to-back with no delay, so a short burst of
+#   connection resets (gnu.org, 2026-09-28) outlasts 2 attempts; 5 costs
+#   nothing on healthy links (only BROKEN results are retried).
 linkcheck_anchors_ignore_for_url = [
     r'https://github\.com/.*',
 ]
 linkcheck_rate_limit_timeout = 120.0
-linkcheck_retries = 2
+linkcheck_retries = 5
