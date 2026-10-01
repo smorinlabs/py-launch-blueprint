@@ -1,5 +1,50 @@
 # Changelog
 
+## [4.1.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v4.0.1...v4.1.0) (2026-10-01)
+
+
+### Features
+
+* **ci:** weekly-audit response loop, link repair, and triage bot ([2231626](https://github.com/smorinlabs/py-launch-blueprint/commit/22316269c8f330a97fd1457ee2aadf74cc642f42))
+
+
+### Bug Fixes
+
+* **ci:** answer review round 2 (zip logs, overrides, typing, landing link) ([8fe31e7](https://github.com/smorinlabs/py-launch-blueprint/commit/8fe31e755ffda5c195d5ba343f9c108a0485f0cc))
+* **ci:** decode audit job logs as plaintext ([66c673f](https://github.com/smorinlabs/py-launch-blueprint/commit/66c673fa07c98012f8bed7c82606864273892c93))
+* **ci:** harden triage bot per review (CLI runner, gates, SSRF guard) ([9af5d60](https://github.com/smorinlabs/py-launch-blueprint/commit/9af5d603340b00d61b4a5bdfb8c1edae80881b32))
+* **ci:** inline Muse credential reference in triage config ([857ead6](https://github.com/smorinlabs/py-launch-blueprint/commit/857ead6c7649c49b03ff599ccea151a613c884d1))
+* **ci:** use rest api for audit triage pr creation ([b3b6a08](https://github.com/smorinlabs/py-launch-blueprint/commit/b3b6a0874dab03b72805c0ee3115c7665b5949de))
+* **deps:** pair fastapi with compatible pagination ([4ebd7ae](https://github.com/smorinlabs/py-launch-blueprint/commit/4ebd7aebdd035a05e9a4583624a21daaed55e018))
+* **docs:** raise linkcheck_retries to ride out connection-reset bursts ([2c88c5e](https://github.com/smorinlabs/py-launch-blueprint/commit/2c88c5ed197254e2563e25ea243be10f77ff1984))
+
+
+### Dependencies
+
+* **deps-dev:** bump hypothesis from 6.156.6 to 6.168.0 ([5f75dc5](https://github.com/smorinlabs/py-launch-blueprint/commit/5f75dc5a9a85efe3c73930f7ec33eacaf8b164b8))
+* **deps-dev:** bump hypothesis from 6.168.0 to 6.168.1 ([48ac3a2](https://github.com/smorinlabs/py-launch-blueprint/commit/48ac3a241643f9596e3c51f692d38264adbbcb3d))
+* **deps-dev:** bump import-linter from 2.13 to 2.15 ([6f648d5](https://github.com/smorinlabs/py-launch-blueprint/commit/6f648d57c3723ad32bde8cbf53f84ebfdaf0e368))
+* **deps-dev:** bump release-please from 17.6.0 to 17.11.2 ([cfc2d4d](https://github.com/smorinlabs/py-launch-blueprint/commit/cfc2d4dbd499c56acf78d1a422df0462c914eef9))
+* **deps-dev:** bump responses from 0.26.2 to 0.26.3 ([d3e24f9](https://github.com/smorinlabs/py-launch-blueprint/commit/d3e24f921d2726ec4ea0dce31989e47d6d77ed81))
+* **deps-dev:** bump syrupy from 6.0.0 to 6.1.1 in the test group ([aa02607](https://github.com/smorinlabs/py-launch-blueprint/commit/aa026074854344998a75738c5ea03084d5b6d2ba))
+* **deps-dev:** bump tach from 0.35.0 to 0.35.1 ([d17e0ff](https://github.com/smorinlabs/py-launch-blueprint/commit/d17e0ff080c051f512b99f76c954a1d0bb0d422a))
+* **deps-dev:** bump the lint-and-format group across 1 directory with 3 updates ([ba9cdb6](https://github.com/smorinlabs/py-launch-blueprint/commit/ba9cdb637a18a1661d7fe5b5badfab6c981c77eb))
+* **deps-dev:** bump the lint-and-format group with 2 updates ([9420207](https://github.com/smorinlabs/py-launch-blueprint/commit/94202073b3b1ced90254205b58371accbfb9d912))
+* **deps-dev:** bump the lint-and-format group with 2 updates ([11a05db](https://github.com/smorinlabs/py-launch-blueprint/commit/11a05db37ad42e568c4f0621d336936609622e66))
+* **deps-dev:** bump the test group across 1 directory with 2 updates ([ff9a776](https://github.com/smorinlabs/py-launch-blueprint/commit/ff9a776c67536cce58bb1aee40f0850fab03cb15))
+* **deps-dev:** bump twine in the dev-tools group across 1 directory ([cd69b43](https://github.com/smorinlabs/py-launch-blueprint/commit/cd69b43e8dd2cbb22c619e587e75b0f25510cf45))
+* **deps:** bump anyio from 4.13.0 to 4.14.2 ([8a74007](https://github.com/smorinlabs/py-launch-blueprint/commit/8a7400764c4565b5fd820958b332bc557697db49))
+* **deps:** bump fastapi from 0.136.3 to 0.141.1 ([339fc4b](https://github.com/smorinlabs/py-launch-blueprint/commit/339fc4bd58234336496dff916b9e4a5e550939a9))
+* **deps:** bump fastapi from 0.136.3 to 0.141.1 ([b11113b](https://github.com/smorinlabs/py-launch-blueprint/commit/b11113bd9532ba9cddf9c668d2f87e4fcdace842))
+* **deps:** bump prometheus-fastapi-instrumentator from 8.0.2 to 8.1.0 ([6fc0f38](https://github.com/smorinlabs/py-launch-blueprint/commit/6fc0f38416e041cf8b8304dee5bb7a397b4583de))
+* **deps:** bump pydantic-settings from 2.14.2 to 2.15.0 ([f575c17](https://github.com/smorinlabs/py-launch-blueprint/commit/f575c17e87f83d3069d04dde1edb2eab2151f889))
+* **deps:** bump soupsieve from 2.8.4 to 2.9 ([9929ecf](https://github.com/smorinlabs/py-launch-blueprint/commit/9929ecf815682756d1d5754e89408d198feaa2f4))
+* **deps:** bump the github-actions group across 1 directory with 3 updates ([bc979f7](https://github.com/smorinlabs/py-launch-blueprint/commit/bc979f7db49b8a858856340c8c1f83cf5e92f2d4))
+* **deps:** bump the github-actions group with 3 updates ([822c591](https://github.com/smorinlabs/py-launch-blueprint/commit/822c591efa8c4fa109306b99193e69988462d9b3))
+* **deps:** bump the github-actions group with 3 updates ([a130b46](https://github.com/smorinlabs/py-launch-blueprint/commit/a130b465ef498147c8fa19a80d02f71c9e6a543c))
+* **deps:** bump the runtime group across 1 directory with 2 updates ([3791e49](https://github.com/smorinlabs/py-launch-blueprint/commit/3791e49077c83b67d4fbfaa633656925bddb06b2))
+* **deps:** complete release-please 17.11.2 update ([aa5d701](https://github.com/smorinlabs/py-launch-blueprint/commit/aa5d70154d492a2ac19faaa1bf20cdd01629195a))
+
 ## [4.0.1](https://github.com/smorinlabs/py-launch-blueprint/compare/v4.0.0...v4.0.1) (2026-09-15)
 
 
