@@ -1,7 +1,7 @@
 # WL-014 triage bot: when the scheduled weekly-audit run fails, diagnose the
 # failure with Muse Spark (standard tier, via the opencode CLI) and open a
 # fix PR for human review. Sandwich shape adapted from the
-# smorinlabs-harness muse-github-setup skill templates; deliberate deviations:
+# smorinlabs-skills muse-github-setup skill templates; deliberate deviations:
 #
 # - Runner is the opencode CLI (pinned npm release), NOT the OpenCode GitHub
 #   Action: the pinned Action entrypoint unconditionally rejects every event
