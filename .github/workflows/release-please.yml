@@ -37,7 +37,7 @@ jobs:
       # available directly in `if:` conditions). Empty unless the App is set up.
       RP_CLIENT_ID: ${{ secrets.RELEASE_PLEASE_CLIENT_ID }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false

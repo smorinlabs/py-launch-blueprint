@@ -50,7 +50,7 @@ jobs:
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     steps:
       - name: 'Checkout repository'
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v5
         # Commonly enabled options, see https://github.com/actions/dependency-review-action#configuration-options for all available options.
