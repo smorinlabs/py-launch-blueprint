@@ -488,3 +488,45 @@ def test_download_job_log_preserves_fetch_failure_paths(log_transport, redirect,
         audit_triage.download_logs(_JOB_LOG_URL, "fixture-token")
     if redirect:
         assert requests[1].get_header("Authorization") is None
+
+
+GUARD = "Refuse snapshots that pin another model"
+
+
+def test_snapshot_model_guard_runs_before_the_audited_helper():
+    names = [step["name"] for step in _job()["steps"]]
+    assert names.index("Check out audited commit") < names.index(GUARD)
+    assert names.index(GUARD) < names.index(
+        "Authorize trigger and prepare frozen failure bundle"
+    )
+    assert _step_named(GUARD)["env"]["AGENT_MODEL"] == audit_triage.MODEL
+    agent = _step_named("Diagnose and repair with Muse Spark")
+    assert agent["env"]["AGENT_MODEL"] == audit_triage.MODEL
+    assert '--model "$AGENT_MODEL"' in agent["run"]
+
+
+@pytest.mark.parametrize(
+    "model, refused",
+    [
+        ("model_api/muse-spark-1.3-contributor", False),
+        ("model_api/muse-spark-1.3", True),
+    ],
+)
+def test_snapshot_model_guard_refuses_older_policies(tmp_path, model, refused):
+    if os.name == "nt":
+        pytest.skip("Audit triage workflow runs on Ubuntu")
+    policy = tmp_path / ".opencode/audit-triage/policy.json"
+    policy.parent.mkdir(parents=True)
+    policy.write_text(json.dumps({"schema_version": 1, "model": model}))
+    step = _step_named(GUARD)
+    result = subprocess.run(  # noqa: S603
+        ["/bin/bash", "-e", "-o", "pipefail", "-c", step["run"]],
+        cwd=tmp_path,
+        env={"PATH": os.environ["PATH"], **step["env"]},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert (result.returncode != 0) is refused
+    if refused:
+        assert "pins model_api/muse-spark-1.3" in result.stderr

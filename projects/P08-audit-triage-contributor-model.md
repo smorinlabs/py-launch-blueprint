@@ -6,7 +6,7 @@ Move the audit-triage bot from the standard Muse Spark tier to the
 **References**
 
 - **Trunk:** [PROJECTS.md](../PROJECTS.md)
-- **Skill default:** `smorinlabs-harness` `plugins/muse-github/skills/muse-github-setup/SKILL.md`
+- **Skill default:** `smorinlabs-skills` `plugins/muse-github/skills/muse-github-setup/SKILL.md`
 
 **Status:** `[~]` implementation on `fix/audit-triage-contributor-model`.
 
