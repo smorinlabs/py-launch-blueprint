@@ -1,5 +1,5 @@
 # WL-014 triage bot: when the scheduled weekly-audit run fails, diagnose the
-# failure with Muse Spark (standard tier, via the opencode CLI) and open a
+# failure with Muse Spark (contributor tier, via the opencode CLI) and open a
 # fix PR for human review. Sandwich shape adapted from the
 # smorinlabs-skills muse-github-setup skill templates; deliberate deviations:
 #
@@ -16,12 +16,14 @@
 # - Validation runs BEFORE checkout: the resolve step asserts workflow name,
 #   failure, default branch, and trigger event from trusted context, because
 #   checking out first would execute the audited commit's helper pre-check.
-# - Model is model_api/muse-spark-1.3 (standard, non-training tier) instead
-#   of the contributor default. Consequence: repo-secrets consumer detection
-#   (pinned to the contributor string) does not match, so META_MUSE_CI_API_KEY
-#   is provisioned by the manual fallback and verified by presence.
+# - Model matches the skill default, model_api/muse-spark-1.3-contributor
+#   (Meta may train on submitted content), but repo-secrets consumer detection
+#   requires the OpenCode GitHub Action step, not this CLI run, so
+#   META_MUSE_CI_API_KEY is provisioned by the manual fallback and verified by
+#   presence.
 # - Replays of runs older than this tooling are refused: the audited commit
-#   must contain the helper and profiles.
+#   must contain the helper and profiles, and its policy must pin the agent's
+#   model, so pre-contributor snapshots fail before their helper runs.
 # - The finish step curl-verifies every touched URL (page level; fragments
 #   never reach a server) and posts the table on the PR. Only
 #   definitively-dead URLs fail the run; bot-ambiguous statuses warn.
@@ -120,6 +122,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Refuse snapshots that pin another model
+        env:
+          AGENT_MODEL: model_api/muse-spark-1.3-contributor
+        run: |
+          model="$(python3 -c 'import json; print(json.load(open(".opencode/audit-triage/policy.json"))["model"])')"
+          if [ "$model" != "$AGENT_MODEL" ]; then
+            echo "::error::audited commit pins $model, not $AGENT_MODEL; replays from before the contributor switch are refused" >&2
+            exit 1
+          fi
+
       - name: Authorize trigger and prepare frozen failure bundle
         id: prepare
         run: python3 .github/scripts/audit_triage.py prepare triage
@@ -153,7 +165,8 @@ jobs:
         env:
           META_MUSE_CI_API_KEY: ${{ secrets.META_MUSE_CI_API_KEY }}
           TRIAGE_PROMPT: ${{ steps.prepare.outputs.prompt }}
-        run: opencode run --model model_api/muse-spark-1.3 --agent muse-triage "$TRIAGE_PROMPT"
+          AGENT_MODEL: model_api/muse-spark-1.3-contributor
+        run: opencode run --model "$AGENT_MODEL" --agent muse-triage "$TRIAGE_PROMPT"
 
       - name: Commit repair
         id: commit

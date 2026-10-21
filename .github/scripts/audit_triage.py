@@ -3,9 +3,9 @@
 
 Adapted from the muse-github-setup skill templates (see
 .opencode/audit-triage/NOTICE). Deliberate differences from the skill:
-triage consumes a frozen CI failure bundle (not a PR diff), runs on the
-standard (non-training) Muse Spark tier, and replaces member authorization
-with trigger-origin gates (a scheduled failure has no requesting human).
+triage consumes a frozen CI failure bundle (not a PR diff) and replaces
+member authorization with trigger-origin gates (a scheduled failure has
+no requesting human).
 The skill's lockdown shape is preserved: immutable bounded input, generated
 runtime config, fresh XDG/Git environment, and no project code executed in
 the credential-bearing agent step.
@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import IO, Any, NoReturn, override
 from uuid import uuid4
 
-MODEL = "model_api/muse-spark-1.3"
+MODEL = "model_api/muse-spark-1.3-contributor"
 MAX_FINDINGS_BYTES = 20_000
 MAX_PROMPT_BYTES = 100_000
 MAX_LOG_BYTES = 2_000_000
@@ -346,8 +346,8 @@ def configuration(root: Path) -> dict[str, Any]:
                 "apiKey": "{env:META_MUSE_CI_API_KEY}",
             },
             "models": {
-                "muse-spark-1.3": {
-                    "name": "Muse Spark 1.3 Standard",
+                "muse-spark-1.3-contributor": {
+                    "name": "Muse Spark 1.3 Contributor",
                     "limit": {"context": 1048576, "output": 131072},
                 }
             },
