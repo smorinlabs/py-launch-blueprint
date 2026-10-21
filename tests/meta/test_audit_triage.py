@@ -365,7 +365,9 @@ def test_agent_profile_is_docs_only_and_locked_down():
 def test_policy_pins_model_and_organization():
     policy = json.loads((ROOT / ".opencode/audit-triage/policy.json").read_text())
     assert policy["schema_version"] == 1
-    assert policy["model"] == audit_triage.MODEL == "model_api/muse-spark-1.3"
+    assert (
+        policy["model"] == audit_triage.MODEL == "model_api/muse-spark-1.3-contributor"
+    )
     assert policy["organization"] == "smorinlabs"
 
 

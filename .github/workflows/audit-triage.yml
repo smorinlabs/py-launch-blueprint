@@ -1,5 +1,5 @@
 # WL-014 triage bot: when the scheduled weekly-audit run fails, diagnose the
-# failure with Muse Spark (standard tier, via the opencode CLI) and open a
+# failure with Muse Spark (contributor tier, via the opencode CLI) and open a
 # fix PR for human review. Sandwich shape adapted from the
 # smorinlabs-skills muse-github-setup skill templates; deliberate deviations:
 #
@@ -16,10 +16,11 @@
 # - Validation runs BEFORE checkout: the resolve step asserts workflow name,
 #   failure, default branch, and trigger event from trusted context, because
 #   checking out first would execute the audited commit's helper pre-check.
-# - Model is model_api/muse-spark-1.3 (standard, non-training tier) instead
-#   of the contributor default. Consequence: repo-secrets consumer detection
-#   (pinned to the contributor string) does not match, so META_MUSE_CI_API_KEY
-#   is provisioned by the manual fallback and verified by presence.
+# - Model matches the skill default, model_api/muse-spark-1.3-contributor
+#   (Meta may train on submitted content), but repo-secrets consumer detection
+#   requires the OpenCode GitHub Action step, not this CLI run, so
+#   META_MUSE_CI_API_KEY is provisioned by the manual fallback and verified by
+#   presence.
 # - Replays of runs older than this tooling are refused: the audited commit
 #   must contain the helper and profiles.
 # - The finish step curl-verifies every touched URL (page level; fragments
@@ -153,7 +154,7 @@ jobs:
         env:
           META_MUSE_CI_API_KEY: ${{ secrets.META_MUSE_CI_API_KEY }}
           TRIAGE_PROMPT: ${{ steps.prepare.outputs.prompt }}
-        run: opencode run --model model_api/muse-spark-1.3 --agent muse-triage "$TRIAGE_PROMPT"
+        run: opencode run --model model_api/muse-spark-1.3-contributor --agent muse-triage "$TRIAGE_PROMPT"
 
       - name: Commit repair
         id: commit
