@@ -29,7 +29,7 @@ file by hand — see Conventions.
 | P05 | `[x]` | [Template-press v3.4 dogfood & conform](projects/P05-template-press-v34-dogfood-conform.md) — press/ config from scratch, verify to declarations-only green, rebrand + publish an instance; findings → Run 4 PROBLEM-NN |
 | P06 | `[x]` | [Full conform — retire the embedded engine](projects/P06-full-conform.md) — delete init/, CI cutover to press verify, v3.6.0 config upgrade ([[remove]], verify_exempt, scan=boundary); closes #423 |
 | P07 | `[x]` | [Template Press upgrade and Python 3.13 bootstrap](projects/P07-press-upgrade-and-python-313.md) — adopt the released press and prove a usable generated project |
-| P08 | `[~]` | [Audit-triage contributor model](projects/P08-audit-triage-contributor-model.md) — move the triage bot to the muse-github-setup default `muse-spark-1.3-contributor` |
+| P08 | `[x]` | [Audit-triage contributor model](projects/P08-audit-triage-contributor-model.md) — move the triage bot to the muse-github-setup default `muse-spark-1.3-contributor` |
 
 ## Conventions
 

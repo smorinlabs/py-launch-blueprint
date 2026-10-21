@@ -8,7 +8,7 @@ Move the audit-triage bot from the standard Muse Spark tier to the
 - **Trunk:** [PROJECTS.md](../PROJECTS.md)
 - **Skill default:** `smorinlabs-skills` `plugins/muse-github/skills/muse-github-setup/SKILL.md`
 
-**Status:** `[~]` implementation on `fix/audit-triage-contributor-model`.
+**Status:** `[x]` merged in [PR #578](https://github.com/smorinlabs/py-launch-blueprint/pull/578) (merge commit `1ec77e4`, 2026-10-21).
 
 ### Scope
 
@@ -25,4 +25,4 @@ so this CLI-based workflow keeps the manual `META_MUSE_CI_API_KEY` path.
 
 - [x] [P08-TS01] Pin `model_api/muse-spark-1.3-contributor` in `test_policy_pins_model_and_organization`.
 - [x] [P08-T01] Switch `audit-triage.yml`, `audit_triage.py`, and `policy.json` to the contributor model and correct the tier comments.
-- [ ] [P08-T02] Pass `just all`, open the PR, and merge.
+- [x] [P08-T02] Pass `just check`, open the PR, and merge. Review added a guard that refuses replays of pre-contributor snapshots before their helper runs.
