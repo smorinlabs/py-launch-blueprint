@@ -56,8 +56,9 @@ reproduction or proof of concept. Reports without one may be closed.
   (`.github/workflows/dependency-review.yml`)
 - **Dependency updates:** Dependabot alerts and version updates
   (`.github/dependabot.yml`)
-- **Secret scanning:** gitleaks in CI (`.github/workflows/secret-scan.yml`)
-  and as a pre-commit hook (`lefthook.yml`)
+- **Secret scanning:** TruffleHog in CI, reporting verified secrets only
+  (`.github/workflows/secret-scan.yml`), and gitleaks pattern scanning in the
+  pre-commit and pre-push hooks (`lefthook.yml`)
 - **Branch protection:** `main` requires passing status checks before merge
 
 ## Code Scanning Setup

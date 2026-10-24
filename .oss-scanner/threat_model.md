@@ -10,7 +10,8 @@ code, not in its dependencies.
 - **Web service** (`src/py_launch_blueprint/web/`, FastAPI). Assume it is
   deployed on the public internet to anonymous clients, as the published
   GHCR image allows. All HTTP input is untrusted: path parameters (notably
-  `project_id` on `GET /projects/{project_id}`), query strings, and headers,
+  `project_id` on `GET /v1/projects/{project_id}`; business routes mount
+  under `/v1`), query strings, and headers,
   including `Idempotency-Key` (`web/idempotency.py`).
 - **Server-held credential.** The web service reads `PLBP_TOKEN` from its
   own environment and calls the upstream API on behalf of anonymous clients.
@@ -26,12 +27,19 @@ code, not in its dependencies.
 - **Log redaction** (`src/py_launch_blueprint/core/logging.py`). It masks
   values whose keys contain `token`, `secret`, `authorization`, or
   `api_key`. A bypass that writes credentials to logs is in scope.
-- **GitHub Actions workflows** (`.github/workflows/`). Outsiders can trigger
-  three workflows that hold credentials:
-  - `claude.yml`: `issues`, `issue_comment`, and
-    `pull_request_review_comment`; holds `CLAUDE_CODE_OAUTH_TOKEN`.
-  - `audit-triage.yml`: `workflow_run`; holds `META_MUSE_CI_API_KEY`.
-  - `difftree-pr-comment.yml`: `pull_request_target`, with a write-scoped
+- **GitHub Actions workflows** (`.github/workflows/`). Three workflows hold
+  credentials and act on content outsiders can write. Report only paths that
+  get past their gates:
+  - `claude.yml`: runs on `issues`, `issue_comment`,
+    `pull_request_review_comment`, and `pull_request_review` events that
+    mention `@claude`; holds `CLAUDE_CODE_OAUTH_TOKEN`.
+    `anthropics/claude-code-action` admits only actors with write access by
+    default. Issue, comment, and review text reaches the model as input.
+  - `audit-triage.yml`: `workflow_run`, gated to failed scheduled
+    `weekly-audit` runs (or `workflow_dispatch`); holds
+    `META_MUSE_CI_API_KEY`. The audit output it reads is the input.
+  - `difftree-pr-comment.yml`: `pull_request`, deliberately not
+    `pull_request_target`, so fork pull requests get a read-only
     `GITHUB_TOKEN`.
 
 ## Components that matter most / least
