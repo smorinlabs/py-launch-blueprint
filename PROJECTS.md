@@ -31,7 +31,7 @@ file by hand — see Conventions.
 | P07 | `[x]` | [Template Press upgrade and Python 3.13 bootstrap](projects/P07-press-upgrade-and-python-313.md) — adopt the released press and prove a usable generated project |
 | P08 | `[x]` | [Audit-triage contributor model](projects/P08-audit-triage-contributor-model.md) — move the triage bot to the muse-github-setup default `muse-spark-1.3-contributor` |
 | P09 | `[?]` | [Enroll in Anthropic OSS Scanner](projects/P09-enroll-anthropic-oss-scanner-.md) — Add SECURITY.md, scanner Dockerfile, and threat model; open the enrollment PR |
-| P10 | `[~]` | [OTel extra CI coverage](projects/P10-otel-extra-ci-coverage.md) — tracing tests + a `test-otel` CI job so `opentelemetry-*` bumps are exercised at PR time (sweep ISS-001) |
+| P10 | `[x]` | [OTel extra CI coverage](projects/P10-otel-extra-ci-coverage.md) — tracing tests + a `test-otel` CI job so `opentelemetry-*` bumps are exercised at PR time (sweep ISS-001) |
 
 ## Conventions
 
