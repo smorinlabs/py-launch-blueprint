@@ -220,6 +220,31 @@ jobs:
           flags: unittests
           fail_ci_if_error: false
 
+  # P10 / sweep ISS-001 - the matrix above installs only the web extra, so
+  # the tracing path (web/telemetry.py, core/logging.py trace stamping) never
+  # runs there and opentelemetry-* bumps went untested at PR time. This leg
+  # adds the otel extra and runs the suites that exercise it; the matrix keeps
+  # covering the default no-otel install and its degrade path.
+  test-otel:
+    name: test-otel
+    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.3.2
+        with:
+          python-version: "3.13"
+      - name: Sync dev env with the otel extra
+        run: uv sync --locked --group dev --extra web --extra otel
+      - name: Run tracing-relevant tests
+        run: >-
+          uv run --no-sync pytest -m "not live" -n auto
+          tests/web tests/core/test_logging.py
+
   # WL-004 - build + install smoke test. Catches packaging breakage (missing
   # files, broken entry point, bad metadata) at PR time instead of at the
   # release tag. uv end-to-end: uv build -> twine metadata check (locked via
@@ -312,6 +337,7 @@ jobs:
       - typecheck
       - import-boundaries
       - test
+      - test-otel
       - build-smoke
       - docs
       - toml-format

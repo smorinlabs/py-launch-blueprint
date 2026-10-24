@@ -4,12 +4,15 @@ import json
 import logging
 from logging.handlers import RotatingFileHandler
 
+import pytest
+
 from py_launch_blueprint.core.logging import (
     LOG_LEVELS,
     REDACTED,
     ROTATE_BACKUP_COUNT,
     ROTATE_MAX_BYTES,
     LogFormat,
+    _add_trace_context,
     bind_contextvars,
     clear_contextvars,
     configure_logging,
@@ -153,3 +156,25 @@ def test_foreign_root_handlers_survive_reconfigure():
         assert len(owned) == 1  # ...while our own handlers don't accumulate
     finally:
         root.removeHandler(foreign)
+
+
+def test_trace_context_stamped_inside_span():
+    pytest.importorskip("opentelemetry.trace")
+    sdk_trace = pytest.importorskip("opentelemetry.sdk.trace")
+    provider = sdk_trace.TracerProvider()
+    tracer = provider.get_tracer(__name__)
+    try:
+        with tracer.start_as_current_span("unit") as span:
+            event = _add_trace_context(None, "info", {"event": "e"})
+        ctx = span.get_span_context()
+        assert event["trace_id"] == format(ctx.trace_id, "032x")
+        assert event["span_id"] == format(ctx.span_id, "016x")
+    finally:
+        provider.shutdown()
+
+
+def test_trace_context_noop_outside_span():
+    pytest.importorskip("opentelemetry.trace")
+    event = _add_trace_context(None, "info", {"event": "e"})
+    assert "trace_id" not in event
+    assert "span_id" not in event
