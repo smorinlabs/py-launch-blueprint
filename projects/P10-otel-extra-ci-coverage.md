@@ -8,7 +8,7 @@ validated by a PR check instead of by hand.
 - **Trunk:** [PROJECTS.md](../PROJECTS.md)
 - **Origin:** dependabot sweep `RUN-PLBP-20261024`, follow-up `ISS-001` (PRs #570/#571 needed manual otel validation)
 
-**Status:** `[~]` in progress (v0.1.0 of this project).
+**Status:** `[x]` merged in [PR #587](https://github.com/smorinlabs/py-launch-blueprint/pull/587) (merge commit `ef9675e`, 2026-10-24).
 
 ### Scope
 
@@ -26,10 +26,10 @@ enabled path. Add tests for both paths and one CI job that installs the extra.
 ### Tests & Tasks
 
 - [x] [P10-TS01] `instrument_tracing` returns True, installs a provider named `<APP_NAME>-web`, and instruments the app (skips without the extra).
-- [x] [P10-TS02] `instrument_tracing` returns False and logs `otel_unavailable` when otel imports fail (runs in every env).
+- [x] [P10-TS02] `instrument_tracing` returns False and leaves the app uninstrumented when otel imports fail (runs in every env).
 - [x] [P10-TS03] `_add_trace_context` stamps `trace_id`/`span_id` inside a recording span and is a no-op outside one (skips without the extra).
 - [x] [P10-T01] Add a `test-otel` CI job (ubuntu / py3.13) syncing `--extra web --extra otel`, running the web and logging tests; wire it into `ci-ok`.
-- [ ] [P10-T02] Pass `just check`, open the PR, and merge.
+- [x] [P10-T02] Pass `just check`, open the PR, and merge. `test-otel` passed on its first CI run.
 
 ### Automated Verification
 
