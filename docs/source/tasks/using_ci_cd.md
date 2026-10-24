@@ -15,6 +15,7 @@ The main workflow is `.github/workflows/ci.yml`. It runs for pull requests to
 | `typecheck` | Types under `src/py_launch_blueprint/`, with the web extra installed. |
 | `import-boundaries` | Import and module boundaries through import-linter and Tach. |
 | `test` | Python 3.13 on Linux, macOS and Windows; Python 3.14 on Linux. Includes slow tests and excludes provisioned live tests. |
+| `test-otel` | Python 3.13 on Linux with the `otel` extra. Runs the web and logging tests so the tracing path is exercised. |
 | `build-smoke` | Builds wheel and source archives, checks metadata, installs both and runs the CLI. |
 | `docs` | Builds Sphinx documentation with warnings treated as errors. |
 | `toml-format-check` | Checks TOML formatting. |
