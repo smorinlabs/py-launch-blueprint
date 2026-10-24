@@ -30,6 +30,7 @@ file by hand — see Conventions.
 | P06 | `[x]` | [Full conform — retire the embedded engine](projects/P06-full-conform.md) — delete init/, CI cutover to press verify, v3.6.0 config upgrade ([[remove]], verify_exempt, scan=boundary); closes #423 |
 | P07 | `[x]` | [Template Press upgrade and Python 3.13 bootstrap](projects/P07-press-upgrade-and-python-313.md) — adopt the released press and prove a usable generated project |
 | P08 | `[x]` | [Audit-triage contributor model](projects/P08-audit-triage-contributor-model.md) — move the triage bot to the muse-github-setup default `muse-spark-1.3-contributor` |
+| P09 | `[?]` | [Enroll in Anthropic OSS Scanner](projects/P09-enroll-anthropic-oss-scanner-.md) — Add SECURITY.md, scanner Dockerfile, and threat model; open the enrollment PR |
 
 ## Conventions
 
