@@ -55,4 +55,4 @@ These commands are part of the main `Makefile` in the project root, designed to 
 
 ## Additional Resources
 
-For more details on how Makefiles work, refer to the [GNU Make Manual](https://www.gnu.org/software/make/manual/make.html).
+For more details on how Makefiles work, refer to the [GNU Make Manual](https://www.gnu.org/software/make/manual/).
