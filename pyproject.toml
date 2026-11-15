@@ -296,8 +296,10 @@ branch = true
 # ITM-015 — codespell. US English baseline (default builtin="clear,rare"); empty
 # ignore list — add terms only when intentional. Decided round 9.
 [tool.codespell]
-skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache,*.log"
+skip = ".git,.venv,build,dist,node_modules,uv.lock,bun.lock,*.lock,docs/_build,*.svg,*.cast,.ruff_cache,.pytest_cache,.mypy_cache,.ty_cache,*.log,*.ambr"
 # *.log: raw run output, not prose.
+# *.ambr: syrupy snapshots are generated test output, not prose; in a project
+# whose name is longer than the template's, help-text wrapping splits words.
 ignore-words-list = "ans,porjects,unparseable"
 # ans: variable name used in prompt-handling code; codespell wants to "fix"
 # it to "and". Whitelist to keep the short variable name.
