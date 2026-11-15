@@ -188,6 +188,7 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     assert (target / ".agents/skills/new-python-project").is_dir()
     assert not (target / "projects").exists()
     for page, stub in (
+        ("PROJECTS.md", "projects.md"),
         ("docs/source/index.md", "docs-index.md"),
         ("docs/source/about/philosophy.md", "project-philosophy.md"),
         ("docs/source/tutorials/full_project_setup.md", "application-setup.md"),
@@ -196,6 +197,11 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
         assert (target / page).read_text() == (
             target / "press/stubs" / stub
         ).read_text()
+    # The project-harness `project-add` skill appends bullet rows under this
+    # heading, so a generated trunk must use it rather than a table.
+    trunk = (target / "PROJECTS.md").read_text()
+    assert "\n## Project index\n" in trunk
+    assert "| ID " not in trunk
     provenance = target / "docs/skills/new-python-project.md"
     for link in ("../../press/press-receipt.toml", "../PROJECT_SETUP.md"):
         assert f"]({link})" in provenance.read_text()
