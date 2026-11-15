@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "defaultMode": "dontAsk",
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "ToolSearch",
+      "ListMcpResourcesTool",
+      "ReadMcpResourceTool",
+      "LSP",
+      "WaitForMcpServers",
+      "CronList",
+      "ListAgents",
+      "TaskGet",
+      "TaskList"
+    ],
+    "deny": [
+      "Bash",
+      "PowerShell",
+      "Agent",
+      "Task",
+      "Skill",
+      "mcp__github_file_ops__commit_files",
+      "mcp__github_file_ops__delete_files"
+    ],
+    "blockReadsOutsideWorkingDirectories": true,
+    "blockWritesOutsideWorkingDirectories": true,
+    "denyInsteadOfPrompting": true
+  },
+  "disableAllHooks": true,
+  "autoMemoryEnabled": false,
+  "claudeMdExcludes": [
+    "**"
+  ]
+}

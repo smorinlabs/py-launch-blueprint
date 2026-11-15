@@ -1,0 +1,6 @@
+# Muse audit-triage configuration (muse-github-setup).
+/.github/workflows/audit-triage.yml @smorin
+/.github/scripts/muse_audit_triage.py @smorin
+/.github/muse-audit-triage/ @smorin
+/AGENTS.md @smorin
+/.github/CODEOWNERS @smorin

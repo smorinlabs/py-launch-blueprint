@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import os
+import shlex
 import subprocess
 import sys
 import urllib.error
@@ -19,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = yaml.safe_load((ROOT / ".github/workflows/audit-triage.yml").read_text())
 
 _spec = importlib.util.spec_from_file_location(
-    "audit_triage", ROOT / ".github/scripts/audit_triage.py"
+    "audit_triage", ROOT / ".github/scripts/muse_audit_triage.py"
 )
 audit_triage = importlib.util.module_from_spec(_spec)
 sys.modules["audit_triage"] = audit_triage
@@ -59,10 +60,11 @@ def test_muse_credential_is_scoped_to_agent_and_presence_check():
     }
     for step in _job()["steps"]:
         env = step.get("env", {})
-        if step["name"] in holders:
-            assert env["META_MUSE_CI_API_KEY"] == "${{ secrets.META_MUSE_CI_API_KEY }}"
-        else:
-            assert "META_MUSE_CI_API_KEY" not in env, step["name"]
+        values = [*env.values(), *step.get("with", {}).values()]
+        uses_meta = any(
+            "secrets.META_MUSE_CI_API_KEY" in str(value) for value in values
+        )
+        assert uses_meta is (step["name"] in holders), step["name"]
 
 
 def test_no_step_continues_on_error():
@@ -70,22 +72,36 @@ def test_no_step_continues_on_error():
         assert not step.get("continue-on-error", False), step["name"]
 
 
-def test_finish_reports_even_when_the_agent_fails():
-    finish = _step_named("Verify scope and touched URLs")
-    assert finish["if"] == "always() && steps.prepare.outputs.should_run == 'true'"
+def test_validation_reports_even_when_the_agent_fails():
+    validate = _step_named("Validate repair before publication")
+    assert validate["if"] == "always() && steps.prepare.outputs.should_run == 'true'"
+    assert validate["env"]["MUSE_ACTION_OUTCOME"] == "${{ steps.muse.outcome }}"
+    assert (
+        validate["env"]["MUSE_ACTION_CONCLUSION"]
+        == "${{ steps.muse.outputs.conclusion }}"
+    )
+    assert (
+        _step_named("Verify scope and touched URLs")["if"]
+        == "always() && steps.create-pr.outcome == 'success'"
+    )
 
 
-def test_agent_prompt_passes_through_the_environment():
+def test_agent_prompt_uses_the_action_input_without_shell_interpolation():
     agent = _step_named("Diagnose and repair with Muse Spark")
-    assert agent["env"]["TRIAGE_PROMPT"] == "${{ steps.prepare.outputs.prompt }}"
-    assert '"$TRIAGE_PROMPT"' in agent["run"]
+    assert agent["with"]["prompt"] == "${{ steps.prepare.outputs.prompt }}"
+    assert "run" not in agent
+    assert (
+        agent["uses"]
+        == "anthropics/claude-code-action@f3b070c88125d33dbae5653df5f143101d4ea9dc"
+    )
 
 
-def test_dispatch_input_reaches_shell_through_the_environment():
-    resolve = _step_named("Validate target run and resolve audited commit")
-    assert resolve["env"]["DISPATCH_RUN_ID"] == "${{ inputs.run_id }}"
-    assert "inputs.run_id" not in resolve["run"]
-    assert 'case "$DISPATCH_RUN_ID" in' in resolve["run"]
+def test_dispatch_input_is_read_from_the_event_by_trusted_helper():
+    prepare = _step_named("Authorize trigger and prepare frozen failure bundle")
+    assert (
+        prepare["run"] == "python3 .github/scripts/muse_audit_triage.py prepare triage"
+    )
+    assert "inputs.run_id" not in yaml.safe_dump(_job()["steps"])
 
 
 @pytest.fixture
@@ -354,21 +370,35 @@ def test_dispatch_path_rejects_non_numeric_run_ids(run_id):
 
 
 def test_agent_profile_is_docs_only_and_locked_down():
-    profile = json.loads((ROOT / ".opencode/audit-triage/triage.json").read_text())
-    assert profile["default_agent"] == "muse-triage"
-    assert profile["permission"]["*"] == "deny"
-    assert profile["permission"]["edit"] == {"*": "deny", "docs/*": "allow"}
-    assert profile["permission"]["read"] == {"*": "deny", "docs/*": "allow"}
-    assert profile["enabled_providers"] == ["model_api"]
+    profile = json.loads(
+        (ROOT / ".github/muse-audit-triage/triage-settings.json").read_text()
+    )
+    permissions = profile["permissions"]
+    assert permissions["defaultMode"] == "dontAsk"
+    assert permissions["denyInsteadOfPrompting"] is True
+    assert set(audit_triage.guard_module().READ_TOOLS) <= set(permissions["allow"])
+    assert "Edit" not in permissions["allow"] and "Write" not in permissions["allow"]
+    assert {"Bash", "PowerShell", "Agent", "Skill"} <= set(permissions["deny"])
+    assert profile["disableAllHooks"] is True
+    assert profile["autoMemoryEnabled"] is False
+    assert profile["claudeMdExcludes"] == ["**"]
+    agent = _step_named("Diagnose and repair with Muse Spark")
+    args = shlex.split(agent["with"]["claude_args"])
+    assert args[args.index("--permission-mode") + 1] == "dontAsk"
+    approved = args[args.index("--allowedTools") + 1].split(",")
+    assert "Edit" not in approved and "Write" not in approved
+    tools = args[args.index("--tools") + 1].split(",")
+    assert {"Edit", "Write"} <= set(tools)
 
 
 def test_policy_pins_model_and_organization():
-    policy = json.loads((ROOT / ".opencode/audit-triage/policy.json").read_text())
-    assert policy["schema_version"] == 1
-    assert (
-        policy["model"] == audit_triage.MODEL == "model_api/muse-spark-1.3-contributor"
-    )
+    policy = json.loads((ROOT / ".github/muse-audit-triage/policy.json").read_text())
+    assert policy["schema_version"] == 2
+    assert policy["model"] == "muse-spark-1.3-contributor"
+    assert policy["model"] in audit_triage.MODELS
     assert policy["organization"] == "smorinlabs"
+    assert policy["max_findings_bytes"] == 20000
+    assert policy["activation_variable"] == "MUSE_CI_ENABLED"
 
 
 _JOB_LOG_URL = "https://api.github.com/repos/o/r/actions/jobs/106294708263/logs"
@@ -490,43 +520,40 @@ def test_download_job_log_preserves_fetch_failure_paths(log_transport, redirect,
         assert requests[1].get_header("Authorization") is None
 
 
-GUARD = "Refuse snapshots that pin another model"
-
-
-def test_snapshot_model_guard_runs_before_the_audited_helper():
+def test_trusted_current_helper_prepares_the_historical_snapshot():
     names = [step["name"] for step in _job()["steps"]]
-    assert names.index("Check out audited commit") < names.index(GUARD)
-    assert names.index(GUARD) < names.index(
+    assert names.index("Check out trusted triage configuration") < names.index(
         "Authorize trigger and prepare frozen failure bundle"
     )
-    assert _step_named(GUARD)["env"]["AGENT_MODEL"] == audit_triage.MODEL
-    agent = _step_named("Diagnose and repair with Muse Spark")
-    assert agent["env"]["AGENT_MODEL"] == audit_triage.MODEL
-    assert '--model "$AGENT_MODEL"' in agent["run"]
-
-
-@pytest.mark.parametrize(
-    "model, refused",
-    [
-        ("model_api/muse-spark-1.3-contributor", False),
-        ("model_api/muse-spark-1.3", True),
-    ],
-)
-def test_snapshot_model_guard_refuses_older_policies(tmp_path, model, refused):
-    if os.name == "nt":
-        pytest.skip("Audit triage workflow runs on Ubuntu")
-    policy = tmp_path / ".opencode/audit-triage/policy.json"
-    policy.parent.mkdir(parents=True)
-    policy.write_text(json.dumps({"schema_version": 1, "model": model}))
-    step = _step_named(GUARD)
-    result = subprocess.run(  # noqa: S603
-        ["/bin/bash", "-e", "-o", "pipefail", "-c", step["run"]],
-        cwd=tmp_path,
-        env={"PATH": os.environ["PATH"], **step["env"]},
-        capture_output=True,
-        text=True,
-        check=False,
+    checkout = _step_named("Check out trusted triage configuration")
+    assert checkout["with"]["ref"] == "${{ github.event.repository.default_branch }}"
+    prepare = _step_named("Authorize trigger and prepare frozen failure bundle")
+    assert (
+        prepare["env"]["MUSE_TRIAGE_TRUSTED_SHA"]
+        == "${{ steps.checkout.outputs.commit }}"
     )
-    assert (result.returncode != 0) is refused
-    if refused:
-        assert "pins model_api/muse-spark-1.3" in result.stderr
+    agent = _step_named("Diagnose and repair with Muse Spark")
+    for name in (
+        "ANTHROPIC_MODEL",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL",
+        "ANTHROPIC_SMALL_FAST_MODEL",
+        "CLAUDE_CODE_SUBAGENT_MODEL",
+    ):
+        assert agent["env"][name] == "${{ steps.prepare.outputs.model }}"
+    assert agent["with"]["track_progress"] == "false"
+    assert agent["with"]["classify_inline_comments"] == "false"
+
+
+def test_validation_precedes_every_publication_step():
+    names = [step["name"] for step in _job()["steps"]]
+    assert (
+        names.index("Validate repair before publication")
+        < names.index("Commit repair")
+        < names.index("Create triage PR")
+    )
+    commit = _step_named("Commit repair")
+    assert "steps.validate.outcome == 'success'" in commit["if"]
+    assert "steps.validate.outputs.has_changes == 'true'" in commit["if"]
+    assert "git add" not in commit["run"]

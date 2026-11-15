@@ -185,6 +185,9 @@ exclude = [
   "docs/source/conf.py",
   "src/py_launch_blueprint/_version.py",
   "prototypes",                          # P0004 template-press engine prototypes (own lint config in template-press)
+  # Vendored Muse runtime: preserve exact upstream skill output; tested upstream.
+  ".github/scripts/muse_audit_triage.py",
+  ".github/muse-audit-triage/runtime.py",
 ]
 # Per-file-ignores
 [tool.ruff.lint.pycodestyle]
