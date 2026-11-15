@@ -137,6 +137,10 @@ file = "tests/meta/test_contributors_render.py"
 reason = "pins the removed contributor roster rendering"
 
 [[remove]]
+dir = "assets/images/logos"
+reason = "the template's logo artwork; a rename would keep the template's images under the new name, and the reset README no longer shows them"
+
+[[remove]]
 dir = "research"
 reason = "template-only development history; generated projects start their own"
 
