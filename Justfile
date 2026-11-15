@@ -231,8 +231,10 @@ alias ct := check-toml
 [group('dev')]
 @lint:
     echo "Running linter..."
-    echo "  ruff"
-    uv run ruff check {{py_package_path}}/
+    echo "  ruff check (whole tree, same as CI)"
+    uv run ruff check .
+    echo "  ruff format --check (whole tree, same as CI)"
+    uv run ruff format --check .
 
 alias l := lint
 
