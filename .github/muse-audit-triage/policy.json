@@ -1,0 +1,7 @@
+{
+  "schema_version": 2,
+  "organization": "smorinlabs",
+  "model": "muse-spark-1.3-contributor",
+  "max_findings_bytes": 20000,
+  "activation_variable": "MUSE_CI_ENABLED"
+}
