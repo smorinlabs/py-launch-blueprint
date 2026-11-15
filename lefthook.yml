@@ -114,8 +114,10 @@ pre-commit:
     ruff-check:
       glob: "*.py"
       run: uv run ruff check --force-exclude --output-format=concise {staged_files}
+    # Ruff 0.16 also formats Python code blocks in Markdown, and CI's
+    # `ruff format --check .` covers *.md, so staged Markdown is checked too.
     ruff-format:
-      glob: "*.py"
+      glob: "*.{py,md}"
       run: uv run ruff format --check --force-exclude {staged_files}
     # ADR 0018 — taplo TOML format check on staged *.toml (mirrors CI's
     # toml-format job). taplo is NOT in the locked dev group — it ships via
