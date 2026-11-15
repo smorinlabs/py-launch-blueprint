@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import sys
+import tarfile
 from http.client import HTTPMessage
 from pathlib import Path
 from unittest.mock import Mock
@@ -99,6 +100,88 @@ def test_build_binds_config_digest_independently_of_docker_storage_backend(
         docker_id, CONFIG_DIGEST
     )
     smoke.assert_called_once_with(docker_id, "2.10.0")
+
+
+MANIFEST_DIGEST = "sha256:" + "c" * 64
+# Buildx >= 0.36 on Docker's containerd image store drops the configuration
+# digest; containerimage.digest and the image ID both name the manifest.
+CONTAINERD_METADATA = {
+    "buildx.build.ref": "default/default/abc123",
+    "containerimage.descriptor": {
+        "mediaType": pub.MEDIA_TYPES[0],
+        "digest": MANIFEST_DIGEST,
+        "size": 476,
+        "platform": {"architecture": "amd64", "os": "linux"},
+    },
+    "containerimage.digest": MANIFEST_DIGEST,
+    "image.name": f"ghcr.io/{REPOSITORY}:2.10.0",
+}
+
+
+def saved_archive(path, members):
+    with tarfile.open(path, "w") as archive:
+        for name, data in members.items():
+            entry = tarfile.TarInfo(name)
+            entry.size = len(data)
+            archive.addfile(entry, io.BytesIO(data))
+
+
+def containerd_commands(members):
+    def commands(*args):
+        if args[1] == "buildx":
+            metadata = Path(args[args.index("--metadata-file") + 1])
+            metadata.write_text(json.dumps(CONTAINERD_METADATA))
+            return ""
+        if args[1:3] == ("image", "save"):
+            assert args[-1] == f"ghcr.io/{REPOSITORY}:2.10.0"
+            saved_archive(Path(args[args.index("--output") + 1]), members)
+            return ""
+        return MANIFEST_DIGEST
+
+    return commands
+
+
+def test_build_reads_config_digest_from_saved_image_when_buildx_omits_it(
+    monkeypatch,
+):
+    config = json.dumps({"architecture": "amd64", "os": "linux"}).encode()
+    config_digest = "sha256:" + hashlib.sha256(config).hexdigest()
+    config_path = "blobs/sha256/" + config_digest.removeprefix("sha256:")
+    saved_manifest = [{"Config": config_path, "Layers": []}]
+    members = {
+        "manifest.json": json.dumps(saved_manifest).encode(),
+        config_path: config,
+    }
+    monkeypatch.setattr(pub, "run", containerd_commands(members))
+    smoke = Mock()
+    monkeypatch.setattr(pub, "smoke_test", smoke)
+
+    built = pub.build(REPOSITORY, "2.10.0", REVISION)
+
+    assert built == pub.BuiltImage(MANIFEST_DIGEST, config_digest)
+    assert built.config_digest != MANIFEST_DIGEST
+    smoke.assert_called_once_with(MANIFEST_DIGEST, "2.10.0")
+
+
+@pytest.mark.parametrize(
+    "members",
+    [
+        {},
+        {"manifest.json": b"[]"},
+        {"manifest.json": json.dumps([{"Config": "blobs/sha256/missing"}]).encode()},
+    ],
+)
+def test_build_without_any_config_digest_names_the_metadata_keys(monkeypatch, members):
+    monkeypatch.setattr(pub, "run", containerd_commands(members))
+    smoke = Mock()
+    monkeypatch.setattr(pub, "smoke_test", smoke)
+
+    with pytest.raises(ValueError, match=r"no containerimage\.config\.digest") as error:
+        pub.build(REPOSITORY, "2.10.0", REVISION)
+
+    for key in CONTAINERD_METADATA:
+        assert key in str(error.value)
+    smoke.assert_not_called()
 
 
 def test_digest_pull_resolves_the_daemons_runnable_id(monkeypatch):

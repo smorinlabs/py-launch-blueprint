@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import subprocess
+import tarfile
 import tempfile
 import time
 import tomllib
@@ -333,6 +334,33 @@ def smoke_test(image_id: str, version: str) -> None:
         run("docker", "rm", "--force", container)
 
 
+def saved_member(saved: tarfile.TarFile, name: str) -> bytes:
+    try:
+        stream = saved.extractfile(name)
+    except KeyError:
+        stream = None
+    if stream is None:
+        raise ValueError(f"the saved image has no {name} file")
+    return stream.read()
+
+
+def saved_config_digest(image: str, directory: Path) -> str:
+    """Hash the configuration blob that `docker image save` exports."""
+    archive = directory / "image.tar"
+    run("docker", "image", "save", "--output", str(archive), image)
+    with tarfile.open(archive) as saved:
+        entries = json.loads(saved_member(saved, "manifest.json"))
+        if not (
+            isinstance(entries, list)
+            and len(entries) == 1
+            and isinstance(entries[0], dict)
+            and isinstance(entries[0].get("Config"), str)
+        ):
+            raise ValueError("the saved image does not list exactly one configuration")
+        config = saved_member(saved, entries[0]["Config"])
+    return "sha256:" + hashlib.sha256(config).hexdigest()
+
+
 def build(repository: str, version: str, revision: str) -> BuiltImage:
     image = f"ghcr.io/{repository}:{version}"
     print(f"Building and testing {image}", flush=True)
@@ -358,7 +386,18 @@ def build(repository: str, version: str, revision: str) -> BuiltImage:
             image,
             ".",
         )
-        config_digest = json.loads(metadata.read_text())["containerimage.config.digest"]
+        response = json.loads(metadata.read_text())
+        config_digest = response.get("containerimage.config.digest")
+        if config_digest is None:
+            # Buildx omits this key on Docker's containerd image store
+            # (docker/buildx#3952), where the image ID names the manifest.
+            try:
+                config_digest = saved_config_digest(image, Path(directory))
+            except ValueError as error:
+                raise ValueError(
+                    "Buildx metadata has no containerimage.config.digest "
+                    f"(keys: {', '.join(sorted(response))}) and {error}"
+                ) from error
         if not DIGEST.fullmatch(config_digest):
             raise ValueError("Buildx did not record a valid configuration digest")
     image_id = run("docker", "image", "inspect", "--format", "{{.Id}}", image)

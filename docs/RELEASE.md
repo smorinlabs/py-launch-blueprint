@@ -106,8 +106,10 @@ The workflow checks the release tag against the event commit, the checkout,
 `main` ancestry, `pyproject.toml`, and the editable root version in `uv.lock`.
 A new version is built once and tested by its local image ID. The health
 response must report `status: ok` and the released version. The same image is
-pushed, and its registry configuration digest must match the digest recorded
-by Buildx for that build. Docker's local image ID has different meanings on
+pushed, and its registry configuration digest must match the build's
+configuration digest. Buildx records that digest, except on Docker's containerd
+image store, where the publisher hashes the configuration of the saved local
+image instead. Docker's local image ID has different meanings on
 its classic and containerd storage backends, so it is not used as a substitute
 for the build's configuration digest. Deployment references use the registry
 manifest digest.
