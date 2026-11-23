@@ -28,7 +28,14 @@ jobs:
   # WL-019 - detect whether the diff touches anything beyond docs/prose, so
   # the expensive jobs (test matrix, typecheck, build) skip on docs-only PRs.
   # Shell-based (same pattern as large-file-guard) - no third-party action.
-  # On push to main everything always runs.
+  # On push to main everything always runs. P12 adds two outputs:
+  # - release: a release-please PR whose diff is only the version bump and
+  #   changelog. Those commits already passed CI on main, so only build-smoke
+  #   (the version is a packaging input) re-runs; the merge queue still runs
+  #   everything on merge_group.
+  # - release_tooling: the release generator or its inputs changed, so
+  #   release-generation runs. Every other PR skips it.
+  # Skipped jobs count as success for ci-ok, the required check.
   changes:
     name: changes
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
@@ -36,6 +43,8 @@ jobs:
       contents: read
     outputs:
       code: ${{ steps.detect.outputs.code }}
+      release: ${{ steps.detect.outputs.release }}
+      release_tooling: ${{ steps.detect.outputs.release_tooling }}
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -45,13 +54,71 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          # Branch names are untrusted input: pass them via env, never inline.
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
+          emit() {
+            {
+              echo "code=$1"
+              echo "release=$2"
+              echo "release_tooling=$3"
+            } >> "$GITHUB_OUTPUT"
+          }
           if [ "${EVENT_NAME}" != "pull_request" ]; then
-            echo "code=true" >> "$GITHUB_OUTPUT"
+            emit true false true
             echo "INFO: ${EVENT_NAME} event - running all jobs"
             exit 0
           fi
+          changed="$(git diff --name-only "${BASE_SHA}...HEAD")"
+          # No `grep -q` below: it exits on the first match, the writer gets
+          # SIGPIPE, and under pipefail a found match reads as "no match".
+          # `grep ... >/dev/null` consumes the whole stream.
+
+          # Release-please fast path: same-repo release-please branch AND a
+          # diff that is only the manifest, CHANGELOG.md, and the version
+          # line in pyproject.toml / uv.lock. The content check, not the
+          # branch name, is what makes skipping safe.
+          release_only() {
+            local allowed ver old new
+            case "${HEAD_REF}" in release-please--*) ;; *) return 1 ;; esac
+            [ "${HEAD_REPO}" = "${REPOSITORY}" ] || return 1
+            allowed='^(\.release-please-manifest\.json|CHANGELOG\.md|pyproject\.toml|uv\.lock)$'
+            if printf '%s\n' "$changed" | grep -vE "$allowed" | grep . >/dev/null; then
+              return 1
+            fi
+            ver='s/.*"\.": *"([^"]+)".*/\1/p'
+            old="$(git show "${BASE_SHA}:.release-please-manifest.json" \
+              | sed -nE "$ver")" || return 1
+            new="$(sed -nE "$ver" .release-please-manifest.json)"
+            [ -n "$old" ] && [ -n "$new" ] && [ "$old" != "$new" ] || return 1
+            # Every changed pyproject.toml / uv.lock line must be the bump.
+            if git diff -U0 "${BASE_SHA}...HEAD" -- pyproject.toml uv.lock \
+                | grep -E '^[+-]' | grep -vE '^(\+\+\+|---) ' \
+                | grep -vxF -e "-version = \"${old}\"" -e "+version = \"${new}\"" \
+                | grep . >/dev/null; then
+              return 1
+            fi
+          }
+          if release_only; then
+            emit false true false
+            echo "INFO: release-please version bump - skipping heavy jobs"
+            exit 0
+          fi
+
+          # release-generation inputs: the generator, its tests, its bun
+          # toolchain, the config one test reads, and this workflow.
+          tooling='^scripts/release_[a-z_]+\.cjs$|^scripts/run-release-tests\.sh$'
+          tooling="$tooling|^tests/release/|^package\.json$|^bun\.lock$"
+          tooling="$tooling|^\.bun-version$|^release-please-config\.json$"
+          tooling="$tooling|^\.github/workflows/ci\.yml$"
+          release_tooling=false
+          if printf '%s\n' "$changed" | grep -E "$tooling" >/dev/null; then
+            release_tooling=true
+          fi
+
           # Skip-list: paths that can never affect lint/types/tests/build.
           # Anything NOT matching these patterns counts as a code change.
           # README.md is markdown but NOT skippable: it's `project.readme`,
@@ -62,20 +129,26 @@ jobs:
           # bookkeeping only, so the weekly bot PR stays on the docs-only
           # fast path now that its commits no longer carry [skip ci].
           skip="$skip|^\.contributors\.jsonl$"
-          changed="$(git diff --name-only "${BASE_SHA}...HEAD")"
-          if printf '%s\n' "$changed" | grep -qx 'README\.md' \
+          if printf '%s\n' "$changed" | grep -x 'README\.md' >/dev/null \
               || printf '%s\n' "$changed" \
               | grep -vE "$skip" \
-              | grep -q .; then
-            echo "code=true" >> "$GITHUB_OUTPUT"
-            echo "INFO: code paths changed - running all jobs"
+              | grep . >/dev/null; then
+            emit true false "$release_tooling"
+            echo "INFO: code paths changed - running all jobs" \
+              "(release_tooling=$release_tooling)"
           else
-            echo "code=false" >> "$GITHUB_OUTPUT"
+            emit false false "$release_tooling"
             echo "INFO: docs-only diff - skipping heavy jobs"
           fi
 
-  # ITM-025 - lint job (ruff check + format --check). Decided round 3 (option B).
-  # Always runs (fast) - ruff also lints docs snippets and init/ tooling.
+  # ITM-025 + P12 - static checks in one job: ruff check + format --check,
+  # taplo, ShellCheck, and the Sphinx docs build (WL-021). They used to be
+  # four jobs of 6-12 s each; private repos bill each job as a full minute.
+  # Every check step runs even if an earlier one fails, so one red tool never
+  # hides another's result. Always runs (fast) - ruff also lints docs
+  # snippets, and the docs build must pass on docs-only PRs.
+  # Link checking is external-network-flaky, so it lives in the weekly
+  # workflow (dep-audit.yml) instead of here.
   lint:
     name: lint
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
@@ -85,18 +158,41 @@ jobs:
       - uses: actions/checkout@v7.0.1
       - name: Install uv
         uses: astral-sh/setup-uv@v8.3.2
-      - name: Sync locked dev tools
-        run: uv sync --locked --only-group dev
+      - name: Install just
+        uses: extractions/setup-just@v4
+      # `just install-taplo` downloads the upstream pre-built binary
+      # (curl + gunzip from https://github.com/tamasfe/taplo/releases),
+      # the same path as local dev.
+      - name: Install taplo
+        run: just install-taplo
+      - name: Install ShellCheck
+        run: |
+          bash scripts/install-shellcheck.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Sync locked dev + docs tools (web extra so autodoc imports resolve)
+        id: setup
+        run: uv sync --locked --group docs --extra web
       - name: Ruff check
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: uv run --no-sync ruff check .
       - name: Ruff format check
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: uv run --no-sync ruff format --check .
+      - name: Check TOML formatting
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: taplo check '**/*.toml'
+      - name: Check shell scripts
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: bash scripts/check-shell.sh
+      - name: Sphinx build (warnings are errors)
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: uv run --no-sync sphinx-build -W -b html docs/source docs/_build/html
 
   release-generation:
     name: release-generation
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.release_tooling == 'true'
     permissions:
       contents: read
     steps:
@@ -110,7 +206,13 @@ jobs:
       - name: Test release generation
         run: bun test tests/release
 
-  # ITM-026 - typecheck job (ty, per ADR-03). Decided round 3 direct switch.
+  # ITM-026 - typecheck job (ty, per ADR-03) + ADR 0018 architectural
+  # boundary gate. import-linter (HEX-30) and tach (HEX-31) previously ran
+  # ONLY in the pre-push hook / `just check`, so a --no-verify push or an
+  # uninstalled hook could land boundary violations with no CI gate. All
+  # three need the same synced env, so P12 runs them as steps of one job;
+  # each step reports even if another fails. WL-001: locked via uv.lock,
+  # matching the pre-push hook exactly.
   typecheck:
     name: typecheck
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
@@ -122,33 +224,17 @@ jobs:
       - uses: actions/checkout@v7.0.1
       - name: Install uv
         uses: astral-sh/setup-uv@v8.3.2
-      - name: Sync dev env (ty needs project deps on the python path)
+      - name: Sync dev env (ty and the graph builds need project deps)
+        id: setup
         run: uv sync --locked --group dev --extra web
       - name: ty check
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: uv run --no-sync ty check src/py_launch_blueprint/
-
-  # ADR 0018 - architectural boundary gate. import-linter (HEX-30) and tach
-  # (HEX-31) previously ran ONLY in the pre-push hook / `just check`, so a
-  # --no-verify push or an uninstalled hook could land boundary violations
-  # with no CI gate. Both build an import/module graph, so gate behind the
-  # changes detector (skip docs-only PRs) like typecheck. WL-001: locked via
-  # uv.lock, matching the pre-push hook exactly.
-  import-boundaries:
-    name: import-boundaries
-    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
-    needs: changes
-    if: needs.changes.outputs.code == 'true'
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.3.2
-      - name: Sync dev env (graph build needs project deps importable)
-        run: uv sync --locked --group dev --extra web
       - name: import-linter (HEX-30)
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: uv run --no-sync lint-imports
       - name: tach (HEX-31)
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: uv run --no-sync tach check
 
   # ITM-030 - test matrix: ubuntu + macOS x py3.13 (decided round 3);
@@ -253,7 +339,11 @@ jobs:
     name: build-smoke
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    # Also on the release-please fast path: the bumped version is a
+    # packaging input.
+    if: >-
+      needs.changes.outputs.code == 'true' ||
+      needs.changes.outputs.release == 'true'
     permissions:
       contents: read
     steps:
@@ -271,58 +361,6 @@ jobs:
       - name: Smoke test sdist install
         run: uvx --from "$(ls dist/*.tar.gz)" plbp --version
 
-  # WL-021 - docs build with warnings-as-errors. Broken cross-references and
-  # autodoc failures block the PR instead of surfacing on ReadTheDocs after
-  # merge. Link checking is external-network-flaky, so it lives in the weekly
-  # workflow (dep-audit.yml) instead of here.
-  docs:
-    name: docs
-    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.3.2
-      - name: Sync docs env (web extra so autodoc imports resolve)
-        run: uv sync --locked --group docs --extra web
-      - name: Sphinx build (warnings are errors)
-        run: uv run --no-sync sphinx-build -W -b html docs/source docs/_build/html
-
-  # Taplo (TOML formatter check) kept here for now; ITM-066 will fold into
-  # justfile + add a dedicated workflow if needed.
-  toml-format:
-    name: toml-format-check
-    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - name: Install just
-        uses: extractions/setup-just@v4
-      # `just install-taplo` now downloads the upstream pre-built binary
-      # (curl + gunzip from https://github.com/tamasfe/taplo/releases) —
-      # ~1-3s installed vs the prior ~2min `cargo install taplo-cli`. Same
-      # path as local dev; no external installer action needed.
-      - name: Install taplo
-        run: just install-taplo
-      - name: Check TOML formatting
-        run: taplo check '**/*.toml'
-
-  shellcheck:
-    name: shellcheck
-    runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - name: Install ShellCheck
-        run: |
-          bash scripts/install-shellcheck.sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      - name: Check shell scripts
-        run: bash scripts/check-shell.sh
-
   # WL-006 - single gate for branch protection. Require ONLY this check;
   # job renames/additions then never desync the required-checks list.
   # Skipped jobs (docs-only PRs, WL-019) count as success; anything that
@@ -335,13 +373,9 @@ jobs:
       - lint
       - release-generation
       - typecheck
-      - import-boundaries
       - test
       - test-otel
       - build-smoke
-      - docs
-      - toml-format
-      - shellcheck
     if: always()
     permissions: {}
     steps:

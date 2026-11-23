@@ -228,7 +228,7 @@ leaves the machine.
 
 ### TOML formatting with `taplo`
 **What** — `taplo` formats and validates TOML (`line-width 80`, aligned entries,
-LF endings) via `.taplo.toml`; `just format-toml` and a CI `toml-format` job
+LF endings) via `.taplo.toml`; `just format-toml` and a CI Taplo step (in the `lint` job)
 enforce it.
 **Why** — `pyproject.toml` is load-bearing config; a consistent, validated
 layout prevents subtle syntax breakage.

@@ -37,6 +37,14 @@ concurrency:
 
 jobs:
   bootstrap-acceptance:
+    # P12: a same-repo release-please PR only bumps the version and
+    # changelog of commits that already passed acceptance on their own PRs,
+    # so skip it there (not a required check). The weekly schedule and
+    # manual dispatch still run it.
+    if: >-
+      github.event_name != 'pull_request' ||
+      !startsWith(github.head_ref, 'release-please--') ||
+      github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

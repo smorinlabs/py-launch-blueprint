@@ -10,6 +10,12 @@ on:
     #   - "src/**/*.js"
     #   - "src/**/*.jsx"
 
+# P12: cancel superseded PR runs; push and merge_group runs group per
+# commit and are never cancelled.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   claude-review:
     # Credential presence enables review; fresh repositories skip it cleanly.

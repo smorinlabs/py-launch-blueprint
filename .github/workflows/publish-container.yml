@@ -12,6 +12,11 @@ permissions: {}
 jobs:
   container-check:
     if: github.event_name != 'release'
+    # P12: job-level so the release jobs keep their own groups. Cancels
+    # superseded PR runs only; merge_group runs group per commit.
+    concurrency:
+      group: container-check-${{ github.event.pull_request.number || github.sha }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     runs-on: ${{ vars.RUNNER_UBUNTU || 'ubuntu-latest' }}
     timeout-minutes: 20
     permissions:
