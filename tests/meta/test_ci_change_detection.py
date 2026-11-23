@@ -200,8 +200,17 @@ WORKFLOWS = ROOT / ".github" / "workflows"
 PR_ONLY_CANCEL = "${{ github.event_name == 'pull_request' }}"
 
 
+# The press [[remove]]s these from generated projects (press/press-rules.toml).
+TEMPLATE_ONLY = {"bootstrap-acceptance.yml", "template-receipt-guard.yml"}
+
+
 def _workflow(name: str) -> dict:
-    return yaml.safe_load((WORKFLOWS / name).read_text())
+    path = WORKFLOWS / name
+    if name in TEMPLATE_ONLY and not path.exists():
+        # Only a pressed project (which carries a receipt) may lack them.
+        assert (ROOT / "press" / "press-receipt.toml").exists(), name
+        pytest.skip(f"{name} is template-only")
+    return yaml.safe_load(path.read_text())
 
 
 def test_ci_ok_needs_every_other_job():
