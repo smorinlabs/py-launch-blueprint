@@ -240,7 +240,10 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     for release_file in (
         "scripts/release_commits.cjs",
         "scripts/release_please.cjs",
-        "tests/release/release_runner.test.js",
+        "scripts/run-release-tests.sh",
+        "tests/release/release_runner_guards.test.js",
+        "tests/release/release_runner_lifecycle.test.js",
+        "tests/release/release_runner_preview.test.js",
     ):
         assert (target / release_file).is_file()
     assert [p.name for p in (target / "projects").iterdir()] == [".gitkeep"]
