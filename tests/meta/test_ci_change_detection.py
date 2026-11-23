@@ -176,6 +176,23 @@ def test_release_named_branch_with_lock_dependency_bump_runs_everything(tmp_path
     assert outputs == _expect("true", "false", "false")
 
 
+def test_large_non_version_edit_on_release_branch_runs_everything(tmp_path):
+    # A big diff must not let an early-exiting grep SIGPIPE the pipeline
+    # under pipefail and turn "found a bad line" into "release-only".
+    noise = "".join(f"# filler line {i}\n" for i in range(20000))
+    pyproject = RELEASE_BUMP["pyproject.toml"] + noise
+    change = {**RELEASE_BUMP, "pyproject.toml": pyproject}
+    outputs = _run(tmp_path, change, head_ref=RELEASE_BRANCH)
+    assert outputs == _expect("true", "false", "false")
+
+
+def test_large_code_diff_is_not_docs_only(tmp_path):
+    change = {f"src/pkg/mod_{i}.py": "X = 1\n" for i in range(3000)}
+    change["docs/index.md"] = "# New\n"
+    outputs = _run(tmp_path, change)
+    assert outputs == _expect("true", "false", "false")
+
+
 def test_release_bump_from_a_fork_runs_everything(tmp_path):
     outputs = _run(
         tmp_path, RELEASE_BUMP, head_ref=RELEASE_BRANCH, head_repo="fork/repo"

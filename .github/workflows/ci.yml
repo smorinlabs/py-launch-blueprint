@@ -73,6 +73,9 @@ jobs:
             exit 0
           fi
           changed="$(git diff --name-only "${BASE_SHA}...HEAD")"
+          # No `grep -q` below: it exits on the first match, the writer gets
+          # SIGPIPE, and under pipefail a found match reads as "no match".
+          # `grep ... >/dev/null` consumes the whole stream.
 
           # Release-please fast path: same-repo release-please branch AND a
           # diff that is only the manifest, CHANGELOG.md, and the version
@@ -83,7 +86,7 @@ jobs:
             case "${HEAD_REF}" in release-please--*) ;; *) return 1 ;; esac
             [ "${HEAD_REPO}" = "${REPOSITORY}" ] || return 1
             allowed='^(\.release-please-manifest\.json|CHANGELOG\.md|pyproject\.toml|uv\.lock)$'
-            if printf '%s\n' "$changed" | grep -vE "$allowed" | grep -q .; then
+            if printf '%s\n' "$changed" | grep -vE "$allowed" | grep . >/dev/null; then
               return 1
             fi
             ver='s/.*"\.": *"([^"]+)".*/\1/p'
@@ -95,7 +98,7 @@ jobs:
             if git diff -U0 "${BASE_SHA}...HEAD" -- pyproject.toml uv.lock \
                 | grep -E '^[+-]' | grep -vE '^(\+\+\+|---) ' \
                 | grep -vxF -e "-version = \"${old}\"" -e "+version = \"${new}\"" \
-                | grep -q .; then
+                | grep . >/dev/null; then
               return 1
             fi
           }
@@ -112,7 +115,7 @@ jobs:
           tooling="$tooling|^\.bun-version$|^release-please-config\.json$"
           tooling="$tooling|^\.github/workflows/ci\.yml$"
           release_tooling=false
-          if printf '%s\n' "$changed" | grep -qE "$tooling"; then
+          if printf '%s\n' "$changed" | grep -E "$tooling" >/dev/null; then
             release_tooling=true
           fi
 
@@ -126,10 +129,10 @@ jobs:
           # bookkeeping only, so the weekly bot PR stays on the docs-only
           # fast path now that its commits no longer carry [skip ci].
           skip="$skip|^\.contributors\.jsonl$"
-          if printf '%s\n' "$changed" | grep -qx 'README\.md' \
+          if printf '%s\n' "$changed" | grep -x 'README\.md' >/dev/null \
               || printf '%s\n' "$changed" \
               | grep -vE "$skip" \
-              | grep -q .; then
+              | grep . >/dev/null; then
             emit true false "$release_tooling"
             echo "INFO: code paths changed - running all jobs" \
               "(release_tooling=$release_tooling)"
