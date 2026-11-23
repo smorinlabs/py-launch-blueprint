@@ -266,14 +266,14 @@ alias li := lint-imports
 # Run tests
 [group('test'), group('dev')]
 @test *options:
-    uv run pytest {{options}}
+    uv run --extra web pytest {{options}}
 
 alias t := test
 
 # Exercise the release generator against temporary Git histories and a fake API
 [group('test'), group('dev')]
 @test-release:
-    bun test tests/release
+    bash scripts/run-release-tests.sh
 
 # Run tests with coverage and generate term-missing + HTML + XML reports
 [group('test'), group('dev')]
@@ -288,6 +288,7 @@ alias t := test
 
 # Run all checks
 [group('test'), group('dev'), group('quick start')]
+[parallel]
 @check: test test-release lint typecheck lint-imports tach check-yaml check-spelling check-editorconfig check-shell
     echo "All checks passed!"
 
