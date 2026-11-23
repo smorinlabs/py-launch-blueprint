@@ -61,4 +61,5 @@ Planning system: **Superpowers** — specs/plans live under
 - [x] **P08** — [Audit-triage contributor model](projects/P08-audit-triage-contributor-model.md) — move the triage bot to the muse-github-setup default `muse-spark-1.3-contributor`
 - [x] **P10** — [OTel extra CI coverage](projects/P10-otel-extra-ci-coverage.md) — tracing tests + a `test-otel` CI job so `opentelemetry-*` bumps are exercised at PR time (sweep ISS-001)
 - [x] **P11** — [Parallel `just check` gate](projects/P11-parallel-check-gate.md) — run the gate's recipes in parallel and split the bun release tests; spec Phase A (R1–R3)
+- [~] **P12** — [Slim PR CI job count](projects/P12-slim-pr-ci-jobs.md) — fewer billed jobs per PR: release-please fast path, path-gated `release-generation`, merged static jobs, PR-only concurrency; required checks unchanged
 - [?] **P09** — [Enroll in Anthropic OSS Scanner](projects/P09-enroll-anthropic-oss-scanner-.md) — Add SECURITY.md, scanner Dockerfile, and threat model; open the enrollment PR
