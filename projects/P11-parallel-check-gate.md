@@ -10,7 +10,7 @@ of the sum of all of them.
 - **Trunk:** [PROJECTS.md](../PROJECTS.md)
 - **Spec:** [Test suite and CI speed](../docs/superpowers/specs/2026-11-22-test-suite-speed-design.md) — Phase A (R1, R2, R3)
 
-**Status:** `[~]` implemented on branch `perf/parallel-check-gate`; PR pending.
+**Status:** `[x]` delivered in [PR #611](https://github.com/smorinlabs/py-launch-blueprint/pull/611).
 
 ### Scope
 
@@ -40,7 +40,7 @@ of the sum of all of them.
 - [x] [P11-T02] Add `scripts/run-release-tests.sh` and call it from `test-release`.
 - [x] [P11-T03] Split `release_runner.test.js` into three files; the 20 test names are identical before and after.
 - [x] [P11-TS04] A deliberately failing bun file and a deliberately failing pytest test each make `just check` exit 1.
-- [ ] [P11-T04] Open the PR, pass CI including `bootstrap-acceptance`, and merge.
+- [x] [P11-T04] Open the PR, pass CI including `bootstrap-acceptance`, and merge. The first `bootstrap-acceptance` run caught a stale expectation for `release_runner.test.js` in `tests/bootstrap/test_template_press.py`; fixed in `ce74d03`.
 
 ### Deliverable
 
@@ -65,3 +65,5 @@ Measured on a 14-core macOS machine, 3 warm runs plus cold runs:
 | `just check`, warm `.venv` | 15.1–20.9 s | 5.1–5.3 s |
 | `just check`, cold `.venv` | 20.9 s (first run) | 6.9 s |
 | `test-release` alone | 11.5 s | 5.2 s |
+
+In CI, the `just check` inside `bootstrap-acceptance` took 21.7 s against 45.2 s in a typical earlier PR run; the job took 77 s against a 93 s median (one run).
