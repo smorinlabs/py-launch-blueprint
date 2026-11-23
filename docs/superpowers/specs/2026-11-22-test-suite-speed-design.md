@@ -1,7 +1,7 @@
 # Test suite and CI speed: analysis and proposal
 
-Status: proposal, awaiting approval. Nothing in this document has been
-implemented. Priority order agreed with the owner: the local inner loop
+Status: proposal. Nothing in this document has been implemented. Owner
+decision on 2026-11-22: R4 declined; keep the full test matrix on PRs. Priority order agreed with the owner: the local inner loop
 first, then pull request (PR) wall-clock time in CI.
 
 ## Answer first
@@ -15,7 +15,7 @@ come from four other places:
 |---|---|---|---|
 | Local `just check` | 15–21 s | Ten recipes run one after another; `test-release` (bun) alone is 11.5 s | 8.3 s measured in a prototype; about 4 s estimated after one more step |
 | Local `git push` (pre-push hook) | 6.3 s | `press verify` (6.28 s); the six other checks finish in under 0.7 s | Keep as is (see R8) |
-| PR time-to-mergeable (required checks) | 66 s p50 | macOS and Windows test legs, mostly runner queue time | About 52 s estimated, then bound by CodeQL |
+| PR time-to-mergeable (required checks) | 66 s p50 | macOS and Windows test legs, mostly runner queue time | Unchanged: R4 (about 52 s) was declined |
 | PR time-to-all-green | 96 s p50 | `bootstrap-acceptance` (not required); its inner `just check` takes 45 s in a typical PR run | About 70 s estimated, via the same `just check` fix |
 
 One change helps both priorities. Making `just check` parallel shortens the
@@ -112,7 +112,7 @@ parallelism adds little at this suite size. Per directory, serially:
 |---|---|
 | Baseline | 15.1–20.9 s |
 | R1: `[parallel]` on `check` | 11.7 s (now bound by `test-release`) |
-| R1 with a cold `.venv` (ten `uv run` calls start at once) | 11.9 s, passed |
+| R1 with a cold `.venv` (ten `uv run` calls start at once) | 11.9 s, passed; the collected test count was not recorded, so the web tests may have been skipped (see R1) |
 | R1 + R2: also run the bun test files as parallel processes | 8.3 s (now bound by `release_runner.test.js`) |
 | R1 + R2 + R3: also split `release_runner.test.js` into about 3 files | **about 4 s (estimate, not measured)** |
 
@@ -214,10 +214,10 @@ time-to-all-green; **$** = runner minutes only, with no wall-clock change.
 
 | ID | Item | Today | Verdict | Change | Effect | Estimated saving |
 |---|---|---|---|---|---|---|
-| R1 | `just check` dependency order | serial | **change** | Add `[parallel]` to `check` (needs just ≥ 1.42.0) | L, G | measured −3 to −9 s locally |
+| R1 | `just check` dependency order | serial | **change** | Add `[parallel]` to `check` (needs just ≥ 1.42.0). First make the `test` recipe install the web extra itself (`uv run --extra web pytest`, as `typecheck` already does). On a cold `.venv`, plain `uv run pytest` collects 359 tests because `tests/web/conftest.py` skips the 55 web tests without `fastapi`; under `[parallel]` the count would depend on whether `typecheck` installed the extra first | L, G | measured −3 to −9 s locally |
 | R2 | `test-release` recipe | 1 process | **change** | Run each `tests/release/*.test.js` as its own process and fail if any fails. Keep the CI step string `bun test tests/release`, which `tests/meta/test_release_generation.py` asserts | L, G | measured −3.4 s |
 | R3 | `release_runner.test.js` | 8.1 s, 9 tests | **change** | Split into about 3 files of similar duration; no test logic changes | L, G | about −4 s (estimate) |
-| R4 | macOS and Windows test legs | every PR event | **decide** | Run them on `merge_group` and `push` only. A job-level `if` cannot read `matrix`, so build the matrix from the event (for example `fromJSON` over an include list). `ci-ok` stays required in the merge queue, so they still gate `main` | M, $ | about −14 s to mergeable (estimate; CodeQL then sets the floor) |
+| R4 | macOS and Windows test legs | every PR event | **declined by owner** | Run them on `merge_group` and `push` only. A job-level `if` cannot read `matrix`, so build the matrix from the event (for example `fromJSON` over an include list). `ci-ok` stays required in the merge queue, so they still gate `main` | M, $ | about −14 s to mergeable (estimate; CodeQL then sets the floor) |
 | R5 | git spawns in release tests | 1,625 per run | optional | Build the fixture histories once per file and copy them, instead of replaying commits in every test | L, G | unknown; measure after R3 |
 | R6 | CI pytest `-n auto` | 7–10 s steps | measure | Compare `-n 2` and serial against `-n auto` on 4-vCPU runners | M (only after R4) | 0–3 s (estimate) |
 | R7 | bun pin 1.3.5 | no `--parallel` flag | optional | A later bump could replace R2's shell loop with `bun test --parallel` | — | none by itself |
@@ -244,6 +244,7 @@ time-to-all-green; **$** = runner minutes only, with no wall-clock change.
   tests run only on Windows, and the 11 `scripts/guard.sh` tests skip there.
   Every change still passes all three operating systems in the merge queue
   before it reaches `main`.
+- **Decision (2026-11-22):** declined. The full matrix stays on PRs.
 
 ## Test value review
 
@@ -289,10 +290,9 @@ the IDs.
 1. **Phase A, local gate (R1, R2, R3).** One PR. Verify by timing
    `just check` before and after over 3 runs, and by confirming that a
    deliberately failing bun file and a failing pytest test each still fail
-   the gate under `[parallel]`.
-2. **Phase B, CI matrix (R4).** Needs the owner's decision. One PR touching
-   `ci.yml`. Verify with the `ci-ok` p50 over the next 10 PR runs and one
-   merge-group run that includes macOS and Windows.
+   the gate under `[parallel]`. On a cold `.venv`, confirm that pytest
+   collects 414 tests (default markers), so skipped web tests are visible.
+2. **Phase B, CI matrix (R4).** Declined by the owner; not planned.
 3. **Phase C, optional (R5, R6, R7).** Only if Phase A leaves the gate above
    about 5 s.
 
