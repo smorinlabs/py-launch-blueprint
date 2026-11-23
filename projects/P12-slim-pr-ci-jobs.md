@@ -39,14 +39,14 @@ more than runtime does. Wall-clock is already short (about 1–2 minutes).
 
 ### Tests & Tasks
 
-- [ ] [P12-TS01] The `changes` detector, run in a temporary git repository, classifies push, docs-only, code, release-tooling, genuine release-please, and spoofed release-please diffs correctly.
-- [ ] [P12-TS02] `ci.yml` shape: `ci-ok` needs every other job; `release-generation` keys on `release_tooling`; `build-smoke` also runs on the release fast path; merged jobs keep every tool step reporting.
-- [ ] [P12-TS03] Every PR-triggered workflow that gained `concurrency` cancels only `pull_request` runs.
-- [ ] [P12-T01] Extend the `changes` job with `release` and `release_tooling` outputs.
-- [ ] [P12-T02] Merge the static jobs in `ci.yml` and update `ci-ok`.
-- [ ] [P12-T03] Skip `bootstrap-acceptance` on release-please PRs.
-- [ ] [P12-T04] Add PR-only concurrency to `press-verify`, `template-receipt-guard`, `claude-code-review`, `dependency-review` and `container-check`.
-- [ ] [P12-T05] Update the CI docs and `AGENTS.md` for the merged job names.
+- [x] [P12-TS01] The `changes` detector, run in a temporary git repository, classifies push, docs-only, code, release-tooling, genuine release-please, and spoofed release-please diffs correctly.
+- [x] [P12-TS02] `ci.yml` shape: `ci-ok` needs every other job; `release-generation` keys on `release_tooling`; `build-smoke` also runs on the release fast path; merged jobs keep every tool step reporting.
+- [x] [P12-TS03] Every PR-triggered workflow that gained `concurrency` cancels only `pull_request` runs.
+- [x] [P12-T01] Extend the `changes` job with `release` and `release_tooling` outputs.
+- [x] [P12-T02] Merge the static jobs in `ci.yml` and update `ci-ok`.
+- [x] [P12-T03] Skip `bootstrap-acceptance` on release-please PRs.
+- [x] [P12-T04] Add PR-only concurrency to `press-verify`, `template-receipt-guard`, `claude-code-review`, `dependency-review` and `container-check`.
+- [x] [P12-T05] Update the CI docs and `AGENTS.md` for the merged job names.
 - [ ] [P12-T06] Open the PR, pass CI, and resolve review threads.
 
 ### Deliverable

@@ -80,7 +80,7 @@ workflow enforce it).
      + press verify (the hermetic self-press drift guard).
 
    Hooks mirror CI; CI is the authority (ADR 0018). Boundaries (import-linter
-   + tach) are gated by the `import-boundaries` CI job, so a `--no-verify`
+   + tach) are gated by the `typecheck` CI job, so a `--no-verify`
    push can't bypass them.
 
    If lefthook was not installed (step 1 skipped), the hooks are silent

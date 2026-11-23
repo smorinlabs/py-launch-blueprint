@@ -22,7 +22,7 @@ def test_release_result_reaches_required_gate(release_result, expected):
     assert "release-generation" in gate["needs"]
     assert gate["if"] == "always()"
     release = jobs["release-generation"]
-    assert release["if"] == "needs.changes.outputs.code == 'true'"
+    assert release["if"] == "needs.changes.outputs.release_tooling == 'true'"
     assert any(step.get("run") == "bun test tests/release" for step in release["steps"])
     step = gate["steps"][0]
     assert step["env"]["RESULTS"] == "${{ join(needs.*.result, ' ') }}"

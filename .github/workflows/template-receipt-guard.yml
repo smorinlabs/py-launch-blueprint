@@ -14,6 +14,12 @@ on:
 permissions:
   contents: read
 
+# P12: cancel superseded PR runs; push and merge_group runs group per
+# commit and are never cancelled.
+concurrency:
+  group: template-receipt-guard-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   no-committed-receipt:
     runs-on: ubuntu-latest

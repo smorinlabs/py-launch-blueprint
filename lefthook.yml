@@ -120,7 +120,7 @@ pre-commit:
       glob: "*.{py,md}"
       run: uv run ruff format --check --force-exclude {staged_files}
     # ADR 0018 — taplo TOML format check on staged *.toml (mirrors CI's
-    # toml-format job). taplo is NOT in the locked dev group — it ships via
+    # lint job's taplo step). taplo is NOT in the locked dev group — it ships via
     # `just install-taplo` (run by `just setup`; also in mise/flox per ADR
     # 0005). Guard for the binary and fail with guidance rather than skipping
     # silently, so a stale TOML never slips past to a red CI run.
@@ -179,7 +179,7 @@ pre-push:
     import-boundaries:
       run: uv run lint-imports
     # HEX-31 — bounded-context boundaries (tach). Added at pre-push alongside
-    # import-linter for local parity with the CI import-boundaries job (ADR
+    # import-linter for local parity with the CI typecheck job (ADR
     # 0018). WL-001: locked via the dev group.
     module-boundaries:
       run: uv run tach check
