@@ -23,8 +23,8 @@ on:
 permissions: {}
 
 concurrency:
-  group: commitlint-${{ github.ref }}
-  cancel-in-progress: true
+  group: commitlint-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   commitlint-humans:

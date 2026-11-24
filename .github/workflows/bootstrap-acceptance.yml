@@ -32,8 +32,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: bootstrap-acceptance-${{ github.ref }}
-  cancel-in-progress: true
+  group: bootstrap-acceptance-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   bootstrap-acceptance:

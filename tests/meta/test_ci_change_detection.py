@@ -300,6 +300,14 @@ def test_bootstrap_acceptance_skips_release_please_pull_requests():
         ("claude-code-review.yml", None),
         ("dependency-review.yml", None),
         ("publish-container.yml", "container-check"),
+        ("ci.yml", None),
+        ("lint.yml", None),
+        ("codeql.yml", None),
+        ("commitlint.yml", None),
+        ("secret-scan.yml", None),
+        ("large-file-guard.yml", None),
+        ("api-contract.yml", None),
+        ("bootstrap-acceptance.yml", None),
     ],
 )
 def test_pull_request_runs_cancel_without_cancelling_main(workflow, job):
