@@ -70,7 +70,8 @@ class ReleaseHistory {
 
     // One patch can land twice through parallel merge paths, as when a
     // recreated Dependabot branch merges beside its original. Keep the oldest
-    // copy. A re-land after a revert descends from the original and is kept.
+    // copy. A re-land after a revert descends from an earlier copy, kept or
+    // dropped, and is kept.
     distinct(commits) {
         const groups = new Map();
         for (const commit of commits) {
@@ -81,15 +82,15 @@ class ReleaseHistory {
         const dropped = new Set();
         for (const group of groups.values()) {
             if (group.length < 2) continue;
-            const kept = [];
+            const seen = [];
             for (const {sha} of group.reverse()) {
                 const id = this.patchId(sha);
-                if (id && kept.some(prior => prior.id === id
-                    && !this.ancestor(prior.sha, sha) && !this.ancestor(sha, prior.sha))) {
+                const copies = id ? seen.filter(prior => prior.id === id) : [];
+                if (copies.length && !copies.some(prior =>
+                    this.ancestor(prior.sha, sha) || this.ancestor(sha, prior.sha))) {
                     dropped.add(sha);
-                } else {
-                    kept.push({sha, id});
                 }
+                seen.push({sha, id});
             }
         }
         return commits.filter(commit => !dropped.has(commit.sha));
@@ -97,7 +98,7 @@ class ReleaseHistory {
 
     patchId(sha) {
         const patch = this.git(['show', '--binary', '--format=', sha]);
-        return execFileSync('git', ['patch-id', '--stable'], {
+        return execFileSync('git', ['patch-id', '--verbatim'], {
             cwd: this.cwd, encoding: 'utf8', input: patch,
             timeout: 30000, maxBuffer: 32 * 1024 * 1024,
         }).split(' ')[0] || null;

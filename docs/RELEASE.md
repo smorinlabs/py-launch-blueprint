@@ -30,8 +30,9 @@ were merged afterward. Merge bodies cannot contribute duplicate release notes.
 Separate commits with identical subjects remain separate changes. When the
 same patch lands twice through parallel merge paths, such as a recreated
 Dependabot branch merged beside its original, only the oldest copy is listed.
-Copies are matched by `git patch-id`, not by subject. A change re-landed after
-its revert descends from the original and stays listed.
+Copies are matched by `git patch-id --verbatim`, not by subject, so whitespace
+differences keep changes distinct. A change re-landed after its revert descends
+from an earlier copy and stays listed.
 
 The plugin runs before upstream parsing and version calculation. Full commit
 messages, breaking-change trailers, release overrides, and changed paths are

@@ -100,6 +100,34 @@ test('re-landed patches, distinct binaries, and empty commits stay separate', as
     } finally { repo.dispose(); }
 });
 
+test('whitespace-distinct patches and re-lands of a dropped copy stay separate', async () => {
+    const repo = repository();
+    try {
+        repo.release();
+        const base = repo.git(['rev-parse', 'HEAD']);
+        repo.git(['checkout', '-b', 'spaced']);
+        const spaced = repo.commit('fix: set greeting', {'greeting.py': 'greeting = "hello world"\n'});
+        repo.git(['checkout', '-b', 'joined', base]);
+        const joined = repo.commit('feat!: set greeting', {'greeting.py': 'greeting = "helloworld"\n'});
+        repo.git(['checkout', '-b', 'parallel', base]);
+        const parallel = repo.commit('feat: add widget', {'widget.txt': 'widget\n'});
+        repo.git(['checkout', '-b', 'relanding', base]);
+        const copy = repo.commit('feat: add widget', {'widget.txt': 'widget\n'});
+        repo.git(['revert', '--no-edit', copy]);
+        const reverted = repo.git(['rev-parse', 'HEAD']);
+        const relanded = repo.commit('feat: add widget', {'widget.txt': 'widget\n'});
+        repo.git(['checkout', 'main']);
+        repo.git(['merge', '--no-ff', 'spaced', '-m', 'Merge spaced']);
+        repo.git(['merge', '--no-ff', '-s', 'ours', 'joined', '-m', 'Merge joined']);
+        repo.git(['merge', '--no-ff', 'parallel', '-m', 'Merge parallel']);
+        repo.git(['merge', '--no-ff', '-s', 'ours', 'relanding', '-m', 'Merge relanding']);
+        const {history, candidates: [candidate]} = await build(repo);
+        expect(history.selected.map(c => c.sha).sort())
+            .toEqual([spaced, joined, parallel, reverted, relanded].sort());
+        expect(candidate.version.toString()).toBe('2.0.0');
+    } finally { repo.dispose(); }
+});
+
 test('scoped dependency rules stay visible while general chores and builds stay hidden', async () => {
     const repo = repository();
     try {
