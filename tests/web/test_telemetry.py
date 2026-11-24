@@ -47,3 +47,16 @@ def test_instrument_tracing_wires_provider_and_app(monkeypatch):
         fastapi_instr.FastAPIInstrumentor.uninstrument_app(app)
         for provider in installed:
             provider.shutdown()
+
+
+def test_native_fastapi_telemetry_off_when_otel_disabled(monkeypatch):
+    # FastAPI >= 0.165 instruments natively whenever global OpenTelemetry
+    # providers are configured. Simulate configured providers and check that
+    # create_app keeps native telemetry off while the setting is off (WEB-10).
+    asgi = pytest.importorskip("fastapi.telemetry._asgi")
+    from py_launch_blueprint.web.app import create_app
+    from py_launch_blueprint.web.settings import WebSettings
+
+    monkeypatch.setattr(asgi, "_unconfigured", lambda provider: False)
+    app = create_app(WebSettings(otel_enabled=False, metrics_enabled=False))
+    assert app._native_telemetry.enabled() is False

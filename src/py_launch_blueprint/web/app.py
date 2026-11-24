@@ -119,6 +119,13 @@ def create_app(settings: WebSettings | None = None) -> FastAPI:
         generate_unique_id_function=_operation_id,
         lifespan=_lifespan,
         root_path=settings.root_path,
+        # FastAPI's native OpenTelemetry uses any global provider by default;
+        # keep tracing opt-in (WEB-10) by turning it off unless enabled.
+        telemetry=(
+            None
+            if settings.otel_enabled
+            else {"tracing": False, "metrics": False, "logs": False}
+        ),
     )
     app.state.settings = settings
 
