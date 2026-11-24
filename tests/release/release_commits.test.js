@@ -56,6 +56,50 @@ test('commit identity, multiline messages, and unusual filenames survive selecti
     } finally { repo.dispose(); }
 });
 
+test('one patch landing through two merge paths yields one release entry', async () => {
+    const repo = repository();
+    try {
+        repo.release();
+        const message = 'fix(deps): bump fastapi from 0.136.3 to 0.141.1';
+        repo.git(['checkout', '-b', 'original']);
+        const original = repo.commit(message, {'uv.lock': 'fastapi 0.141.1\n'}, '2024-02-01T12:00:00Z');
+        repo.git(['checkout', '-b', 'recreated', 'main']);
+        const recreated = repo.commit(message, {'uv.lock': 'fastapi 0.141.1\n'}, '2024-02-03T12:00:00Z');
+        repo.git(['checkout', 'main']);
+        repo.git(['merge', '--no-ff', 'original', '-m', 'Merge pull request #1 from fixture/original']);
+        repo.git(['merge', '--no-ff', 'recreated', '-m', 'Merge pull request #2 from fixture/recreated']);
+        const {history, candidates: [candidate]} = await build(repo);
+        expect(history.selected.map(c => c.sha)).toEqual([original]);
+        expect(candidate.body.toString()).toContain(original);
+        expect(candidate.body.toString()).not.toContain(recreated);
+        expect((candidate.body.toString().match(/bump fastapi/g) || []).length).toBe(1);
+    } finally { repo.dispose(); }
+});
+
+test('re-landed patches, distinct binaries, and empty commits stay separate', async () => {
+    const repo = repository();
+    try {
+        repo.release();
+        const landed = repo.commit('feat: add widget', {'widget.txt': 'widget\n'});
+        repo.git(['revert', '--no-edit', landed]);
+        const reverted = repo.git(['rev-parse', 'HEAD']);
+        const relanded = repo.commit('feat: add widget', {'widget.txt': 'widget\n'});
+        const first = repo.commit('fix: first empty change');
+        const second = repo.commit('fix: second empty change');
+        const base = repo.git(['rev-parse', 'HEAD']);
+        repo.git(['checkout', '-b', 'blue']);
+        const blue = repo.commit('fix: update logo', {'logo.bin': Buffer.from([0, 1, 2, 3])});
+        repo.git(['checkout', '-b', 'green', base]);
+        const green = repo.commit('fix: update logo', {'logo.bin': Buffer.from([0, 1, 2, 4])});
+        repo.git(['checkout', 'main']);
+        repo.git(['merge', '--no-ff', 'blue', '-m', 'Merge blue']);
+        repo.git(['merge', '--no-ff', '-s', 'ours', 'green', '-m', 'Merge green']);
+        const {history} = await build(repo);
+        expect(history.selected.map(c => c.sha).sort())
+            .toEqual([landed, reverted, relanded, first, second, blue, green].sort());
+    } finally { repo.dispose(); }
+});
+
 test('scoped dependency rules stay visible while general chores and builds stay hidden', async () => {
     const repo = repository();
     try {
