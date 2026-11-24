@@ -13,8 +13,8 @@ on:
 permissions: {}
 
 concurrency:
-  group: api-contract-${{ github.ref }}
-  cancel-in-progress: true
+  group: api-contract-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   breaking:

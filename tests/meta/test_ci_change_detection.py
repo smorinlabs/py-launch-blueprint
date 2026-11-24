@@ -137,6 +137,7 @@ def test_code_pull_request_skips_release_generation(tmp_path):
     [
         "scripts/release_commits.cjs",
         "scripts/release_please.cjs",
+        "scripts/release-notes.cjs",
         "scripts/run-release-tests.sh",
         "tests/release/new.test.js",
         "package.json",
@@ -190,6 +191,13 @@ def test_large_code_diff_is_not_docs_only(tmp_path):
     change = {f"src/pkg/mod_{i}.py": "X = 1\n" for i in range(3000)}
     change["docs/index.md"] = "# New\n"
     outputs = _run(tmp_path, change)
+    assert outputs == _expect("true", "false", "false")
+
+
+def test_release_branch_with_extra_manifest_change_runs_everything(tmp_path):
+    manifest = '{\n  ".": "1.1.0",\n  "extra": "1.0.0"\n}\n'
+    change = {**RELEASE_BUMP, ".release-please-manifest.json": manifest}
+    outputs = _run(tmp_path, change, head_ref=RELEASE_BRANCH)
     assert outputs == _expect("true", "false", "false")
 
 
@@ -292,6 +300,14 @@ def test_bootstrap_acceptance_skips_release_please_pull_requests():
         ("claude-code-review.yml", None),
         ("dependency-review.yml", None),
         ("publish-container.yml", "container-check"),
+        ("ci.yml", None),
+        ("lint.yml", None),
+        ("codeql.yml", None),
+        ("commitlint.yml", None),
+        ("secret-scan.yml", None),
+        ("large-file-guard.yml", None),
+        ("api-contract.yml", None),
+        ("bootstrap-acceptance.yml", None),
     ],
 )
 def test_pull_request_runs_cancel_without_cancelling_main(workflow, job):

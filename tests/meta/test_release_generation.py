@@ -42,3 +42,8 @@ def test_release_result_reaches_required_gate(release_result, expected):
         timeout=10,
     )
     assert result.returncode == expected, result.stdout + result.stderr
+
+
+def test_release_tooling_pattern_covers_every_release_script():
+    text = (ROOT / ".github/workflows/ci.yml").read_text()
+    assert r"^scripts/release[^/]*\.cjs$" in text
