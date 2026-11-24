@@ -142,6 +142,8 @@ GitHub still copies the conventional PR title into its body. The release
 generator in `scripts/release_commits.cjs` excludes merge commits and selects
 all individual commits reachable from the source but absent from the previous
 release's ancestry. This includes older branch work merged after that release.
+When one patch lands twice through parallel merge paths, it lists only the
+oldest copy, matched by `git patch-id --verbatim` rather than subject.
 Run `just test-release` after changing release tooling. Use the read-only preview
 in `docs/RELEASE.md` to verify the version and both sets of generated notes.
 Repair generator defects before merging a release PR; manual note edits do not
