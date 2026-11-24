@@ -94,6 +94,13 @@ jobs:
               | sed -nE "$ver")" || return 1
             new="$(sed -nE "$ver" .release-please-manifest.json)"
             [ -n "$old" ] && [ -n "$new" ] && [ "$old" != "$new" ] || return 1
+            # The manifest may differ from base only in the "." version.
+            local strip base_manifest head_manifest
+            strip='s/"\.": *"[^"]+"/".": ""/'
+            base_manifest="$(git show "${BASE_SHA}:.release-please-manifest.json" \
+              | sed -E "$strip")" || return 1
+            head_manifest="$(sed -E "$strip" .release-please-manifest.json)"
+            [ "$head_manifest" = "$base_manifest" ] || return 1
             # Every changed pyproject.toml / uv.lock line must be the bump.
             if git diff -U0 "${BASE_SHA}...HEAD" -- pyproject.toml uv.lock \
                 | grep -E '^[+-]' | grep -vE '^(\+\+\+|---) ' \
@@ -110,7 +117,7 @@ jobs:
 
           # release-generation inputs: the generator, its tests, its bun
           # toolchain, the config one test reads, and this workflow.
-          tooling='^scripts/release_[a-z_]+\.cjs$|^scripts/run-release-tests\.sh$'
+          tooling='^scripts/release[^/]*\.cjs$|^scripts/run-release-tests\.sh$'
           tooling="$tooling|^tests/release/|^package\.json$|^bun\.lock$"
           tooling="$tooling|^\.bun-version$|^release-please-config\.json$"
           tooling="$tooling|^\.github/workflows/ci\.yml$"
