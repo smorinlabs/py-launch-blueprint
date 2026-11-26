@@ -1,6 +1,6 @@
 ---
 name: new-python-project
-description: Use when bootstrapping a new Python repo, project, CLI, package, script, or uv project from py-launch-blueprint. Ask whether the user wants the opinionated template bootstrap or a minimal setup before running commands.
+description: 'Create and bootstrap a new Python repository, CLI, package, web service, or uv project from smorinlabs/py-launch-blueprint. Use when asked to "create a new Python project", "bootstrap a Python repo", or "start a project from py-launch-blueprint"; ask whether the user wants the opinionated blueprint or a minimal setup when the template choice is unresolved. Not for modifying an existing Python repo or routine uv, ruff, or ty tasks.'
 ---
 
 # new-python-project
@@ -9,9 +9,12 @@ Create a fresh Python project from `smorinlabs/py-launch-blueprint`, validate
 its CLI and web application, and deliver the initialization as a pull request.
 The generated project starts at version `0.1.0` and requires Python 3.13+.
 
-Use this runbook from the **original blueprint checkout** throughout the
-bootstrap. Rebranding removes the generated copy of `SKILL.md` and retires its
-companion documentation. The generated project's ongoing setup checklist is
+This skill works either **installed globally** (user scope, invoked from any
+directory without a local blueprint clone) or **project-scoped** inside a
+`py-launch-blueprint` checkout. Rebranding removes the generated target's copy
+of `SKILL.md` and retires its companion documentation, so when running from a
+local blueprint checkout keep reading the runbook from that checkout rather
+than the generated target. The generated project's ongoing setup checklist is
 `docs/PROJECT_SETUP.md`; `docs/POST_INIT.md` is a template/provenance pointer.
 
 ## Scope and authorization
@@ -43,8 +46,8 @@ resolved values when the execution tool starts a separate shell for each call.
 
 ### 1. Check prerequisites and collect missing identity
 
-From the original blueprint checkout, verify the command-line tools and GitHub
-login before creating the new repository:
+Before creating the new repository, verify the command-line tools and GitHub
+login:
 
 ```bash
 command -v git
@@ -68,7 +71,7 @@ show derived defaults, and validate the answers before creating the repository.
 | GitHub repo name | Required | Lowercase kebab-case: `^[a-z][a-z0-9-]{0,99}$` |
 | GitHub owner | `gh api user --jq .login` | Existing account or organization the user can create repositories under |
 | Visibility | `public` | `public` or `private`; resolve before creating the repository |
-| Target directory | A sibling of the blueprint checkout named after the repo | Absolute path; absent or empty; outside the source checkout |
+| Target directory | `<cwd>/<repo-name>` outside Git repositories, or a sibling of the enclosing Git repository root when invoked inside one (including `py-launch-blueprint`); ask if no safe default applies | Absolute path; absent or empty; outside any existing Git repository or blueprint checkout |
 | Python package name | Repo name with `-` changed to `_` | `^[a-z][a-z0-9_]*$`; not a Python keyword |
 | App short name | Python package name | `^[a-z][a-z0-9_]*$`; not a Python keyword |
 | Author name | `git config user.name` | Non-empty |
@@ -201,8 +204,9 @@ test -f press/press-receipt.toml
 Keep the cleanup outcome with the run's evidence. A `[[press.clean]]` receipt
 row records a declaration, not proof that cleanup ran. A successful rebrand
 writes the receipt and refreshes `press/press-source.toml` to the new identity.
-Continue reading the runbook in the original blueprint checkout after this
-step; its generated `SKILL.md` has been removed.
+The generated target's copy of `SKILL.md` has now been removed; continue
+following the globally installed skill (or the original blueprint checkout's
+copy if running project-scoped).
 
 ### 6. Normalize, set up, and validate the generated project
 
