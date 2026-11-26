@@ -82,6 +82,9 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     ).stdout
     with tarfile.open(fileobj=io.BytesIO(archive)) as source:
         source.extractall(target, filter="data")
+    expected_difftree = (
+        target / ".github/workflows/difftree-pr-comment.yml"
+    ).read_text(encoding="utf-8")
     _run(target, git, "init", "--initial-branch=main")
     _run(target, git, "config", "user.name", "Bootstrap Acceptance")
     _run(target, git, "config", "user.email", "acceptance@example.org")
@@ -189,9 +192,7 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
     assert difftree_workflow.is_file()
     difftree_text = difftree_workflow.read_text(encoding="utf-8")
     assert "uses: smorinlabs/difftree-action@v0" in difftree_text
-    assert difftree_text == (
-        ROOT / ".github/workflows/difftree-pr-comment.yml"
-    ).read_text(encoding="utf-8")
+    assert difftree_text == expected_difftree
     assert (target / ".agents/skills/new-python-project").is_dir()
     assert not (target / "projects").exists()
     for page, stub in (
