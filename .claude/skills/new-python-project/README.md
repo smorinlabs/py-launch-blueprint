@@ -6,11 +6,23 @@ initialization pull request. The canonical procedure is [SKILL.md](SKILL.md).
 
 ## Location and invocation
 
-The maintained source is `.claude/skills/new-python-project/` in the original
-blueprint checkout. Claude Code discovers it there; Codex uses the existing
-`.agents/skills/new-python-project` directory symlink. Agents following
-`AGENTS.md` can read the same file as a runbook. On Windows checkouts without
-Git symlink support, use the canonical path directly.
+The maintained source is `.claude/skills/new-python-project/` in
+`py-launch-blueprint`.
+
+- **Project-scoped:** inside a blueprint checkout, Claude Code discovers it at
+  `.claude/skills/new-python-project/` and Codex uses the committed
+  `.agents/skills/new-python-project` directory symlink. Agents following
+  `AGENTS.md` can read the same file as a runbook. On Windows checkouts without
+  Git symlink support, use the canonical path directly.
+- **User-scoped (global):** because the runbook instantiates directly from
+  `smorinlabs/py-launch-blueprint` via `gh repo create --template`, you can
+  install it globally and invoke it from any directory without entering a local
+  blueprint clone:
+
+  ```bash
+  ln -s /path/to/py-launch-blueprint/.claude/skills/new-python-project ~/.claude/skills/new-python-project
+  ln -s /path/to/py-launch-blueprint/.claude/skills/new-python-project ~/.agents/skills/new-python-project
+  ```
 
 For predictable invocation, name the skill and supply the identity you know:
 
@@ -47,11 +59,13 @@ The template's declared edits reset initial versions before lock regeneration.
 Declared resets and removals retire template history and maintenance content.
 The runbook checks the resulting receipt and version agreement before commit.
 
-Keep the runbook available from the **original blueprint checkout** while
-working in the new target. Rebranding removes the generated `SKILL.md` and
-resets this README to a retirement notice. The existing Codex directory
-symlink remains resolvable, but the generated project no longer exposes this
-bootstrap skill. Its `docs/POST_INIT.md` is a short template/provenance pointer.
+Rebranding removes the generated target's `SKILL.md` and resets this README to
+a retirement notice. When running project-scoped from a local blueprint
+checkout, keep reading the runbook from that checkout rather than the generated
+target; when installed globally, the user-scoped skill remains available
+unchanged. The existing Codex directory symlink remains resolvable, but the
+generated project no longer exposes this bootstrap skill. Its `docs/POST_INIT.md`
+is a short template/provenance pointer.
 
 Full bootstrap authorization covers the necessary local setup and validation.
 Package publication, external-service setup, and PR merge remain separate
