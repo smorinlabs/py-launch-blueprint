@@ -48,7 +48,7 @@ records the earlier experiments; it is not a guarantee of current behavior.
 | Area | Required behavior |
 |---|---|
 | Python | Python 3.13 or newer; generated project version `0.1.0` |
-| Press engine | Released `template-press==4.1.0` from committed `uv.lock`; `uv run --locked press` for every phase |
+| Press engine | Released `template-press==5.0.0` from committed `uv.lock`; `uv run --locked press` for every phase |
 | Input | Answers file outside the target; the clean-tree guard stays enabled |
 | Bun | Target installer and regeneration agree on Bun `1.3.5`; verify it before rebranding |
 | Order | Sync tools, check declared commands, preview cleanup, clean, preview rebrand, apply, format the full tree, set up, validate |

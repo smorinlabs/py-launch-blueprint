@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.13"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -1638,7 +1638,7 @@ dev = [
     { name = "schemathesis", specifier = ">=4.0.0" },
     { name = "syrupy", specifier = ">=4.8.0" },
     { name = "tach", specifier = ">=0.35.0" },
-    { name = "template-press", specifier = "==4.1.0" },
+    { name = "template-press", specifier = "==5.0.0" },
     { name = "twine", specifier = ">=6.1.0" },
     { name = "ty", specifier = ">=0.0.1a16" },
     { name = "types-pygments" },
@@ -2403,11 +2403,11 @@ wheels = [
 
 [[package]]
 name = "template-press"
-version = "4.1.0"
+version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f9/53/0f63e3eee06f09616192c49117cc901ab73b4398fb958f7bb5502f2e22ed/template_press-4.1.0.tar.gz", hash = "sha256:eb46e4115c369048e9afb68f107f5a4851c3822b578d3e78003261aba5ef0e84", size = 192893, upload-time = "2026-09-10T23:45:03.704Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/44/45/5bc30cb8eeea622aebcdac9e0043d0acb51c2c63f11d2c871a15c64d6ed0/template_press-5.0.0.tar.gz", hash = "sha256:ce70f61d8b5a4b02ed487cfef45a31b9567c095955e4b2146432925da68d6d28", size = 265982, upload-time = "2026-11-26T03:43:19.839Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/58/de/225b53ed543eaf0f17a9571232e5f233b058026e640ce8c9ad081610a792/template_press-4.1.0-py3-none-any.whl", hash = "sha256:cff924822d685811937708ca58a77b0301263b5f6d6aed6873445827b8221c62", size = 209068, upload-time = "2026-09-10T23:45:02.373Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/57/6b77f80db9fd37c899370cfd3581506463df0b895128afd4e60c8da86fde/template_press-5.0.0-py3-none-any.whl", hash = "sha256:f0b5871876b3a479e52f730bd8f6f7097c67d2df8a71f075d71126400afa9810", size = 282061, upload-time = "2026-11-26T03:43:18.805Z" },
 ]
 
 [[package]]
