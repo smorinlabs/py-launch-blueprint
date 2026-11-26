@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.2.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v4.1.0...v4.2.0) (2026-11-26)
+
+
+### Features
+
+* **bootstrap:** support global invocation of new-python-project skill ([f88cc11](https://github.com/smorinlabs/py-launch-blueprint/commit/f88cc11c4d1b6b7dce13bb7c94228f9176de40e3))
+* **press:** keep difftree-pr-comment workflow in stamped children ([b42b2e6](https://github.com/smorinlabs/py-launch-blueprint/commit/b42b2e6bd62b5e56f47ecf779788d3668bc73d02))
+
+
+### Bug Fixes
+
+* **bootstrap:** create skill dirs before linking and keep target outside git repos ([208a74c](https://github.com/smorinlabs/py-launch-blueprint/commit/208a74c27b6cc4064492fe6e6860764738c9569e))
+
 ## [4.1.0](https://github.com/smorinlabs/py-launch-blueprint/compare/v4.0.1...v4.1.0) (2026-11-24)
 
 
