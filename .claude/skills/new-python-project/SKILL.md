@@ -71,7 +71,7 @@ show derived defaults, and validate the answers before creating the repository.
 | GitHub repo name | Required | Lowercase kebab-case: `^[a-z][a-z0-9-]{0,99}$` |
 | GitHub owner | `gh api user --jq .login` | Existing account or organization the user can create repositories under |
 | Visibility | `public` | `public` or `private`; resolve before creating the repository |
-| Target directory | `<cwd>/<repo-name>` (or sibling of the checkout if invoked inside `py-launch-blueprint`) | Absolute path; absent or empty; outside any existing Git repository or blueprint checkout |
+| Target directory | `<cwd>/<repo-name>` outside Git repositories, or a sibling of the enclosing Git repository root when invoked inside one (including `py-launch-blueprint`); ask if no safe default applies | Absolute path; absent or empty; outside any existing Git repository or blueprint checkout |
 | Python package name | Repo name with `-` changed to `_` | `^[a-z][a-z0-9_]*$`; not a Python keyword |
 | App short name | Python package name | `^[a-z][a-z0-9_]*$`; not a Python keyword |
 | Author name | `git config user.name` | Non-empty |

@@ -20,6 +20,7 @@ The maintained source is `.claude/skills/new-python-project/` in
   blueprint clone:
 
   ```bash
+  mkdir -p ~/.claude/skills ~/.agents/skills
   ln -s /path/to/py-launch-blueprint/.claude/skills/new-python-project ~/.claude/skills/new-python-project
   ln -s /path/to/py-launch-blueprint/.claude/skills/new-python-project ~/.agents/skills/new-python-project
   ```
