@@ -185,6 +185,13 @@ def test_committed_blueprint_generates_a_usable_project(tmp_path):
         "tests/meta/test_bootstrap_skill.py",
     ):
         assert not (target / removed).exists(), removed
+    difftree_workflow = target / ".github/workflows/difftree-pr-comment.yml"
+    assert difftree_workflow.is_file()
+    difftree_text = difftree_workflow.read_text(encoding="utf-8")
+    assert "uses: smorinlabs/difftree-action@v0" in difftree_text
+    assert difftree_text == (
+        ROOT / ".github/workflows/difftree-pr-comment.yml"
+    ).read_text(encoding="utf-8")
     assert (target / ".agents/skills/new-python-project").is_dir()
     assert not (target / "projects").exists()
     for page, stub in (

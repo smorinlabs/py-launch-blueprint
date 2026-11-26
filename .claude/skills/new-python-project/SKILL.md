@@ -139,12 +139,12 @@ receipt check in step 6. It is operator input, not a project artifact.
 ### 4. Install and check the locked press engine and Bun
 
 All remaining commands run from `<target-dir>`. Sync the committed lockfile
-and use its released `template-press==4.1.0` throughout this runbook:
+and use its released `template-press==5.0.0` throughout this runbook:
 
 ```bash
 uv sync --locked --group dev --extra web
 uv run --locked python --version
-test "$(uv run --locked python -c 'from importlib.metadata import version; print(version("template-press"))')" = "4.1.0"
+test "$(uv run --locked python -c 'from importlib.metadata import version; print(version("template-press"))')" = "5.0.0"
 ```
 
 Require Python 3.13 or newer. If the lockfile is stale or the expected engine
